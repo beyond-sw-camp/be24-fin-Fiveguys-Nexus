@@ -53,7 +53,8 @@ spec:
                     def relevant = changes.any {
                         it.startsWith('frontend/') ||
                         it.startsWith('docker/frontend/') ||
-                        it.startsWith('k8s/frontend/')
+                        it.startsWith('k8s/frontend/') ||
+                        it.startsWith('jenkins/frontend/')
                     }
                     if (!relevant) {
                         currentBuild.result = 'NOT_BUILT'

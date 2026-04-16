@@ -43,6 +43,21 @@ spec:
             }
         }
 
+        stage('Check Changes') {
+            steps {
+                script {
+                    def changes = currentBuild.changeSets
+                        .collectMany { it.items }
+                        .collectMany { it.affectedFiles*.path }
+                    echo "Changed files: ${changes}"
+                    if (!changes.any { it.startsWith('backend/') }) {
+                        currentBuild.result = 'NOT_BUILT'
+                        error('backend/ 변경 없음 — 파이프라인 스킵')
+                    }
+                }
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 container('dind') {

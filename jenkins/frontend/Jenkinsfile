@@ -1,5 +1,32 @@
 pipeline {
-    agent any
+    agent {
+        kubernetes {
+            yaml """
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: dind
+    image: docker:24-dind
+    securityContext:
+      privileged: true
+    env:
+    - name: DOCKER_TLS_CERTDIR
+      value: ""
+    volumeMounts:
+    - name: docker-storage
+      mountPath: /var/lib/docker
+  - name: kubectl
+    image: bitnami/kubectl:latest
+    command: ['sleep', 'infinity']
+    securityContext:
+      runAsUser: 0
+  volumes:
+  - name: docker-storage
+    emptyDir: {}
+"""
+        }
+    }
 
     environment {
         IMAGE_NAME    = 'deatytim/nexus-frontend'
@@ -18,60 +45,73 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh "docker build -f docker/frontend/Dockerfile -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+                container('dind') {
+                    sh """
+                        until docker info > /dev/null 2>&1; do sleep 2; done
+                        docker build -f docker/frontend/Dockerfile -t ${IMAGE_NAME}:${IMAGE_TAG} .
+                    """
+                }
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-credentials',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-                    sh """
-                        echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin
-                        docker push ${IMAGE_NAME}:${IMAGE_TAG}
-                        docker tag  ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
-                        docker push ${IMAGE_NAME}:latest
-                    """
+                container('dind') {
+                    withCredentials([usernamePassword(
+                        credentialsId: 'dockerhub-credentials',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )]) {
+                        sh """
+                            echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin
+                            docker push ${IMAGE_NAME}:${IMAGE_TAG}
+                            docker tag  ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
+                            docker push ${IMAGE_NAME}:latest
+                        """
+                    }
                 }
             }
         }
 
         stage('Determine Blue/Green Color') {
             steps {
-                script {
-                    def cur = sh(
-                        script: "kubectl get svc ${SVC_NAME} -n ${K8S_NAMESPACE} -o jsonpath='{.spec.selector.color}' 2>/dev/null || echo 'blue'",
-                        returnStdout: true
-                    ).trim()
-                    env.CURRENT_COLOR = cur ?: 'blue'
-                    env.NEW_COLOR     = (env.CURRENT_COLOR == 'blue') ? 'green' : 'blue'
-                    echo "Active: ${env.CURRENT_COLOR}  →  Deploying to: ${env.NEW_COLOR}"
+                container('kubectl') {
+                    script {
+                        def cur = sh(
+                            script: "kubectl get svc ${SVC_NAME} -n ${K8S_NAMESPACE} -o jsonpath='{.spec.selector.color}' 2>/dev/null || echo 'blue'",
+                            returnStdout: true
+                        ).trim()
+                        env.CURRENT_COLOR = cur ?: 'blue'
+                        env.NEW_COLOR     = (env.CURRENT_COLOR == 'blue') ? 'green' : 'blue'
+                        echo "Active: ${env.CURRENT_COLOR}  →  Deploying to: ${env.NEW_COLOR}"
+                    }
                 }
             }
         }
 
         stage('Deploy Standby') {
             steps {
-                sh """
-                    sed -e 's/{{COLOR}}/${env.NEW_COLOR}/g' \
-                        -e 's/{{IMAGE_TAG}}/${IMAGE_TAG}/g' \
-                        ${DEPLOY_TMPL} | kubectl apply -n ${K8S_NAMESPACE} -f -
-                    kubectl rollout status deployment/nexus-frontend-${env.NEW_COLOR} \
-                        -n ${K8S_NAMESPACE} --timeout=180s
-                """
+                container('kubectl') {
+                    sh """
+                        sed -e 's/{{COLOR}}/${env.NEW_COLOR}/g' \
+                            -e 's/{{IMAGE_TAG}}/${IMAGE_TAG}/g' \
+                            ${DEPLOY_TMPL} | kubectl apply -n ${K8S_NAMESPACE} -f -
+                        kubectl rollout status deployment/nexus-frontend-${env.NEW_COLOR} \
+                            -n ${K8S_NAMESPACE} --timeout=180s
+                    """
+                }
             }
         }
 
         stage('Switch Traffic') {
             steps {
-                sh """
-                    kubectl patch svc ${SVC_NAME} -n ${K8S_NAMESPACE} \
-                        -p '{"spec":{"selector":{"color":"${env.NEW_COLOR}"}}}'
-                """
-                echo "Traffic switched to ${env.NEW_COLOR}"
+                container('kubectl') {
+                    sh """
+                        kubectl patch svc ${SVC_NAME} -n ${K8S_NAMESPACE} \
+                            -p '{"spec":{"selector":{"color":"${env.NEW_COLOR}"}}}'
+                    """
+                    echo "Traffic switched to ${env.NEW_COLOR}"
+                }
             }
         }
     }
@@ -84,8 +124,10 @@ pipeline {
             echo "❌ Deploy failed. Traffic still on ${env.CURRENT_COLOR}"
         }
         always {
-            sh 'docker logout || true'
-            sh "docker rmi ${IMAGE_NAME}:${IMAGE_TAG} || true"
+            container('dind') {
+                sh "docker logout || true"
+                sh "docker rmi ${IMAGE_NAME}:${IMAGE_TAG} || true"
+            }
         }
     }
 }

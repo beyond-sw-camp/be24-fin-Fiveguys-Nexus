@@ -50,9 +50,14 @@ spec:
                         .collectMany { it.items }
                         .collectMany { it.affectedFiles*.path }
                     echo "Changed files: ${changes}"
-                    if (!changes.any { it.startsWith('backend/') }) {
+                    def relevant = changes.any {
+                        it.startsWith('backend/') ||
+                        it.startsWith('docker/backend/') ||
+                        it.startsWith('k8s/backend/')
+                    }
+                    if (!relevant) {
                         currentBuild.result = 'NOT_BUILT'
-                        error('backend/ 변경 없음 — 파이프라인 스킵')
+                        error('backend 관련 변경 없음 — 파이프라인 스킵')
                     }
                 }
             }

@@ -3,9 +3,6 @@
     <div class="flex items-start justify-between gap-4">
       <div>
         <h1 class="text-[22px] font-bold text-gray-900 tracking-tight">운영 현황</h1>
-        <p class="page-spec-hint">
-          <code>DASH_001~006</code>가맹점·금일 발주·배송·재고 위험·비정상 발주·자동 발주 제안을 한 화면에서 확인합니다. 수치 없음은 0건으로 처리합니다.
-        </p>
       </div>
       <div class="flex items-center gap-2">
         <button

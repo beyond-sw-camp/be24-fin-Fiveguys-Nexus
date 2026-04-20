@@ -5,7 +5,7 @@
     <div class="flex items-center justify-between">
       <div>
         <h1 class="text-xl font-black text-gray-900">메뉴 관리</h1>
-        <p class="text-xs text-gray-400 mt-1">메뉴 및 레시피를 관리합니다</p>
+
       </div>
       <button @click="openNewMenuModal"
               class="flex items-center gap-2 px-4 py-2 bg-[#F97316] text-white text-sm font-bold rounded-lg hover:bg-[#EA6700] transition-colors shadow-sm">
@@ -13,15 +13,41 @@
       </button>
     </div>
 
-    <!-- ── 검색 ── -->
-    <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
-      <div class="flex items-center gap-2 mb-4">
-        <div class="relative flex-1 max-w-xs">
-          <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
-          <input v-model="searchQuery" type="text" placeholder="메뉴명 검색..."
-                 class="w-full pl-9 pr-4 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#F97316] focus:ring-4 focus:ring-[#F97316]/5 transition-all placeholder:text-gray-300" />
+    <!-- 텍스트 검색 및 드롭다운 -->
+    <div class="flex items-center gap-3 mb-4 flex-wrap">
+      <div class="relative">
+        <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="메뉴명 검색..."
+          class="pl-10 pr-4 py-2 rounded-lg border border-gray-200 text-sm w-52
+             bg-white shadow-sm
+             focus:border-[#F37321] focus:ring-1 focus:ring-[#F37321]
+             outline-none transition-colors"
+        />
+      </div>
+
+      <!-- 수정된 부분: 재료(제품명) 선택 드롭다운 -->
+      <div class="relative w-64">
+        <select
+          v-model="selectedProductId"
+          class="w-full pl-4 pr-10 py-2 bg-white border border-gray-200 rounded-lg text-sm appearance-none outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316] transition-colors shadow-sm cursor-pointer text-gray-600"
+        >
+          <option value="">전체 제품 보기</option>
+          <option v-for="product in products" :key="product.id" :value="product.id">
+            {{ product.name }}
+          </option>
+        </select>
+        <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+          <ChevronDown class="w-4 h-4" />
         </div>
       </div>
+    </div>
+
+    <!-- ── 검색 ── -->
+    <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
+
 
       <!-- ── 메뉴 테이블 ── -->
       <div class="overflow-x-auto">
@@ -92,13 +118,28 @@
             </div>
             <div class="space-y-1.5">
               <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">가격 (원)</label>
-              <!-- input 요소를 직접 참조하기 위해 v-on:input 수정 -->
               <input :value="formattedPriceInput"
                      @input="onPriceInput"
                      required
                      type="text"
                      placeholder="0"
                      class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#F97316] focus:ring-4 focus:ring-[#F97316]/5 transition-all text-right" />
+            </div>
+          </div>
+
+          <!-- 카테고리 -->
+          <div class="space-y-1.5">
+            <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">카테고리</label>
+            <div class="flex items-center gap-2 flex-wrap">
+              <button v-for="cat in categories.filter(c => c !== '전체')" :key="cat"
+                      type="button"
+                      @click="menuForm.category = cat"
+                      :class="menuForm.category === cat
+                        ? 'bg-[#F97316] text-white border-[#F97316]'
+                        : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:bg-gray-50'"
+                      class="px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all">
+                {{ cat }}
+              </button>
             </div>
           </div>
 
@@ -141,7 +182,7 @@
                   <option value="">상품 선택</option>
                   <option v-for="p in products" :key="p.id" :value="p.id">{{ p.name }}</option>
                 </select>
-                <input v-model.number="item.amount" type="number" placeholder="0" min="0"
+                <input v-model.number="item.amount" type="number" placeholder="0" min="0" step="any"
                        class="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#F97316] focus:ring-4 focus:ring-[#F97316]/5 transition-all" />
                 <select v-model="item.unit"
                         class="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#F97316] focus:ring-4 focus:ring-[#F97316]/5 transition-all">
@@ -191,9 +232,13 @@
         <div class="px-7 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
           <div>
             <h3 class="font-bold text-gray-900 text-lg">{{ selectedMenu?.name }}</h3>
-            <p class="text-xs text-gray-400 mt-0.5">재료 목록</p>
+            <p class="text-xs text-gray-400 mt-0.5">{{selectedMenu?.id}}</p>
           </div>
-          <button @click="showIngredientModal = false" class="text-gray-400 hover:text-gray-600 font-bold text-xl">✕</button>
+          <div class="flex items-center gap-4">
+            <!-- 추가 요청 사항: 재료 추가 버튼 -->
+
+            <button @click="showIngredientModal = false" class="text-gray-400 hover:text-gray-600 font-bold text-xl">✕</button>
+          </div>
         </div>
 
         <div class="p-7">
@@ -216,13 +261,9 @@
               <td class="px-3 py-3 text-gray-500">{{ item.unit }}</td>
               <td class="px-3 py-3">
                 <div class="flex justify-center gap-2">
-                  <button @click="editIngredient(idx)"
-                          class="text-xs font-bold px-2 py-1 rounded border border-gray-200 text-gray-500 hover:border-[#F97316] hover:text-[#F97316] transition-colors">
-                    수정
-                  </button>
                   <button @click="deleteIngredient(idx)"
-                          class="text-xs font-bold px-2 py-1 rounded border border-red-100 text-red-400 hover:bg-red-50 transition-colors">
-                    삭제
+                          class="text-gray-300 hover:text-red-500 transition-colors" title="삭제">
+                    <Trash2 class="w-4 h-4" />
                   </button>
                 </div>
               </td>
@@ -233,7 +274,10 @@
             </tbody>
           </table>
 
-          <div class="mt-5 flex justify-end">
+          <div class="mt-5 flex justify-end gap-2"> <button @click="editIngredient"
+                                                            class="flex items-center gap-1 px-3 py-1.5 bg-[#F97316] text-white text-xs font-bold rounded-lg hover:bg-[#EA6700] transition-colors shadow-sm">
+            <Plus class="w-3 h-3" /> 재료 추가
+          </button>
             <button @click="showIngredientModal = false"
                     class="px-5 py-2.5 rounded-lg bg-gray-100 text-gray-600 text-sm font-bold hover:bg-gray-200 transition-colors">
               닫기
@@ -270,17 +314,17 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { Plus, Pencil, Trash2, Search, Image as ImageIcon } from 'lucide-vue-next'
+import { Plus, Pencil, Trash2, Search, Image as ImageIcon, ChevronDown } from 'lucide-vue-next'
 
 // ─────────────────────────────────────────────
 //  상품 목록 (제품 관리에서 연동 가정)
 // ─────────────────────────────────────────────
 const products = ref([
-  { id: 'P-001', name: '삼겹살 1kg' },
-  { id: 'P-002', name: '소불고기 500g' },
-  { id: 'P-003', name: '음료수 500ml' },
-  { id: 'P-004', name: '쌈장 1kg' },
-  { id: 'P-005', name: '상추 1봉' },
+  { id: 'P-001', name: 'BBQ 생닭 ' },
+  { id: 'P-002', name: '황금올리브 파우더' },
+  { id: 'P-003', name: '엑스트라버진 올리브오일' },
+  { id: 'P-004', name: '시크릿 양념' },
+  { id: 'P-005', name: '치킨무 ' },
 ])
 
 // ─────────────────────────────────────────────
@@ -288,41 +332,55 @@ const products = ref([
 // ─────────────────────────────────────────────
 const menus = ref([
   {
-    id: 'M-001', name: '삼겹살 세트', price: 19900, imageName: '',
+    id: 'M-001', name: '황금올리브치킨', price: 20000, imageName: '', category: '육류',
     ingredients: [
-      { productId: 'P-001', amount: 300, unit: 'g' },
-      { productId: 'P-005', amount: 0.5, unit: '봉' },
-      { productId: 'P-004', amount: 50, unit: 'g' },
-      { productId: 'P-003', amount: 2, unit: '개' },
+      { productId: 'P-001', amount: 1, unit: '개' },
+      { productId: 'P-002', amount: 150, unit: 'g' },
+      { productId: 'P-003', amount: 100, unit: 'ml' },
+      { productId: 'P-005', amount: 1, unit: '개' },
     ]
   },
   {
-    id: 'M-002', name: '불고기 정식', price: 14900, imageName: '',
+    id: 'M-002', name: '황금올리브 양념치킨', price: 21500, imageName: '', category: '육류',
     ingredients: [
-      { productId: 'P-002', amount: 200, unit: 'g' },
-      { productId: 'P-005', amount: 0.3, unit: '봉' },
-      { productId: 'P-004', amount: 30, unit: 'g' },
-      { productId: 'P-003', amount: 1, unit: '개' },
+      { productId: 'P-001', amount: 1, unit: '개' },
+      { productId: 'P-002', amount: 150, unit: 'g' },
+      { productId: 'P-003', amount: 100, unit: 'ml' },
+      { productId: 'P-004', amount: 200, unit: 'g' },
+      { productId: 'P-005', amount: 1, unit: '개' },
     ]
   },
   {
-    id: 'M-003', name: '냉면 세트', price: 12900, imageName: '',
+    id: 'M-003', name: '자메이카 통다리구이', price: 21500, imageName: '', category: '육류',
     ingredients: [
-      { productId: 'P-003', amount: 2, unit: '개' },
-      { productId: 'P-005', amount: 0.2, unit: '봉' },
+      { productId: 'P-001', amount: 0.8, unit: 'kg' },
+      { productId: 'P-004', amount: 250, unit: 'g' },
+      { productId: 'P-005', amount: 1, unit: '개' },
     ]
   },
 ])
 
 // ─────────────────────────────────────────────
-//  검색
+//  검색 및 필터링
 // ─────────────────────────────────────────────
 const searchQuery = ref('')
+const selectedProductId = ref('') // 제품 드롭다운 필터용 상태
+const categories = ['전체', '육류', '음료', '채소', '소스', '기타']
 
 const filteredMenus = computed(() => {
+  let list = menus.value
+
+  // 제품 드롭다운 필터: 선택한 제품이 재료(ingredients)에 포함되어 있는지 확인
+  if (selectedProductId.value) {
+    list = list.filter(m => m.ingredients.some(ing => ing.productId === selectedProductId.value))
+  }
+
+  // 텍스트 검색 (메뉴명)
   const q = searchQuery.value.trim().toLowerCase()
-  if (!q) return menus.value
-  return menus.value.filter(m => m.name.toLowerCase().includes(q))
+  if (q) {
+    list = list.filter(m => m.name.toLowerCase().includes(q))
+  }
+  return list
 })
 
 // ─────────────────────────────────────────────
@@ -330,11 +388,13 @@ const filteredMenus = computed(() => {
 // ─────────────────────────────────────────────
 const showMenuModal = ref(false)
 const editTarget = ref(null)
-const menuForm = ref({ name: '', price: 0, imageName: '', ingredients: [] })
+const menuForm = ref({ name: '', price: 0, imageName: '', category: '전체', ingredients: [] })
+const formattedPriceInput = ref('')
 
 function openNewMenuModal() {
   editTarget.value = null
-  menuForm.value = { name: '', price: 0, imageName: '', ingredients: [] }
+  menuForm.value = { name: '', price: 0, imageName: '', category: '육류', ingredients: [] }
+  formattedPriceInput.value = ''
   showMenuModal.value = true
 }
 
@@ -344,20 +404,16 @@ function openEditMenuModal(menu) {
     name: menu.name,
     price: menu.price,
     imageName: menu.imageName,
+    category: menu.category,
     ingredients: menu.ingredients.map(i => ({ ...i })),
   }
+  formattedPriceInput.value = menu.price.toLocaleString('ko-KR')
   showMenuModal.value = true
 }
 
 const onPriceInput = (e) => {
-  // 1. 입력된 값에서 숫자가 아닌 모든 것을 제거합니다.
   const val = e.target.value.replace(/[^0-9]/g, '');
-
-  // 2. 숫자로 변환하여 데이터 모델을 업데이트합니다.
   menuForm.value.price = val ? parseInt(val, 10) : 0;
-
-  // 3. (중요) 실제 input 엘리먼트의 값도 즉시 강제로 업데이트하여
-  // 한글 등 숫자가 아닌 문자가 잔상으로 남지 않게 합니다.
   e.target.value = menuForm.value.price === 0 ? '' : menuForm.value.price.toLocaleString('ko-KR');
 };
 
@@ -381,6 +437,7 @@ function saveMenu() {
       name: menuForm.value.name,
       price: menuForm.value.price,
       imageName: menuForm.value.imageName,
+      category: menuForm.value.category,
       ingredients: menuForm.value.ingredients.map(i => ({ ...i })),
     })
   } else {
@@ -391,6 +448,7 @@ function saveMenu() {
       name: menuForm.value.name,
       price: menuForm.value.price,
       imageName: menuForm.value.imageName,
+      category: menuForm.value.category,
       ingredients: menuForm.value.ingredients.map(i => ({ ...i })),
     })
   }

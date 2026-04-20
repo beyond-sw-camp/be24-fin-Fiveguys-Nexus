@@ -22,6 +22,7 @@ jobs:
         with:
           gemini-key: ${{ secrets.GEMINI_API_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          model: gemini-2.0-flash
           prompt: |
             당신은 시니어 풀스택 엔지니어입니다.
             변경된 코드(diff)를 분석하고 한국어로 코드 리뷰를 작성해주세요.

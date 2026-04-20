@@ -115,15 +115,15 @@ const history = ref([
   { id: 1,  datetime: '2026-04-13 14:23', type: '입고', product: '우유(1L)',        store: '여의도역점',      qty: 200,  handler: '시스템(자동)', note: '자동발주 ORD-001' },
   { id: 2,  datetime: '2026-04-13 13:10', type: '출고', product: '에스프레소 원두', store: '판교테크노밸리점', qty: 18,   handler: '시스템(POS)',  note: 'POS 마감 차감'  },
   { id: 3,  datetime: '2026-04-13 12:45', type: '출고', product: '우유(1L)',        store: '한화빌딩점',      qty: 46,   handler: '시스템(POS)',  note: 'POS 마감 차감'  },
-  { id: 4,  datetime: '2026-04-13 11:00', type: '입고', product: '바닐라 시럽',     store: '한화빌딩점',      qty: 60,   handler: '이재혁(관리자)', note: '수동발주 입고'  },
+  { id: 4,  datetime: '2026-04-13 11:00', type: '입고', product: '바닐라 시럽',     store: '한화빌딩점',      qty: 60,   handler: '이재혁(운영자)', note: '수동발주 입고'  },
   { id: 5,  datetime: '2026-04-13 09:30', type: '보정', product: '종이컵(M)',       store: '부산센텀점',      qty: 50,   handler: '김동현(점주)', note: '실재고 보정'    },
   { id: 6,  datetime: '2026-04-12 22:05', type: '출고', product: '우유(1L)',        store: '여의도역점',      qty: 38,   handler: '시스템(POS)',  note: 'POS 마감 차감'  },
   { id: 7,  datetime: '2026-04-12 22:05', type: '출고', product: '에스프레소 원두', store: '여의도역점',      qty: 12,   handler: '시스템(POS)',  note: 'POS 마감 차감'  },
   { id: 8,  datetime: '2026-04-12 17:00', type: '입고', product: '프리미엄 원두',   store: '한화빌딩점',      qty: 50,   handler: '시스템(자동)', note: '자동발주 입고'  },
   { id: 9,  datetime: '2026-04-12 10:20', type: '출고', product: '종이컵(L)',       store: '부산센텀점',      qty: 120,  handler: '시스템(POS)',  note: 'POS 마감 차감'  },
   { id: 10, datetime: '2026-04-11 22:00', type: '출고', product: '카라멜 시럽',     store: '판교테크노밸리점', qty: 8,    handler: '시스템(POS)',  note: 'POS 마감 차감'  },
-  { id: 11, datetime: '2026-04-11 16:30', type: '입고', product: '두유(1L)',        store: '여의도역점',      qty: 100,  handler: '이재혁(관리자)', note: '수동발주 입고'  },
-  { id: 12, datetime: '2026-04-11 14:00', type: '보정', product: '바닐라 시럽',     store: '여의도역점',      qty: 3,    handler: '이재혁(관리자)', note: '유통기한 폐기'  },
+  { id: 11, datetime: '2026-04-11 16:30', type: '입고', product: '두유(1L)',        store: '여의도역점',      qty: 100,  handler: '이재혁(운영자)', note: '수동발주 입고'  },
+  { id: 12, datetime: '2026-04-11 14:00', type: '보정', product: '바닐라 시럽',     store: '여의도역점',      qty: 3,    handler: '이재혁(운영자)', note: '유통기한 폐기'  },
 ])
 
 function parseHistoryDate(s) {

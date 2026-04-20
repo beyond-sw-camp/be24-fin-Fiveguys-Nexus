@@ -395,22 +395,22 @@ let timer = null
 let toastTimer = null
 
 // ── 카테고리 ──────────────────────────────────────────
-const categories = ['전체', '커피', '라커피', '디저트', '베이커리']
+const categories = ['전체', '치킨', '사이드', '음료', '세트']
 
 // ── 상품 데이터 ───────────────────────────────────────
 const allProducts = ref([
-  { id: 1,  name: '아메리카노 (HOT)', price: 4000, category: '커피',     image: 'https://images.unsplash.com/photo-1559525839-b184a4d698c7?auto=format&fit=crop&w=200&q=80' },
-  { id: 2,  name: '아메리카노 (ICE)', price: 4500, category: '커피',     image: 'https://images.unsplash.com/photo-1517701550927-30cfcb64db10?auto=format&fit=crop&w=200&q=80' },
-  { id: 3,  name: '카페라떼',         price: 5000, category: '커피',     image: 'https://images.unsplash.com/photo-1570968915860-54d5c301fa9f?auto=format&fit=crop&w=200&q=80' },
-  { id: 4,  name: '바닐라 라떼',      price: 5500, category: '커피',     image: 'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&w=200&q=80' },
-  { id: 5,  name: '카라멜 마끼아또',  price: 5800, category: '커피',     image: 'https://images.unsplash.com/photo-1485808191679-5f86510681a2?auto=format&fit=crop&w=200&q=80' },
-  { id: 6,  name: '블루베리 스무디',  price: 6500, category: '라커피',   image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=200&q=80' },
-  { id: 7,  name: '복숭아 아이스티',  price: 5500, category: '라커피',   image: 'https://images.unsplash.com/photo-1588713028246-17b5f1af8f13?auto=format&fit=crop&w=200&q=80' },
-  { id: 8,  name: '레몬 에이드',      price: 6000, category: '라커피',   image: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=200&q=80' },
-  { id: 9,  name: '치즈 케이크',      price: 6500, category: '디저트',   image: 'https://images.unsplash.com/photo-1524351199678-941a58a3df50?auto=format&fit=crop&w=200&q=80' },
-  { id: 10, name: '초코 머핀',        price: 3500, category: '디저트',   image: 'https://images.unsplash.com/photo-1606890737304-57a1ca8a5b62?auto=format&fit=crop&w=200&q=80' },
-  { id: 11, name: '크로플',           price: 5000, category: '베이커리', image: 'https://images.unsplash.com/photo-1626075191062-817b7f2f114d?auto=format&fit=crop&w=200&q=80' },
-  { id: 12, name: '소금빵',           price: 3000, category: '베이커리', image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=200&q=80' },
+  { id: 1,  name: '황금올리브치킨',      price: 23000, category: '치킨', image: 'https://images.unsplash.com/photo-1562967916-eb82221dfb92?auto=format&fit=crop&w=500&q=80' },
+  { id: 2,  name: '황금올리브순살',      price: 24000, category: '치킨', image: 'https://images.unsplash.com/photo-1527477396000-e27163b481c2?auto=format&fit=crop&w=500&q=80' },
+  { id: 3,  name: '핫황금올리브치킨',    price: 24000, category: '치킨', image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=500&q=80' },
+  { id: 4,  name: '양념치킨',            price: 24500, category: '치킨', image: 'https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=500&q=80' },
+  { id: 5,  name: '반반치킨',            price: 25000, category: '치킨', image: 'https://images.unsplash.com/photo-1626645738196-c2a7c87d8f5b?auto=format&fit=crop&w=500&q=80' },
+  { id: 6,  name: '자메이카 통다리',     price: 25500, category: '치킨', image: 'https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?auto=format&fit=crop&w=500&q=80' },
+  { id: 7,  name: '치즈볼(5개)',         price: 5500,  category: '사이드', image: 'https://images.unsplash.com/photo-1625944230945-1b7dd3b949ab?auto=format&fit=crop&w=500&q=80' },
+  { id: 8,  name: '케이준 감자튀김',     price: 4500,  category: '사이드', image: 'https://images.unsplash.com/photo-1576107232684-1279f390859f?auto=format&fit=crop&w=500&q=80' },
+  { id: 9,  name: '콜라 1.25L',          price: 3000,  category: '음료', image: 'https://images.unsplash.com/photo-1581636625402-29b2a704ef13?auto=format&fit=crop&w=500&q=80' },
+  { id: 10, name: '사이다 1.25L',        price: 3000,  category: '음료', image: 'https://images.unsplash.com/photo-1581006852262-e4307cf6283a?auto=format&fit=crop&w=500&q=80' },
+  { id: 11, name: '황금올리브+콜라세트', price: 26000, category: '세트', image: 'https://images.unsplash.com/photo-1512152272829-e3139592d56f?auto=format&fit=crop&w=500&q=80' },
+  { id: 12, name: '반반+치즈볼세트',     price: 29900, category: '세트', image: 'https://images.unsplash.com/photo-1548340748-6d98d2fe7806?auto=format&fit=crop&w=500&q=80' },
 ])
 
 // ── 장바구니 ──────────────────────────────────────────
@@ -418,13 +418,15 @@ const cart = ref([])
 
 // ── 매출 데이터 ───────────────────────────────────────
 const salesData = ref({
-  total: 34500, card: 24500, cash: 10000, count: 3, isClosed: false,
+  total: 124800, card: 92800, cash: 32000, count: 5, isClosed: false,
 })
 
 const paymentHistory = ref([
-  { id: 3, time: '14:30:12', method: '신용카드', items: '아메리카노 (HOT) 외 1건', amount: 8500  },
-  { id: 2, time: '13:15:00', method: '현금',     items: '카페라떼 2개',             amount: 10000 },
-  { id: 1, time: '12:05:45', method: '신용카드', items: '치즈 케이크 외 2건',       amount: 16000 },
+  { id: 5, time: '20:42:17', method: '신용카드', items: '황금올리브치킨 외 1건',      amount: 29000 },
+  { id: 4, time: '19:58:03', method: '현금',     items: '양념치킨 1마리',             amount: 24500 },
+  { id: 3, time: '18:26:44', method: '신용카드', items: '반반치킨 외 2건',            amount: 36500 },
+  { id: 2, time: '17:11:20', method: '신용카드', items: '자메이카 통다리 1마리',       amount: 25500 },
+  { id: 1, time: '16:40:09', method: '현금',     items: '황금올리브순살 1마리',        amount: 24000 },
 ])
 
 // ── Computed ──────────────────────────────────────────

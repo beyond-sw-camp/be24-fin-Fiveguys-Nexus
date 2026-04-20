@@ -392,12 +392,12 @@ const ongoingDeliveries = [
 ]
 
 const deliveryCls = s => ({
-  '배송중': 'bg-orange-100 text-orange-600',
-  '출고대기': 'bg-blue-100 text-blue-600',
-  '출고완료': 'bg-purple-100 text-purple-600',
-  '배송완료': 'bg-green-100 text-green-600',
-  '배송지연': 'bg-red-100 text-red-600',
-}[s] || 'bg-gray-100 text-gray-500')
+  '배송중':   'bg-blue-50 text-blue-600 border border-blue-200',
+  '출고대기': 'bg-gray-100 text-gray-600 border border-gray-200',
+  '출고완료': 'bg-green-50 text-green-700 border border-green-200',
+  '배송완료': 'bg-green-50 text-green-700 border border-green-200',
+  '배송지연': 'bg-red-50 text-red-600 border border-red-200',
+}[s] || 'bg-gray-100 text-gray-500 border border-gray-200')
 
 function goTo(path) {
   router.push(path)

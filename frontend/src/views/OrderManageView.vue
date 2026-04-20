@@ -349,19 +349,40 @@
                   <tr>
                     <th class="px-4 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase">품목명</th>
                     <th class="px-4 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase">수량</th>
-                    <th class="px-4 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase">단가</th>
-                    <th class="px-4 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase">금액</th>
+                    <template v-if="selectedOrder.type === '이상'">
+                      <th class="px-4 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase">평균수량</th>
+                      <th class="px-4 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase">초과율</th>
+                    </template>
+                    <template v-else>
+                      <th class="px-4 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase">단가</th>
+                      <th class="px-4 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase">금액</th>
+                    </template>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
-                  <tr v-for="(item, idx) in selectedOrder.items" :key="idx">
-                    <td class="px-4 py-2.5 text-gray-800">{{ item.product }}</td>
-                    <td class="px-4 py-2.5 text-right font-semibold text-gray-900">{{ item.qty.toLocaleString() }}</td>
-                    <td class="px-4 py-2.5 text-right text-xs text-gray-500">{{ item.unitPrice ? item.unitPrice.toLocaleString() + '원' : '-' }}</td>
-                    <td class="px-4 py-2.5 text-right font-bold text-[#F37321]">{{ item.unitPrice ? formatPrice(item.unitPrice * item.qty) : '-' }}</td>
+                  <tr v-for="(item, idx) in selectedOrder.items" :key="idx"
+                    :class="item.isAbnormal ? 'bg-red-50/60' : ''">
+                    <td class="px-4 py-2.5">
+                      <div class="flex items-center gap-1.5">
+                        <span :class="item.isAbnormal ? 'text-red-700 font-semibold' : 'text-gray-800'">{{ item.product }}</span>
+                        <span v-if="item.isAbnormal" class="text-[10px] font-black px-1.5 py-0.5 rounded bg-red-100 text-red-600 border border-red-200">이상</span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-2.5 text-right font-semibold" :class="item.isAbnormal ? 'text-red-600' : 'text-gray-900'">{{ item.qty.toLocaleString() }}</td>
+                    <template v-if="selectedOrder.type === '이상'">
+                      <td class="px-4 py-2.5 text-right text-gray-500">{{ item.avgQty?.toLocaleString() ?? '-' }}</td>
+                      <td class="px-4 py-2.5 text-right">
+                        <span v-if="item.isAbnormal" class="text-xs font-black px-2 py-0.5 rounded bg-red-50 text-red-600 border border-red-200">+{{ item.ratio }}%</span>
+                        <span v-else class="text-xs text-gray-400">+{{ item.ratio }}%</span>
+                      </td>
+                    </template>
+                    <template v-else>
+                      <td class="px-4 py-2.5 text-right text-xs text-gray-500">{{ item.unitPrice ? item.unitPrice.toLocaleString() + '원' : '-' }}</td>
+                      <td class="px-4 py-2.5 text-right font-bold text-[#F37321]">{{ item.unitPrice ? formatPrice(item.unitPrice * item.qty) : '-' }}</td>
+                    </template>
                   </tr>
                 </tbody>
-                <tfoot class="bg-gray-50 border-t border-gray-200">
+                <tfoot v-if="selectedOrder.type !== '이상'" class="bg-gray-50 border-t border-gray-200">
                   <tr>
                     <td colspan="3" class="px-4 py-2.5 text-right text-xs font-bold text-gray-500">합계</td>
                     <td class="px-4 py-2.5 text-right font-black text-[#F37321]">
@@ -518,11 +539,20 @@ const filteredOrderHistory = computed(() =>
 // 이상 발주 데이터 (ORDER_007)
 const abnormalOrders = ref([
   { id: 'ORD-20260414-ABN1', store: '여의도역점',       qty: 850,  avgQty: 150, ratio: 567, date: '2026-04-14 11:22', processed: false,
-    items: [{ product: '에스프레소 원두', qty: 850, unitPrice: 22000 }, { product: '프리미엄 원두', qty: 200, unitPrice: 25000 }] },
+    items: [
+      { product: '에스프레소 원두', qty: 850,  unitPrice: 22000, avgQty: 150, ratio: 567, isAbnormal: true  },
+      { product: '프리미엄 원두',   qty: 200,  unitPrice: 25000, avgQty: 185, ratio: 8,   isAbnormal: false },
+    ] },
   { id: 'ORD-20260413-ABN2', store: '판교테크노밸리점', qty: 1200, avgQty: 300, ratio: 400, date: '2026-04-13 09:15', processed: false,
-    items: [{ product: '우유(1L)', qty: 1200, unitPrice: 2500 }, { product: '두유(1L)', qty: 400, unitPrice: 3000 }] },
+    items: [
+      { product: '우유(1L)',  qty: 1200, unitPrice: 2500, avgQty: 300, ratio: 400, isAbnormal: true  },
+      { product: '두유(1L)',  qty: 400,  unitPrice: 3000, avgQty: 380, ratio: 5,   isAbnormal: false },
+    ] },
   { id: 'ORD-20260412-ABN3', store: '부산센텀점',       qty: 500,  avgQty: 60,  ratio: 833, date: '2026-04-12 16:40', processed: true,
-    items: [{ product: '바닐라 시럽', qty: 500, unitPrice: 15000 }, { product: '카라멜 시럽', qty: 200, unitPrice: 15000 }] },
+    items: [
+      { product: '바닐라 시럽', qty: 500, unitPrice: 15000, avgQty: 60,  ratio: 833, isAbnormal: true  },
+      { product: '카라멜 시럽', qty: 200, unitPrice: 15000, avgQty: 190, ratio: 5,   isAbnormal: false },
+    ] },
 ])
 
 

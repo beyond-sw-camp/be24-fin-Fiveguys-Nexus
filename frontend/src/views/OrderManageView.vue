@@ -132,8 +132,10 @@
           </thead>
           <tbody class="divide-y divide-gray-100">
             <tr v-for="o in abnormalOrders" :key="o.id"
-              class="hover:bg-gray-50/50 transition-colors"
-              :class="o.processed ? 'opacity-50' : ''">
+              class="hover:bg-gray-50/50 transition-colors cursor-pointer"
+              :class="o.processed ? 'opacity-50' : ''"
+              @click="openDetail({ id: o.id, type: '이상', store: o.store, status: o.processed ? '처리완료' : 'DANGER', date: o.date, items: [{ product: o.product, qty: o.qty }], avgQty: o.avgQty, ratio: o.ratio })"
+            >
               <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ o.id }}</td>
               <td class="px-5 py-3.5 font-semibold text-gray-900">{{ o.store }}</td>
               <td class="px-5 py-3.5 text-gray-700">{{ o.product }}</td>
@@ -354,6 +356,16 @@
                   </tr>
                 </tbody>
               </table>
+            </div>
+          </div>
+          <div v-if="selectedOrder.avgQty" class="grid grid-cols-2 gap-4 text-sm p-3 bg-rose-50 rounded-lg border border-rose-100">
+            <div>
+              <p class="text-xs text-rose-400 mb-1">평균 발주수량</p>
+              <p class="font-semibold text-gray-800">{{ selectedOrder.avgQty.toLocaleString() }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-rose-400 mb-1">초과율</p>
+              <p class="font-bold text-red-600">+{{ selectedOrder.ratio }}%</p>
             </div>
           </div>
           <div v-if="selectedOrder.note" class="text-sm">

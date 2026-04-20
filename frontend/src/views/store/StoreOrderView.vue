@@ -1,15 +1,12 @@
 <template>
-  <div class="p-5 space-y-4 relative min-h-screen bg-gray-50/30">
-    <div>
+  <div class="p-5 space-y-4">
+    <div class="flex justify-between items-start gap-4">
       <h1 class="text-xl font-bold text-gray-900 tracking-tight">발주서 확인</h1>
-      <p class="text-xs text-gray-400 mt-1">
-        <code>ORDER_008~013</code> 발주 이력·상세, 제안 승인/거절·수정·정산(결제) 흐름을 지원합니다.
-      </p>
     </div>
 
-    <div class="flex border-b border-gray-200 bg-white">
+    <div class="flex border-b border-gray-200">
       <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id"
-        class="px-5 py-3 text-sm font-semibold border-b-2 -mb-px transition-colors"
+        class="px-5 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors"
         :class="activeTab === tab.id ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'">
         {{ tab.label }}
         <span v-if="tab.count > 0" class="ml-1.5 text-xs font-bold px-1.5 py-0.5 rounded"
@@ -20,22 +17,24 @@
     </div>
 
     <div v-if="activeTab === 'pending'" class="space-y-4">
-      <div class="bg-blue-50 px-4 py-3 text-sm text-blue-700 rounded-md border border-blue-100">
+      <div class="bg-blue-50 px-4 py-3 text-sm text-blue-700 rounded-lg border border-blue-100">
         재고 데이터를 기반으로 시스템이 자동 산출한 발주서입니다. 수량을 조정하거나 그대로 확정할 수 있습니다.
       </div>
 
-      <div v-for="order in pendingOrders" :key="order.id" class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-        <div class="px-5 py-3 border-b border-gray-100 flex justify-between items-center bg-gray-50/60">
+      <div v-for="order in pendingOrders" :key="order.id" class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <div class="px-5 py-3.5 border-b border-gray-100 flex justify-between items-center bg-gray-50/60">
           <div>
             <span class="text-xs font-mono text-gray-400">{{ order.id }}</span>
-            <p class="font-bold text-gray-900 mt-0.5 text-sm">{{ order.supplier }} 발주 제안</p>
+            <p class="font-bold text-gray-900 mt-0.5 text-sm">자동 발주 제안</p>
             <p class="text-[11px] text-gray-400 mt-0.5">생성일시: {{ order.createdAt }}</p>
           </div>
           <div class="flex gap-2">
-            <button @click="openPaymentModal(order)" class="px-4 py-2 bg-blue-500 text-white text-sm font-bold hover:bg-blue-600 transition-colors">
+            <button @click="openPaymentModal(order)"
+              class="px-4 py-2 bg-blue-500 text-white text-sm font-bold hover:bg-blue-600 rounded transition-colors">
               전체 확정
             </button>
-            <button @click="rejectOrder(order)" class="px-4 py-2 border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50">
+            <button @click="rejectOrder(order)"
+              class="px-4 py-2 border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 rounded">
               거절
             </button>
           </div>
@@ -43,11 +42,11 @@
         <table class="w-full text-sm">
           <thead>
             <tr class="border-b border-gray-100 bg-gray-50">
-              <th class="px-5 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase">품목명</th>
-              <th class="px-5 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase">현재 재고</th>
-              <th class="px-5 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase">최소 재고</th>
-              <th class="px-5 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase">제안 수량</th>
-              <th class="px-5 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase">수정 수량</th>
+              <th class="px-5 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">품목명</th>
+              <th class="px-5 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">현재 재고</th>
+              <th class="px-5 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">최소 재고</th>
+              <th class="px-5 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">제안 수량</th>
+              <th class="px-5 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">수정 수량</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
@@ -104,19 +103,19 @@
         <table class="w-full text-sm text-left">
           <thead>
             <tr class="border-b border-gray-200 bg-gray-50">
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase">발주번호</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase">품목</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase">수량</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase">거래처</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase">상태</th>
+              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주번호</th>
+              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">품목</th>
+              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">수량</th>
+              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주일시</th>
+              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">상태</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
             <tr v-for="h in orderHistory" :key="h.id" class="hover:bg-gray-50/50 transition-colors">
               <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ h.id }}</td>
               <td class="px-5 py-3.5 font-semibold text-gray-900">{{ h.product }}</td>
-              <td class="px-5 py-3.5 text-gray-600">{{ h.qty }}</td>
-              <td class="px-5 py-3.5 text-gray-600">{{ h.supplier }}</td>
+              <td class="px-5 py-3.5 text-gray-600">{{ h.qty }}개</td>
+              <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ h.date }}</td>
               <td class="px-5 py-3.5">
                 <span class="text-xs font-bold px-2 py-0.5 rounded"
                   :class="h.status === '입고완료' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-blue-50 text-blue-600 border border-blue-200'">
@@ -195,22 +194,24 @@ const approvalMessage = ref('')
 
 const pendingOrders = ref([
   {
-    id: 'AUTO-20260413-001', supplier: '서울우유', createdAt: '2026-04-13 08:00',
+    id: 'AUTO-20260413-001', createdAt: '2026-04-13 08:00',
     items: [
-      { product: '우유(1L)', current: 85, min: 120, suggested: 200, adjusted: 200 },
-      { product: '두유(1L)', current: 55, min: 60, suggested: 80, adjusted: 80 },
+      { product: '우유(1L)',  current: 85, min: 120, suggested: 200, adjusted: 200 },
+      { product: '두유(1L)',  current: 55, min: 60,  suggested: 80,  adjusted: 80  },
     ],
   },
   {
-    id: 'AUTO-20260413-002', supplier: '청정원F&B', createdAt: '2026-04-13 08:00',
+    id: 'AUTO-20260413-002', createdAt: '2026-04-13 08:00',
     items: [
-      { product: '바닐라 시럽', current: 5, min: 30, suggested: 60, adjusted: 60 },
+      { product: '바닐라 시럽', current: 5,  min: 30, suggested: 60,  adjusted: 60  },
+      { product: '카라멜 시럽', current: 12, min: 30, suggested: 40,  adjusted: 40  },
     ],
   },
 ])
 
 const orderHistory = ref([
-  { id: 'ORD-20260412-001', product: '종이컵(M)', qty: 500, supplier: '한국포장', date: '2026-04-12', status: '배송중' },
+  { id: 'ORD-20260412-001', product: '종이컵(M)',     qty: 500, date: '2026-04-12 22:00', status: '배송중'   },
+  { id: 'ORD-20260411-002', product: '에스프레소 원두', qty: 150, date: '2026-04-11 22:00', status: '입고완료' },
 ])
 
 const tabs = computed(() => [

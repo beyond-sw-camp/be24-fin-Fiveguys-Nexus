@@ -168,33 +168,35 @@
 
     <!-- Tab: 발주 이력 (ORDER_006) -->
     <div v-if="activeTab === 'history'" class="space-y-3">
-      <div class="bg-white border border-gray-200 rounded-lg p-4 flex flex-wrap gap-3 items-end">
-        <div class="space-y-1">
-          <label class="text-[10px] font-bold text-gray-400 uppercase">유형</label>
+      <div class="bg-white border border-gray-200 rounded-lg px-5 py-4 flex flex-wrap gap-5 items-end">
+        <label class="flex flex-col gap-2">
+          <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">유형</span>
           <select v-model="historyFilterType"
-            class="px-3 py-2 rounded border border-gray-200 text-sm outline-none focus:border-[#F37321]">
+            class="w-24 px-3 py-2 rounded border border-gray-200 text-sm outline-none focus:border-[#F37321]">
             <option value="">전체</option>
             <option value="자동">자동</option>
             <option value="수동">수동</option>
           </select>
+        </label>
+        <label class="flex flex-col gap-2">
+          <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">기간 시작</span>
+          <input v-model="historyDateFrom" type="date" class="px-3 py-2 rounded border border-gray-200 text-sm outline-none focus:border-[#F37321]" />
+        </label>
+        <label class="flex flex-col gap-2">
+          <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">기간 종료</span>
+          <input v-model="historyDateTo" type="date" class="px-3 py-2 rounded border border-gray-200 text-sm outline-none focus:border-[#F37321]" />
+        </label>
+        <div class="flex flex-col gap-2 flex-1 min-w-40">
+          <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">검색</span>
+          <div class="flex gap-2 items-center">
+            <input v-model="historySearch" type="search" placeholder="발주번호·가맹점·품목"
+              class="flex-1 px-3 py-2 rounded border border-gray-200 text-sm outline-none focus:border-[#F37321]" />
+            <button type="button" class="text-xs font-semibold text-gray-500 border border-gray-200 px-4 py-2 rounded hover:bg-gray-50 shrink-0"
+              @click="historyFilterType = ''; historyDateFrom = ''; historyDateTo = ''; historySearch = ''">
+              초기화
+            </button>
+          </div>
         </div>
-        <div class="space-y-1">
-          <label class="text-[10px] font-bold text-gray-400 uppercase">기간 시작</label>
-          <input v-model="historyDateFrom" type="date" class="px-3 py-2 rounded border border-gray-200 text-sm outline-none" />
-        </div>
-        <div class="space-y-1">
-          <label class="text-[10px] font-bold text-gray-400 uppercase">기간 종료</label>
-          <input v-model="historyDateTo" type="date" class="px-3 py-2 rounded border border-gray-200 text-sm outline-none" />
-        </div>
-        <div class="space-y-1 flex-1 min-w-40">
-          <label class="text-[10px] font-bold text-gray-400 uppercase">검색</label>
-          <input v-model="historySearch" type="search" placeholder="발주번호·가맹점·품목"
-            class="w-full px-3 py-2 rounded border border-gray-200 text-sm outline-none" />
-        </div>
-        <button type="button" class="text-xs font-semibold text-gray-500 border border-gray-200 px-3 py-2 rounded hover:bg-gray-50"
-          @click="historyFilterType = ''; historyDateFrom = ''; historyDateTo = ''; historySearch = ''">
-          초기화
-        </button>
       </div>
       <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
         <table class="w-full text-sm text-left">

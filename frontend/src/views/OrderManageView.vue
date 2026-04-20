@@ -53,13 +53,13 @@
               v-for="o in autoOrders"
               :key="o.id"
               class="hover:bg-gray-50/50 transition-colors cursor-pointer"
-              @click="openDetail({ id: o.id, type: '자동', store: o.store, status: o.status, date: o.date, items: [{ product: o.product, qty: o.suggestedQty, unitPrice: o.unitPrice }] })"
+              @click="openDetail({ id: o.id, type: '자동', store: o.store, status: o.status, date: o.date, items: o.items })"
             >
               <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ o.id }}</td>
               <td class="px-5 py-3.5 font-semibold text-gray-900">{{ o.store }}</td>
               <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ o.date ?? '-' }}</td>
-              <td class="px-5 py-3.5 font-bold text-[#F37321]">{{ o.suggestedQty.toLocaleString() }}</td>
-              <td class="px-5 py-3.5 font-semibold text-gray-700">{{ formatPrice(o.unitPrice * o.suggestedQty) }}</td>
+              <td class="px-5 py-3.5 font-bold text-[#F37321]">{{ o.items.reduce((s, i) => s + i.qty, 0).toLocaleString() }}</td>
+              <td class="px-5 py-3.5 font-semibold text-gray-700">{{ formatPrice(o.items.reduce((s, i) => s + i.unitPrice * i.qty, 0)) }}</td>
               <td class="px-5 py-3.5">
                 <span class="text-xs font-bold px-2 py-0.5 rounded" :class="statusClass(o.status)">{{ o.status }}</span>
               </td>
@@ -90,11 +90,11 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
-              <tr v-for="o in pendingManualOrders" :key="o.id" class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="openDetail({ id: o.id, type: '수동', store: o.store, status: o.status, date: o.date, items: [{ product: o.product, qty: o.qty, unitPrice: o.unitPrice }] })">
+              <tr v-for="o in pendingManualOrders" :key="o.id" class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="openDetail({ id: o.id, type: '수동', store: o.store, status: o.status, date: o.date, items: o.items })">
                 <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ o.id }}</td>
                 <td class="px-5 py-3.5 font-semibold text-gray-900">{{ o.store }}</td>
                 <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ o.date }}</td>
-                <td class="px-5 py-3.5 font-semibold text-gray-700">{{ formatPrice(o.unitPrice * o.qty) }}</td>
+                <td class="px-5 py-3.5 font-semibold text-gray-700">{{ formatPrice(o.items.reduce((s, i) => s + i.unitPrice * i.qty, 0)) }}</td>
                 <td class="px-5 py-3.5">
                   <span class="text-xs font-bold px-2 py-0.5 rounded" :class="statusClass(o.status)">{{ o.status }}</span>
                 </td>
@@ -130,7 +130,7 @@
             <tr v-for="o in abnormalOrders" :key="o.id"
               class="hover:bg-gray-50/50 transition-colors cursor-pointer"
               :class="o.processed ? 'opacity-50' : ''"
-              @click="openDetail({ id: o.id, type: '이상', store: o.store, status: o.processed ? '처리완료' : 'DANGER', date: o.date, items: [{ product: o.product, qty: o.qty, unitPrice: o.unitPrice }], avgQty: o.avgQty, ratio: o.ratio })"
+              @click="openDetail({ id: o.id, type: '이상', store: o.store, status: o.processed ? '처리완료' : 'DANGER', date: o.date, items: o.items, avgQty: o.avgQty, ratio: o.ratio })"
             >
               <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ o.id }}</td>
               <td class="px-5 py-3.5 font-semibold text-gray-900">{{ o.store }}</td>
@@ -141,7 +141,7 @@
                   +{{ o.ratio }}%
                 </span>
               </td>
-              <td class="px-5 py-3.5 font-semibold text-gray-700">{{ formatPrice(o.unitPrice * o.qty) }}</td>
+              <td class="px-5 py-3.5 font-semibold text-gray-700">{{ formatPrice(o.items.reduce((s, i) => s + i.unitPrice * i.qty, 0)) }}</td>
               <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ o.date }}</td>
               <td class="px-5 py-3.5">
                 <span class="text-xs font-bold px-2 py-0.5 rounded"
@@ -211,7 +211,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
-            <tr v-for="h in filteredOrderHistory" :key="h.id" class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="openDetail({ id: h.id, type: h.type, store: h.store, status: h.status, date: h.date, items: [{ product: h.product, qty: h.qty, unitPrice: h.unitPrice }] })">
+            <tr v-for="h in filteredOrderHistory" :key="h.id" class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="openDetail({ id: h.id, type: h.type, store: h.store, status: h.status, date: h.date, items: h.items })">
               <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ h.id }}</td>
               <td class="px-5 py-3.5">
                 <span class="text-xs font-bold px-2 py-0.5 rounded"
@@ -221,7 +221,7 @@
               </td>
               <td class="px-5 py-3.5 font-semibold text-gray-900">{{ h.store }}</td>
               <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ h.date }}</td>
-              <td class="px-5 py-3.5 font-semibold text-gray-700">{{ formatPrice(h.unitPrice * h.qty) }}</td>
+              <td class="px-5 py-3.5 font-semibold text-gray-700">{{ formatPrice(h.items.reduce((s, i) => s + i.unitPrice * i.qty, 0)) }}</td>
               <td class="px-5 py-3.5">
                 <span class="text-xs font-bold px-2 py-0.5 rounded"
                   :class="statusClass(h.status)">{{ h.status }}</span>
@@ -475,18 +475,27 @@ const activeTab = ref('auto')
 
 
 const autoOrders = ref([
-  { id: 'AUTO-20260413-001', store: '여의도역점',       product: '우유(1L)',        unitPrice: 2500,  currentStock: 85,  minStock: 120, suggestedQty: 200,  date: '2026-04-13 22:00', status: '제안중' },
-  { id: 'AUTO-20260413-002', store: '판교테크노밸리점', product: '에스프레소 원두', unitPrice: 22000, currentStock: 12,  minStock: 80,  suggestedQty: 150,  date: '2026-04-13 22:00', status: '제안중' },
-  { id: 'AUTO-20260413-003', store: '한화빌딩점',       product: '바닐라 시럽',     unitPrice: 15000, currentStock: 5,   minStock: 30,  suggestedQty: 60,   date: '2026-04-13 22:00', status: '제안중' },
-  { id: 'AUTO-20260412-004', store: '부산센텀점',       product: '종이컵(M)',       unitPrice: 100,   currentStock: 300, minStock: 500, suggestedQty: 1000, date: '2026-04-12 22:00', status: '확정'   },
-  { id: 'AUTO-20260412-005', store: '한화빌딩점',       product: '두유(1L)',        unitPrice: 3000,  currentStock: 40,  minStock: 60,  suggestedQty: 100,  date: '2026-04-12 22:00', status: '거절'   },
+  { id: 'AUTO-20260413-001', store: '여의도역점',       date: '2026-04-13 22:00', status: '제안중',
+    items: [{ product: '우유(1L)', qty: 200, unitPrice: 2500 }, { product: '두유(1L)', qty: 50, unitPrice: 3000 }] },
+  { id: 'AUTO-20260413-002', store: '판교테크노밸리점', date: '2026-04-13 22:00', status: '제안중',
+    items: [{ product: '에스프레소 원두', qty: 150, unitPrice: 22000 }, { product: '바닐라 시럽', qty: 30, unitPrice: 15000 }, { product: '종이컵(M)', qty: 500, unitPrice: 100 }] },
+  { id: 'AUTO-20260413-003', store: '한화빌딩점',       date: '2026-04-13 22:00', status: '제안중',
+    items: [{ product: '바닐라 시럽', qty: 60, unitPrice: 15000 }, { product: '카라멜 시럽', qty: 40, unitPrice: 15000 }] },
+  { id: 'AUTO-20260412-004', store: '부산센텀점',       date: '2026-04-12 22:00', status: '확정',
+    items: [{ product: '종이컵(M)', qty: 1000, unitPrice: 100 }, { product: '종이컵(L)', qty: 300, unitPrice: 120 }] },
+  { id: 'AUTO-20260412-005', store: '한화빌딩점',       date: '2026-04-12 22:00', status: '거절',
+    items: [{ product: '두유(1L)', qty: 100, unitPrice: 3000 }, { product: '프리미엄 원두', qty: 20, unitPrice: 25000 }] },
 ])
 
 const orderHistory = ref([
-  { id: 'ORD-20260413-001', type: '자동', store: '부산센텀점',       product: '종이컵(M)',     unitPrice: 100,   qty: 1000, date: '2026-04-12 22:00', status: '배송중'   },
-  { id: 'ORD-20260413-002', type: '수동', store: '한화빌딩점',       product: '프리미엄 원두', unitPrice: 25000, qty: 50,   date: '2026-04-11 10:30', status: '입고완료' },
-  { id: 'ORD-20260412-003', type: '자동', store: '여의도역점',       product: '우유(1L)',      unitPrice: 2500,  qty: 200,  date: '2026-04-11 22:00', status: '입고완료' },
-  { id: 'ORD-20260411-004', type: '수동', store: '판교테크노밸리점', product: '카라멜 시럽',   unitPrice: 15000, qty: 30,   date: '2026-04-10 14:15', status: '입고완료' },
+  { id: 'ORD-20260413-001', type: '자동', store: '부산센텀점',       date: '2026-04-12 22:00', status: '배송중',
+    items: [{ product: '종이컵(M)', qty: 1000, unitPrice: 100 }, { product: '종이컵(L)', qty: 200, unitPrice: 120 }] },
+  { id: 'ORD-20260413-002', type: '수동', store: '한화빌딩점',       date: '2026-04-11 10:30', status: '입고완료',
+    items: [{ product: '프리미엄 원두', qty: 50, unitPrice: 25000 }, { product: '에스프레소 원두', qty: 30, unitPrice: 22000 }] },
+  { id: 'ORD-20260412-003', type: '자동', store: '여의도역점',       date: '2026-04-11 22:00', status: '입고완료',
+    items: [{ product: '우유(1L)', qty: 200, unitPrice: 2500 }, { product: '두유(1L)', qty: 80, unitPrice: 3000 }, { product: '바닐라 시럽', qty: 20, unitPrice: 15000 }] },
+  { id: 'ORD-20260411-004', type: '수동', store: '판교테크노밸리점', date: '2026-04-10 14:15', status: '입고완료',
+    items: [{ product: '카라멜 시럽', qty: 30, unitPrice: 15000 }, { product: '바닐라 시럽', qty: 25, unitPrice: 15000 }] },
 ])
 
 const historyFilterType = ref('')
@@ -501,16 +510,19 @@ const filteredOrderHistory = computed(() =>
     if (historyDateFrom.value && day < historyDateFrom.value) return false
     if (historyDateTo.value && day > historyDateTo.value) return false
     const q = historySearch.value.trim()
-    if (q && !h.id.includes(q) && !h.store.includes(q) && !h.product.includes(q)) return false
+    if (q && !h.id.includes(q) && !h.store.includes(q) && !h.items.some(i => i.product.includes(q))) return false
     return true
   }),
 )
 
 // 이상 발주 데이터 (ORDER_007)
 const abnormalOrders = ref([
-  { id: 'ORD-20260414-ABN1', store: '여의도역점',       product: '에스프레소 원두', unitPrice: 22000, qty: 850,  avgQty: 150, ratio: 567, date: '2026-04-14 11:22', processed: false },
-  { id: 'ORD-20260413-ABN2', store: '판교테크노밸리점', product: '우유(1L)',         unitPrice: 2500,  qty: 1200, avgQty: 300, ratio: 400, date: '2026-04-13 09:15', processed: false },
-  { id: 'ORD-20260412-ABN3', store: '부산센텀점',        product: '바닐라 시럽',     unitPrice: 15000, qty: 500,  avgQty: 60,  ratio: 833, date: '2026-04-12 16:40', processed: true  },
+  { id: 'ORD-20260414-ABN1', store: '여의도역점',       qty: 850,  avgQty: 150, ratio: 567, date: '2026-04-14 11:22', processed: false,
+    items: [{ product: '에스프레소 원두', qty: 850, unitPrice: 22000 }, { product: '프리미엄 원두', qty: 200, unitPrice: 25000 }] },
+  { id: 'ORD-20260413-ABN2', store: '판교테크노밸리점', qty: 1200, avgQty: 300, ratio: 400, date: '2026-04-13 09:15', processed: false,
+    items: [{ product: '우유(1L)', qty: 1200, unitPrice: 2500 }, { product: '두유(1L)', qty: 400, unitPrice: 3000 }] },
+  { id: 'ORD-20260412-ABN3', store: '부산센텀점',       qty: 500,  avgQty: 60,  ratio: 833, date: '2026-04-12 16:40', processed: true,
+    items: [{ product: '바닐라 시럽', qty: 500, unitPrice: 15000 }, { product: '카라멜 시럽', qty: 200, unitPrice: 15000 }] },
 ])
 
 
@@ -575,8 +587,10 @@ function approveAbnormal(o) { o.processed = true; alert(`${o.store} 발주 승�
 function rejectAbnormal(o)  { o.processed = true; alert(`${o.store} 발주 반려 처리되었습니다.`) }
 
 const pendingManualOrders = ref([
-  { id: 'MAN-20260420-001', store: '여의도역점',       product: '프리미엄 원두', unitPrice: 25000, qty: 50,  date: '2026-04-20 09:10', status: '확정' },
-  { id: 'MAN-20260419-002', store: '판교테크노밸리점', product: '두유(1L)',      unitPrice: 3000,  qty: 100, date: '2026-04-19 14:30', status: '배송중' },
+  { id: 'MAN-20260420-001', store: '여의도역점',       date: '2026-04-20 09:10', status: '확정',
+    items: [{ product: '프리미엄 원두', qty: 50, unitPrice: 25000 }, { product: '에스프레소 원두', qty: 20, unitPrice: 22000 }] },
+  { id: 'MAN-20260419-002', store: '판교테크노밸리점', date: '2026-04-19 14:30', status: '배송중',
+    items: [{ product: '두유(1L)', qty: 100, unitPrice: 3000 }, { product: '우유(1L)', qty: 60, unitPrice: 2500 }, { product: '종이컵(L)', qty: 200, unitPrice: 120 }] },
 ])
 
 const showManualForm = ref(false)

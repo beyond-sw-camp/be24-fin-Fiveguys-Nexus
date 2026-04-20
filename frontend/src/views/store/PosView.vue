@@ -179,18 +179,14 @@
     <div v-if="activeTab === 'settlement'" class="flex-1 overflow-auto p-8 space-y-6">
       <div class="flex justify-between items-end">
         <div>
-          <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <TrendingUp class="w-6 h-6 text-blue-500" />
-            일일 정산
-          </h1>
+          <h1 class="text-2xl font-bold text-gray-900">일일 정산</h1>
           <p class="text-sm text-gray-500 mt-1">매출 내역과 결제 이력을 확인하고 영업 마감을 관리합니다.</p>
         </div>
 
         <!-- 마감 / 영업 시작 버튼 -->
         <button @click="toggleStoreStatus"
-          :class="['text-sm px-6 py-2.5 rounded-lg font-bold transition-all flex items-center gap-2 shadow-sm text-white',
+          :class="['text-sm px-6 py-2.5 rounded-lg font-bold transition-all shadow-sm text-white',
             salesData.isClosed ? 'bg-blue-500 hover:bg-blue-600 ring-4 ring-blue-100' : 'bg-gray-800 hover:bg-gray-700']">
-          <component :is="salesData.isClosed ? Play : Power" class="w-4 h-4" />
           {{ salesData.isClosed ? '새로운 영업 시작하기' : '영업 마감하기' }}
         </button>
       </div>
@@ -198,48 +194,33 @@
       <!-- KPI 카드 -->
       <div class="grid grid-cols-3 gap-4">
         <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
-          <div class="flex justify-between items-start">
-            <div>
-              <p class="text-sm font-medium text-gray-500">총 매출액</p>
-              <div class="flex items-end gap-1 mt-2">
-                <h3 class="text-3xl font-bold text-gray-900">{{ salesData.total.toLocaleString() }}</h3>
-                <span class="text-base font-medium text-gray-500 mb-1">원</span>
-              </div>
-            </div>
-            <div class="p-2 rounded-lg bg-blue-50 text-blue-500">
-              <Coins class="w-5 h-5" />
+          <div>
+            <p class="text-sm font-medium text-gray-500">총 매출액</p>
+            <div class="flex items-end gap-1 mt-2">
+              <h3 class="text-3xl font-bold text-gray-900">{{ salesData.total.toLocaleString() }}</h3>
+              <span class="text-base font-medium text-gray-500 mb-1">원</span>
             </div>
           </div>
         </div>
 
         <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
-          <div class="flex justify-between items-start">
-            <div>
-              <p class="text-sm font-medium text-gray-500">총 결제 건수</p>
-              <div class="flex items-end gap-1 mt-2">
-                <h3 class="text-3xl font-bold text-gray-900">{{ salesData.count }}</h3>
-                <span class="text-base font-medium text-gray-500 mb-1">건</span>
-              </div>
-            </div>
-            <div class="p-2 rounded-lg bg-purple-50 text-purple-500">
-              <Receipt class="w-5 h-5" />
+          <div>
+            <p class="text-sm font-medium text-gray-500">총 결제 건수</p>
+            <div class="flex items-end gap-1 mt-2">
+              <h3 class="text-3xl font-bold text-gray-900">{{ salesData.count }}</h3>
+              <span class="text-base font-medium text-gray-500 mb-1">건</span>
             </div>
           </div>
         </div>
 
         <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
-          <div class="flex justify-between items-start">
-            <div>
-              <p class="text-sm font-medium text-gray-500">평균 객단가</p>
-              <div class="flex items-end gap-1 mt-2">
-                <h3 class="text-3xl font-bold text-gray-900">
-                  {{ salesData.count > 0 ? Math.floor(salesData.total / salesData.count).toLocaleString() : 0 }}
-                </h3>
-                <span class="text-base font-medium text-gray-500 mb-1">원</span>
-              </div>
-            </div>
-            <div class="p-2 rounded-lg bg-green-50 text-green-500">
-              <Users class="w-5 h-5" />
+          <div>
+            <p class="text-sm font-medium text-gray-500">평균 객단가</p>
+            <div class="flex items-end gap-1 mt-2">
+              <h3 class="text-3xl font-bold text-gray-900">
+                {{ salesData.count > 0 ? Math.floor(salesData.total / salesData.count).toLocaleString() : 0 }}
+              </h3>
+              <span class="text-base font-medium text-gray-500 mb-1">원</span>
             </div>
           </div>
         </div>
@@ -248,8 +229,8 @@
       <div class="grid grid-cols-3 gap-6">
         <!-- 결제 수단별 매출 -->
         <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-          <div class="px-5 py-4 border-b border-gray-100 font-semibold text-gray-900 flex items-center gap-2 text-sm">
-            <PieChart class="w-4 h-4 text-gray-400" /> 결제 수단별 매출
+          <div class="px-5 py-4 border-b border-gray-100 font-semibold text-gray-900 text-sm">
+            결제 수단별 매출
           </div>
           <table class="w-full text-sm">
             <thead class="bg-gray-50 text-xs text-gray-500 uppercase">
@@ -261,24 +242,14 @@
             </thead>
             <tbody class="divide-y divide-gray-100">
               <tr class="hover:bg-gray-50/50">
-                <td class="px-5 py-4 font-medium flex items-center gap-2">
-                  <div class="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center">
-                    <CreditCard class="w-3.5 h-3.5 text-gray-600" />
-                  </div>
-                  신용카드
-                </td>
+                <td class="px-5 py-4 font-medium">신용카드</td>
                 <td class="px-5 py-4 text-center text-gray-500">
                   {{ salesData.total > 0 ? Math.round((salesData.card / salesData.total) * 100) : 0 }}%
                 </td>
                 <td class="px-5 py-4 font-bold text-right">{{ formatPrice(salesData.card) }}</td>
               </tr>
               <tr class="hover:bg-gray-50/50">
-                <td class="px-5 py-4 font-medium flex items-center gap-2">
-                  <div class="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center">
-                    <Banknote class="w-3.5 h-3.5 text-gray-600" />
-                  </div>
-                  현금
-                </td>
+                <td class="px-5 py-4 font-medium">현금</td>
                 <td class="px-5 py-4 text-center text-gray-500">
                   {{ salesData.total > 0 ? Math.round((salesData.cash / salesData.total) * 100) : 0 }}%
                 </td>
@@ -291,7 +262,7 @@
         <!-- 실시간 결제 내역 -->
         <div class="col-span-2 bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col max-h-[360px]">
           <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center font-semibold text-gray-900 text-sm shrink-0">
-            <span class="flex items-center gap-2"><Receipt class="w-4 h-4 text-gray-400" /> 실시간 결제 내역</span>
+            <span>실시간 결제 내역</span>
             <span class="text-xs text-gray-400 font-normal">최신 순</span>
           </div>
           <div class="overflow-auto flex-1">
@@ -307,7 +278,6 @@
               <tbody class="divide-y divide-gray-100">
                 <tr v-if="paymentHistory.length === 0">
                   <td colspan="4" class="px-6 py-12 text-center text-gray-400">
-                    <Receipt class="w-8 h-8 mx-auto mb-2 opacity-30" />
                     <p class="text-sm">오늘 등록된 결제 내역이 없습니다.</p>
                   </td>
                 </tr>
@@ -403,11 +373,10 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import {
-  ShoppingCart, ShoppingBag, TrendingUp,
+  ShoppingCart, ShoppingBag,
   Search, XCircle, X, Minus, Plus,
-  CreditCard, Banknote, Coins,
-  Receipt, Users, PieChart,
-  CheckCircle, AlertCircle, Power, Play,
+  CreditCard, Banknote,
+  CheckCircle, AlertCircle,
 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
 

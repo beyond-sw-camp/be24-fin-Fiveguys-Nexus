@@ -128,14 +128,16 @@
               <select v-model="item.product" @change="item.unitPrice = PRODUCT_PRICES[item.product] ?? 0"
                 class="flex-1 px-3 py-2 rounded border border-gray-200 text-sm outline-none focus:border-blue-400">
                 <option value="">품목 선택</option>
-                <option>프리미엄 원두</option>
-                <option>에스프레소 원두</option>
-                <option>우유(1L)</option>
-                <option>두유(1L)</option>
-                <option>바닐라 시럽</option>
-                <option>카라멜 시럽</option>
-                <option>종이컵(M)</option>
-                <option>종이컵(L)</option>
+                <option>생닭(1kg)</option>
+                <option>튀김유(18L)</option>
+                <option>치킨파우더</option>
+                <option>황금올리브소스</option>
+                <option>양념소스</option>
+                <option>간장소스</option>
+                <option>치킨박스(중)</option>
+                <option>치킨박스(대)</option>
+                <option>비닐장갑</option>
+                <option>냅킨</option>
               </select>
               <div class="flex items-center gap-1.5">
                 <input v-model.number="item.qty" type="number" min="1" placeholder="수량"
@@ -345,36 +347,42 @@ import { ref, computed } from 'vue'
 import { Plus, X, ClipboardList, CreditCard } from 'lucide-vue-next'
 
 const PRODUCT_UNIT = {
-  '프리미엄 원두':   'kg',
-  '에스프레소 원두': 'kg',
-  '우유(1L)':        '팩',
-  '두유(1L)':        '팩',
-  '바닐라 시럽':     '병',
-  '카라멜 시럽':     '병',
-  '종이컵(M)':       '개',
-  '종이컵(L)':       '개',
+  '생닭(1kg)':      'kg',
+  '튀김유(18L)':    '통',
+  '치킨파우더':     'kg',
+  '황금올리브소스': '병',
+  '양념소스':       '병',
+  '간장소스':       '병',
+  '치킨박스(중)':   '개',
+  '치킨박스(대)':   '개',
+  '비닐장갑':       '개',
+  '냅킨':           '개',
 }
 
 const PRODUCT_STOCK = {
-  '프리미엄 원두':   { current: 3,   min: 10  },
-  '에스프레소 원두': { current: 5,   min: 10  },
-  '우유(1L)':        { current: 85,  min: 120 },
-  '두유(1L)':        { current: 55,  min: 60  },
-  '바닐라 시럽':     { current: 5,   min: 30  },
-  '카라멜 시럽':     { current: 12,  min: 30  },
-  '종이컵(M)':       { current: 320, min: 500 },
-  '종이컵(L)':       { current: 150, min: 200 },
+  '생닭(1kg)':      { current: 30,  min: 50   },
+  '튀김유(18L)':    { current: 3,   min: 5    },
+  '치킨파우더':     { current: 8,   min: 20   },
+  '황금올리브소스': { current: 12,  min: 20   },
+  '양념소스':       { current: 8,   min: 20   },
+  '간장소스':       { current: 15,  min: 20   },
+  '치킨박스(중)':   { current: 200, min: 500  },
+  '치킨박스(대)':   { current: 120, min: 300  },
+  '비닐장갑':       { current: 500, min: 1000 },
+  '냅킨':           { current: 800, min: 2000 },
 }
 
 const PRODUCT_PRICES = {
-  '프리미엄 원두':   25000,
-  '에스프레소 원두': 22000,
-  '우유(1L)':        2500,
-  '두유(1L)':        3000,
-  '바닐라 시럽':     15000,
-  '카라멜 시럽':     15000,
-  '종이컵(M)':       100,
-  '종이컵(L)':       120,
+  '생닭(1kg)':      5000,
+  '튀김유(18L)':    35000,
+  '치킨파우더':     8000,
+  '황금올리브소스': 12000,
+  '양념소스':       10000,
+  '간장소스':       10000,
+  '치킨박스(중)':   150,
+  '치킨박스(대)':   200,
+  '비닐장갑':       20,
+  '냅킨':           10,
 }
 
 const activeTab = ref('pending')
@@ -386,30 +394,30 @@ const pendingOrders = ref([
   {
     id: 'AUTO-20260413-001', createdAt: '2026-04-13 08:00',
     items: [
-      { product: '우유(1L)',  current: 85, min: 120, suggested: 200, adjusted: 200 },
-      { product: '두유(1L)',  current: 55, min: 60,  suggested: 80,  adjusted: 80  },
+      { product: '생닭(1kg)',   current: 30, min: 50, suggested: 100, adjusted: 100 },
+      { product: '튀김유(18L)', current: 3,  min: 5,  suggested: 10,  adjusted: 10  },
     ],
   },
   {
     id: 'AUTO-20260413-002', createdAt: '2026-04-13 08:00',
     items: [
-      { product: '바닐라 시럽', current: 5,  min: 30, suggested: 60,  adjusted: 60  },
-      { product: '카라멜 시럽', current: 12, min: 30, suggested: 40,  adjusted: 40  },
+      { product: '황금올리브소스', current: 12, min: 20, suggested: 30, adjusted: 30 },
+      { product: '양념소스',      current: 8,  min: 20, suggested: 30, adjusted: 30 },
     ],
   },
 ])
 
 const orderHistory = ref([
   { id: 'ORD-20260413-001', type: '자동', date: '2026-04-13 22:00', status: '배송중',
-    items: [{ product: '우유(1L)', qty: 200 }, { product: '두유(1L)', qty: 80 }] },
+    items: [{ product: '생닭(1kg)', qty: 100 }, { product: '튀김유(18L)', qty: 10 }] },
   { id: 'ORD-20260412-002', type: '자동', date: '2026-04-12 22:00', status: '배송중',
-    items: [{ product: '종이컵(M)', qty: 500 }, { product: '종이컵(L)', qty: 200 }] },
+    items: [{ product: '치킨박스(중)', qty: 500 }, { product: '치킨박스(대)', qty: 200 }] },
   { id: 'ORD-20260411-003', type: '수동', date: '2026-04-11 10:30', status: '입고완료',
-    items: [{ product: '에스프레소 원두', qty: 150 }, { product: '바닐라 시럽', qty: 30 }] },
+    items: [{ product: '황금올리브소스', qty: 30 }, { product: '간장소스', qty: 30 }] },
   { id: 'ORD-20260410-004', type: '자동', date: '2026-04-10 22:00', status: '입고완료',
-    items: [{ product: '바닐라 시럽', qty: 60 }, { product: '카라멜 시럽', qty: 40 }] },
+    items: [{ product: '치킨파우더', qty: 20 }, { product: '양념소스', qty: 30 }] },
   { id: 'ORD-20260409-005', type: '수동', date: '2026-04-09 14:20', status: '입고완료',
-    items: [{ product: '두유(1L)', qty: 80 }, { product: '우유(1L)', qty: 120 }, { product: '종이컵(M)', qty: 300 }] },
+    items: [{ product: '비닐장갑', qty: 1000 }, { product: '냅킨', qty: 2000 }, { product: '치킨박스(중)', qty: 300 }] },
 ])
 
 const showHistoryDetail = ref(false)

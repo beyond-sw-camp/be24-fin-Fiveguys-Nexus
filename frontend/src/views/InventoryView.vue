@@ -122,15 +122,16 @@ const statusFilters = [
 ]
 
 const items = ref([
-  { code: 'P100', name: '프리미엄 원두',   store: '한화빌딩점',      stock: 320,  safe: 100, expiry: '2026-05-30' },
-  { code: 'P200', name: '우유(1L)',         store: '한화빌딩점',      stock: 148,  safe: 120, expiry: '2026-04-20' },
-  { code: 'P200', name: '우유(1L)',         store: '여의도역점',      stock: 85,   safe: 120, expiry: '2026-04-18' },
-  { code: 'P101', name: '에스프레소 원두', store: '판교테크노밸리점', stock: 12,   safe: 80,  expiry: '2026-06-15' },
-  { code: 'P300', name: '바닐라 시럽',     store: '한화빌딩점',      stock: 5,    safe: 30,  expiry: '2026-08-01' },
-  { code: 'P400', name: '종이컵(M)',        store: '부산센텀점',      stock: 300,  safe: 500, expiry: null },
-  { code: 'P401', name: '종이컵(L)',        store: '한화빌딩점',      stock: 800,  safe: 500, expiry: null },
-  { code: 'P201', name: '두유(1L)',         store: '여의도역점',      stock: 55,   safe: 60,  expiry: '2026-04-16' },
-  { code: 'P301', name: '카라멜 시럽',     store: '판교테크노밸리점', stock: 42,   safe: 30,  expiry: '2026-09-01' },
+  { code: 'C100', name: '닭고기(생닭)',       store: '한화빌딩점',      stock: 88,  safe: 60,  expiry: '2026-04-22' },
+  { code: 'C110', name: '순살 정육',          store: '한화빌딩점',      stock: 34,  safe: 40,  expiry: '2026-04-20' },
+  { code: 'C100', name: '닭고기(생닭)',       store: '여의도역점',      stock: 52,  safe: 65,  expiry: '2026-04-21' },
+  { code: 'C200', name: '튀김가루',           store: '판교테크노밸리점', stock: 26,  safe: 25,  expiry: '2026-07-10' },
+  { code: 'C210', name: '양념소스',           store: '한화빌딩점',      stock: 17,  safe: 20,  expiry: '2026-05-02' },
+  { code: 'C220', name: '핫양념소스',         store: '여의도역점',      stock: 8,   safe: 12,  expiry: '2026-04-19' },
+  { code: 'C300', name: '치즈볼(냉동)',       store: '부산센텀점',      stock: 96,  safe: 70,  expiry: '2026-06-10' },
+  { code: 'C310', name: '감자튀김(냉동)',     store: '판교테크노밸리점', stock: 41,  safe: 50,  expiry: '2026-06-18' },
+  { code: 'C500', name: '치킨 박스(대)',      store: '한화빌딩점',      stock: 420, safe: 300, expiry: null },
+  { code: 'C510', name: '소스컵/뚜껑 세트',   store: '부산센텀점',      stock: 510, safe: 400, expiry: null },
 ])
 
 function sortByExpiryAsc(list) {

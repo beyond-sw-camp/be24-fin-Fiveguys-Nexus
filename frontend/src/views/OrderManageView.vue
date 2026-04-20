@@ -130,7 +130,45 @@
     </div>
 
     <!-- Tab: 수동 발주 -->
-    <div v-if="activeTab === 'manual'" class="max-w-2xl space-y-3">
+    <div v-if="activeTab === 'manual'" class="space-y-5">
+
+      <!-- ORDER_004: 진행 중인 수동 발주 목록 -->
+      <div>
+        <h3 class="text-sm font-bold text-gray-700 mb-2">진행 중인 수동 발주</h3>
+        <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+          <table class="w-full text-sm text-left">
+            <thead>
+              <tr class="border-b border-gray-200 bg-gray-50">
+                <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주번호</th>
+                <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">대상 가맹점</th>
+                <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">품목</th>
+                <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">수량</th>
+                <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주일시</th>
+                <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">상태</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr v-for="o in pendingManualOrders" :key="o.id" class="hover:bg-gray-50/50 transition-colors">
+                <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ o.id }}</td>
+                <td class="px-5 py-3.5 font-semibold text-gray-900">{{ o.store }}</td>
+                <td class="px-5 py-3.5 text-gray-700">{{ o.product }}</td>
+                <td class="px-5 py-3.5 text-gray-700">{{ o.qty }}</td>
+                <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ o.date }}</td>
+                <td class="px-5 py-3.5">
+                  <span class="text-xs font-bold px-2 py-0.5 rounded" :class="statusClass(o.status)">{{ o.status }}</span>
+                </td>
+              </tr>
+              <tr v-if="pendingManualOrders.length === 0">
+                <td colspan="6" class="px-5 py-8 text-center text-sm text-gray-400">진행 중인 수동 발주가 없습니다.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ORDER_003: 수동 발주 생성 -->
+      <div class="max-w-2xl">
+        <h3 class="text-sm font-bold text-gray-700 mb-2">수동 발주 생성</h3>
       <div class="bg-white border border-gray-200 rounded-lg p-6 space-y-4">
         <h3 class="font-bold text-gray-900 text-sm">수동 발주 생성</h3>
         <div class="grid grid-cols-2 gap-4">
@@ -196,6 +234,7 @@
           class="w-full rounded bg-[#F37321] text-white py-3 font-bold hover:bg-[#e0661d] text-sm">
           발주 생성
         </button>
+      </div>
       </div>
     </div>
 
@@ -545,6 +584,11 @@ const abnormalMonths = ref(3)      // 분석 기준 개월 수
 // 이상 발주 처리
 function approveAbnormal(o) { o.processed = true; alert(`${o.store} 발주 승인 처리되었습니다.`) }
 function rejectAbnormal(o)  { o.processed = true; alert(`${o.store} 발주 반려 처리되었습니다.`) }
+
+const pendingManualOrders = ref([
+  { id: 'MAN-20260420-001', store: '여의도역점',       product: '프리미엄 원두', qty: 50,  date: '2026-04-20 09:10', status: '확정' },
+  { id: 'MAN-20260419-002', store: '판교테크노밸리점', product: '두유(1L)',      qty: 100, date: '2026-04-19 14:30', status: '배송중' },
+])
 
 const manualForm = ref({ store: '', supplier: '', items: [], note: '' })
 

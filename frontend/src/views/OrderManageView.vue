@@ -280,10 +280,10 @@
               <div class="flex items-center gap-1.5">
                 <input v-model.number="item.qty" type="number" min="1" placeholder="수량"
                   class="w-20 px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none" />
-                <span class="text-xs text-gray-400 font-medium w-4">{{ PRODUCT_UNIT[item.product] ?? '' }}</span>
+                <span class="text-xs text-gray-400 font-medium w-6">{{ PRODUCT_UNIT[item.product] ?? '' }}</span>
               </div>
               <div class="w-28 px-3 py-2 rounded border border-gray-100 bg-gray-50 text-sm text-gray-500 text-right shrink-0">
-                {{ item.product ? (productPrices[item.product] ?? 0).toLocaleString() + '원' : '-' }}
+                {{ item.product ? formatPrice(productPrices[item.product] ?? 0) : '-' }}
               </div>
               <button @click="manualForm.items.splice(idx, 1)"
                 class="px-3 py-2 text-xs font-semibold rounded border border-red-200 text-red-500 bg-red-50 hover:bg-red-500 hover:text-white hover:cursor-pointer transition-colors shrink-0">
@@ -653,20 +653,17 @@ function submitManualOrder() {
     return
   }
   const now = new Date().toISOString().slice(0, 16).replace('T', ' ')
-  manualForm.value.items.forEach(item => {
-    if (item.product) {
-      orderHistory.value.unshift({
-        id: `ORD-${Date.now()}`,
-        type: '수동',
-        store: manualForm.value.store,
-        product: item.product,
-        unitPrice: item.unitPrice || 0,
-        qty: item.qty,
-        date: now,
-        status: '확정',
-      })
-    }
-  })
+  const validItems = manualForm.value.items.filter(i => i.product)
+  if (validItems.length > 0) {
+    orderHistory.value.unshift({
+      id: `ORD-${Date.now()}`,
+      type: '수동',
+      store: manualForm.value.store,
+      date: now,
+      status: '확정',
+      items: validItems.map(i => ({ product: i.product, qty: i.qty, unitPrice: productPrices[i.product] ?? 0 })),
+    })
+  }
   alert('발주가 생성되었습니다.')
   manualForm.value = { store: '', items: [] }
   showManualForm.value = false

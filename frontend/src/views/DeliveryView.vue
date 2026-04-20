@@ -107,9 +107,53 @@
       <p class="text-gray-400 text-sm">해당 조건에 일치하는 배송 건이 없습니다.</p>
     </div>
 
+    <!-- 2. 배송 지연 사유 입력 모달 -->
+    <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden" @click.stop>
+        <!-- 모달 헤더 -->
+        <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+          <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-red-500"></span>
+            배송 지연 사유 입력
+          </h3>
+          <button @click="closeModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
+        </div>
 
-    <div v-else class="bg-white border border-gray-200 py-16 text-center text-gray-400 text-sm">
-      해당 상태의 배송 건이 없습니다.
+        <!-- 모달 본문 -->
+        <div class="p-6">
+          <div class="mb-5 text-sm text-gray-600 bg-gray-50 p-3.5 rounded-lg border border-gray-100">
+            <div class="flex justify-between mb-1">
+              <span class="font-medium text-gray-500">주문번호</span>
+              <span class="font-mono text-gray-900">{{ selectedDelivery?.id }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="font-medium text-gray-500">가맹점</span>
+              <span class="font-bold text-gray-900">{{ selectedDelivery?.destination }}</span>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <label class="block text-xs font-bold text-gray-700">상세 사유</label>
+            <textarea
+              v-model="delayReasonText"
+              class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:border-red-400 focus:ring-4 focus:ring-red-100 min-h-[120px] resize-none transition-all"
+              placeholder="배송 지연 사유를 상세히 입력해 주세요&#10;(예: 기상 악화로 인한 배송 지연, 교통 체증 등)"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- 모달 푸터 -->
+        <div class="px-6 py-4 bg-gray-50 flex justify-end gap-2 border-t border-gray-100">
+          <button @click="closeModal" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-semibold transition-colors">
+            취소
+          </button>
+          <button @click="saveDelayReason" class="px-5 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm font-semibold transition-colors shadow-sm">
+            사유 저장
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>

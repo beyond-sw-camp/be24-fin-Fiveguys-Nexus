@@ -230,12 +230,6 @@ function isGroupOpen(menu) {
 }
 
 // ── 역할별 스타일 ─────────────────────────────────────────
-const roleLabel = computed(() => {
-  if (auth.isAdmin)      return '관리자 · 본사'
-  if (auth.isStoreOwner) return `점주 · ${auth.user?.storeName}`
-  return ''
-})
-
 const footerRoleLabel = computed(() => {
   if (auth.isAdmin)      return '본사 관리자'
   if (auth.isStoreOwner) return auth.user?.storeName ? `${auth.user.storeName} 점주` : '가맹점 점주'
@@ -248,14 +242,8 @@ const roleLabelShort = computed(() => {
   return ''
 })
 
-const roleBadgeClass = computed(() => {
-  if (auth.isAdmin)      return 'bg-orange-50 text-[#F37321] border border-orange-200'
-  if (auth.isStoreOwner) return 'bg-blue-50 text-blue-600 border border-blue-200'
-  return ''
-})
-
 const footerRoleTextClass = computed(() => {
-  if (auth.isAdmin)      return 'text-[#d66316]'
+  if (auth.isAdmin)      return 'text-[#F37321]'
   if (auth.isStoreOwner) return 'text-blue-600'
   return 'text-gray-500'
 })

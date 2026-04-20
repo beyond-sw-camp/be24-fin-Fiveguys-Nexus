@@ -110,7 +110,7 @@ const items = computed(() => role.value ? notifStore.forRole(role.value) : [])
 const count = computed(() => role.value ? notifStore.unreadCount(role.value) : 0)
 const isStoreOwnerRole = computed(() => role.value === 'STORE_OWNER')
 const accentBadgeClass = computed(() => isStoreOwnerRole.value ? 'bg-blue-500' : 'bg-[#F37321]')
-const accentDotClass = computed(() => isStoreOwnerRole.value ? 'bg-blue-500' : 'bg-[#F37321]')
+const accentDotClass = accentBadgeClass
 const unreadRowClass = computed(() => isStoreOwnerRole.value ? 'bg-blue-50/30 hover:bg-blue-50/60' : 'bg-orange-50/30 hover:bg-orange-50/60')
 
 function markAll() {

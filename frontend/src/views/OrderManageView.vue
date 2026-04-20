@@ -58,8 +58,8 @@
               <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ o.id }}</td>
               <td class="px-5 py-3.5 font-semibold text-gray-900">{{ o.store }}</td>
               <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ o.date ?? '-' }}</td>
-              <td class="px-5 py-3.5 font-bold text-[#F37321]">{{ o.items.reduce((s, i) => s + i.qty, 0).toLocaleString() }}</td>
-              <td class="px-5 py-3.5 font-semibold text-gray-700">{{ formatPrice(o.items.reduce((s, i) => s + i.unitPrice * i.qty, 0)) }}</td>
+              <td class="px-5 py-3.5 font-bold text-[#F37321]">{{ (o.items ?? []).reduce((s, i) => s + i.qty, 0).toLocaleString() }}</td>
+              <td class="px-5 py-3.5 font-semibold text-gray-700">{{ formatPrice((o.items ?? []).reduce((s, i) => s + i.unitPrice * i.qty, 0)) }}</td>
               <td class="px-5 py-3.5">
                 <span class="text-xs font-bold px-2 py-0.5 rounded" :class="statusClass(o.status)">{{ o.status }}</span>
               </td>
@@ -94,7 +94,7 @@
                 <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ o.id }}</td>
                 <td class="px-5 py-3.5 font-semibold text-gray-900">{{ o.store }}</td>
                 <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ o.date }}</td>
-                <td class="px-5 py-3.5 font-semibold text-gray-700">{{ formatPrice(o.items.reduce((s, i) => s + i.unitPrice * i.qty, 0)) }}</td>
+                <td class="px-5 py-3.5 font-semibold text-gray-700">{{ formatPrice((o.items ?? []).reduce((s, i) => s + i.unitPrice * i.qty, 0)) }}</td>
                 <td class="px-5 py-3.5">
                   <span class="text-xs font-bold px-2 py-0.5 rounded" :class="statusClass(o.status)">{{ o.status }}</span>
                 </td>
@@ -141,7 +141,7 @@
                   +{{ o.ratio }}%
                 </span>
               </td>
-              <td class="px-5 py-3.5 font-semibold text-gray-700">{{ formatPrice(o.items.reduce((s, i) => s + i.unitPrice * i.qty, 0)) }}</td>
+              <td class="px-5 py-3.5 font-semibold text-gray-700">{{ formatPrice((o.items ?? []).reduce((s, i) => s + i.unitPrice * i.qty, 0)) }}</td>
               <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ o.date }}</td>
               <td class="px-5 py-3.5">
                 <span class="text-xs font-bold px-2 py-0.5 rounded"
@@ -221,7 +221,7 @@
               </td>
               <td class="px-5 py-3.5 font-semibold text-gray-900">{{ h.store }}</td>
               <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ h.date }}</td>
-              <td class="px-5 py-3.5 font-semibold text-gray-700">{{ formatPrice(h.items.reduce((s, i) => s + i.unitPrice * i.qty, 0)) }}</td>
+              <td class="px-5 py-3.5 font-semibold text-gray-700">{{ formatPrice((h.items ?? []).reduce((s, i) => s + i.unitPrice * i.qty, 0)) }}</td>
               <td class="px-5 py-3.5">
                 <span class="text-xs font-bold px-2 py-0.5 rounded"
                   :class="statusClass(h.status)">{{ h.status }}</span>
@@ -360,7 +360,7 @@
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
-                  <tr v-for="(item, idx) in selectedOrder.items" :key="idx"
+                  <tr v-for="item in selectedOrder.items" :key="item.product"
                     :class="item.isAbnormal ? 'bg-red-50/60' : ''">
                     <td class="px-4 py-2.5">
                       <div class="flex items-center gap-1.5">
@@ -386,7 +386,7 @@
                   <tr>
                     <td colspan="3" class="px-4 py-2.5 text-right text-xs font-bold text-gray-500">합계</td>
                     <td class="px-4 py-2.5 text-right font-black text-[#F37321]">
-                      {{ formatPrice(selectedOrder.items.reduce((s, i) => s + (i.unitPrice ? i.unitPrice * i.qty : 0), 0)) }}
+                      {{ formatPrice((selectedOrder.items ?? []).reduce((s, i) => s + (i.unitPrice ? i.unitPrice * i.qty : 0), 0)) }}
                     </td>
                   </tr>
                 </tfoot>

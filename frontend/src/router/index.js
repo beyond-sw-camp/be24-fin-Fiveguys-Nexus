@@ -77,6 +77,12 @@ const router = createRouter({
       component: () => import('@/views/SettlementView.vue'),
       meta: { role: 'ADMIN' },
     },
+    {
+      path: '/admin-account',
+      name: 'adminAccount',
+      component: () => import('@/views/AdminAccountCreateView.vue'),
+      meta: { role: 'ADMIN' },
+    },
 
     // ── STORE OWNER ────────────────────────────────────
     {

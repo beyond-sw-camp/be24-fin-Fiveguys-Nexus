@@ -79,8 +79,9 @@
             <tr
               v-for="row in filteredAutoProposalRows"
               :key="row.key"
-              class="hover:bg-gray-50/50 transition-colors"
+              class="hover:bg-gray-50/50 transition-colors cursor-pointer"
               :class="row.kind === 'abnormal' ? 'bg-rose-50/35' : ''"
+              @click.self="openDetail(row)"
             >
               <td class="px-4 py-3.5">
                 <span
@@ -148,7 +149,7 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
-              <tr v-for="o in pendingManualOrders" :key="o.id" class="hover:bg-gray-50/50 transition-colors">
+              <tr v-for="o in pendingManualOrders" :key="o.id" class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="openDetail({ id: o.id, type: '수동', store: o.store, status: o.status, date: o.date, items: [{ product: o.product, qty: o.qty }] })">
                 <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ o.id }}</td>
                 <td class="px-5 py-3.5 font-semibold text-gray-900">{{ o.store }}</td>
                 <td class="px-5 py-3.5 text-gray-700">{{ o.product }}</td>
@@ -344,7 +345,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
-            <tr v-for="h in filteredOrderHistory" :key="h.id" class="hover:bg-gray-50/50 transition-colors">
+            <tr v-for="h in filteredOrderHistory" :key="h.id" class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="openDetail({ id: h.id, type: h.type, store: h.store, status: h.status, date: h.date, supplier: h.supplier, items: [{ product: h.product, qty: h.qty }] })">
               <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ h.id }}</td>
               <td class="px-5 py-3.5">
                 <span class="text-xs font-bold px-2 py-0.5 rounded"
@@ -369,6 +370,76 @@
         </table>
       </div>
     </div>
+    <!-- 발주 상세 조회 Modal (ORDER_005) -->
+    <div v-if="showDetail" class="fixed inset-0 z-50 flex items-center justify-center">
+      <div class="absolute inset-0 bg-black/40" @click="showDetail = false"></div>
+      <div class="relative bg-white rounded-xl w-full max-w-lg border border-gray-200 shadow-xl">
+        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+          <div>
+            <h3 class="font-bold text-gray-900">발주 상세</h3>
+            <p class="text-xs text-gray-400 font-mono mt-0.5">{{ selectedOrder?.id }}</p>
+          </div>
+          <button @click="showDetail = false" class="text-gray-400 hover:text-gray-600">✕</button>
+        </div>
+        <div v-if="selectedOrder" class="p-6 space-y-4">
+          <div class="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <p class="text-xs text-gray-400 mb-1">유형</p>
+              <span class="text-xs font-bold px-2 py-0.5 rounded border"
+                :class="selectedOrder.type === '자동' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-purple-50 text-purple-700 border-purple-200'">
+                {{ selectedOrder.type }}
+              </span>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400 mb-1">상태</p>
+              <span class="text-xs font-bold px-2 py-0.5 rounded" :class="statusClass(selectedOrder.status)">
+                {{ selectedOrder.status }}
+              </span>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400 mb-1">대상 가맹점</p>
+              <p class="font-semibold text-gray-900">{{ selectedOrder.store }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400 mb-1">발주 일시</p>
+              <p class="text-gray-700 font-mono text-xs">{{ selectedOrder.date }}</p>
+            </div>
+            <div v-if="selectedOrder.supplier">
+              <p class="text-xs text-gray-400 mb-1">거래처</p>
+              <p class="text-gray-700">{{ selectedOrder.supplier }}</p>
+            </div>
+          </div>
+          <div>
+            <p class="text-xs text-gray-400 mb-2">품목 목록</p>
+            <div class="border border-gray-100 rounded-lg overflow-hidden">
+              <table class="w-full text-sm">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-4 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase">품목명</th>
+                    <th class="px-4 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase">수량</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr v-for="(item, idx) in selectedOrder.items" :key="idx">
+                    <td class="px-4 py-2.5 text-gray-800">{{ item.product }}</td>
+                    <td class="px-4 py-2.5 text-right font-semibold text-gray-900">{{ item.qty.toLocaleString() }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div v-if="selectedOrder.note" class="text-sm">
+            <p class="text-xs text-gray-400 mb-1">비고</p>
+            <p class="text-gray-600 bg-gray-50 px-3 py-2 rounded border border-gray-100">{{ selectedOrder.note }}</p>
+          </div>
+        </div>
+        <div class="px-6 py-4 border-t border-gray-100 flex justify-end">
+          <button @click="showDetail = false"
+            class="px-4 py-2 text-sm font-semibold text-gray-600 border border-gray-200 rounded hover:bg-gray-50">닫기</button>
+        </div>
+      </div>
+    </div>
+
     <!-- 이상 발주 기준 설정 Modal (ORDER_008) -->
     <div v-if="showSettings" class="fixed inset-0 z-50 flex items-center justify-center">
       <div class="absolute inset-0 bg-black/40" @click="showSettings = false"></div>
@@ -574,6 +645,15 @@ function setOrderViewTab(id) {
   if (id === 'history') {
     router.replace({ path: '/order', query: { tab: 'history' } })
   }
+}
+
+// 발주 상세 조회 (ORDER_005)
+const showDetail = ref(false)
+const selectedOrder = ref(null)
+
+function openDetail(order) {
+  selectedOrder.value = order
+  showDetail.value = true
 }
 
 // 이상 발주 기준 설정 (ORDER_008)

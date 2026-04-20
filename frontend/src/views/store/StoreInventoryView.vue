@@ -141,13 +141,18 @@ import { ref } from 'vue'
 import { Info, X } from 'lucide-vue-next'
 
 const inventory = ref([
-  { code: 'P100', name: '프리미엄 원두',   stock: 320, min: 100, expiry: '2026-05-30', adjustTo: null },
-  { code: 'P200', name: '우유(1L)',         stock: 148, min: 120, expiry: '2026-04-20', adjustTo: null },
-  { code: 'P201', name: '두유(1L)',         stock: 55,  min: 60,  expiry: '2026-04-18', adjustTo: null },
-  { code: 'P300', name: '바닐라 시럽',     stock: 5,   min: 30,  expiry: '2026-08-01', adjustTo: null },
-  { code: 'P301', name: '카라멜 시럽',     stock: 42,  min: 30,  expiry: '2026-09-01', adjustTo: null },
-  { code: 'P400', name: '종이컵(M)',        stock: 650, min: 500, expiry: null,          adjustTo: null },
-  { code: 'P401', name: '종이컵(L)',        stock: 800, min: 500, expiry: null,          adjustTo: null },
+  { code: 'C100', name: '닭고기(생닭)',        stock: 88,  min: 60,  expiry: '2026-04-22', adjustTo: null },
+  { code: 'C110', name: '순살 정육',           stock: 34,  min: 40,  expiry: '2026-04-20', adjustTo: null },
+  { code: 'C200', name: '튀김가루',            stock: 52,  min: 30,  expiry: '2026-07-15', adjustTo: null },
+  { code: 'C210', name: '양념소스',            stock: 17,  min: 20,  expiry: '2026-05-02', adjustTo: null },
+  { code: 'C220', name: '핫양념소스',          stock: 14,  min: 12,  expiry: '2026-05-08', adjustTo: null },
+  { code: 'C300', name: '치즈볼(냉동)',        stock: 96,  min: 70,  expiry: '2026-06-10', adjustTo: null },
+  { code: 'C310', name: '감자튀김(냉동)',      stock: 74,  min: 50,  expiry: '2026-06-18', adjustTo: null },
+  { code: 'C400', name: '콜라 1.25L',          stock: 41,  min: 30,  expiry: '2026-09-01', adjustTo: null },
+  { code: 'C410', name: '사이다 1.25L',        stock: 28,  min: 30,  expiry: '2026-08-24', adjustTo: null },
+  { code: 'C500', name: '치킨 박스(대)',       stock: 420, min: 300, expiry: null,          adjustTo: null },
+  { code: 'C510', name: '소스컵/뚜껑 세트',    stock: 510, min: 400, expiry: null,          adjustTo: null },
+  { code: 'C520', name: '비닐봉투(중)',        stock: 390, min: 300, expiry: null,          adjustTo: null },
 ])
 
 const detailItem = ref(null)

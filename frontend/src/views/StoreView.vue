@@ -174,8 +174,15 @@
 
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">소재지</label>
-            <div class="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm text-gray-600">
-              {{ detailTarget?.region }}
+            <div class="relative">
+              <!-- regionChips 상수를 이용한 드롭다운 메뉴 -->
+              <select v-model="form.region" class="w-full px-4 py-2.5 bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-[#F37321]/20 appearance-none transition-all">
+                <option value="" disabled>자치구를 선택해주세요</option>
+                <option v-for="region in regionChips.slice(1)" :key="region" :value="region">
+                  {{ region }}
+                </option>
+              </select>
+              <ChevronDown class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
             </div>
           </div>
 
@@ -251,9 +258,23 @@
           </div>
 
           <div class="space-y-1.5">
-            <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">소재지</label>
-            <input v-model="form.region" type="text" placeholder="주소 입력"
-                   class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
+            <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">소재지 (서울 자치구)</label>
+            <div class="relative">
+              <!-- v-model이 비었을 때(placeholder) text-gray-400 적용 -->
+              <select
+                v-model="form.region"
+                :class="[
+                    'w-full px-4 py-2.5 bg-white rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all appearance-none cursor-pointer',
+                    !form.region ? 'text-gray-400' : 'text-gray-900'
+                  ]"
+              >
+                <option value="" disabled selected>자치구를 선택해주세요</option>
+                <option v-for="region in regionChips.slice(1)" :key="region" :value="region" class="text-gray-900">
+                  {{ region }}
+                </option>
+              </select>
+              <ChevronDown class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            </div>
           </div>
 
           <!-- 수정 모달에서만 표시 -->
@@ -311,15 +332,22 @@ const filterRegion = ref('전체')
 const filterStatus = ref('전체')
 const activeDropdown = ref(null)
 
-const regionChips = ['전체', '서울', '경기', '부산', '대구', '광주', '인천', '대전', '울산', '제주']
+const regionChips = [
+  '전체', '종로구', '중구', '용산구', '성동구', '광진구',
+  '동대문구', '중랑구', '성북구', '강북구', '도봉구',
+  '노원구', '은평구', '서대문구', '마포구', '양천구',
+  '강서구', '구로구', '금천구', '영등포구', '동작구',
+  '관악구', '서초구', '강남구', '송파구', '강동구'
+]
 const statusOptions = ['전체', '정상', '폐업']
 
 // 초기 데이터 구조 변경: status 필드 대신 closeDate 필드 활용
 const stores = ref([
-  { id: 'S001', name: '한화빌딩점', owner: '김동현', region: '서울 중구', bizNumber: '101-12-34567', email: 'dh.kim@hanwha.com', openDate: '2022-03-15', closeDate: '' },
-  { id: 'S002', name: '여의도역점', owner: '이재혁', region: '서울 영등포구', bizNumber: '201-45-67890', email: 'jh.lee@hanwha.com', openDate: '2022-07-20', closeDate: '' },
-  { id: 'S003', name: '판교테크노밸리점', owner: '박민수', region: '경기 성남', bizNumber: '301-78-90123', email: 'ms.park@hanwha.com', openDate: '2023-01-10', closeDate: '' },
-  { id: 'S004', name: '부산센텀점', owner: '정수진', region: '부산 해운대구', bizNumber: '401-23-45678', email: 'sj.jung@hanwha.com', openDate: '2023-05-30', closeDate: '2024-01-15' },
+  { id: 'BBQ-S001', name: 'BBQ 서울강남역점', owner: '김동현', region: '강남구', bizNumber: '101-12-34567', email: 'dh.kim@hanwha.com', openDate: '2022-03-15', closeDate: '' },
+  { id: 'BBQ-S002', name: 'BBQ 서울종로본점', owner: '이재혁', region: '종로구', bizNumber: '201-45-67890', email: 'jh.lee@hanwha.com', openDate: '2022-07-20', closeDate: '' },
+  { id: 'BBQ-S003', name: 'BBQ 서울동작점', owner: '박민수', region: '동작구', bizNumber: '301-78-90123', email: 'ms.park@hanwha.com', openDate: '2023-01-10', closeDate: '' },
+  { id: 'BBQ-S004', name: 'BBQ 서울관악점', owner: '정수진', region: '관악구', bizNumber: '401-23-45678', email: 'sj.jung@hanwha.com', openDate: '2023-05-30', closeDate: '2024-01-15' },
+  { id: 'BBQ-S005', name: 'BBQ 서울마포구점', owner: '한소희', region: '마포구', bizNumber: '107-82-99887', email: 'yeouido@bbq.com', openDate: '2023-12-20', closeDate: '2025-05-04' },
 ])
 
 const filteredStores = computed(() => {

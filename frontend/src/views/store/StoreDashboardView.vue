@@ -54,20 +54,14 @@
 
       <!-- 나의 배송 현황 -->
       <div class="bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col">
-        <div class="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100">
+        <div class="px-5 pt-5 pb-4 border-b border-gray-100">
           <h2 class="font-bold text-gray-900">나의 배송 현황</h2>
-          <RouterLink to="/store-delivery" class="text-xs text-orange-500 font-medium hover:text-orange-600">전체보기</RouterLink>
         </div>
         <div class="flex-1 divide-y divide-gray-50 overflow-y-auto">
           <div v-for="d in ongoingDeliveries" :key="d.id"
-            class="px-5 py-4 hover:bg-gray-50 transition-colors cursor-pointer">
-            <div class="flex items-start gap-3">
-              <div class="w-9 h-9 rounded-xl bg-orange-50 flex items-center justify-center shrink-0 mt-0.5">
-                <svg class="w-4 h-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
-                </svg>
-              </div>
+            class="px-5 py-4 hover:bg-gray-50 transition-colors cursor-pointer"
+            @click="router.push('/store-delivery')">
+            <div class="flex items-center justify-between gap-3">
               <div class="flex-1 min-w-0">
                 <p class="text-sm font-bold text-gray-900 font-mono">{{ d.id }}</p>
                 <p class="text-xs text-gray-500 mt-0.5 truncate">{{ d.items }}</p>
@@ -85,9 +79,8 @@
 
       <!-- 미확정 발주 목록 -->
       <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-        <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+        <div class="px-5 py-4 border-b border-gray-100">
           <h2 class="font-bold text-gray-900">미확정 발주</h2>
-          <RouterLink to="/store-order" class="text-xs text-orange-500 font-medium hover:text-orange-600">전체보기</RouterLink>
         </div>
         <table class="w-full text-sm">
           <thead>
@@ -99,7 +92,9 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-50">
-            <tr v-for="o in pendingOrders" :key="o.id" class="hover:bg-gray-50/50">
+            <tr v-for="o in pendingOrders" :key="o.id"
+              class="hover:bg-gray-50/50 cursor-pointer"
+              @click="router.push('/store-order')">
               <td class="px-5 py-3 font-semibold text-gray-800">{{ o.product }}</td>
               <td class="px-5 py-3 text-right text-gray-600">{{ o.qty.toLocaleString() }}개</td>
               <td class="px-5 py-3 text-right font-semibold text-gray-700">{{ (o.qty * o.unitPrice).toLocaleString() }}원</td>
@@ -113,9 +108,8 @@
 
       <!-- 재고 위험 품목 -->
       <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-        <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+        <div class="px-5 py-4 border-b border-gray-100">
           <h2 class="font-bold text-gray-900">재고 위험 품목</h2>
-          <RouterLink to="/store-inventory" class="text-xs text-orange-500 font-medium hover:text-orange-600">전체보기</RouterLink>
         </div>
         <table class="w-full text-sm">
           <thead>
@@ -127,7 +121,9 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-50">
-            <tr v-for="w in warnings" :key="w.product" class="hover:bg-gray-50/50">
+            <tr v-for="w in warnings" :key="w.product"
+              class="hover:bg-gray-50/50 cursor-pointer"
+              @click="router.push('/store-inventory')">
               <td class="px-5 py-3 font-semibold text-gray-800">{{ w.product }}</td>
               <td class="px-5 py-3 text-right font-bold text-red-600">{{ w.current }}</td>
               <td class="px-5 py-3 text-right text-gray-400">{{ w.min }}</td>
@@ -148,7 +144,9 @@
 
 <script setup>
 import { computed, ref, onMounted } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
+
+const router = useRouter()
 import { Chart } from 'chart.js/auto'
 
 const today = computed(() => new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' }))

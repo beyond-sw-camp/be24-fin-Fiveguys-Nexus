@@ -41,32 +41,37 @@
     <!-- Delivery list (table style) -->
     <div v-if="filteredDeliveries.length > 0" class="space-y-3">
       <div v-for="d in filteredDeliveries" :key="d.id"
-        class="bg-white border rounded-xl overflow-hidden shadow-[0_2px_10px_rgba(15,23,42,0.03)]"
-        :class="d.status === '지연' ? 'border-red-200' : 'border-gray-200'">
+           @click="d.status === '지연' ? openModal(d) : null"
+           class="bg-white border rounded-xl overflow-hidden shadow-[0_2px_10px_rgba(15,23,42,0.03)] transition-all duration-200"
+           :class="[
+          d.status === '지연'
+            ? 'border-red-300 cursor-pointer hover:border-red-400 hover:shadow-md'
+            : 'border-gray-200'
+        ]">
         <!-- Card header -->
         <div class="px-5 py-3 border-b flex justify-between items-center"
-          :class="d.status === '지연' ? 'bg-red-50/60 border-red-200' : 'bg-gray-50/60 border-gray-100'">
+             :class="d.status === '지연' ? 'bg-red-50/60 border-red-200' : 'bg-gray-50/60 border-gray-100'">
           <div class="flex items-center gap-3">
             <span class="text-xs font-mono text-gray-400">{{ d.id }}</span>
             <span class="font-bold text-gray-900 text-sm">{{ d.destination }}</span>
             <span class="text-xs text-gray-500">{{ d.items.join(' · ') }}</span>
           </div>
           <div class="flex items-center gap-4">
-            <span class="text-xs text-gray-500">거래처: {{ d.supplier }} · 기사: {{ d.driver }}</span>
+            <span class="text-xs text-gray-500 hidden sm:inline-block">거래처: {{ d.supplier }} · 기사: {{ d.driver }}</span>
             <span class="text-xs font-bold px-2 py-0.5 rounded whitespace-nowrap"
-              :class="statusClass(d.status)">{{ d.status }}</span>
+                  :class="statusClass(d.status)">{{ d.status }}</span>
           </div>
         </div>
 
         <!-- Timeline -->
-        <div class="px-5 py-4 flex items-start gap-0">
+        <div class="px-5 py-4 flex items-start gap-0 overflow-x-auto hide-scrollbar">
           <div v-for="(step, idx) in d.timeline" :key="idx" class="flex items-center">
             <div class="flex flex-col items-center">
               <div class="w-3 h-3 rounded-full border-2 border-white shadow-sm"
-                :class="step.done ? 'bg-[#F37321]' : step.current ? 'bg-blue-500 ring-2 ring-blue-100' : 'bg-gray-200'">
+                   :class="step.done ? 'bg-[#F37321]' : step.current ? 'bg-blue-500 ring-2 ring-blue-100' : 'bg-gray-200'">
               </div>
               <p
-                class="text-xs font-medium mt-1.5 text-center w-[170px] truncate"
+                class="text-xs font-medium mt-1.5 text-center w-[160px] truncate"
                 :title="step.label"
                 :class="step.done ? 'text-gray-800' : step.current ? 'text-blue-600' : 'text-gray-400'">
                 {{ step.label }}
@@ -74,11 +79,26 @@
               <p class="text-[10px] text-gray-400 mt-0.5">{{ step.time }}</p>
             </div>
             <div v-if="idx < d.timeline.length - 1"
-              class="h-px w-24 mx-2 mt-1"
-              :class="step.done ? 'bg-[#F37321]' : 'bg-gray-200'">
+                 class="h-px w-20 sm:w-24 mx-1 sm:mx-2 mt-1"
+                 :class="step.done ? 'bg-[#F37321]' : 'bg-gray-200'">
             </div>
           </div>
         </div>
+
+        <!-- 지연 사유 표시 영역 -->
+        <div v-if="d.status === '지연'" class="px-5 pb-4 pt-1">
+          <div v-if="d.delayReason" class="bg-red-50/80 text-red-700 text-xs p-3 rounded-md border border-red-100 flex items-start gap-2">
+            <svg class="w-4 h-4 shrink-0 mt-0.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            <div>
+              <span class="font-bold">지연 사유:</span>
+              <p class="mt-0.5 whitespace-pre-wrap">{{ d.delayReason }}</p>
+            </div>
+          </div>
+          <div v-else class="text-[11px] text-red-400 bg-red-50/50 p-2 rounded-md border border-red-100 border-dashed text-center">
+            카드를 클릭하여 지연 사유를 입력해 주세요.
+          </div>
+        </div>
+
       </div>
     </div>
 

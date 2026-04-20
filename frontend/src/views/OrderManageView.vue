@@ -34,28 +34,12 @@
       </button>
     </div>
 
-    <!-- Tab: 자동 발주 제안 (이상 발주 미처리 건 포함, 상단 필터로 구분 조회) -->
+    <!-- Tab: 자동 발주 제안 -->
     <div v-if="activeTab === 'auto'" class="space-y-4">
-      <div class="flex flex-wrap items-center gap-2">
-        <span class="text-xs font-semibold text-gray-500">표시</span>
-        <button
-          v-for="btn in proposalFilterButtons"
-          :key="btn.id"
-          type="button"
-          @click="setProposalListFilter(btn.id)"
-          class="text-xs px-3 py-1.5 rounded-md border font-semibold transition-colors"
-          :class="proposalListFilter === btn.id
-            ? 'bg-[#F37321] text-white border-[#F37321]'
-            : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'"
-        >
-          {{ btn.label }}
-        </button>
-      </div>
       <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
         <table class="w-full text-sm text-left">
           <thead>
             <tr class="border-b border-gray-200 bg-gray-50">
-              <th class="px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">유형</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주번호</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">대상 가맹점</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">품목명</th>
@@ -63,57 +47,27 @@
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">최소재고</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">제안수량</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">상태</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">처리</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
             <tr
-              v-for="row in filteredAutoProposalRows"
-              :key="row.key"
+              v-for="o in autoOrders"
+              :key="o.id"
               class="hover:bg-gray-50/50 transition-colors cursor-pointer"
-              :class="row.kind === 'abnormal' ? 'bg-rose-50/35' : ''"
-              @click.self="openDetail(row)"
+              @click="openDetail({ id: o.id, type: '자동', store: o.store, status: o.status, items: [{ product: o.product, qty: o.suggestedQty }] })"
             >
-              <td class="px-4 py-3.5">
-                <span
-                  class="text-[10px] font-bold px-2 py-0.5 rounded border"
-                  :class="row.kind === 'auto'
-                    ? 'bg-blue-50 text-blue-700 border-blue-200'
-                    : 'bg-rose-100 text-rose-800 border-rose-200'"
-                >
-                  {{ row.kind === 'auto' ? '자동' : '이상' }}
-                </span>
-              </td>
-              <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ row.id }}</td>
-              <td class="px-5 py-3.5 font-semibold text-gray-900">{{ row.store }}</td>
-              <td class="px-5 py-3.5 text-gray-700">{{ row.product }}</td>
-              <td class="px-5 py-3.5 font-bold" :class="row.kind === 'auto' ? 'text-red-500' : 'text-gray-400 font-medium'">{{ row.currentStock }}</td>
-              <td class="px-5 py-3.5 text-gray-500">{{ row.minStock }}</td>
-              <td class="px-5 py-3.5 font-bold text-[#F37321]">{{ row.kind === 'abnormal' ? row.suggestedQty.toLocaleString() : row.suggestedQty }}</td>
+              <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ o.id }}</td>
+              <td class="px-5 py-3.5 font-semibold text-gray-900">{{ o.store }}</td>
+              <td class="px-5 py-3.5 text-gray-700">{{ o.product }}</td>
+              <td class="px-5 py-3.5 font-bold text-red-500">{{ o.currentStock }}</td>
+              <td class="px-5 py-3.5 text-gray-500">{{ o.minStock }}</td>
+              <td class="px-5 py-3.5 font-bold text-[#F37321]">{{ o.suggestedQty }}</td>
               <td class="px-5 py-3.5">
-                <span class="text-xs font-bold px-2 py-0.5 rounded"
-                  :class="statusClass(row.status)">{{ row.status }}</span>
-              </td>
-              <td class="px-5 py-3.5">
-                <div v-if="row.kind === 'auto' && row.status === '제안중'" class="flex justify-center gap-1.5">
-                  <button @click="confirmOrder(row.auto)"
-                    class="px-2.5 py-1 bg-[#F37321] text-white text-xs font-semibold hover:bg-[#e0661d]">확정</button>
-                  <button @click="rejectOrder(row.auto)"
-                    class="px-2.5 py-1 border border-gray-200 text-gray-600 text-xs font-medium hover:bg-gray-50">거절</button>
-                </div>
-                <div v-else-if="row.kind === 'abnormal' && row.status === '검토필요'" class="flex justify-center gap-1.5">
-                  <button @click="approveAbnormal(row.abnormal)"
-                    class="px-2.5 py-1 bg-[#F37321] text-white text-xs font-semibold hover:bg-[#e0661d] rounded">승인</button>
-                  <button @click="rejectAbnormal(row.abnormal)"
-                    class="px-2.5 py-1 border border-gray-200 text-gray-600 text-xs font-medium hover:bg-gray-50 rounded">반려</button>
-                </div>
-                <span v-else class="text-xs text-gray-400 block text-center">—</span>
+                <span class="text-xs font-bold px-2 py-0.5 rounded" :class="statusClass(o.status)">{{ o.status }}</span>
               </td>
             </tr>
-            <tr v-if="filteredAutoProposalRows.length === 0">
-              <td colspan="9" class="px-5 py-10 text-center text-sm text-gray-400">
-                표시할 항목이 없습니다. 필터를 바꾸거나 이상 발주 탭에서 처리 완료된 건을 확인하세요.
-              </td>
+            <tr v-if="autoOrders.length === 0">
+              <td colspan="7" class="px-5 py-10 text-center text-sm text-gray-400">자동 발주 제안이 없습니다.</td>
             </tr>
           </tbody>
         </table>
@@ -464,20 +418,14 @@ const router = useRouter()
 
 const abnormalCount = computed(() => abnormalOrders.value.filter(o => !o.processed).length)
 
-const autoTabPendingTotal = computed(
-  () => autoOrders.value.filter((o) => o.status === '제안중').length + abnormalOrders.value.filter((o) => !o.processed).length,
-)
-
 const tabs = computed(() => [
-  { id: 'auto',     label: '자동 발주 제안', badge: autoTabPendingTotal.value || null },
+  { id: 'auto',     label: '자동 발주 제안', badge: autoOrders.value.filter(o => o.status === '진행중').length || null },
   { id: 'manual',   label: '수동 발주' },
   { id: 'history',  label: '발주 이력' },
   { id: 'abnormal', label: '이상 발주', badge: abnormalCount.value || null },
 ])
 const activeTab = ref('auto')
 
-/** 자동 탭 내 표시: 전체 / 자동 제안만 / 이상 발주만 (URL ?tab=auto&proposal= ) */
-const proposalListFilter = ref('all')
 
 const autoOrders = ref([
   { id: 'AUTO-20260413-001', store: '여의도역점',       product: '우유(1L)',        currentStock: 85,  minStock: 120, suggestedQty: 200,  status: '제안중' },
@@ -518,54 +466,6 @@ const abnormalOrders = ref([
   { id: 'ORD-20260412-ABN3', store: '부산센텀점',        product: '바닐라 시럽',     qty: 500,  avgQty: 60,  ratio: 833, date: '2026-04-12 16:40', processed: true  },
 ])
 
-const proposalFilterButtons = [
-  { id: 'all', label: '전체' },
-  { id: 'auto', label: '자동 제안만' },
-  { id: 'abnormal', label: '이상 발주만' },
-]
-
-const combinedAutoProposalRows = computed(() => {
-  const abnormal = abnormalOrders.value
-    .filter((o) => !o.processed)
-    .map((o) => ({
-      kind: 'abnormal',
-      key: `abn-${o.id}`,
-      id: o.id,
-      store: o.store,
-      product: o.product,
-      currentStock: '—',
-      minStock: '—',
-      suggestedQty: o.qty,
-      status: '검토필요',
-      abnormal: o,
-    }))
-  const auto = autoOrders.value.map((o) => ({
-    kind: 'auto',
-    key: `auto-${o.id}`,
-    id: o.id,
-    store: o.store,
-    product: o.product,
-    currentStock: o.currentStock,
-    minStock: o.minStock,
-    suggestedQty: o.suggestedQty,
-    status: o.status,
-    auto: o,
-  }))
-  return [...abnormal, ...auto]
-})
-
-const filteredAutoProposalRows = computed(() => {
-  const rows = combinedAutoProposalRows.value
-  if (proposalListFilter.value === 'auto') return rows.filter((r) => r.kind === 'auto')
-  if (proposalListFilter.value === 'abnormal') return rows.filter((r) => r.kind === 'abnormal')
-  return rows
-})
-
-function setProposalListFilter(id) {
-  proposalListFilter.value = id
-  activeTab.value = 'auto'
-  router.replace({ path: '/order', query: { ...route.query, tab: 'auto', proposal: id } })
-}
 
 function applyOrderRouteQuery() {
   const q = route.query
@@ -584,10 +484,6 @@ function applyOrderRouteQuery() {
   if (q.tab === 'auto') {
     activeTab.value = 'auto'
   }
-  if (q.proposal === 'all' || q.proposal === 'auto' || q.proposal === 'abnormal') {
-    activeTab.value = 'auto'
-    proposalListFilter.value = q.proposal
-  }
 }
 
 onMounted(() => {
@@ -597,7 +493,7 @@ onMounted(() => {
 function setOrderViewTab(id) {
   activeTab.value = id
   if (id === 'auto') {
-    router.replace({ path: '/order', query: { tab: 'auto', proposal: proposalListFilter.value } })
+    router.replace({ path: '/order', query: { tab: 'auto' } })
     return
   }
   if (id === 'abnormal') {
@@ -666,22 +562,6 @@ function submitManualOrder() {
   setOrderViewTab('history')
 }
 
-function confirmOrder(o) {
-  o.status = '확정'
-  orderHistory.value.unshift({
-    id: o.id.replace('AUTO', 'ORD'),
-    type: '자동',
-    store: o.store,
-    product: o.product,
-    qty: o.suggestedQty,
-    date: new Date().toISOString().slice(0, 16).replace('T', ' '),
-    status: '확정',
-  })
-}
-
-function rejectOrder(o) {
-  o.status = '거절'
-}
 
 function statusClass(status) {
   const map = {

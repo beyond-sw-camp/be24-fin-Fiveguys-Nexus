@@ -5,13 +5,9 @@
         <h1 class="text-[22px] font-bold text-gray-900 tracking-tight">운영 현황</h1>
       </div>
       <div class="flex items-center gap-2">
-        <button
-          v-for="tab in periodTabs"
-          :key="tab"
-          class="text-xs px-3 py-1.5 rounded-md border transition-colors"
+        <button v-for="tab in periodTabs" :key="tab" class="text-xs px-3 py-1.5 rounded-md border transition-colors"
           :class="activePeriod === tab ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'"
-          @click="activePeriod = tab"
-        >
+          @click="activePeriod = tab">
           {{ tab }}
         </button>
         <span class="text-xs text-gray-400 border border-gray-200 px-3 py-1.5 rounded-md bg-white">{{ today }}</span>
@@ -20,12 +16,8 @@
 
     <!-- KPI 카드 4개 -->
     <div class="grid grid-cols-4 gap-4">
-      <RouterLink
-        v-for="kpi in kpis"
-        :key="kpi.title"
-        :to="kpi.to"
-        class="block rounded-2xl border border-gray-200 bg-white p-5 shadow-[0_2px_8px_rgba(15,23,42,0.03)] transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(15,23,42,0.08)]"
-      >
+      <RouterLink v-for="kpi in kpis" :key="kpi.title" :to="kpi.to"
+        class="block rounded-2xl border border-gray-200 bg-white p-5 shadow-[0_2px_8px_rgba(15,23,42,0.03)] transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
         <div>
           <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.14em]">{{ kpi.title }}</p>
           <div class="flex items-end gap-1 mt-2.5">
@@ -46,15 +38,18 @@
     <div class="grid grid-cols-3 gap-4">
 
       <!-- 발주 통계 라인차트 -->
-      <div class="col-span-2 bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col" style="min-height:280px">
+      <div class="col-span-2 bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col"
+        style="min-height:280px">
         <div class="flex items-center justify-between mb-5 shrink-0">
           <div>
             <h2 class="font-bold text-gray-900">주간 발주 통계</h2>
             <p class="text-xs text-gray-400 mt-0.5">이번 주 vs 지난 주 (단위: 건)</p>
           </div>
           <div class="flex items-center gap-4 text-xs text-gray-500">
-            <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-orange-500 inline-block rounded"></span>이번 주</span>
-            <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-gray-300 inline-block rounded"></span>지난 주</span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-orange-500 inline-block rounded"></span>이번
+              주</span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-gray-300 inline-block rounded"></span>지난
+              주</span>
           </div>
         </div>
         <div class="flex-1 min-h-0 relative" style="height:200px">
@@ -69,11 +64,13 @@
           <RouterLink to="/delivery" class="text-xs text-orange-500 font-medium hover:text-orange-600">전체보기</RouterLink>
         </div>
         <div class="flex-1 divide-y divide-gray-50 overflow-y-auto">
-          <div v-for="d in ongoingDeliveries" :key="d.id" class="px-5 py-4 hover:bg-gray-50 transition-colors cursor-pointer">
+          <div v-for="d in ongoingDeliveries" :key="d.id"
+            class="px-5 py-4 hover:bg-gray-50 transition-colors cursor-pointer">
             <div class="flex items-start gap-3">
               <div class="w-9 h-9 rounded-xl bg-orange-50 flex items-center justify-center shrink-0 mt-0.5">
                 <svg class="w-4 h-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
                 </svg>
               </div>
               <div class="flex-1 min-w-0">
@@ -84,14 +81,16 @@
                     <span class="w-1.5 h-1.5 rounded-full bg-blue-400 inline-block"></span>{{ d.from }}
                   </span>
                   <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
                   <span class="flex items-center gap-1">
                     <span class="w-1.5 h-1.5 rounded-full bg-green-400 inline-block"></span>{{ d.to }}
                   </span>
                 </div>
               </div>
-              <span class="text-xs px-2 py-0.5 rounded-full font-medium shrink-0" :class="deliveryCls(d.status)">{{ d.status }}</span>
+              <span class="text-xs px-2 py-0.5 rounded-full font-medium shrink-0" :class="deliveryCls(d.status)">{{
+                d.status }}</span>
             </div>
           </div>
         </div>
@@ -102,16 +101,20 @@
     <div class="grid grid-cols-3 gap-4">
 
       <!-- 이상 발주 통계 바그래프 -->
-      <div class="col-span-2 bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col" style="min-height:280px">
+      <div class="col-span-2 bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col"
+        style="min-height:280px">
         <div class="flex items-center justify-between mb-5 shrink-0">
           <div>
             <h2 class="font-bold text-gray-900">이상 발주 통계</h2>
             <p class="text-xs text-gray-400 mt-0.5">최근 6개월 이상 발주 현황 (단위: 건)</p>
           </div>
           <div class="flex items-center gap-4 text-xs text-gray-500">
-            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-red-400 inline-block"></span>승인 대기</span>
-            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-green-400 inline-block"></span>승인</span>
-            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-gray-300 inline-block"></span>반려</span>
+            <span class="flex items-center gap-1.5"><span
+                class="w-2.5 h-2.5 rounded-sm bg-red-400 inline-block"></span>승인 대기</span>
+            <span class="flex items-center gap-1.5"><span
+                class="w-2.5 h-2.5 rounded-sm bg-green-400 inline-block"></span>승인</span>
+            <span class="flex items-center gap-1.5"><span
+                class="w-2.5 h-2.5 rounded-sm bg-gray-300 inline-block"></span>반려</span>
           </div>
         </div>
         <div class="flex-1 min-h-0 relative" style="height:200px">
@@ -157,7 +160,7 @@
             <div v-for="w in warnings" :key="w.store + w.product" class="flex items-center justify-between py-1.5">
               <div class="flex items-center gap-2">
                 <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
-                <p class="text-sm text-gray-800 truncate max-w-[110px]">{{ w.product }}</p>
+                <p class="text-sm text-gray-800 truncate max-w-28">{{ w.product }}</p>
               </div>
               <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-red-100 text-red-600">
                 {{ w.current }}/{{ w.min }}
@@ -174,10 +177,8 @@
 
 <script setup>
 import { computed, ref, onMounted } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
+import { RouterLink } from 'vue-router'
 import { Chart } from 'chart.js/auto'
-
-const router = useRouter()
 
 const periodTabs = ['일간', '주간', '월간']
 const activePeriod = ref('주간')
@@ -192,16 +193,16 @@ const thisWeek = [32, 48, 38, 65, 52, 78, 58]
 const lastWeek = [22, 38, 42, 48, 58, 52, 48]
 const weekLabels = ['일', '월', '화', '수', '목', '금', '토']
 
-const abnormalLabels  = ['11월', '12월', '1월', '2월', '3월', '4월']
-const abnormalDanger  = [3, 5, 2, 7, 4, 2]
+const abnormalLabels = ['11월', '12월', '1월', '2월', '3월', '4월']
+const abnormalDanger = [3, 5, 2, 7, 4, 2]
 const abnormalApprove = [2, 4, 2, 5, 3, 1]
-const abnormalReject  = [1, 1, 0, 2, 1, 1]
+const abnormalReject = [1, 1, 0, 2, 1, 1]
 
 const donutLegend = [
   { label: '배송완료', pct: 65, color: '#f97316' },
-  { label: '배송중',   pct: 20, color: '#60a5fa' },
+  { label: '배송중', pct: 20, color: '#60a5fa' },
   { label: '배송지연', pct: 10, color: '#f87171' },
-  { label: '출고대기', pct: 5,  color: '#a78bfa' },
+  { label: '출고대기', pct: 5, color: '#a78bfa' },
 ]
 
 const deliveryRate = computed(() => donutLegend[0].pct)
@@ -392,14 +393,11 @@ const ongoingDeliveries = [
 ]
 
 const deliveryCls = s => ({
-  '배송중':   'bg-blue-50 text-blue-600 border border-blue-200',
+  '배송중': 'bg-blue-50 text-blue-600 border border-blue-200',
   '출고대기': 'bg-gray-100 text-gray-600 border border-gray-200',
   '출고완료': 'bg-green-50 text-green-700 border border-green-200',
   '배송완료': 'bg-green-50 text-green-700 border border-green-200',
   '배송지연': 'bg-red-50 text-red-600 border border-red-200',
 }[s] || 'bg-gray-100 text-gray-500 border border-gray-200')
 
-function goTo(path) {
-  router.push(path)
-}
 </script>

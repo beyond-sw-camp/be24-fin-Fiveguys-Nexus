@@ -296,3 +296,14 @@ function saveDelayReason() {
   closeModal() // 완료 후 모달 닫기
 }
 </script>
+
+<style scoped>
+/* 모바일에서 타임라인 가로 스크롤 시 스크롤바 숨김 처리용 */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+</style>

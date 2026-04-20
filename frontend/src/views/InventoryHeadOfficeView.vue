@@ -21,9 +21,7 @@
       <select v-model="filterWarehouse"
         class="px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none bg-white">
         <option value="">전체 창고</option>
-        <option>수도권 물류센터</option>
-        <option>부산 RDC</option>
-        <option>본사 직영 창고</option>
+        <option>본사 창고</option>
       </select>
       <div class="flex gap-1.5">
         <button v-for="f in statusFilters" :key="f.value"
@@ -97,13 +95,15 @@ const statusFilters = [
 ]
 
 const items = ref([
-  { code: 'P100', name: '프리미엄 원두',   warehouse: '수도권 물류센터', stock: 4200, safe: 2000, expiry: '2026-06-01' },
-  { code: 'P101', name: '에스프레소 원두', warehouse: '수도권 물류센터', stock: 1800, safe: 1500, expiry: '2026-05-20' },
-  { code: 'P200', name: '우유(1L)',         warehouse: '수도권 물류센터', stock: 9600, safe: 8000, expiry: '2026-04-19' },
-  { code: 'P200', name: '우유(1L)',         warehouse: '부산 RDC',       stock: 3200, safe: 2500, expiry: '2026-04-21' },
-  { code: 'P300', name: '바닐라 시럽',     warehouse: '본사 직영 창고', stock: 880,  safe: 400,  expiry: '2026-08-10' },
-  { code: 'P400', name: '종이컵(M)',        warehouse: '수도권 물류센터', stock: 45000, safe: 30000, expiry: null },
-  { code: 'P401', name: '종이컵(L)',        warehouse: '부산 RDC',       stock: 12000, safe: 8000, expiry: null },
+  { code: 'C100', name: '닭고기(생닭)',        warehouse: '본사 창고', stock: 10700, safe: 9000,  expiry: '2026-04-21' },
+  { code: 'C110', name: '순살 정육',           warehouse: '본사 창고', stock: 3600,  safe: 3500,  expiry: '2026-04-24' },
+  { code: 'C200', name: '튀김가루',            warehouse: '본사 창고', stock: 1250,  safe: 900,   expiry: '2026-07-15' },
+  { code: 'C210', name: '양념소스',            warehouse: '본사 창고', stock: 540,   safe: 600,   expiry: '2026-05-02' },
+  { code: 'C220', name: '핫양념소스',          warehouse: '본사 창고', stock: 210,   safe: 180,   expiry: '2026-05-08' },
+  { code: 'C300', name: '치즈볼(냉동)',        warehouse: '본사 창고', stock: 4200,  safe: 2500,  expiry: '2026-06-10' },
+  { code: 'C310', name: '감자튀김(냉동)',      warehouse: '본사 창고', stock: 1800,  safe: 1700,  expiry: '2026-06-18' },
+  { code: 'C500', name: '치킨 박스(대)',       warehouse: '본사 창고', stock: 68000, safe: 50000, expiry: null },
+  { code: 'C510', name: '소스컵/뚜껑 세트',    warehouse: '본사 창고', stock: 97000, safe: 70000, expiry: null },
 ])
 
 function sortByExpiryAsc(list) {

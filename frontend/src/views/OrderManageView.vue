@@ -42,7 +42,6 @@
             <tr class="border-b border-gray-200 bg-gray-50">
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주번호</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">대상 가맹점</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">품목명</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">현재재고</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">최소재고</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">제안수량</th>
@@ -58,7 +57,6 @@
             >
               <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ o.id }}</td>
               <td class="px-5 py-3.5 font-semibold text-gray-900">{{ o.store }}</td>
-              <td class="px-5 py-3.5 text-gray-700">{{ o.product }}</td>
               <td class="px-5 py-3.5 font-bold text-red-500">{{ o.currentStock }}</td>
               <td class="px-5 py-3.5 text-gray-500">{{ o.minStock }}</td>
               <td class="px-5 py-3.5 font-bold text-[#F37321]">{{ o.suggestedQty }}</td>
@@ -67,7 +65,7 @@
               </td>
             </tr>
             <tr v-if="autoOrders.length === 0">
-              <td colspan="7" class="px-5 py-10 text-center text-sm text-gray-400">자동 발주 제안이 없습니다.</td>
+              <td colspan="6" class="px-5 py-10 text-center text-sm text-gray-400">자동 발주 제안이 없습니다.</td>
             </tr>
           </tbody>
         </table>
@@ -86,8 +84,6 @@
               <tr class="border-b border-gray-200 bg-gray-50">
                 <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주번호</th>
                 <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">대상 가맹점</th>
-                <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">품목</th>
-                <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">수량</th>
                 <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주일시</th>
                 <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">상태</th>
               </tr>
@@ -96,15 +92,13 @@
               <tr v-for="o in pendingManualOrders" :key="o.id" class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="openDetail({ id: o.id, type: '수동', store: o.store, status: o.status, date: o.date, items: [{ product: o.product, qty: o.qty }] })">
                 <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ o.id }}</td>
                 <td class="px-5 py-3.5 font-semibold text-gray-900">{{ o.store }}</td>
-                <td class="px-5 py-3.5 text-gray-700">{{ o.product }}</td>
-                <td class="px-5 py-3.5 text-gray-700">{{ o.qty }}</td>
                 <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ o.date }}</td>
                 <td class="px-5 py-3.5">
                   <span class="text-xs font-bold px-2 py-0.5 rounded" :class="statusClass(o.status)">{{ o.status }}</span>
                 </td>
               </tr>
               <tr v-if="pendingManualOrders.length === 0">
-                <td colspan="6" class="px-5 py-8 text-center text-sm text-gray-400">진행 중인 수동 발주가 없습니다.</td>
+                <td colspan="4" class="px-5 py-8 text-center text-sm text-gray-400">진행 중인 수동 발주가 없습니다.</td>
               </tr>
             </tbody>
           </table>
@@ -121,7 +115,6 @@
             <tr class="border-b border-gray-200 bg-gray-50">
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주번호</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">가맹점</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">품목명</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주수량</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">평균수량</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">초과율</th>
@@ -138,7 +131,6 @@
             >
               <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ o.id }}</td>
               <td class="px-5 py-3.5 font-semibold text-gray-900">{{ o.store }}</td>
-              <td class="px-5 py-3.5 text-gray-700">{{ o.product }}</td>
               <td class="px-5 py-3.5 font-bold text-red-600">{{ o.qty.toLocaleString() }}</td>
               <td class="px-5 py-3.5 text-gray-500">{{ o.avgQty.toLocaleString() }}</td>
               <td class="px-5 py-3.5">
@@ -207,8 +199,6 @@
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주번호</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">유형</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">가맹점</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">품목</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">수량</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주일시</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">상태</th>
             </tr>
@@ -223,8 +213,6 @@
                 </span>
               </td>
               <td class="px-5 py-3.5 font-semibold text-gray-900">{{ h.store }}</td>
-              <td class="px-5 py-3.5 text-gray-700">{{ h.product }}</td>
-              <td class="px-5 py-3.5 font-medium text-gray-900">{{ h.qty }}</td>
               <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ h.date }}</td>
               <td class="px-5 py-3.5">
                 <span class="text-xs font-bold px-2 py-0.5 rounded"
@@ -232,7 +220,7 @@
               </td>
             </tr>
             <tr v-if="filteredOrderHistory.length === 0">
-              <td colspan="7" class="px-5 py-10 text-center text-sm text-gray-400">조건에 맞는 발주 이력이 없습니다.</td>
+              <td colspan="5" class="px-5 py-10 text-center text-sm text-gray-400">조건에 맞는 발주 이력이 없습니다.</td>
             </tr>
           </tbody>
         </table>

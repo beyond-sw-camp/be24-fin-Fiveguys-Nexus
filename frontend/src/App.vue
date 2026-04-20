@@ -150,6 +150,8 @@ const auth   = useAuthStore()
 
 const isUserMenuOpen = ref(false)
 const openGroups     = ref([])
+/** 현재 라우트가 그룹 자식이어도, 헤더 클릭으로 접어 둔 그룹 (path 키) */
+const collapsedGroups = ref([])
 
 // ── 역할별 메뉴 (children → 드롭다운 그룹) ───────────────
 const adminMenus = [
@@ -192,18 +194,26 @@ const currentMenus = computed(() => {
 // ── 현재 라우트 변경 시 해당 그룹 자동 오픈 ────────────────
 watch(() => route.path, () => {
   currentMenus.value.forEach(menu => {
-    if (menu.children && isGroupActive(menu) && !openGroups.value.includes(menu.path)) {
+    if (!menu.children) return
+    if (isGroupActive(menu) && !openGroups.value.includes(menu.path)) {
       openGroups.value.push(menu.path)
+    }
+    // 이 그룹 자식 라우트가 아니면 접기 상태 초기화
+    if (!isGroupActive(menu)) {
+      collapsedGroups.value = collapsedGroups.value.filter(p => p !== menu.path)
     }
   })
 }, { immediate: true })
 
 // ── 네비게이션 함수 ──────────────────────────────────────
 function handleGroupClick(menu) {
-  if (!openGroups.value.includes(menu.path)) {
-    openGroups.value.push(menu.path)
-  } else {
+  const expanded = isGroupOpen(menu)
+  if (expanded) {
+    if (!collapsedGroups.value.includes(menu.path)) collapsedGroups.value.push(menu.path)
     openGroups.value = openGroups.value.filter(p => p !== menu.path)
+  } else {
+    collapsedGroups.value = collapsedGroups.value.filter(p => p !== menu.path)
+    if (!openGroups.value.includes(menu.path)) openGroups.value.push(menu.path)
   }
   router.push(menu.path)
 }
@@ -220,6 +230,7 @@ function isGroupActive(menu) {
 }
 
 function isGroupOpen(menu) {
+  if (collapsedGroups.value.includes(menu.path)) return false
   return openGroups.value.includes(menu.path) || isGroupActive(menu)
 }
 

@@ -42,9 +42,8 @@
             <tr class="border-b border-gray-200 bg-gray-50">
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주번호</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">대상 가맹점</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">현재재고</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">최소재고</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">제안수량</th>
+              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주일시</th>
+              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">총 수량</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">상태</th>
             </tr>
           </thead>
@@ -57,15 +56,14 @@
             >
               <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ o.id }}</td>
               <td class="px-5 py-3.5 font-semibold text-gray-900">{{ o.store }}</td>
-              <td class="px-5 py-3.5 font-bold text-red-500">{{ o.currentStock }}</td>
-              <td class="px-5 py-3.5 text-gray-500">{{ o.minStock }}</td>
+              <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ o.date ?? '-' }}</td>
               <td class="px-5 py-3.5 font-bold text-[#F37321]">{{ o.suggestedQty }}</td>
               <td class="px-5 py-3.5">
                 <span class="text-xs font-bold px-2 py-0.5 rounded" :class="statusClass(o.status)">{{ o.status }}</span>
               </td>
             </tr>
             <tr v-if="autoOrders.length === 0">
-              <td colspan="6" class="px-5 py-10 text-center text-sm text-gray-400">자동 발주 제안이 없습니다.</td>
+              <td colspan="5" class="px-5 py-10 text-center text-sm text-gray-400">자동 발주 제안이 없습니다.</td>
             </tr>
           </tbody>
         </table>
@@ -182,7 +180,7 @@
           <label class="text-[10px] font-bold text-gray-400 uppercase">기간 종료</label>
           <input v-model="historyDateTo" type="date" class="px-3 py-2 rounded border border-gray-200 text-sm outline-none" />
         </div>
-        <div class="space-y-1 flex-1 min-w-[10rem]">
+        <div class="space-y-1 flex-1 min-w-40">
           <label class="text-[10px] font-bold text-gray-400 uppercase">검색</label>
           <input v-model="historySearch" type="search" placeholder="발주번호·가맹점·품목"
             class="w-full px-3 py-2 rounded border border-gray-200 text-sm outline-none" />

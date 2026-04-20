@@ -1,167 +1,296 @@
 <template>
-  <div class="p-5 space-y-4">
+  <div class="p-5 space-y-4 font-sans text-gray-900">
     <!-- Header -->
     <div class="flex justify-between items-center">
       <div>
         <h1 class="text-xl font-bold text-gray-900 tracking-tight">가맹점 관리</h1>
-        <p class="page-spec-hint">
-          <code>STORE_001~004</code>신규 등록·목록·지점명/지역 검색·상태(정상운영·점검·휴업) 관리. 삭제 시 소프트 삭제(상태 변경) 및 재확인을 권장합니다.
+        <p class="text-[11px] text-gray-400 mt-1">
+          <code>STORE_001~004</code> 신규 등록·목록·지점명/지역 검색·상태(정상·폐업) 관리.
         </p>
       </div>
       <button @click="openModal(null)"
-        class="bg-[#F37321] text-white px-4 py-2 text-sm font-semibold rounded hover:bg-[#e0661d] transition-colors flex items-center gap-2">
+              class="bg-[#F37321] text-white px-4 py-2 text-sm font-semibold rounded-md hover:bg-[#e0661d] transition-colors flex items-center gap-2 shadow-sm">
         <Plus class="w-4 h-4" /> 신규 가맹점 등록
       </button>
     </div>
 
     <!-- Summary -->
     <div class="grid grid-cols-3 gap-4">
-      <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
-        <div class="p-5">
-          <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">전체 가맹점</p>
-          <p class="text-3xl font-black text-gray-900 mt-2">{{ stores.length }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
-        </div>
+      <div class="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">전체 가맹점</p>
+        <p class="text-3xl font-black text-gray-900 mt-2">{{ stores.length }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
       </div>
-      <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
-        <div class="p-5">
-          <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">정상운영</p>
-          <p class="text-3xl font-black text-green-600 mt-2">{{ stores.filter(s => s.status === '정상운영').length }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
-        </div>
+      <div class="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">정상</p>
+        <p class="text-3xl font-black text-green-600 mt-2">{{ stores.filter(s => !s.closeDate).length }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
       </div>
-      <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
-        <div class="p-5">
-          <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">점검·휴업</p>
-          <p class="text-3xl font-black text-amber-500 mt-2">{{ stores.filter(s => s.status !== '정상운영').length }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
-        </div>
+      <div class="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">폐업 가맹점</p>
+        <p class="text-3xl font-black text-red-500 mt-2">{{ stores.filter(s => s.closeDate).length }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
       </div>
     </div>
 
-    <!-- Search + 지역 (STORE_004) -->
-    <div class="flex flex-wrap gap-3 items-center">
-      <div class="flex rounded-lg border border-gray-200 bg-gray-50/90 p-0.5">
-        <button
-          v-for="r in regionChips"
-          :key="r"
-          type="button"
-          class="text-xs px-3 py-1.5 rounded-md font-semibold transition-colors"
-          :class="filterRegionChip === r ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'"
-          @click="filterRegionChip = r"
-        >
-          {{ r }}
+    <!-- Filters & Search -->
+    <div class="flex items-center justify-between gap-4">
+      <div class="flex items-center gap-2 flex-1 max-w-md">
+        <div class="relative flex-1">
+          <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+          <input v-model="searchQuery" type="text" placeholder="가맹점명 또는 지역 검색..."
+                 @keyup.enter="handleSearch"
+                 class="w-full pl-9 pr-4 py-2 rounded-md border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all placeholder:text-gray-300" />
+        </div>
+        <button @click="handleSearch"
+                class="px-4 py-2 bg-white border border-gray-300 text-gray-600 text-sm font-bold rounded-md hover:bg-gray-50 hover:border-gray-400 transition-colors shadow-sm whitespace-nowrap">
+          검색
         </button>
       </div>
-      <div class="relative">
-        <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-        <input v-model="searchQuery" type="text" placeholder="가맹점명 또는 지역 검색..."
-          class="pl-9 pr-4 py-2 rounded border border-gray-200 text-sm w-64 focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none" />
+
+      <div class="flex items-center gap-3">
+        <div class="relative">
+          <button @click="toggleDropdown('region')"
+                  class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-md text-sm font-bold text-gray-700 hover:border-gray-300 transition-all shadow-sm min-w-[120px] justify-between">
+            <span>지역: {{ filterRegion }}</span>
+            <ChevronDown class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-180': activeDropdown === 'region' }" />
+          </button>
+          <div v-if="activeDropdown === 'region'" class="absolute right-0 mt-1 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-20 py-1 animate-in fade-in zoom-in-95 duration-100">
+            <button v-for="r in regionChips" :key="r" @click="selectFilter('region', r)"
+                    class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors"
+                    :class="filterRegion === r ? 'text-[#F37321] font-bold' : 'text-gray-600'">
+              {{ r }}
+            </button>
+          </div>
+        </div>
+
+        <div class="relative">
+          <button @click="toggleDropdown('status')"
+                  class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-md text-sm font-bold text-gray-700 hover:border-gray-300 transition-all shadow-sm min-w-[120px] justify-between">
+            <span>상태: {{ filterStatus }}</span>
+            <ChevronDown class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-180': activeDropdown === 'status' }" />
+          </button>
+          <div v-if="activeDropdown === 'status'" class="absolute right-0 mt-1 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-20 py-1 animate-in fade-in zoom-in-95 duration-100">
+            <button v-for="s in statusOptions" :key="s" @click="selectFilter('status', s)"
+                    class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors"
+                    :class="filterStatus === s ? 'text-[#F37321] font-bold' : 'text-gray-600'">
+              {{ s }}
+            </button>
+          </div>
+        </div>
       </div>
+      <div v-if="activeDropdown" class="fixed inset-0 z-10" @click="activeDropdown = null"></div>
     </div>
 
-    <!-- Table -->
-    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+    <!-- Table Section -->
+    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
       <table class="w-full text-sm text-left">
         <thead>
-          <tr class="border-b border-gray-200 bg-gray-50">
-            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">ID</th>
-            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">가맹점명</th>
-            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">점주명</th>
-            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">지역</th>
-            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">연락처</th>
-            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">개설일</th>
-            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">상태</th>
-            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">관리</th>
-          </tr>
+        <tr class="border-b border-gray-100 bg-gray-50/50">
+          <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider w-16 text-center">IDX</th>
+          <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">지점명</th>
+          <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">점주명</th>
+          <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">이메일</th>
+          <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">소재지</th>
+          <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">사업자번호</th>
+          <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">운영상태</th>
+          <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">관리</th>
+        </tr>
         </thead>
-        <tbody class="divide-y divide-gray-100">
-          <template v-if="filteredStores.length === 0">
-            <tr>
-              <td colspan="8" class="px-5 py-10 text-center text-sm text-gray-400">조건에 맞는 가맹점이 없습니다.</td>
-            </tr>
-          </template>
-          <tr v-for="store in filteredStores" :key="store.id" class="hover:bg-gray-50/50 transition-colors">
-            <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ store.id }}</td>
-            <td class="px-5 py-3.5 font-semibold text-gray-900">{{ store.name }}</td>
-            <td class="px-5 py-3.5 text-gray-600">{{ store.owner }}</td>
-            <td class="px-5 py-3.5 text-gray-600">{{ store.region }}</td>
-            <td class="px-5 py-3.5 text-gray-500 text-xs font-mono">{{ store.phone }}</td>
-            <td class="px-5 py-3.5 text-gray-400 text-xs">{{ store.openDate }}</td>
-            <td class="px-5 py-3.5">
-              <span class="text-xs font-bold px-2 py-0.5 rounded"
-                :class="store.status === '정상운영'
-                  ? 'bg-green-50 text-green-700 border border-green-200'
-                  : 'bg-amber-50 text-amber-600 border border-amber-200'">
-                {{ store.status }}
+        <tbody class="divide-y divide-gray-50">
+        <tr v-for="(store, index) in filteredStores" :key="store.id"
+            @click="openDetail(store)"
+            class="hover:bg-gray-50/80 transition-colors cursor-pointer group"
+            :class="{ 'bg-gray-50/40 opacity-70': store.closeDate }">
+          <td class="px-5 py-4 text-gray-400 text-xs font-mono text-center">{{ index + 1 }}</td>
+          <td class="px-5 py-4 font-bold text-gray-900 group-hover:text-[#F37321] transition-colors">
+            <div class="flex items-center gap-2">
+              {{ store.name }}
+              <span v-if="store.closeDate" class="text-[9px] font-normal text-red-400 border border-red-200 px-1 rounded italic">CLOSED</span>
+            </div>
+          </td>
+          <td class="px-5 py-4 text-gray-600">{{ store.owner }}</td>
+          <td class="px-5 py-4 text-gray-500 text-xs truncate max-w-[150px]">{{ store.email }}</td>
+          <td class="px-5 py-4 text-gray-500 text-xs">{{ store.region }}</td>
+          <td class="px-5 py-4 font-mono text-xs text-gray-400">{{ store.bizNumber }}</td>
+          <td class="px-5 py-4 text-center">
+              <span class="text-[11px] font-bold px-2 py-0.5 rounded"
+                    :class="!store.closeDate
+                  ? 'bg-green-100 text-green-700'
+                  : 'bg-red-50 text-red-600'">
+                {{ store.closeDate ? '폐업' : '정상' }}
               </span>
-            </td>
-            <td class="px-5 py-3.5">
-              <div class="flex justify-center gap-3">
-                <button @click="openModal(store)" class="text-gray-300 hover:text-[#F37321] transition-colors">
-                  <Pencil class="w-4 h-4" />
-                </button>
-                <button @click="deleteStore(store.id)" class="text-gray-300 hover:text-red-500 transition-colors">
-                  <Trash2 class="w-4 h-4" />
-                </button>
-              </div>
-            </td>
-          </tr>
+          </td>
+          <td class="px-5 py-4">
+            <div class="flex justify-center">
+              <button @click.stop="openModal(store)"
+                      class="text-gray-300 hover:text-[#F37321] transition-colors"
+                      title="수정">
+                <Pencil class="w-4 h-4" />
+              </button>
+            </div>
+          </td>
+        </tr>
         </tbody>
       </table>
     </div>
 
-    <!-- Modal -->
-    <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center">
-      <div class="absolute inset-0 bg-black/40" @click="showModal = false"></div>
-      <div class="relative bg-white rounded-lg w-full max-w-lg border border-gray-200 shadow-xl">
-        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-          <h3 class="font-bold text-gray-900">{{ editTarget ? '가맹점 정보 수정' : '신규 가맹점 등록' }}</h3>
-          <button @click="showModal = false" class="text-gray-400 hover:text-gray-600">✕</button>
+    <!-- 가맹점 상세 페이지 모달 -->
+    <div v-if="showDetailModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="showDetailModal = false"></div>
+      <div class="relative bg-white rounded-xl w-full max-w-lg border border-gray-200 shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
+        <div class="px-8 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+          <h3 class="font-bold text-gray-900 text-lg">가맹점 상세 정보</h3>
+          <button @click="showDetailModal = false" class="text-gray-400 hover:text-gray-600 font-bold text-xl">✕</button>
         </div>
-        <form @submit.prevent="saveStore" class="p-6 space-y-4">
-          <div class="grid grid-cols-2 gap-4">
-            <div class="space-y-1.5">
-              <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">가맹점명</label>
-              <input v-model="form.name" required type="text"
-                class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none" />
-            </div>
-            <div class="space-y-1.5">
-              <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">점주명</label>
-              <input v-model="form.owner" required type="text"
-                class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none" />
+
+        <div class="p-8 space-y-5">
+          <div class="space-y-1.5">
+            <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">지점명</label>
+            <div class="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-md text-sm font-bold text-gray-900">
+              {{ detailTarget?.name }}
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-4">
+
+
+
+          <div class="grid grid-cols-2 gap-5">
             <div class="space-y-1.5">
-              <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">지역</label>
-              <input v-model="form.region" type="text"
-                class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none" />
+              <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">점주명</label>
+              <div class="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-md text-sm text-gray-700">
+                {{ detailTarget?.owner }}
+              </div>
             </div>
             <div class="space-y-1.5">
-              <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">연락처</label>
-              <input v-model="form.phone" type="text"
-                class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none" />
+              <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">이메일 주소</label>
+              <div class="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-md text-sm text-gray-700">
+                {{ detailTarget?.email }}
+              </div>
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-4">
+
+
+
+          <div class="space-y-1.5">
+            <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">소재지</label>
+            <div class="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-md text-sm text-gray-600">
+              {{ detailTarget?.region }}
+            </div>
+          </div>
+
+          <div class="space-y-1.5">
+            <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">사업자번호</label>
+            <div class="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-md text-sm font-mono text-gray-500">
+              {{ detailTarget?.bizNumber }}
+            </div>
+          </div>
+
+          <!-- 개업일 및 폐업일 표시 섹션 -->
+          <div class="grid grid-cols-2 gap-5 p-4 bg-gray-50 rounded-lg border border-gray-100">
             <div class="space-y-1.5">
-              <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">개설일</label>
+              <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
+                <div class="w-1 h-1 bg-green-400 rounded-full"></div> 개업일
+              </label>
+              <div class="text-sm font-bold text-gray-700">
+                {{ detailTarget?.openDate || '-' }}
+              </div>
+            </div>
+            <div class="space-y-1.5">
+              <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
+                <div class="w-1 h-1 bg-red-400 rounded-full"></div> 폐업일
+              </label>
+              <div class="text-sm font-bold" :class="detailTarget?.closeDate ? 'text-red-500' : 'text-gray-300'">
+                {{ detailTarget?.closeDate || '운영 중' }}
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-4 space-y-3">
+            <button @click="downloadPdf"
+                    class="w-full flex items-center justify-center gap-2 py-3 rounded-md bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d] transition-colors shadow-sm">
+              <FileText class="w-4 h-4 text-white" />
+              사업자 PDF 다운로드
+            </button>
+            <button @click="showDetailModal = false"
+                    class="w-full py-3 rounded-md bg-gray-100 text-gray-600 text-sm font-bold hover:bg-gray-200 transition-colors">
+              닫기
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 신규 가맹점 등록 / 수정 모달 -->
+    <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-black/40" @click="showModal = false"></div>
+      <div class="relative bg-white rounded-xl w-full max-w-lg border border-gray-200 shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
+        <div class="px-8 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+          <h3 class="font-bold text-gray-900 text-lg">{{ editTarget ? '가맹점 정보 수정' : '신규 가맹점 등록' }}</h3>
+          <button @click="showModal = false" class="text-gray-400 hover:text-gray-600 font-bold text-xl">✕</button>
+        </div>
+
+        <form @submit.prevent="saveStore" class="p-8 space-y-5">
+          <div class="space-y-1.5">
+            <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">지점명</label>
+            <input v-model="form.name" required type="text" placeholder="예: 한화빌딩점"
+                   class="w-full px-4 py-2 rounded-md border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-5">
+            <div class="space-y-1.5">
+              <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">점주명</label>
+              <input v-model="form.owner" required type="text" placeholder="성함 입력"
+                     class="w-full px-4 py-2 rounded-md border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
+            </div>
+            <div class="space-y-1.5">
+              <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">이메일</label>
+              <input v-model="form.email" type="email" placeholder="example@email.com"
+                     class="w-full px-4 py-2 rounded-md border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
+            </div>
+          </div>
+
+          <div class="space-y-1.5">
+            <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">소재지</label>
+            <input v-model="form.region" type="text" placeholder="주소 입력"
+                   class="w-full px-4 py-2 rounded-md border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
+          </div>
+
+          <!-- 수정 모달에서만 표시 -->
+          <div v-if="editTarget" class="grid grid-cols-2 gap-5">
+            <div class="space-y-1.5">
+              <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">개업일</label>
               <input v-model="form.openDate" type="date"
-                class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none" />
+                     class="w-full px-4 py-2 rounded-md border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
             </div>
             <div class="space-y-1.5">
-              <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">상태</label>
-              <select v-model="form.status"
-                class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none">
-                <option>정상운영</option>
-                <option>점검중</option>
-                <option>휴업</option>
-              </select>
+              <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">폐업일</label>
+              <input v-model="form.closeDate" type="date"
+                     class="w-full px-4 py-2 rounded-md border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
             </div>
           </div>
-          <div class="flex gap-3 pt-2">
+
+          <div class="space-y-1.5">
+            <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">사업자번호</label>
+            <input v-model="form.bizNumber" type="text" placeholder="000-00-00000"
+                   class="w-full px-4 py-2 rounded-md border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
+          </div>
+
+
+
+          <div class="space-y-1.5">
+            <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">사업자 PDF</label>
+            <div class="flex items-center gap-2">
+              <label class="flex-1 cursor-pointer">
+                <div class="w-full px-4 py-2 rounded-md border border-gray-200 text-sm text-gray-400 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between">
+                  <span>{{ form.bizPdfName || '파일을 선택해주세요' }}</span>
+                  <FileText class="w-4 h-4" />
+                </div>
+                <input type="file" class="hidden" @change="handleFileChange" accept=".pdf" />
+              </label>
+            </div>
+          </div>
+          <div class="flex gap-3 pt-4">
             <button type="button" @click="showModal = false"
-              class="flex-1 py-2.5 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50">취소</button>
+                    class="flex-1 py-3 rounded-md border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-50 transition-colors">취소</button>
             <button type="submit"
-              class="flex-1 py-2.5 rounded bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d]">저장</button>
+                    class="flex-1 py-3 rounded-md bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d] transition-colors shadow-sm">저장</button>
           </div>
         </form>
       </div>
@@ -171,39 +300,90 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { Plus, Pencil, Trash2, Search } from 'lucide-vue-next'
+import { Plus, Pencil, Search, FileText, ChevronDown } from 'lucide-vue-next'
 
 const searchQuery = ref('')
-const filterRegionChip = ref('전체')
-const regionChips = ['전체', '서울', '경기', '부산']
+const filterRegion = ref('전체')
+const filterStatus = ref('전체')
+const activeDropdown = ref(null)
 
-const filteredStores = computed(() => {
-  let list = stores.value
-  if (filterRegionChip.value === '서울') list = list.filter((s) => s.region.includes('서울'))
-  else if (filterRegionChip.value === '경기') list = list.filter((s) => s.region.includes('경기'))
-  else if (filterRegionChip.value === '부산') list = list.filter((s) => s.region.includes('부산'))
-  if (!searchQuery.value.trim()) return list
-  const q = searchQuery.value.trim()
-  return list.filter(
-    (s) => s.name.includes(q) || s.region.includes(q) || s.owner.includes(q),
-  )
-})
+const regionChips = ['전체', '서울', '경기', '부산', '대구', '광주', '인천', '대전', '울산', '제주']
+const statusOptions = ['전체', '정상', '폐업']
 
+// 초기 데이터 구조 변경: status 필드 대신 closeDate 필드 활용
 const stores = ref([
-  { id: 'S001', name: '한화빌딩점',       owner: '김동현', region: '서울 중구',    phone: '02-1111-2222', openDate: '2022-03-15', status: '정상운영' },
-  { id: 'S002', name: '여의도역점',       owner: '이재혁', region: '서울 영등포구', phone: '02-3333-4444', openDate: '2022-07-20', status: '정상운영' },
-  { id: 'S003', name: '판교테크노밸리점', owner: '박민수', region: '경기 성남',    phone: '031-555-6666', openDate: '2023-01-10', status: '정상운영' },
-  { id: 'S004', name: '부산센텀점',       owner: '정수진', region: '부산 해운대구', phone: '051-777-8888', openDate: '2023-05-30', status: '점검중'   },
+  { id: 'S001', name: '한화빌딩점', owner: '김동현', region: '서울 중구', bizNumber: '101-12-34567', email: 'dh.kim@hanwha.com', openDate: '2022-03-15', closeDate: '' },
+  { id: 'S002', name: '여의도역점', owner: '이재혁', region: '서울 영등포구', bizNumber: '201-45-67890', email: 'jh.lee@hanwha.com', openDate: '2022-07-20', closeDate: '' },
+  { id: 'S003', name: '판교테크노밸리점', owner: '박민수', region: '경기 성남', bizNumber: '301-78-90123', email: 'ms.park@hanwha.com', openDate: '2023-01-10', closeDate: '' },
+  { id: 'S004', name: '부산센텀점', owner: '정수진', region: '부산 해운대구', bizNumber: '401-23-45678', email: 'sj.jung@hanwha.com', openDate: '2023-05-30', closeDate: '2024-01-15' },
 ])
 
+const filteredStores = computed(() => {
+  let list = [...stores.value]
+
+  if (filterRegion.value !== '전체') {
+    list = list.filter((s) => s.region.includes(filterRegion.value))
+  }
+
+  if (filterStatus.value !== '전체') {
+    // 폐업일 유무로 필터링
+    if (filterStatus.value === '폐업') list = list.filter((s) => !!s.closeDate)
+    if (filterStatus.value === '정상') list = list.filter((s) => !s.closeDate)
+  }
+
+  if (searchQuery.value.trim()) {
+    const q = searchQuery.value.trim().toLowerCase()
+    list = list.filter(
+      (s) => s.name.toLowerCase().includes(q) ||
+        s.region.toLowerCase().includes(q) ||
+        s.owner.toLowerCase().includes(q)
+    )
+  }
+
+  // 폐업 가맹점(closeDate가 있는 항목)을 아래로 정렬
+  return list.sort((a, b) => {
+    if (!!a.closeDate && !b.closeDate) return 1
+    if (!a.closeDate && !!b.closeDate) return -1
+    return 0
+  })
+})
+
 const showModal = ref(false)
+const showDetailModal = ref(false)
 const editTarget = ref(null)
-const form = ref({ name: '', owner: '', region: '', phone: '', openDate: '', status: '정상운영' })
+const detailTarget = ref(null)
+const form = ref({ name: '', owner: '', region: '', bizNumber: '', email: '', openDate: '', closeDate: '', bizPdfName: '' })
+
+function toggleDropdown(type) {
+  activeDropdown.value = activeDropdown.value === type ? null : type
+}
+
+function selectFilter(type, value) {
+  if (type === 'region') filterRegion.value = value
+  if (type === 'status') filterStatus.value = value
+  activeDropdown.value = null
+}
+
+function handleSearch() {
+  console.log('Searching:', searchQuery.value)
+}
+
+function openDetail(store) {
+  detailTarget.value = store
+  showDetailModal.value = true
+}
 
 function openModal(store) {
   editTarget.value = store
-  form.value = store ? { ...store } : { name: '', owner: '', region: '', phone: '', openDate: '', status: '정상운영' }
+  form.value = store
+    ? { ...store, bizPdfName: '' }
+    : { name: '', owner: '', region: '', bizNumber: '', email: '', openDate: '', closeDate: '', bizPdfName: '' }
   showModal.value = true
+}
+
+function handleFileChange(e) {
+  const file = e.target.files[0]
+  if (file) form.value.bizPdfName = file.name
 }
 
 function saveStore() {
@@ -216,9 +396,8 @@ function saveStore() {
   showModal.value = false
 }
 
-function deleteStore(id) {
-  if (confirm('가맹점을 삭제하시겠습니까?')) {
-    stores.value = stores.value.filter(s => s.id !== id)
-  }
+
+function downloadPdf() {
+  alert('사업자 등록증 PDF를 다운로드합니다.')
 }
 </script>

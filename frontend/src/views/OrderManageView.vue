@@ -282,10 +282,12 @@
                   class="w-20 px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none" />
                 <span class="text-xs text-gray-400 font-medium w-4">{{ PRODUCT_UNIT[item.product] ?? '' }}</span>
               </div>
-              <input v-model.number="item.unitPrice" type="number" min="0" placeholder="단가"
-                class="w-24 px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none" />
-              <button @click="manualForm.items.splice(idx, 1)" class="text-gray-300 hover:text-red-500 transition-colors shrink-0">
-                <X class="w-4 h-4" />
+              <div class="w-28 px-3 py-2 rounded border border-gray-100 bg-gray-50 text-sm text-gray-500 text-right shrink-0">
+                {{ item.product ? (productPrices[item.product] ?? 0).toLocaleString() + '원' : '-' }}
+              </div>
+              <button @click="manualForm.items.splice(idx, 1)"
+                class="px-3 py-2 text-xs font-semibold rounded border border-red-200 text-red-500 bg-red-50 hover:bg-red-500 hover:text-white hover:cursor-pointer transition-colors shrink-0">
+                삭제
               </button>
             </div>
             <div v-if="manualForm.items.length === 0"
@@ -295,11 +297,6 @@
             <div v-if="manualForm.items.length > 0" class="text-right text-sm font-bold text-[#F37321]">
               합계: {{ formatPrice(manualForm.items.reduce((s, i) => s + (i.unitPrice || 0) * (i.qty || 0), 0)) }}
             </div>
-          </div>
-          <div class="space-y-1.5">
-            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">비고</label>
-            <textarea v-model="manualForm.note" rows="2" placeholder="특이사항 입력 (선택)"
-              class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none resize-none"></textarea>
           </div>
         </div>
         <div class="px-6 py-4 border-t border-gray-100 flex gap-3">
@@ -644,7 +641,7 @@ const pendingManualOrders = ref([
 ])
 
 const showManualForm = ref(false)
-const manualForm = ref({ store: '', items: [], note: '' })
+const manualForm = ref({ store: '', items: [] })
 
 function addManualItem() {
   manualForm.value.items.push({ product: '', qty: 1, unitPrice: 0 })
@@ -671,7 +668,7 @@ function submitManualOrder() {
     }
   })
   alert('발주가 생성되었습니다.')
-  manualForm.value = { store: '', items: [], note: '' }
+  manualForm.value = { store: '', items: [] }
   showManualForm.value = false
   setOrderViewTab('history')
 }

@@ -10,7 +10,7 @@
           class="px-4 py-2 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 flex items-center gap-2">
           <Settings class="w-4 h-4" /> 이상 발주 기준 설정
         </button>
-        <button @click="setOrderViewTab('manual')"
+        <button @click="showManualForm = true"
           class="bg-[#F37321] text-white px-4 py-2 text-sm font-semibold rounded hover:bg-[#e0661d] transition-colors flex items-center gap-2">
           <Plus class="w-4 h-4" /> 수동 발주 생성
         </button>
@@ -111,66 +111,6 @@
         </div>
       </div>
 
-      <!-- ORDER_003: 수동 발주 생성 -->
-      <div class="max-w-2xl">
-        <h3 class="text-sm font-bold text-gray-700 mb-2">수동 발주 생성</h3>
-      <div class="bg-white border border-gray-200 rounded-lg p-6 space-y-4">
-        <h3 class="font-bold text-gray-900 text-sm">수동 발주 생성</h3>
-        <div class="grid grid-cols-2 gap-4">
-          <div class="space-y-1.5">
-            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">대상 가맹점</label>
-            <select v-model="manualForm.store"
-              class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none">
-              <option value="">선택</option>
-              <option>한화빌딩점</option>
-              <option>여의도역점</option>
-              <option>판교테크노밸리점</option>
-              <option>부산센텀점</option>
-            </select>
-          </div>
-        </div>
-        <div class="space-y-2">
-          <div class="flex justify-between items-center">
-            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">발주 품목</label>
-            <button @click="addManualItem" class="text-xs text-[#F37321] font-semibold hover:underline flex items-center gap-1">
-              <Plus class="w-3 h-3" /> 품목 추가
-            </button>
-          </div>
-          <div v-for="(item, idx) in manualForm.items" :key="idx" class="flex gap-2 items-center">
-            <select v-model="item.product"
-              class="flex-1 px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none">
-              <option value="">품목 선택</option>
-              <option>프리미엄 원두</option>
-              <option>에스프레소 원두</option>
-              <option>우유(1L)</option>
-              <option>두유(1L)</option>
-              <option>바닐라 시럽</option>
-              <option>카라멜 시럽</option>
-              <option>종이컵(M)</option>
-              <option>종이컵(L)</option>
-            </select>
-            <input v-model.number="item.qty" type="number" min="1" placeholder="수량"
-              class="w-24 px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none" />
-            <button @click="manualForm.items.splice(idx, 1)" class="text-gray-300 hover:text-red-500 transition-colors shrink-0">
-              <X class="w-4 h-4" />
-            </button>
-          </div>
-          <div v-if="manualForm.items.length === 0"
-            class="text-sm text-gray-400 text-center py-4 bg-gray-50 border border-gray-100">
-            품목 추가 버튼을 눌러 발주 품목을 입력하세요.
-          </div>
-        </div>
-        <div class="space-y-1.5">
-          <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">비고</label>
-          <textarea v-model="manualForm.note" rows="2" placeholder="특이사항 입력 (선택)"
-            class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none resize-none"></textarea>
-        </div>
-        <button @click="submitManualOrder"
-          class="w-full rounded bg-[#F37321] text-white py-3 font-bold hover:bg-[#e0661d] text-sm">
-          발주 생성
-        </button>
-      </div>
-      </div>
     </div>
 
     <!-- Tab: 이상 발주 (ORDER_007) -->
@@ -296,6 +236,72 @@
         </table>
       </div>
     </div>
+    <!-- 수동 발주 생성 Modal (ORDER_003) -->
+    <div v-if="showManualForm" class="fixed inset-0 z-50 flex items-center justify-center">
+      <div class="absolute inset-0 bg-black/40" @click="showManualForm = false"></div>
+      <div class="relative bg-white rounded-xl w-full max-w-lg border border-gray-200 shadow-xl">
+        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+          <h3 class="font-bold text-gray-900">수동 발주 생성</h3>
+          <button @click="showManualForm = false" class="text-gray-400 hover:text-gray-600">✕</button>
+        </div>
+        <div class="p-6 space-y-4">
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">대상 가맹점</label>
+            <select v-model="manualForm.store"
+              class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none">
+              <option value="">선택</option>
+              <option>한화빌딩점</option>
+              <option>여의도역점</option>
+              <option>판교테크노밸리점</option>
+              <option>부산센텀점</option>
+            </select>
+          </div>
+          <div class="space-y-2">
+            <div class="flex justify-between items-center">
+              <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">발주 품목</label>
+              <button @click="addManualItem" class="text-xs text-[#F37321] font-semibold hover:underline flex items-center gap-1">
+                <Plus class="w-3 h-3" /> 품목 추가
+              </button>
+            </div>
+            <div v-for="(item, idx) in manualForm.items" :key="idx" class="flex gap-2 items-center">
+              <select v-model="item.product"
+                class="flex-1 px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none">
+                <option value="">품목 선택</option>
+                <option>프리미엄 원두</option>
+                <option>에스프레소 원두</option>
+                <option>우유(1L)</option>
+                <option>두유(1L)</option>
+                <option>바닐라 시럽</option>
+                <option>카라멜 시럽</option>
+                <option>종이컵(M)</option>
+                <option>종이컵(L)</option>
+              </select>
+              <input v-model.number="item.qty" type="number" min="1" placeholder="수량"
+                class="w-24 px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none" />
+              <button @click="manualForm.items.splice(idx, 1)" class="text-gray-300 hover:text-red-500 transition-colors shrink-0">
+                <X class="w-4 h-4" />
+              </button>
+            </div>
+            <div v-if="manualForm.items.length === 0"
+              class="text-sm text-gray-400 text-center py-4 bg-gray-50 border border-gray-100 rounded">
+              품목 추가 버튼을 눌러 발주 품목을 입력하세요.
+            </div>
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">비고</label>
+            <textarea v-model="manualForm.note" rows="2" placeholder="특이사항 입력 (선택)"
+              class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none resize-none"></textarea>
+          </div>
+        </div>
+        <div class="px-6 py-4 border-t border-gray-100 flex gap-3">
+          <button @click="showManualForm = false"
+            class="flex-1 py-2.5 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50">취소</button>
+          <button @click="submitManualOrder"
+            class="flex-1 py-2.5 rounded bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d]">발주 생성</button>
+        </div>
+      </div>
+    </div>
+
     <!-- 발주 상세 조회 Modal (ORDER_005) -->
     <div v-if="showDetail" class="fixed inset-0 z-50 flex items-center justify-center">
       <div class="absolute inset-0 bg-black/40" @click="showDetail = false"></div>
@@ -532,6 +538,7 @@ const pendingManualOrders = ref([
   { id: 'MAN-20260419-002', store: '판교테크노밸리점', product: '두유(1L)',      qty: 100, date: '2026-04-19 14:30', status: '배송중' },
 ])
 
+const showManualForm = ref(false)
 const manualForm = ref({ store: '', items: [], note: '' })
 
 function addManualItem() {
@@ -559,6 +566,7 @@ function submitManualOrder() {
   })
   alert('발주가 생성되었습니다.')
   manualForm.value = { store: '', items: [], note: '' }
+  showManualForm.value = false
   setOrderViewTab('history')
 }
 

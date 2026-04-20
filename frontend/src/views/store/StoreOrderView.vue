@@ -71,30 +71,63 @@
     </div>
 
     <div v-if="activeTab === 'manual'" class="max-w-2xl">
-      <div class="bg-white border border-gray-200 rounded-lg p-6 space-y-4 shadow-sm">
-        <h3 class="font-bold text-gray-900 text-sm">직접 발주 요청</h3>
-        <div class="space-y-2">
-          <div class="flex justify-between items-center">
-            <label class="text-xs font-bold text-gray-500 uppercase">발주 품목</label>
-            <button @click="manualItems.push({ product: '', qty: 1 })"
-              class="text-xs text-blue-500 font-semibold hover:underline flex items-center gap-1">
-              <Plus class="w-3 h-3" /> 품목 추가
+      <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/60">
+          <h3 class="font-bold text-gray-900">직접 발주 요청</h3>
+          <p class="text-xs text-gray-400 mt-0.5">필요한 품목과 수량을 직접 입력해 본사에 발주를 요청합니다.</p>
+        </div>
+        <div class="p-6 space-y-4">
+          <div class="space-y-2">
+            <div class="flex justify-between items-center">
+              <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">발주 품목</label>
+              <button @click="addManualItem"
+                class="text-xs text-blue-500 font-semibold hover:underline flex items-center gap-1">
+                <Plus class="w-3 h-3" /> 품목 추가
+              </button>
+            </div>
+            <div v-for="(item, idx) in manualItems" :key="idx" class="flex gap-2 items-center">
+              <select v-model="item.product" @change="item.unitPrice = PRODUCT_PRICES[item.product] ?? 0"
+                class="flex-1 px-3 py-2 rounded border border-gray-200 text-sm outline-none focus:border-blue-400">
+                <option value="">품목 선택</option>
+                <option>프리미엄 원두</option>
+                <option>에스프레소 원두</option>
+                <option>우유(1L)</option>
+                <option>두유(1L)</option>
+                <option>바닐라 시럽</option>
+                <option>카라멜 시럽</option>
+                <option>종이컵(M)</option>
+                <option>종이컵(L)</option>
+              </select>
+              <input v-model.number="item.qty" type="number" min="1" placeholder="수량"
+                class="w-24 px-3 py-2 rounded border border-gray-200 text-sm outline-none focus:border-blue-400" />
+              <button @click="manualItems.splice(idx, 1)" class="text-gray-300 hover:text-red-500 shrink-0">
+                <X class="w-4 h-4" />
+              </button>
+            </div>
+            <div v-if="manualItems.length === 0"
+              class="text-sm text-gray-400 text-center py-4 bg-gray-50 border border-gray-100 rounded">
+              품목 추가 버튼을 눌러 발주 품목을 입력하세요.
+            </div>
+            <div v-if="manualItems.length > 0" class="text-right text-sm font-bold text-blue-600">
+              합계: {{ manualTotal.toLocaleString() }}원
+            </div>
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">요청 사항</label>
+            <textarea v-model="manualNote" rows="2" placeholder="특이사항 입력 (선택)"
+              class="w-full px-3 py-2 rounded border border-gray-200 text-sm outline-none focus:border-blue-400 resize-none"></textarea>
+          </div>
+          <div class="flex gap-3 pt-1">
+            <button @click="manualItems = []; manualNote = ''"
+              class="flex-1 py-2.5 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50">
+              초기화
+            </button>
+            <button @click="submitManual"
+              class="flex-2 py-2.5 bg-blue-500 text-white font-bold hover:bg-blue-600 rounded text-sm">
+              발주 요청
             </button>
           </div>
-          <div v-for="(item, idx) in manualItems" :key="idx" class="flex gap-2 items-center">
-            <select v-model="item.product" class="flex-1 px-3 py-2 rounded border border-gray-200 text-sm outline-none focus:border-blue-400">
-              <option value="">품목 선택</option>
-              <option>우유(1L)</option><option>두유(1L)</option><option>에스프레소 원두</option><option>바닐라 시럽</option>
-            </select>
-            <input v-model.number="item.qty" type="number" min="1" class="w-24 px-3 py-2 rounded border border-gray-200 text-sm" />
-            <button @click="manualItems.splice(idx, 1)" class="text-gray-300 hover:text-red-500"><X class="w-4 h-4" /></button>
-          </div>
         </div>
-        <textarea v-model="manualNote" rows="2" placeholder="요청 사항 (선택)"
-          class="w-full px-3 py-2 rounded border border-gray-200 text-sm outline-none focus:border-blue-400 resize-none"></textarea>
-        <button @click="submitManual" class="w-full py-3 bg-blue-500 text-white font-bold hover:bg-blue-600 rounded text-sm">
-          발주 요청
-        </button>
       </div>
     </div>
 
@@ -155,13 +188,13 @@
           <section class="bg-gray-50 rounded-lg p-4">
             <div class="space-y-2 pb-3 border-b border-gray-200">
               <div v-for="item in selectedOrder?.items" :key="item.product" class="flex justify-between text-xs">
-                <span class="text-gray-500">{{ item.product }} ({{ item.adjusted }}개)</span>
-                <span class="font-medium text-gray-900">₩{{ (item.adjusted * 6500).toLocaleString() }}</span>
+                <span class="text-gray-500">{{ item.product }} ({{ item.adjusted }}개 × {{ (PRODUCT_PRICES[item.product] ?? 0).toLocaleString() }}원)</span>
+                <span class="font-medium text-gray-900">₩{{ ((item.adjusted * (PRODUCT_PRICES[item.product] ?? 0))).toLocaleString() }}</span>
               </div>
             </div>
             <div class="flex justify-between items-center pt-3">
               <span class="text-sm font-bold text-gray-900">총 결제 금액</span>
-              <span class="text-lg font-black text-red-600">₩{{ totalPrice.toLocaleString() }}</span>
+              <span class="text-lg font-black text-blue-600">₩{{ totalPrice.toLocaleString() }}</span>
             </div>
           </section>
 
@@ -174,7 +207,7 @@
 
         <div class="px-6 py-4 bg-gray-50 flex gap-2">
           <button @click="isModalOpen = false" class="flex-1 py-3 bg-white border border-gray-200 text-gray-600 font-bold rounded-lg text-sm">취소</button>
-          <button @click="processPayment" class="flex-[2] py-3 bg-blue-600 text-white font-bold rounded-lg text-sm flex items-center justify-center gap-2">
+          <button @click="processPayment" class="flex-2 py-3 bg-blue-600 text-white font-bold rounded-lg text-sm flex items-center justify-center gap-2">
             <CreditCard class="w-4 h-4"/> 결제 및 승인 요청
           </button>
         </div>
@@ -186,6 +219,17 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { Plus, X, ClipboardList, CreditCard } from 'lucide-vue-next'
+
+const PRODUCT_PRICES = {
+  '프리미엄 원두':   25000,
+  '에스프레소 원두': 22000,
+  '우유(1L)':        2500,
+  '두유(1L)':        3000,
+  '바닐라 시럽':     15000,
+  '카라멜 시럽':     15000,
+  '종이컵(M)':       100,
+  '종이컵(L)':       120,
+}
 
 const activeTab = ref('pending')
 const isModalOpen = ref(false)
@@ -223,6 +267,14 @@ const tabs = computed(() => [
 const manualItems = ref([])
 const manualNote = ref('')
 
+function addManualItem() {
+  manualItems.value.push({ product: '', qty: 1, unitPrice: 0 })
+}
+
+const manualTotal = computed(() =>
+  manualItems.value.reduce((s, i) => s + (PRODUCT_PRICES[i.product] ?? 0) * (i.qty || 0), 0)
+)
+
 // 모달 열기 함수
 function openPaymentModal(order) {
   selectedOrder.value = order
@@ -230,10 +282,9 @@ function openPaymentModal(order) {
   isModalOpen.value = true
 }
 
-// 총 금액 계산 (단가 6,500원 가정)
 const totalPrice = computed(() => {
   if (!selectedOrder.value) return 0
-  return selectedOrder.value.items.reduce((sum, item) => sum + (item.adjusted * 6500), 0)
+  return selectedOrder.value.items.reduce((sum, item) => sum + item.adjusted * (PRODUCT_PRICES[item.product] ?? 0), 0)
 })
 
 // 결제 프로세스 완료

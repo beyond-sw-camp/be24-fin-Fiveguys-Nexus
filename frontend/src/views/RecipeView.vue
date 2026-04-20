@@ -98,7 +98,7 @@
          신규 메뉴 등록 / 수정 모달
     ══════════════════════════════════════════ -->
     <div v-if="showMenuModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="showMenuModal = false"></div>
+      <div class="absolute inset-0 bg-black/40 " @click="showMenuModal = false"></div>
       <div class="relative bg-white rounded-xl w-full max-w-xl border border-gray-200 shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
 
         <!-- 모달 헤더 -->
@@ -226,7 +226,7 @@
          재료 목록 상세 모달
     ══════════════════════════════════════════ -->
     <div v-if="showIngredientModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="showIngredientModal = false"></div>
+      <div class="absolute inset-0 bg-black/40 " @click="showIngredientModal = false"></div>
       <div class="relative bg-white rounded-xl w-full max-w-lg border border-gray-200 shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
 
         <div class="px-7 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
@@ -291,7 +291,7 @@
          삭제 확인 모달
     ══════════════════════════════════════════ -->
     <div v-if="showDeleteConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="showDeleteConfirm = false"></div>
+      <div class="absolute inset-0 bg-black/40 " @click="showDeleteConfirm = false"></div>
       <div class="relative bg-white rounded-xl w-full max-w-sm border border-gray-200 shadow-xl p-8 text-center animate-in fade-in zoom-in-95 duration-200">
         <div class="text-4xl mb-4">🗑️</div>
         <h3 class="font-bold text-gray-900 text-base mb-2">메뉴를 삭제하시겠습니까?</h3>

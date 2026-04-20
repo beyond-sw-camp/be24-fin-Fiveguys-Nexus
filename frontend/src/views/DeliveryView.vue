@@ -199,16 +199,6 @@ const deliveries = ref([
     ],
   },
   {
-    id: 'DLV-20260413-003', status: '출고대기',
-    destination: '한화빌딩점', supplier: '청정원F&B', driver: '미배정',
-    items: ['바닐라 시럽 60병'],
-    timeline: [
-      { label: '발주 확정',    time: '2026-04-13 11:00', done: true },
-      { label: '출고 대기 중', time: '2026-04-13 11:00', done: false, current: true },
-      { label: '입고 예정',    time: '미정',              done: false },
-    ],
-  },
-  {
     id: 'DLV-20260413-004', status: '입고완료',
     destination: '한화빌딩점', supplier: '동서식품', driver: '박상현',
     items: ['프리미엄 원두 50kg'],
@@ -227,16 +217,6 @@ const deliveries = ref([
       { label: '출고 완료 (부산 물류센터)', time: '2026-04-12 20:00', done: true },
       { label: '배송 지연 (교통사고)',       time: '2026-04-13 08:00', done: false, current: true },
       { label: '입고 예정 (재조율 중)',      time: '미정',              done: false },
-    ],
-  },
-  {
-    id: 'DLV-20260413-006', status: '출고대기',
-    destination: '부산센텀점', supplier: '서울우유', driver: '미배정',
-    items: ['두유(1L) 100팩', '우유(1L) 150팩'],
-    timeline: [
-      { label: '발주 확정',    time: '2026-04-13 13:00', done: true },
-      { label: '출고 대기 중', time: '2026-04-13 13:00', done: false, current: true },
-      { label: '입고 예정',    time: '미정',              done: false },
     ],
   },
 ])

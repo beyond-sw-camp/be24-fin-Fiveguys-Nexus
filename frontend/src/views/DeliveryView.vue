@@ -3,8 +3,8 @@
     <!-- Header -->
     <div>
       <h1 class="text-xl font-bold text-gray-900 tracking-tight">배송 관리</h1>
-      <p class="page-spec-hint">
-        <code>DELIVERY_001~002</code>본사→가맹점 배송 목록, 가맹점별 필터. 단계: 상품출고대기 → 출고완료 → 배송중 → 배송완료, 지연 시 배송 지연 표시.
+      <p class="text-sm text-gray-500 mt-1">
+        본사→가맹점 배송 목록. 가맹점 이름으로 검색 및 지연 건의 사유를 관리할 수 있습니다.
       </p>
     </div>
 

@@ -8,15 +8,8 @@
     <!-- Sidebar -->
     <aside class="w-[18rem] bg-white border-r border-gray-200 flex flex-col shrink-0 z-20">
       <!-- Logo -->
-      <div class="h-14 flex items-center px-4 bg-white border-b-2 border-[#F37321] shrink-0">
+      <div class="h-14 flex items-center px-4 bg-white border-b-2 shrink-0" :class="logoBorderClass">
         <img :src="nexusLogo" alt="Nexus logo" class="h-6 w-auto object-contain" />
-      </div>
-
-      <!-- Role badge -->
-      <div class="px-5 py-3 border-b border-gray-100 shrink-0">
-        <span class="text-[11px] px-2 py-0.5 font-bold tracking-wide uppercase rounded" :class="roleBadgeClass">
-          {{ roleLabel }}
-        </span>
       </div>
 
       <!-- Navigation -->
@@ -67,11 +60,12 @@
 
       <!-- Sidebar footer -->
       <div class="px-5 py-4 border-t border-gray-100 shrink-0">
-        <button @click="handleLogout"
-          class="w-full flex items-center gap-2 text-sm text-gray-400 hover:text-red-500 transition-colors">
-          <LogOut class="w-4 h-4" />
-          로그아웃
-        </button>
+        <div class="w-full flex items-center justify-center gap-1.5 text-xs font-medium text-gray-400">
+          <span class="w-1.5 h-1.5 rounded-full" :class="footerRoleDotClass"></span>
+          <span :class="footerRoleTextClass">
+            {{ footerRoleLabel }}
+          </span>
+        </div>
       </div>
     </aside>
 
@@ -237,9 +231,15 @@ function isGroupOpen(menu) {
 
 // ── 역할별 스타일 ─────────────────────────────────────────
 const roleLabel = computed(() => {
-  if (auth.isAdmin)      return '운영자 · 본사'
+  if (auth.isAdmin)      return '관리자 · 본사'
   if (auth.isStoreOwner) return `점주 · ${auth.user?.storeName}`
   return ''
+})
+
+const footerRoleLabel = computed(() => {
+  if (auth.isAdmin)      return '본사 관리자'
+  if (auth.isStoreOwner) return auth.user?.storeName ? `${auth.user.storeName} 점주` : '가맹점 점주'
+  return '사용자'
 })
 
 const roleLabelShort = computed(() => {
@@ -252,6 +252,24 @@ const roleBadgeClass = computed(() => {
   if (auth.isAdmin)      return 'bg-orange-50 text-[#F37321] border border-orange-200'
   if (auth.isStoreOwner) return 'bg-blue-50 text-blue-600 border border-blue-200'
   return ''
+})
+
+const footerRoleTextClass = computed(() => {
+  if (auth.isAdmin)      return 'text-[#d66316]'
+  if (auth.isStoreOwner) return 'text-blue-600'
+  return 'text-gray-500'
+})
+
+const footerRoleDotClass = computed(() => {
+  if (auth.isAdmin)      return 'bg-[#F37321]'
+  if (auth.isStoreOwner) return 'bg-blue-500'
+  return 'bg-gray-400'
+})
+
+const logoBorderClass = computed(() => {
+  if (auth.isAdmin)      return 'border-[#F37321]'
+  if (auth.isStoreOwner) return 'border-blue-500'
+  return 'border-gray-200'
 })
 
 const activeMenuClass = computed(() => {

@@ -44,6 +44,7 @@
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">대상 가맹점</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주일시</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">총 수량</th>
+              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">총 금액</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">상태</th>
             </tr>
           </thead>
@@ -52,18 +53,19 @@
               v-for="o in autoOrders"
               :key="o.id"
               class="hover:bg-gray-50/50 transition-colors cursor-pointer"
-              @click="openDetail({ id: o.id, type: '자동', store: o.store, status: o.status, items: [{ product: o.product, qty: o.suggestedQty }] })"
+              @click="openDetail({ id: o.id, type: '자동', store: o.store, status: o.status, date: o.date, items: [{ product: o.product, qty: o.suggestedQty, unitPrice: o.unitPrice }] })"
             >
               <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ o.id }}</td>
               <td class="px-5 py-3.5 font-semibold text-gray-900">{{ o.store }}</td>
               <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ o.date ?? '-' }}</td>
-              <td class="px-5 py-3.5 font-bold text-[#F37321]">{{ o.suggestedQty }}</td>
+              <td class="px-5 py-3.5 font-bold text-[#F37321]">{{ o.suggestedQty.toLocaleString() }}</td>
+              <td class="px-5 py-3.5 font-semibold text-gray-700">{{ formatPrice(o.unitPrice * o.suggestedQty) }}</td>
               <td class="px-5 py-3.5">
                 <span class="text-xs font-bold px-2 py-0.5 rounded" :class="statusClass(o.status)">{{ o.status }}</span>
               </td>
             </tr>
             <tr v-if="autoOrders.length === 0">
-              <td colspan="5" class="px-5 py-10 text-center text-sm text-gray-400">자동 발주 제안이 없습니다.</td>
+              <td colspan="6" class="px-5 py-10 text-center text-sm text-gray-400">자동 발주 제안이 없습니다.</td>
             </tr>
           </tbody>
         </table>
@@ -83,20 +85,22 @@
                 <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주번호</th>
                 <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">대상 가맹점</th>
                 <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주일시</th>
+                <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">총 금액</th>
                 <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">상태</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
-              <tr v-for="o in pendingManualOrders" :key="o.id" class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="openDetail({ id: o.id, type: '수동', store: o.store, status: o.status, date: o.date, items: [{ product: o.product, qty: o.qty }] })">
+              <tr v-for="o in pendingManualOrders" :key="o.id" class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="openDetail({ id: o.id, type: '수동', store: o.store, status: o.status, date: o.date, items: [{ product: o.product, qty: o.qty, unitPrice: o.unitPrice }] })">
                 <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ o.id }}</td>
                 <td class="px-5 py-3.5 font-semibold text-gray-900">{{ o.store }}</td>
                 <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ o.date }}</td>
+                <td class="px-5 py-3.5 font-semibold text-gray-700">{{ formatPrice(o.unitPrice * o.qty) }}</td>
                 <td class="px-5 py-3.5">
                   <span class="text-xs font-bold px-2 py-0.5 rounded" :class="statusClass(o.status)">{{ o.status }}</span>
                 </td>
               </tr>
               <tr v-if="pendingManualOrders.length === 0">
-                <td colspan="4" class="px-5 py-8 text-center text-sm text-gray-400">진행 중인 수동 발주가 없습니다.</td>
+                <td colspan="5" class="px-5 py-8 text-center text-sm text-gray-400">진행 중인 수동 발주가 없습니다.</td>
               </tr>
             </tbody>
           </table>
@@ -116,6 +120,7 @@
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주수량</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">평균수량</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">초과율</th>
+              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">총 금액</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주일시</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">상태</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">처리</th>
@@ -125,7 +130,7 @@
             <tr v-for="o in abnormalOrders" :key="o.id"
               class="hover:bg-gray-50/50 transition-colors cursor-pointer"
               :class="o.processed ? 'opacity-50' : ''"
-              @click="openDetail({ id: o.id, type: '이상', store: o.store, status: o.processed ? '처리완료' : 'DANGER', date: o.date, items: [{ product: o.product, qty: o.qty }], avgQty: o.avgQty, ratio: o.ratio })"
+              @click="openDetail({ id: o.id, type: '이상', store: o.store, status: o.processed ? '처리완료' : 'DANGER', date: o.date, items: [{ product: o.product, qty: o.qty, unitPrice: o.unitPrice }], avgQty: o.avgQty, ratio: o.ratio })"
             >
               <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ o.id }}</td>
               <td class="px-5 py-3.5 font-semibold text-gray-900">{{ o.store }}</td>
@@ -136,6 +141,7 @@
                   +{{ o.ratio }}%
                 </span>
               </td>
+              <td class="px-5 py-3.5 font-semibold text-gray-700">{{ formatPrice(o.unitPrice * o.qty) }}</td>
               <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ o.date }}</td>
               <td class="px-5 py-3.5">
                 <span class="text-xs font-bold px-2 py-0.5 rounded"
@@ -147,9 +153,9 @@
               </td>
               <td class="px-5 py-3.5">
                 <div v-if="!o.processed" class="flex justify-center gap-1.5">
-                  <button @click="approveAbnormal(o)"
+                  <button @click.stop="approveAbnormal(o)"
                     class="px-2.5 py-1 bg-[#F37321] text-white text-xs font-semibold hover:bg-[#e0661d] rounded">승인</button>
-                  <button @click="rejectAbnormal(o)"
+                  <button @click.stop="rejectAbnormal(o)"
                     class="px-2.5 py-1 border border-gray-200 text-gray-600 text-xs font-medium hover:bg-gray-50 rounded">반려</button>
                 </div>
                 <span v-else class="text-xs text-gray-400 block text-center">—</span>
@@ -198,11 +204,12 @@
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">유형</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">가맹점</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주일시</th>
+              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">총 금액</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">상태</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
-            <tr v-for="h in filteredOrderHistory" :key="h.id" class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="openDetail({ id: h.id, type: h.type, store: h.store, status: h.status, date: h.date, items: [{ product: h.product, qty: h.qty }] })">
+            <tr v-for="h in filteredOrderHistory" :key="h.id" class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="openDetail({ id: h.id, type: h.type, store: h.store, status: h.status, date: h.date, items: [{ product: h.product, qty: h.qty, unitPrice: h.unitPrice }] })">
               <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ h.id }}</td>
               <td class="px-5 py-3.5">
                 <span class="text-xs font-bold px-2 py-0.5 rounded"
@@ -212,18 +219,20 @@
               </td>
               <td class="px-5 py-3.5 font-semibold text-gray-900">{{ h.store }}</td>
               <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ h.date }}</td>
+              <td class="px-5 py-3.5 font-semibold text-gray-700">{{ formatPrice(h.unitPrice * h.qty) }}</td>
               <td class="px-5 py-3.5">
                 <span class="text-xs font-bold px-2 py-0.5 rounded"
                   :class="statusClass(h.status)">{{ h.status }}</span>
               </td>
             </tr>
             <tr v-if="filteredOrderHistory.length === 0">
-              <td colspan="5" class="px-5 py-10 text-center text-sm text-gray-400">조건에 맞는 발주 이력이 없습니다.</td>
+              <td colspan="6" class="px-5 py-10 text-center text-sm text-gray-400">조건에 맞는 발주 이력이 없습니다.</td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
+
     <!-- 수동 발주 생성 Modal (ORDER_003) -->
     <div v-if="showManualForm" class="fixed inset-0 z-50 flex items-center justify-center">
       <div class="absolute inset-0 bg-black/40" @click="showManualForm = false"></div>
@@ -252,7 +261,7 @@
               </button>
             </div>
             <div v-for="(item, idx) in manualForm.items" :key="idx" class="flex gap-2 items-center">
-              <select v-model="item.product"
+              <select v-model="item.product" @change="item.unitPrice = productPrices[item.product] ?? 0"
                 class="flex-1 px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none">
                 <option value="">품목 선택</option>
                 <option>프리미엄 원두</option>
@@ -265,6 +274,8 @@
                 <option>종이컵(L)</option>
               </select>
               <input v-model.number="item.qty" type="number" min="1" placeholder="수량"
+                class="w-20 px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none" />
+              <input v-model.number="item.unitPrice" type="number" min="0" placeholder="단가"
                 class="w-24 px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none" />
               <button @click="manualForm.items.splice(idx, 1)" class="text-gray-300 hover:text-red-500 transition-colors shrink-0">
                 <X class="w-4 h-4" />
@@ -273,6 +284,9 @@
             <div v-if="manualForm.items.length === 0"
               class="text-sm text-gray-400 text-center py-4 bg-gray-50 border border-gray-100 rounded">
               품목 추가 버튼을 눌러 발주 품목을 입력하세요.
+            </div>
+            <div v-if="manualForm.items.length > 0" class="text-right text-sm font-bold text-[#F37321]">
+              합계: {{ formatPrice(manualForm.items.reduce((s, i) => s + (i.unitPrice || 0) * (i.qty || 0), 0)) }}
             </div>
           </div>
           <div class="space-y-1.5">
@@ -333,14 +347,26 @@
                   <tr>
                     <th class="px-4 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase">품목명</th>
                     <th class="px-4 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase">수량</th>
+                    <th class="px-4 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase">단가</th>
+                    <th class="px-4 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase">금액</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                   <tr v-for="(item, idx) in selectedOrder.items" :key="idx">
                     <td class="px-4 py-2.5 text-gray-800">{{ item.product }}</td>
                     <td class="px-4 py-2.5 text-right font-semibold text-gray-900">{{ item.qty.toLocaleString() }}</td>
+                    <td class="px-4 py-2.5 text-right text-xs text-gray-500">{{ item.unitPrice ? item.unitPrice.toLocaleString() + '원' : '-' }}</td>
+                    <td class="px-4 py-2.5 text-right font-bold text-[#F37321]">{{ item.unitPrice ? formatPrice(item.unitPrice * item.qty) : '-' }}</td>
                   </tr>
                 </tbody>
+                <tfoot class="bg-gray-50 border-t border-gray-200">
+                  <tr>
+                    <td colspan="3" class="px-4 py-2.5 text-right text-xs font-bold text-gray-500">합계</td>
+                    <td class="px-4 py-2.5 text-right font-black text-[#F37321]">
+                      {{ formatPrice(selectedOrder.items.reduce((s, i) => s + (i.unitPrice ? i.unitPrice * i.qty : 0), 0)) }}
+                    </td>
+                  </tr>
+                </tfoot>
               </table>
             </div>
           </div>
@@ -420,6 +446,21 @@ import { Plus, X, Settings } from 'lucide-vue-next'
 const route = useRoute()
 const router = useRouter()
 
+const productPrices = {
+  '프리미엄 원두':   25000,
+  '에스프레소 원두': 22000,
+  '우유(1L)':        2500,
+  '두유(1L)':        3000,
+  '바닐라 시럽':     15000,
+  '카라멜 시럽':     15000,
+  '종이컵(M)':       100,
+  '종이컵(L)':       120,
+}
+
+function formatPrice(n) {
+  return n.toLocaleString('ko-KR') + '원'
+}
+
 const abnormalCount = computed(() => abnormalOrders.value.filter(o => !o.processed).length)
 
 const tabs = computed(() => [
@@ -432,18 +473,18 @@ const activeTab = ref('auto')
 
 
 const autoOrders = ref([
-  { id: 'AUTO-20260413-001', store: '여의도역점',       product: '우유(1L)',        currentStock: 85,  minStock: 120, suggestedQty: 200,  status: '제안중' },
-  { id: 'AUTO-20260413-002', store: '판교테크노밸리점', product: '에스프레소 원두', currentStock: 12,  minStock: 80,  suggestedQty: 150,  status: '제안중' },
-  { id: 'AUTO-20260413-003', store: '한화빌딩점',       product: '바닐라 시럽',     currentStock: 5,   minStock: 30,  suggestedQty: 60,   status: '제안중' },
-  { id: 'AUTO-20260412-004', store: '부산센텀점',       product: '종이컵(M)',       currentStock: 300, minStock: 500, suggestedQty: 1000, status: '확정'   },
-  { id: 'AUTO-20260412-005', store: '한화빌딩점',       product: '두유(1L)',        currentStock: 40,  minStock: 60,  suggestedQty: 100,  status: '거절'   },
+  { id: 'AUTO-20260413-001', store: '여의도역점',       product: '우유(1L)',        unitPrice: 2500,  currentStock: 85,  minStock: 120, suggestedQty: 200,  date: '2026-04-13 22:00', status: '제안중' },
+  { id: 'AUTO-20260413-002', store: '판교테크노밸리점', product: '에스프레소 원두', unitPrice: 22000, currentStock: 12,  minStock: 80,  suggestedQty: 150,  date: '2026-04-13 22:00', status: '제안중' },
+  { id: 'AUTO-20260413-003', store: '한화빌딩점',       product: '바닐라 시럽',     unitPrice: 15000, currentStock: 5,   minStock: 30,  suggestedQty: 60,   date: '2026-04-13 22:00', status: '제안중' },
+  { id: 'AUTO-20260412-004', store: '부산센텀점',       product: '종이컵(M)',       unitPrice: 100,   currentStock: 300, minStock: 500, suggestedQty: 1000, date: '2026-04-12 22:00', status: '확정'   },
+  { id: 'AUTO-20260412-005', store: '한화빌딩점',       product: '두유(1L)',        unitPrice: 3000,  currentStock: 40,  minStock: 60,  suggestedQty: 100,  date: '2026-04-12 22:00', status: '거절'   },
 ])
 
 const orderHistory = ref([
-  { id: 'ORD-20260413-001', type: '자동', store: '부산센텀점',       product: '종이컵(M)',     qty: 1000, date: '2026-04-12 22:00', status: '배송중'   },
-  { id: 'ORD-20260413-002', type: '수동', store: '한화빌딩점',       product: '프리미엄 원두', qty: 50,   date: '2026-04-11 10:30', status: '입고완료' },
-  { id: 'ORD-20260412-003', type: '자동', store: '여의도역점',       product: '우유(1L)',      qty: 200,  date: '2026-04-11 22:00', status: '입고완료' },
-  { id: 'ORD-20260411-004', type: '수동', store: '판교테크노밸리점', product: '카라멜 시럽',   qty: 30,   date: '2026-04-10 14:15', status: '입고완료' },
+  { id: 'ORD-20260413-001', type: '자동', store: '부산센텀점',       product: '종이컵(M)',     unitPrice: 100,   qty: 1000, date: '2026-04-12 22:00', status: '배송중'   },
+  { id: 'ORD-20260413-002', type: '수동', store: '한화빌딩점',       product: '프리미엄 원두', unitPrice: 25000, qty: 50,   date: '2026-04-11 10:30', status: '입고완료' },
+  { id: 'ORD-20260412-003', type: '자동', store: '여의도역점',       product: '우유(1L)',      unitPrice: 2500,  qty: 200,  date: '2026-04-11 22:00', status: '입고완료' },
+  { id: 'ORD-20260411-004', type: '수동', store: '판교테크노밸리점', product: '카라멜 시럽',   unitPrice: 15000, qty: 30,   date: '2026-04-10 14:15', status: '입고완료' },
 ])
 
 const historyFilterType = ref('')
@@ -465,9 +506,9 @@ const filteredOrderHistory = computed(() =>
 
 // 이상 발주 데이터 (ORDER_007)
 const abnormalOrders = ref([
-  { id: 'ORD-20260414-ABN1', store: '여의도역점',       product: '에스프레소 원두', qty: 850, avgQty: 150, ratio: 567, date: '2026-04-14 11:22', processed: false },
-  { id: 'ORD-20260413-ABN2', store: '판교테크노밸리점', product: '우유(1L)',         qty: 1200, avgQty: 300, ratio: 400, date: '2026-04-13 09:15', processed: false },
-  { id: 'ORD-20260412-ABN3', store: '부산센텀점',        product: '바닐라 시럽',     qty: 500,  avgQty: 60,  ratio: 833, date: '2026-04-12 16:40', processed: true  },
+  { id: 'ORD-20260414-ABN1', store: '여의도역점',       product: '에스프레소 원두', unitPrice: 22000, qty: 850,  avgQty: 150, ratio: 567, date: '2026-04-14 11:22', processed: false },
+  { id: 'ORD-20260413-ABN2', store: '판교테크노밸리점', product: '우유(1L)',         unitPrice: 2500,  qty: 1200, avgQty: 300, ratio: 400, date: '2026-04-13 09:15', processed: false },
+  { id: 'ORD-20260412-ABN3', store: '부산센텀점',        product: '바닐라 시럽',     unitPrice: 15000, qty: 500,  avgQty: 60,  ratio: 833, date: '2026-04-12 16:40', processed: true  },
 ])
 
 
@@ -532,15 +573,15 @@ function approveAbnormal(o) { o.processed = true; alert(`${o.store} 발주 승�
 function rejectAbnormal(o)  { o.processed = true; alert(`${o.store} 발주 반려 처리되었습니다.`) }
 
 const pendingManualOrders = ref([
-  { id: 'MAN-20260420-001', store: '여의도역점',       product: '프리미엄 원두', qty: 50,  date: '2026-04-20 09:10', status: '확정' },
-  { id: 'MAN-20260419-002', store: '판교테크노밸리점', product: '두유(1L)',      qty: 100, date: '2026-04-19 14:30', status: '배송중' },
+  { id: 'MAN-20260420-001', store: '여의도역점',       product: '프리미엄 원두', unitPrice: 25000, qty: 50,  date: '2026-04-20 09:10', status: '확정' },
+  { id: 'MAN-20260419-002', store: '판교테크노밸리점', product: '두유(1L)',      unitPrice: 3000,  qty: 100, date: '2026-04-19 14:30', status: '배송중' },
 ])
 
 const showManualForm = ref(false)
 const manualForm = ref({ store: '', items: [], note: '' })
 
 function addManualItem() {
-  manualForm.value.items.push({ product: '', qty: 1 })
+  manualForm.value.items.push({ product: '', qty: 1, unitPrice: 0 })
 }
 
 function submitManualOrder() {
@@ -556,6 +597,7 @@ function submitManualOrder() {
         type: '수동',
         store: manualForm.value.store,
         product: item.product,
+        unitPrice: item.unitPrice || 0,
         qty: item.qty,
         date: now,
         status: '확정',

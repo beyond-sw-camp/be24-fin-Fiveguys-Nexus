@@ -3,18 +3,19 @@
     <div class="flex items-center justify-between">
       <div>
         <h1 class="text-xl font-bold text-gray-900 tracking-tight">계정 관리</h1>
+        <p class="text-sm text-gray-500 mt-1">계정 목록을 조회하고, 계정을 생성/수정/삭제할 수 있습니다.</p>
       </div>
       <button
         @click="openCreateModal"
         class="inline-flex items-center gap-2 px-4 py-2.5 rounded bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d]"
       >
-        + 운영자 계정 생성
+        + 계정 생성
       </button>
     </div>
 
     <section class="bg-white border border-gray-200 rounded-lg overflow-hidden">
       <div class="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
-        <h2 class="text-sm font-bold text-gray-800">운영자 계정 리스트</h2>
+        <h2 class="text-sm font-bold text-gray-800">계정 리스트</h2>
         <span class="text-xs text-gray-400">총 {{ accounts.length }}명</span>
       </div>
 
@@ -58,7 +59,7 @@
             </td>
           </tr>
           <tr v-if="accounts.length === 0">
-            <td colspan="6" class="px-5 py-12 text-center text-gray-400 text-sm">등록된 운영자 계정이 없습니다.</td>
+            <td colspan="6" class="px-5 py-12 text-center text-gray-400 text-sm">등록된 계정이 없습니다.</td>
           </tr>
         </tbody>
       </table>
@@ -68,7 +69,7 @@
       <div class="absolute inset-0 bg-black/40" @click="closeFormModal"></div>
       <div class="relative w-full max-w-lg bg-white rounded-lg border border-gray-200 shadow-xl">
         <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-          <h3 class="font-bold text-gray-900">{{ formMode === 'create' ? '운영자 계정 생성' : '운영자 계정 수정' }}</h3>
+          <h3 class="font-bold text-gray-900">{{ formMode === 'create' ? '계정 생성' : '계정 수정' }}</h3>
           <button @click="closeFormModal" class="text-gray-400 hover:text-gray-600">✕</button>
         </div>
 
@@ -154,7 +155,7 @@
     <div v-if="isDeleteModalOpen" class="fixed inset-0 z-50 flex items-center justify-center">
       <div class="absolute inset-0 bg-black/40" @click="closeDeleteModal"></div>
       <div class="relative w-full max-w-sm bg-white rounded-lg border border-gray-200 shadow-xl p-6">
-        <h3 class="text-base font-bold text-gray-900">운영자 계정 삭제</h3>
+        <h3 class="text-base font-bold text-gray-900">계정 삭제</h3>
         <p class="text-sm text-gray-600 mt-2">
           <span class="font-semibold">{{ selectedAccount?.name }}</span> 계정을 삭제하시겠습니까?
         </p>
@@ -266,7 +267,7 @@ function submitForm() {
 
   if (formMode.value === 'create') {
     if (accounts.value.some((account) => account.id === normalizedId)) {
-      alert('이미 존재하는 운영자 ID 입니다.')
+      alert('이미 존재하는 계정 ID 입니다.')
       return
     }
 
@@ -281,7 +282,7 @@ function submitForm() {
       },
       ...accounts.value,
     ])
-    alert('운영자 계정이 생성되었습니다.')
+    alert('계정이 생성되었습니다.')
   } else {
     if (!selectedAccount.value) return
     saveAccounts(
@@ -291,7 +292,7 @@ function submitForm() {
           : account
       )
     )
-    alert('운영자 계정이 수정되었습니다.')
+    alert('계정이 수정되었습니다.')
   }
 
   closeFormModal()
@@ -311,6 +312,6 @@ function confirmDelete() {
   if (!selectedAccount.value) return
   saveAccounts(accounts.value.filter((account) => account.id !== selectedAccount.value.id))
   closeDeleteModal()
-  alert('운영자 계정이 삭제되었습니다.')
+  alert('계정이 삭제되었습니다.')
 }
 </script>

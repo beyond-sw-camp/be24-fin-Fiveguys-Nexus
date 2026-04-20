@@ -60,7 +60,9 @@
         <div class="flex-1 divide-y divide-gray-50 overflow-y-auto">
           <div v-for="d in ongoingDeliveries" :key="d.id"
             class="px-5 py-4 hover:bg-gray-50 transition-colors cursor-pointer"
-            @click="router.push('/store-delivery')">
+            role="button" tabindex="0"
+            @click="router.push('/store-delivery')"
+            @keydown.enter="router.push('/store-delivery')">
             <div class="flex items-center justify-between gap-3">
               <div class="flex-1 min-w-0">
                 <p class="text-sm font-bold text-gray-900 font-mono">{{ d.id }}</p>
@@ -94,7 +96,9 @@
           <tbody class="divide-y divide-gray-50">
             <tr v-for="o in pendingOrders" :key="o.id"
               class="hover:bg-gray-50/50 cursor-pointer"
-              @click="router.push('/store-order')">
+              role="button" tabindex="0"
+              @click="router.push('/store-order')"
+              @keydown.enter="router.push('/store-order')">
               <td class="px-5 py-3 font-semibold text-gray-800">{{ o.product }}</td>
               <td class="px-5 py-3 text-right text-gray-600">{{ o.qty.toLocaleString() }}개</td>
               <td class="px-5 py-3 text-right font-semibold text-gray-700">{{ (o.qty * o.unitPrice).toLocaleString() }}원</td>
@@ -123,7 +127,9 @@
           <tbody class="divide-y divide-gray-50">
             <tr v-for="w in warnings" :key="w.product"
               class="hover:bg-gray-50/50 cursor-pointer"
-              @click="router.push('/store-inventory')">
+              role="button" tabindex="0"
+              @click="router.push('/store-inventory')"
+              @keydown.enter="router.push('/store-inventory')">
               <td class="px-5 py-3 font-semibold text-gray-800">{{ w.product }}</td>
               <td class="px-5 py-3 text-right font-bold text-red-600">{{ w.current }}</td>
               <td class="px-5 py-3 text-right text-gray-400">{{ w.min }}</td>
@@ -143,11 +149,11 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
+import { Chart } from 'chart.js/auto'
 
 const router = useRouter()
-import { Chart } from 'chart.js/auto'
 
 const today = computed(() => new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' }))
 
@@ -159,9 +165,12 @@ const kpis = ref([
 ])
 
 const lineCanvas = ref(null)
+let lineChart = null
 
 const thisWeek  = [72, 85, 68, 91, 84, 96, 80]
 const lastWeek  = [65, 78, 74, 82, 79, 88, 71]
+const yMin = computed(() => Math.floor(Math.min(...thisWeek, ...lastWeek) / 10) * 10 - 10)
+const yMax = computed(() => Math.ceil(Math.max(...thisWeek, ...lastWeek) / 10) * 10 + 10)
 const weekLabels = ['일', '월', '화', '수', '목', '금', '토']
 
 const ongoingDeliveries = ref([
@@ -190,8 +199,12 @@ const deliveryCls = s => ({
   '배송지연': 'bg-red-50 text-red-600 border-red-200',
 }[s] || 'bg-gray-100 text-gray-500 border-gray-200')
 
+onUnmounted(() => {
+  lineChart?.destroy()
+})
+
 onMounted(() => {
-  new Chart(lineCanvas.value, {
+  lineChart = new Chart(lineCanvas.value, {
     type: 'line',
     data: {
       labels: weekLabels,
@@ -251,7 +264,7 @@ onMounted(() => {
           border: { display: false },
         },
         y: {
-          min: 50, max: 110,
+          min: yMin.value, max: yMax.value,
           grid: { color: '#f3f4f6' },
           ticks: { color: '#9ca3af', font: { size: 11 }, stepSize: 20 },
           border: { display: false },

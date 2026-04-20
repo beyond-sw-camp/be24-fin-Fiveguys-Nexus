@@ -213,20 +213,25 @@
 import { ref, computed } from 'vue'
 import { Plus, Pencil, Trash2, Search, Tag } from 'lucide-vue-next'
 
-const categories = ref(['원두', '유제품', '시럽·소스', '포장재', '기타'])
+const categories = ref(['육류', '소스', '채소', '가공식품', '음료'])
 const selectedCategory = ref('전체')
 const searchQuery = ref('')
 const newCategory = ref('')
 
 const products = ref([
-  { code: 'P100', name: '프리미엄 원두',   category: '원두',      unit: 'kg',  baseStock: 500,  minStock: 100, price: 18000, expiryDays: 180 },
-  { code: 'P101', name: '에스프레소 원두', category: '원두',      unit: 'kg',  baseStock: 300,  minStock: 80,  price: 22000, expiryDays: 180 },
-  { code: 'P200', name: '우유(1L)',         category: '유제품',   unit: '팩',  baseStock: 400,  minStock: 120, price: 1800,  expiryDays: 7   },
-  { code: 'P201', name: '두유(1L)',         category: '유제품',   unit: '팩',  baseStock: 200,  minStock: 60,  price: 2100,  expiryDays: 7   },
-  { code: 'P300', name: '바닐라 시럽',     category: '시럽·소스', unit: '병', baseStock: 150,  minStock: 30,  price: 8500,  expiryDays: 30  },
-  { code: 'P301', name: '카라멜 시럽',     category: '시럽·소스', unit: '병', baseStock: 150,  minStock: 30,  price: 8500,  expiryDays: 30  },
-  { code: 'P400', name: '종이컵(M)',        category: '포장재',   unit: '개',  baseStock: 2000, minStock: 500, price: 45,    expiryDays: null },
-  { code: 'P401', name: '종이컵(L)',        category: '포장재',   unit: '개',  baseStock: 2000, minStock: 500, price: 55,    expiryDays: null },
+  { code: 'P100', name: '닭(10호)', category: '육류', unit: '마리', baseStock: 120, minStock: 30, price: 7000, expiryDays: 3 },
+  { code: 'P101', name: '닭(부분육-윙)', category: '육류', unit: 'kg', baseStock: 80, minStock: 20, price: 9000, expiryDays: 3 },
+  { code: 'P102', name: '닭(부분육-다리)', category: '육류', unit: 'kg', baseStock: 80, minStock: 20, price: 9500, expiryDays: 3 },
+
+  { code: 'P200', name: '양념소스', category: '소스', unit: 'kg', baseStock: 50, minStock: 10, price: 4000, expiryDays: 30 },
+  { code: 'P201', name: '매운양념소스', category: '소스', unit: 'kg', baseStock: 50, minStock: 10, price: 4500, expiryDays: 30 },
+  { code: 'P202', name: '파우더(튀김가루)', category: '소스', unit: 'kg', baseStock: 100, minStock: 20, price: 2000, expiryDays: 60 },
+
+  { code: 'P300', name: '감자', category: '채소', unit: 'kg', baseStock: 150, minStock: 40, price: 1500, expiryDays: 14 },
+  { code: 'P301', name: '치즈볼 원재료', category: '가공식품', unit: '팩', baseStock: 100, minStock: 30, price: 3000, expiryDays: 10 },
+
+  { code: 'P400', name: '콜라', category: '음료', unit: '박스', baseStock: 200, minStock: 50, price: 1200, expiryDays: 60 },
+  { code: 'P401', name: '사이다', category: '음료', unit: '박스', baseStock: 180, minStock: 40, price: 1200, expiryDays: 60 },
 ])
 
 const filteredProducts = computed(() => {

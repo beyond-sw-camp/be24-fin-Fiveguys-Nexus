@@ -92,7 +92,7 @@
 import { ref, computed } from 'vue'
 
 const filterStatus = ref('전체')
-const filterDestination = ref('')
+const searchQuery = ref('') // 가맹점 검색어 상태
 
 const destinationOptions = computed(() => {
   const set = new Set(deliveries.value.map((d) => d.destination))

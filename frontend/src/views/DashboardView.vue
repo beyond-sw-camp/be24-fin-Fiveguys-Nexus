@@ -59,20 +59,17 @@
 
       <!-- 진행중 배송 -->
       <div class="bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col">
-        <div class="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100">
+        <div class="px-5 pt-5 pb-4 border-b border-gray-100">
           <h2 class="font-bold text-gray-900">진행중 배송</h2>
-          <RouterLink to="/delivery" class="text-xs text-orange-500 font-medium hover:text-orange-600">전체보기</RouterLink>
         </div>
         <div class="flex-1 divide-y divide-gray-50 overflow-y-auto">
           <div v-for="d in ongoingDeliveries" :key="d.id"
-            class="px-5 py-4 hover:bg-gray-50 transition-colors cursor-pointer">
+            class="px-5 py-4 hover:bg-gray-50 transition-colors cursor-pointer"
+            role="button" tabindex="0"
+            @click="router.push('/delivery')"
+            @keydown.enter="router.push('/delivery')"
+            @keydown.space.prevent="router.push('/delivery')">
             <div class="flex items-start gap-3">
-              <div class="w-9 h-9 rounded-xl bg-orange-50 flex items-center justify-center shrink-0 mt-0.5">
-                <svg class="w-4 h-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
-                </svg>
-              </div>
               <div class="flex-1 min-w-0">
                 <p class="text-xs text-gray-400">발주 {{ d.num }}</p>
                 <p class="text-sm font-bold text-gray-900 font-mono">{{ d.id }}</p>
@@ -152,12 +149,16 @@
 
         <!-- 재고 위험 경고 -->
         <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
-          <div class="flex items-center justify-between mb-3">
+          <div class="mb-3">
             <h2 class="font-bold text-gray-900">재고 위험</h2>
-            <RouterLink to="/inventory" class="text-xs text-orange-500 hover:text-orange-600">전체보기</RouterLink>
           </div>
           <div class="space-y-2">
-            <div v-for="w in warnings" :key="w.store + w.product" class="flex items-center justify-between py-1.5">
+            <div v-for="w in warnings" :key="w.store + w.product"
+              class="flex items-center justify-between py-1.5 cursor-pointer hover:bg-gray-50 rounded px-1 transition-colors"
+              role="button" tabindex="0"
+              @click="router.push('/inventory/franchise')"
+              @keydown.enter="router.push('/inventory/franchise')"
+              @keydown.space.prevent="router.push('/inventory/franchise')">
               <div class="flex items-center gap-2">
                 <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
                 <p class="text-sm text-gray-800 truncate max-w-28">{{ w.product }}</p>
@@ -177,10 +178,11 @@
 
 <script setup>
 import { computed, ref, onMounted } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 import { Chart } from 'chart.js/auto'
 
 const periodTabs = ['일간', '주간', '월간']
+const router = useRouter()
 const activePeriod = ref('주간')
 
 const today = computed(() => new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' }))
@@ -379,10 +381,10 @@ const kpis = ref([
 ])
 
 const warnings = ref([
-  { store: '여의도역점', product: '우유(1L)', current: 85, min: 120 },
-  { store: '판교테크노밸리점', product: '에스프레소 원두', current: 12, min: 80 },
-  { store: '한화빌딩점', product: '바닐라 시럽', current: 5, min: 30 },
-  { store: '부산센텀점', product: '종이컵(M)', current: 300, min: 500 },
+  { store: '여의도역점',       product: '생닭(1kg)',      current: 30,  min: 50   },
+  { store: '판교테크노밸리점', product: '튀김유(18L)',    current: 2,   min: 5    },
+  { store: '한화빌딩점',       product: '황금올리브소스', current: 8,   min: 20   },
+  { store: '부산센텀점',       product: '치킨박스(중)',   current: 200, min: 500  },
 ])
 
 const ongoingDeliveries = [

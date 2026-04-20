@@ -379,10 +379,10 @@ const kpis = ref([
 ])
 
 const warnings = ref([
-  { store: '여의도역점', product: '우유(1L)', current: 85, min: 120 },
-  { store: '판교테크노밸리점', product: '에스프레소 원두', current: 12, min: 80 },
-  { store: '한화빌딩점', product: '바닐라 시럽', current: 5, min: 30 },
-  { store: '부산센텀점', product: '종이컵(M)', current: 300, min: 500 },
+  { store: '여의도역점',       product: '생닭(1kg)',      current: 30,  min: 50   },
+  { store: '판교테크노밸리점', product: '튀김유(18L)',    current: 2,   min: 5    },
+  { store: '한화빌딩점',       product: '황금올리브소스', current: 8,   min: 20   },
+  { store: '부산센텀점',       product: '치킨박스(중)',   current: 200, min: 500  },
 ])
 
 const ongoingDeliveries = [

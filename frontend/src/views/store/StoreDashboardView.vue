@@ -85,6 +85,77 @@
       </div>
     </div>
 
+    <!-- 하단 행: 바차트 + 도넛/재고 위험 -->
+    <div class="grid grid-cols-3 gap-4">
+
+      <!-- 월별 매출 바차트 -->
+      <div class="col-span-2 bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col"
+        style="min-height:280px">
+        <div class="flex items-center justify-between mb-5 shrink-0">
+          <div>
+            <h2 class="font-bold text-gray-900">월별 발주 금액</h2>
+            <p class="text-xs text-gray-400 mt-0.5">최근 6개월 발주 금액 현황 (단위: 만원)</p>
+          </div>
+          <div class="flex items-center gap-4 text-xs text-gray-500">
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-orange-400 inline-block"></span>자동 발주</span>
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-blue-300 inline-block"></span>수동 발주</span>
+          </div>
+        </div>
+        <div class="flex-1 min-h-0 relative" style="height:200px">
+          <canvas ref="barCanvas" style="display:block; width:100%; height:100%;"></canvas>
+        </div>
+      </div>
+
+      <!-- 오른쪽: 재고 현황 도넛 + 재고 위험 -->
+      <div class="space-y-4">
+
+        <!-- 재고 현황 도넛 -->
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="font-bold text-gray-900">재고 현황</h2>
+            <span class="text-xs text-gray-400">오늘 기준</span>
+          </div>
+          <div class="relative mx-auto" style="width:140px;height:140px">
+            <canvas ref="donutCanvas"></canvas>
+            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <p class="text-2xl font-bold text-gray-900">{{ stockRate }}%</p>
+              <p class="text-xs text-gray-400 mt-0.5">정상 비율</p>
+            </div>
+          </div>
+          <div class="mt-4 space-y-2">
+            <div v-for="item in donutLegend" :key="item.label" class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full shrink-0" :style="{ background: item.color }"></span>
+              <span class="text-xs text-gray-500 flex-1">{{ item.label }}</span>
+              <div class="w-16 h-1 rounded-full bg-gray-100 overflow-hidden">
+                <div class="h-full rounded-full" :style="{ width: item.pct + '%', background: item.color }"></div>
+              </div>
+              <span class="text-xs font-semibold text-gray-700 w-7 text-right">{{ item.pct }}%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 재고 위험 경고 -->
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="font-bold text-gray-900">재고 위험</h2>
+            <RouterLink to="/store-inventory" class="text-xs text-orange-500 hover:text-orange-600">전체보기</RouterLink>
+          </div>
+          <div class="space-y-2">
+            <div v-for="w in warnings" :key="w.product" class="flex items-center justify-between py-1.5">
+              <div class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                <p class="text-sm text-gray-800 truncate max-w-28">{{ w.product }}</p>
+              </div>
+              <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-red-100 text-red-600">
+                {{ w.current }}/{{ w.min }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -106,10 +177,28 @@ const kpis = ref([
 ])
 
 const lineCanvas = ref(null)
+const barCanvas = ref(null)
+const donutCanvas = ref(null)
 
 const thisWeek = [2, 3, 1, 4, 2, 3, 2]
 const lastWeek = [1, 2, 3, 2, 3, 2, 1]
 const weekLabels = ['일', '월', '화', '수', '목', '금', '토']
+
+const orderLabels = ['11월', '12월', '1월', '2월', '3월', '4월']
+const autoOrderAmt = [42, 38, 51, 35, 48, 53]
+const manualOrderAmt = [8, 12, 6, 14, 9, 11]
+
+const donutLegend = [
+  { label: '정상',   pct: 72, color: '#f97316' },
+  { label: '주의',   pct: 18, color: '#60a5fa' },
+  { label: '위험',   pct: 10, color: '#f87171' },
+]
+const stockRate = computed(() => donutLegend[0].pct)
+
+const warnings = ref([
+  { product: '우유(1L)',    current: '85팩',  min: '120팩' },
+  { product: '바닐라 시럽', current: '5병',   min: '30병'  },
+])
 
 const ongoingDeliveries = ref([
   { num: 1, id: 'ORD-2604-008', items: '우유(1L) 외 2건',    status: '배송중'   },
@@ -127,6 +216,92 @@ const deliveryCls = s => ({
 }[s] || 'bg-gray-100 text-gray-500 border border-gray-200')
 
 onMounted(() => {
+  // 도넛 차트
+  new Chart(donutCanvas.value, {
+    type: 'doughnut',
+    data: {
+      labels: donutLegend.map(d => d.label),
+      datasets: [{
+        data: donutLegend.map(d => d.pct),
+        backgroundColor: donutLegend.map(d => d.color),
+        borderWidth: 3,
+        borderColor: '#ffffff',
+        hoverBorderWidth: 3,
+        hoverOffset: 6,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      cutout: '72%',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1f2937',
+          titleColor: '#f9fafb',
+          bodyColor: '#d1d5db',
+          padding: 10,
+          cornerRadius: 10,
+          callbacks: { label: (ctx) => ` ${ctx.label}: ${ctx.parsed}%` },
+        },
+      },
+    },
+  })
+
+  // 바 차트
+  new Chart(barCanvas.value, {
+    type: 'bar',
+    data: {
+      labels: orderLabels,
+      datasets: [
+        {
+          label: '자동 발주',
+          data: autoOrderAmt,
+          backgroundColor: '#fb923c',
+          borderRadius: 4,
+          borderSkipped: false,
+        },
+        {
+          label: '수동 발주',
+          data: manualOrderAmt,
+          backgroundColor: '#93c5fd',
+          borderRadius: 4,
+          borderSkipped: false,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1f2937',
+          titleColor: '#f9fafb',
+          bodyColor: '#d1d5db',
+          padding: 10,
+          cornerRadius: 10,
+          callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y}만원` },
+        },
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: '#9ca3af', font: { size: 12 } },
+          border: { display: false },
+        },
+        y: {
+          min: 0,
+          grid: { color: '#f3f4f6' },
+          ticks: { color: '#9ca3af', font: { size: 11 }, stepSize: 20, precision: 0 },
+          border: { display: false },
+        },
+      },
+    },
+  })
+
+  // 라인 차트
   new Chart(lineCanvas.value, {
     type: 'line',
     data: {

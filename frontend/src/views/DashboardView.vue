@@ -59,20 +59,16 @@
 
       <!-- 진행중 배송 -->
       <div class="bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col">
-        <div class="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100">
+        <div class="px-5 pt-5 pb-4 border-b border-gray-100">
           <h2 class="font-bold text-gray-900">진행중 배송</h2>
-          <RouterLink to="/delivery" class="text-xs text-orange-500 font-medium hover:text-orange-600">전체보기</RouterLink>
         </div>
         <div class="flex-1 divide-y divide-gray-50 overflow-y-auto">
           <div v-for="d in ongoingDeliveries" :key="d.id"
-            class="px-5 py-4 hover:bg-gray-50 transition-colors cursor-pointer">
+            class="px-5 py-4 hover:bg-gray-50 transition-colors cursor-pointer"
+            role="button" tabindex="0"
+            @click="router.push('/delivery')"
+            @keydown.enter="router.push('/delivery')">
             <div class="flex items-start gap-3">
-              <div class="w-9 h-9 rounded-xl bg-orange-50 flex items-center justify-center shrink-0 mt-0.5">
-                <svg class="w-4 h-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
-                </svg>
-              </div>
               <div class="flex-1 min-w-0">
                 <p class="text-xs text-gray-400">발주 {{ d.num }}</p>
                 <p class="text-sm font-bold text-gray-900 font-mono">{{ d.id }}</p>
@@ -152,12 +148,15 @@
 
         <!-- 재고 위험 경고 -->
         <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
-          <div class="flex items-center justify-between mb-3">
+          <div class="mb-3">
             <h2 class="font-bold text-gray-900">재고 위험</h2>
-            <RouterLink to="/inventory" class="text-xs text-orange-500 hover:text-orange-600">전체보기</RouterLink>
           </div>
           <div class="space-y-2">
-            <div v-for="w in warnings" :key="w.store + w.product" class="flex items-center justify-between py-1.5">
+            <div v-for="w in warnings" :key="w.store + w.product"
+              class="flex items-center justify-between py-1.5 cursor-pointer hover:bg-gray-50 rounded px-1 transition-colors"
+              role="button" tabindex="0"
+              @click="router.push('/inventory')"
+              @keydown.enter="router.push('/inventory')">
               <div class="flex items-center gap-2">
                 <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
                 <p class="text-sm text-gray-800 truncate max-w-28">{{ w.product }}</p>
@@ -177,10 +176,11 @@
 
 <script setup>
 import { computed, ref, onMounted } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 import { Chart } from 'chart.js/auto'
 
 const periodTabs = ['일간', '주간', '월간']
+const router = useRouter()
 const activePeriod = ref('주간')
 
 const today = computed(() => new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' }))

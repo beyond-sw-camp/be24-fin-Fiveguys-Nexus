@@ -1,14 +1,22 @@
 <template>
   <div class="p-5 space-y-4">
+
     <!-- Header -->
-    <div class="flex flex-wrap justify-between items-start gap-4">
-      <div class="min-w-0">
-        <h1 class="text-xl font-bold text-gray-900 tracking-tight">정산 관리</h1>
-        <p class="page-spec-hint">
-          <code>INCOME_001~003</code>가맹점·거래처 정산 목록, 기간(월)·주간/월간 보기, 가맹점명 검색, 거래 명세서(S3 PDF) 다운로드 흐름을 반영합니다.
-        </p>
+    <div class="flex flex-col gap-3">
+
+      <!-- 타이틀 -->
+      <div class="flex justify-between items-start flex-wrap gap-4">
+        <div class="min-w-0">
+          <h1 class="text-xl font-bold text-gray-900 tracking-tight">정산 관리</h1>
+          <p class="page-spec-hint">
+            <code>INCOME_001~003</code>가맹점·거래처 정산 목록, 기간(월)·주간/월간 보기, 가맹점명 검색, 거래 명세서(S3 PDF) 다운로드 흐름을 반영합니다.
+          </p>
+        </div>
       </div>
-      <div class="flex flex-wrap gap-2 items-center shrink-0">
+
+      <!-- 🔥 버튼 영역 (검색창 위로 이동됨) -->
+      <div class="flex flex-wrap gap-2 items-center">
+
         <div class="flex rounded-lg border border-gray-200 bg-gray-50/90 p-0.5">
           <button
             v-for="p in periodGranularityOptions"
@@ -21,19 +29,27 @@
             {{ p }}
           </button>
         </div>
-        <select v-model="selectedMonth"
-                class="px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none bg-white">
+
+        <select
+          v-model="selectedMonth"
+          class="px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white shadow-sm
+                 focus:border-[#F37321] focus:ring-1 focus:ring-[#F37321] outline-none"
+        >
           <option>2026-04</option>
           <option>2026-03</option>
           <option>2026-02</option>
         </select>
-        <button class="bg-gray-900 text-white px-4 py-2 text-sm font-semibold hover:bg-gray-800">
+
+        <button class="bg-gray-900 text-white px-4 py-2 text-sm font-semibold rounded-lg shadow-sm hover:bg-gray-800">
           월별 마감 실행
         </button>
       </div>
     </div>
+
+    <!-- 검색창 -->
     <div class="flex flex-wrap gap-3 items-center">
       <div class="relative flex-1 min-w-[12rem] max-w-md">
+
         <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
           <svg
             class="w-4 h-4 text-gray-400"
@@ -50,14 +66,15 @@
             />
           </svg>
         </div>
+
         <input
           v-model="settlementSearch"
           type="search"
           placeholder="가맹점 이름 검색…"
           class="w-full pl-10 px-3 py-2 rounded-lg border border-gray-200 text-sm
-         bg-white shadow-sm
-         focus:border-[#F37321] focus:ring-1 focus:ring-[#F37321]
-         outline-none"
+                 bg-white shadow-sm
+                 focus:border-[#F37321] focus:ring-1 focus:ring-[#F37321]
+                 outline-none"
         />
       </div>
     </div>
@@ -87,14 +104,17 @@
       </div>
     </div>
 
-    <!-- Tabs (underline style) -->
+    <!-- Tabs -->
     <div class="flex border-b border-gray-200">
-      <button v-for="tab in ['가맹점 정산']" :key="tab"
-              @click="activeTab = tab"
-              class="px-5 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors"
-              :class="activeTab === tab
+      <button
+        v-for="tab in ['가맹점 정산']"
+        :key="tab"
+        @click="activeTab = tab"
+        class="px-5 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors"
+        :class="activeTab === tab
           ? 'border-[#F37321] text-[#F37321]'
-          : 'border-transparent text-gray-500 hover:text-gray-700'">
+          : 'border-transparent text-gray-500 hover:text-gray-700'"
+      >
         {{ tab }}
       </button>
     </div>
@@ -112,6 +132,7 @@
           <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">명세서</th>
         </tr>
         </thead>
+
         <tbody class="divide-y divide-gray-100">
         <tr v-for="s in filteredSettlements" :key="s.name" class="hover:bg-gray-50/50 transition-colors">
           <td class="px-5 py-3.5 font-semibold text-gray-900">{{ s.name }}</td>
@@ -119,10 +140,12 @@
           <td class="px-5 py-3.5 text-gray-600">{{ s.count }}건</td>
           <td class="px-5 py-3.5 font-bold text-gray-900">₩{{ s.amount.toLocaleString() }}</td>
           <td class="px-5 py-3.5">
-              <span class="text-xs font-bold px-2 py-0.5 rounded"
-                    :class="s.status === '정산완료'
+              <span
+                class="text-xs font-bold px-2 py-0.5 rounded"
+                :class="s.status === '정산완료'
                   ? 'bg-green-50 text-green-700 border border-green-200'
-                  : 'bg-amber-50 text-amber-600 border border-amber-200'">
+                  : 'bg-amber-50 text-amber-600 border border-amber-200'"
+              >
                 {{ s.status }}
               </span>
           </td>
@@ -130,19 +153,22 @@
             <button
               type="button"
               class="text-gray-300 hover:text-[#F37321] transition-colors"
-              title="거래 명세서 다운로드"
               @click="downloadStatement(s)"
             >
               <Download class="w-4 h-4 mx-auto" />
             </button>
           </td>
         </tr>
+
         <tr v-if="filteredSettlements.length === 0">
-          <td colspan="6" class="px-5 py-10 text-center text-sm text-gray-400">검색 결과가 없습니다.</td>
+          <td colspan="6" class="px-5 py-10 text-center text-sm text-gray-400">
+            검색 결과가 없습니다.
+          </td>
         </tr>
         </tbody>
       </table>
     </div>
+
   </div>
 </template>
 
@@ -157,17 +183,17 @@ const periodGranularity = ref('월간')
 const periodGranularityOptions = ['주간', '월간', '년간']
 
 const storeSettlements = ref([
-  { name: '한화빌딩점',       period: '2026-04-01 ~ 04-30', count: 28, amount: 12500000, status: '정산완료' },
-  { name: '여의도역점',       period: '2026-04-01 ~ 04-30', count: 31, amount: 15800000, status: '정산완료' },
-  { name: '판교테크노밸리점', period: '2026-04-01 ~ 04-30', count: 19, amount: 9200000,  status: '대기'     },
-  { name: '부산센텀점',       period: '2026-04-01 ~ 04-30', count: 22, amount: 11300000, status: '대기'     },
+  { name: '한화빌딩점', period: '2026-04-01 ~ 04-30', count: 28, amount: 12500000, status: '정산완료' },
+  { name: '여의도역점', period: '2026-04-01 ~ 04-30', count: 31, amount: 15800000, status: '정산완료' },
+  { name: '판교테크노밸리점', period: '2026-04-01 ~ 04-30', count: 19, amount: 9200000, status: '대기' },
+  { name: '부산센텀점', period: '2026-04-01 ~ 04-30', count: 22, amount: 11300000, status: '대기' },
 ])
 
 const supplierSettlements = ref([
-  { name: '서울우유',  period: '2026-04-01 ~ 04-30', count: 14, amount: 4500000, status: '정산완료' },
-  { name: '동서식품',  period: '2026-04-01 ~ 04-30', count: 8,  amount: 7200000, status: '대기'     },
-  { name: '한국포장',  period: '2026-04-01 ~ 04-30', count: 5,  amount: 1800000, status: '대기'     },
-  { name: '청정원F&B', period: '2026-04-01 ~ 04-30', count: 6,  amount: 2100000, status: '정산완료' },
+  { name: '서울우유', period: '2026-04-01 ~ 04-30', count: 14, amount: 4500000, status: '정산완료' },
+  { name: '동서식품', period: '2026-04-01 ~ 04-30', count: 8, amount: 7200000, status: '대기' },
+  { name: '한국포장', period: '2026-04-01 ~ 04-30', count: 5, amount: 1800000, status: '대기' },
+  { name: '청정원F&B', period: '2026-04-01 ~ 04-30', count: 6, amount: 2100000, status: '정산완료' },
 ])
 
 const currentSettlements = computed(() =>
@@ -176,15 +202,14 @@ const currentSettlements = computed(() =>
 
 const filteredSettlements = computed(() => {
   const q = settlementSearch.value.trim()
-  const list = currentSettlements.value
-  if (!q) return list
-  return list.filter((s) => s.name.includes(q))
+  if (!q) return currentSettlements.value
+  return currentSettlements.value.filter(s => s.name.includes(q))
 })
 
 function downloadStatement(row) {
-  alert(`[INCOME_003] ${row.name} 거래 명세서(PDF)를 S3에서 내려받는 시뮬레이션입니다.\n기간: ${row.period}`)
+  alert(`[INCOME_003] ${row.name} 거래 명세서(PDF) 다운로드`)
 }
 
-const totalStore    = computed(() => storeSettlements.value.reduce((s, v) => s + v.amount, 0))
+const totalStore = computed(() => storeSettlements.value.reduce((s, v) => s + v.amount, 0))
 const totalSupplier = computed(() => supplierSettlements.value.reduce((s, v) => s + v.amount, 0))
 </script>

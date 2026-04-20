@@ -169,8 +169,9 @@ let lineChart = null
 
 const thisWeek  = [72, 85, 68, 91, 84, 96, 80]
 const lastWeek  = [65, 78, 74, 82, 79, 88, 71]
-const yMin = computed(() => Math.floor(Math.min(...thisWeek, ...lastWeek) / 10) * 10 - 10)
-const yMax = computed(() => Math.ceil(Math.max(...thisWeek, ...lastWeek) / 10) * 10 + 10)
+const allValues = computed(() => [...thisWeek, ...lastWeek].filter(v => typeof v === 'number'))
+const yMin = computed(() => allValues.value.length ? Math.floor(Math.min(...allValues.value) / 10) * 10 - 10 : 0)
+const yMax = computed(() => allValues.value.length ? Math.ceil(Math.max(...allValues.value) / 10) * 10 + 10 : 100)
 const weekLabels = ['일', '월', '화', '수', '목', '금', '토']
 
 const ongoingDeliveries = ref([
@@ -191,13 +192,14 @@ const warnings = ref([
   { product: '바닐라 시럽', current: '5병',  min: '30병',  danger: true  },
 ])
 
-const deliveryCls = s => ({
+const DELIVERY_STATUS_CLS = {
   '배송중':   'bg-blue-50 text-blue-600 border-blue-200',
   '출고대기': 'bg-gray-100 text-gray-600 border-gray-200',
   '출고완료': 'bg-green-50 text-green-700 border-green-200',
   '배송완료': 'bg-green-50 text-green-700 border-green-200',
   '배송지연': 'bg-red-50 text-red-600 border-red-200',
-}[s] || 'bg-gray-100 text-gray-500 border-gray-200')
+}
+const deliveryCls = s => DELIVERY_STATUS_CLS[s] ?? 'bg-gray-100 text-gray-500 border-gray-200'
 
 onUnmounted(() => {
   lineChart?.destroy()

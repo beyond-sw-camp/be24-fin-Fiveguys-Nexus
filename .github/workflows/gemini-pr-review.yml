@@ -18,12 +18,11 @@ jobs:
           fetch-depth: 0
 
       - name: Run Gemini PR Reviewer
-        uses: di-sukharev/gemini-pr-reviewer@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        uses: sshnaidm/gemini-code-review-action@v2
         with:
-          system_message: |
+          gemini-key: ${{ secrets.GEMINI_API_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
             당신은 시니어 풀스택 엔지니어입니다.
             변경된 코드(diff)를 분석하고 한국어로 코드 리뷰를 작성해주세요.
 

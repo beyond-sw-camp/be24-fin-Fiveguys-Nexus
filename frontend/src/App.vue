@@ -155,7 +155,7 @@ const adminMenus = [
     path: '/product', name: '제품 관리', icon: PackageSearch,
     children: [
       { path: '/product', name: '제품 목록' },
-      { path: '/recipe',  name: '레시피 관리' },
+      { path: '/recipe',  name: '메뉴 관리' },
     ],
   },
   { path: '/order', name: '발주 관리', icon: ClipboardList },

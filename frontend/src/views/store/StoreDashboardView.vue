@@ -43,7 +43,7 @@
             <p class="text-xs text-gray-400 mt-0.5">이번 주 vs 지난 주 (단위: 만원)</p>
           </div>
           <div class="flex items-center gap-4 text-xs text-gray-500">
-            <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-orange-500 inline-block rounded"></span>이번 주</span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-blue-500 inline-block rounded"></span>이번 주</span>
             <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-gray-300 inline-block rounded"></span>지난 주</span>
           </div>
         </div>
@@ -214,11 +214,11 @@ onMounted(() => {
         {
           label: '이번 주',
           data: thisWeek,
-          borderColor: '#f97316',
+          borderColor: '#3b82f6',
           backgroundColor: (ctx) => {
             const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, ctx.chart.height)
-            g.addColorStop(0, 'rgba(249,115,22,0.18)')
-            g.addColorStop(1, 'rgba(249,115,22,0)')
+            g.addColorStop(0, 'rgba(59,130,246,0.18)')
+            g.addColorStop(1, 'rgba(59,130,246,0)')
             return g
           },
           fill: true,
@@ -226,7 +226,7 @@ onMounted(() => {
           borderWidth: 2.5,
           pointRadius: (ctx) => ctx.dataIndex === thisWeek.indexOf(Math.max(...thisWeek)) ? 5 : 0,
           pointHoverRadius: 6,
-          pointBackgroundColor: '#f97316',
+          pointBackgroundColor: '#3b82f6',
           pointBorderColor: '#fff',
           pointBorderWidth: 2,
         },

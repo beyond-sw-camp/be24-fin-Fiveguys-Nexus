@@ -277,8 +277,11 @@
                 <option>비닐장갑</option>
                 <option>냅킨</option>
               </select>
-              <input v-model.number="item.qty" type="number" min="1" placeholder="수량"
-                class="w-20 px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none" />
+              <div class="flex items-center gap-1.5">
+                <input v-model.number="item.qty" type="number" min="1" placeholder="수량"
+                  class="w-20 px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none" />
+                <span class="text-xs text-gray-400 font-medium w-4">{{ PRODUCT_UNIT[item.product] ?? '' }}</span>
+              </div>
               <input v-model.number="item.unitPrice" type="number" min="0" placeholder="단가"
                 class="w-24 px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none" />
               <button @click="manualForm.items.splice(idx, 1)" class="text-gray-300 hover:text-red-500 transition-colors shrink-0">
@@ -470,6 +473,19 @@ import { Plus, X, Settings } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
+
+const PRODUCT_UNIT = {
+  '생닭(1kg)':      'kg',
+  '튀김유(18L)':    '통',
+  '치킨파우더':     'kg',
+  '황금올리브소스': '병',
+  '양념소스':       '병',
+  '간장소스':       '병',
+  '치킨박스(중)':   '개',
+  '치킨박스(대)':   '개',
+  '비닐장갑':       '개',
+  '냅킨':           '개',
+}
 
 const productPrices = {
   '생닭(1kg)':      5000,

@@ -174,7 +174,7 @@ const adminMenus = [
   },
   { path: '/delivery',   name: '배송 관리', icon: Truck },
   { path: '/settlement', name: '정산 관리', icon: Calculator },
-  { path: '/admin-account', name: '운영자 계정 관리', icon: UserPlus },
+  { path: '/admin-account', name: '계정 관리', icon: UserPlus },
 ]
 
 const storeMenus = [

@@ -36,13 +36,6 @@
 
     <!-- Tab: 자동 발주 제안 (이상 발주 미처리 건 포함, 상단 필터로 구분 조회) -->
     <div v-if="activeTab === 'auto'" class="space-y-4">
-      <div class="bg-amber-50 px-4 py-3 flex items-start gap-2.5 rounded-md">
-        <AlertTriangle class="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-        <p class="text-sm text-amber-700">
-          재고 기준 이하로 산출된 <strong class="font-semibold">자동 발주 제안</strong>과, 과거 평균 대비 비정상적으로 큰 수량이 감지된
-          <strong class="font-semibold">이상 발주</strong>가 함께 표시됩니다. 아래 필터로 유형별로 나누어 볼 수 있습니다.
-        </p>
-      </div>
       <div class="flex flex-wrap items-center gap-2">
         <span class="text-xs font-semibold text-gray-500">표시</span>
         <button
@@ -57,7 +50,6 @@
         >
           {{ btn.label }}
         </button>
-        <span class="text-[11px] text-gray-400 ml-auto hidden sm:inline">URL에 <code class="text-gray-500">?tab=auto&proposal=abnormal</code> 로 이상 발주만 열 수 있습니다.</span>
       </div>
       <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
         <table class="w-full text-sm text-left">
@@ -229,12 +221,6 @@
 
     <!-- Tab: 이상 발주 (ORDER_007) -->
     <div v-if="activeTab === 'abnormal'" class="space-y-4">
-      <div class="bg-red-50 px-4 py-3 flex items-start gap-2.5 rounded-md">
-        <AlertTriangle class="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-        <p class="text-sm text-red-700">
-          평균 발주량 대비 <strong>{{ abnormalThreshold }}% 이상</strong> 초과한 발주건입니다. 승인 또는 반려 처리가 필요합니다.
-        </p>
-      </div>
       <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
         <table class="w-full text-sm text-left">
           <thead>
@@ -471,7 +457,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Plus, X, AlertTriangle, Settings } from 'lucide-vue-next'
+import { Plus, X, Settings } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()

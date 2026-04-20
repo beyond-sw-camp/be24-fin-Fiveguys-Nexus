@@ -414,7 +414,7 @@ function openEditMenuModal(menu) {
 const onPriceInput = (e) => {
   const val = e.target.value.replace(/[^0-9]/g, '');
   menuForm.value.price = val ? parseInt(val, 10) : 0;
-  e.target.value = menuForm.value.price === 0 ? '' : menuForm.value.price.toLocaleString('ko-KR');
+  e.target.value = val ? menuForm.value.price.toLocaleString('ko-KR') : '';
 };
 
 function addIngredientRow() {
@@ -441,8 +441,12 @@ function saveMenu() {
       ingredients: menuForm.value.ingredients.map(i => ({ ...i })),
     })
   } else {
-    // 신규 등록
-    const newId = 'M-' + String(menus.value.length + 1).padStart(3, '0')
+    // 가장 큰 숫자 ID를 찾아 +1 하기 (ID 충돌 방지)
+    const maxIdNum = menus.value.reduce((max, menu) => {
+      const idNum = parseInt(menu.id.split('-')[1]);
+      return idNum > max ? idNum : max;
+    }, 0);
+    const newId = `M-${String(maxIdNum + 1).padStart(3, '0')}`;
     menus.value.push({
       id: newId,
       name: menuForm.value.name,

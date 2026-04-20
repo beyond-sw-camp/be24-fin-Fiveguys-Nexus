@@ -175,21 +175,21 @@ const yMax = computed(() => allValues.value.length ? Math.ceil(Math.max(...allVa
 const weekLabels = ['일', '월', '화', '수', '목', '금', '토']
 
 const ongoingDeliveries = ref([
-  { id: 'ORD-2604-008', items: '우유(1L) 외 2건',       status: '배송중'   },
-  { id: 'ORD-2604-011', items: '에스프레소 원두 외 1건', status: '출고대기' },
-  { id: 'ORD-2604-015', items: '바닐라 시럽 외 3건',    status: '배송지연' },
-  { id: 'ORD-2604-003', items: '종이컵(M) 외 1건',      status: '출고완료' },
+  { id: 'ORD-2604-008', items: '생닭(1kg) 외 1건',      status: '배송중'   },
+  { id: 'ORD-2604-011', items: '튀김유(18L) 외 1건',    status: '출고대기' },
+  { id: 'ORD-2604-015', items: '황금올리브소스 외 2건', status: '배송지연' },
+  { id: 'ORD-2604-003', items: '치킨박스(중) 외 1건',   status: '출고완료' },
 ])
 
 const pendingOrders = ref([
-  { id: 1, product: '우유(1L)',    qty: 200, unitPrice: 2500  },
-  { id: 2, product: '바닐라 시럽', qty: 60,  unitPrice: 15000 },
-  { id: 3, product: '종이컵(M)',   qty: 500, unitPrice: 100   },
+  { id: 1, product: '생닭(1kg)',      qty: 100, unitPrice: 5000  },
+  { id: 2, product: '황금올리브소스', qty: 30,  unitPrice: 12000 },
+  { id: 3, product: '치킨박스(중)',   qty: 500, unitPrice: 150   },
 ])
 
 const warnings = ref([
-  { product: '우유(1L)',    current: '85팩', min: '120팩', danger: false },
-  { product: '바닐라 시럽', current: '5병',  min: '30병',  danger: true  },
+  { product: '튀김유(18L)', current: '3통', min: '5통',  danger: true  },
+  { product: '치킨파우더',  current: '8kg', min: '20kg', danger: false },
 ])
 
 const DELIVERY_STATUS_CLS = {

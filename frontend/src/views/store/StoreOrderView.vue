@@ -29,6 +29,10 @@
               class="px-4 py-2 bg-blue-500 text-white text-sm font-bold hover:bg-blue-600 rounded transition-colors">
               전체 확정
             </button>
+            <button @click="openAddItemForm(order)"
+              class="px-4 py-2 border border-blue-200 text-blue-500 bg-blue-50 text-sm font-semibold hover:bg-blue-100 rounded transition-colors">
+              + 품목 추가
+            </button>
             <button @click="rejectOrder(order)"
               class="px-4 py-2 border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 rounded">
               거절
@@ -43,17 +47,56 @@
               <th class="px-5 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">최소 재고</th>
               <th class="px-5 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">제안 수량</th>
               <th class="px-5 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">수정 수량</th>
+              <th class="px-5 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider"></th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
             <tr v-for="item in order.items" :key="item.product" class="hover:bg-gray-50/50">
               <td class="px-5 py-3 font-semibold text-gray-900">{{ item.product }}</td>
-              <td class="px-5 py-3 font-bold text-red-500">{{ item.current }}</td>
-              <td class="px-5 py-3 text-gray-500">{{ item.min }}</td>
-              <td class="px-5 py-3 font-semibold text-blue-600">{{ item.suggested }}</td>
+              <td class="px-5 py-3 font-bold text-red-500">{{ item.current }}<span class="text-xs font-normal ml-0.5">{{ PRODUCT_UNIT[item.product] ?? '' }}</span></td>
+              <td class="px-5 py-3 text-gray-500">{{ item.min }}<span class="text-xs ml-0.5">{{ PRODUCT_UNIT[item.product] ?? '' }}</span></td>
+              <td class="px-5 py-3 font-semibold text-blue-600">{{ item.suggested }}<span class="text-xs font-normal ml-0.5">{{ PRODUCT_UNIT[item.product] ?? '' }}</span></td>
               <td class="px-5 py-3">
-                <input v-model.number="item.adjusted" type="number" min="0"
-                  class="w-24 px-2 py-1.5 rounded border border-gray-200 text-sm focus:border-blue-400 outline-none" />
+                <div class="flex items-center gap-1.5">
+                  <input v-model.number="item.adjusted" type="number" min="0"
+                    class="w-20 px-2 py-1.5 rounded border border-gray-200 text-sm focus:border-blue-400 outline-none" />
+                  <span class="text-xs text-gray-400 font-medium">{{ PRODUCT_UNIT[item.product] ?? '' }}</span>
+                </div>
+              </td>
+              <td class="px-5 py-3">
+                <button
+                  @click="removeOrderItem(order, item)"
+                  :disabled="order.items.length <= 1"
+                  class="px-3 py-1.5 text-xs font-semibold rounded border border-red-200 text-red-500 bg-red-50 hover:bg-red-500 hover:text-white hover:cursor-pointer transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                  삭제
+                </button>
+              </td>
+            </tr>
+            <tr v-if="addItemForm?.orderId === order.id" class="bg-blue-50/50 border-t border-blue-100">
+              <td class="px-5 py-3" colspan="2">
+                <select v-model="addItemForm.product"
+                  class="w-full px-2 py-1.5 rounded border border-blue-200 text-sm outline-none focus:border-blue-400 bg-white">
+                  <option value="">품목 선택</option>
+                  <option v-for="p in availableProducts(order)" :key="p" :value="p">{{ p }}</option>
+                </select>
+              </td>
+              <td class="px-5 py-3 text-xs text-gray-400">—</td>
+              <td class="px-5 py-3 text-xs text-gray-400">—</td>
+              <td class="px-5 py-3">
+                <input v-model.number="addItemForm.qty" type="number" min="1" placeholder="수량"
+                  class="w-24 px-2 py-1.5 rounded border border-blue-200 text-sm outline-none focus:border-blue-400" />
+              </td>
+              <td class="px-5 py-3">
+                <div class="flex gap-1.5">
+                  <button @click="confirmAddItem(order)"
+                    class="px-3 py-1.5 text-xs font-semibold rounded border border-blue-300 text-blue-600 bg-white hover:bg-blue-500 hover:text-white hover:cursor-pointer transition-colors">
+                    추가
+                  </button>
+                  <button @click="addItemForm = null"
+                    class="px-3 py-1.5 text-xs font-semibold rounded border border-gray-200 text-gray-500 bg-white hover:bg-gray-100 hover:cursor-pointer transition-colors">
+                    취소
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -94,10 +137,14 @@
                 <option>종이컵(M)</option>
                 <option>종이컵(L)</option>
               </select>
-              <input v-model.number="item.qty" type="number" min="1" placeholder="수량"
-                class="w-24 px-3 py-2 rounded border border-gray-200 text-sm outline-none focus:border-blue-400" />
-              <button @click="manualItems.splice(idx, 1)" class="text-gray-300 hover:text-red-500 shrink-0">
-                <X class="w-4 h-4" />
+              <div class="flex items-center gap-1.5">
+                <input v-model.number="item.qty" type="number" min="1" placeholder="수량"
+                  class="w-20 px-3 py-2 rounded border border-gray-200 text-sm outline-none focus:border-blue-400" />
+                <span class="text-xs text-gray-400 font-medium w-4">{{ PRODUCT_UNIT[item.product] ?? '' }}</span>
+              </div>
+              <button @click="manualItems.splice(idx, 1)"
+                class="px-3 py-2 text-xs font-semibold rounded border border-red-200 text-red-500 bg-red-50 hover:bg-red-500 hover:text-white hover:cursor-pointer transition-colors shrink-0">
+                삭제
               </button>
             </div>
             <div v-if="manualItems.length === 0"
@@ -108,13 +155,8 @@
               합계: {{ manualTotal.toLocaleString() }}원
             </div>
           </div>
-          <div class="space-y-1.5">
-            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">요청 사항</label>
-            <textarea v-model="manualNote" rows="2" placeholder="특이사항 입력 (선택)"
-              class="w-full px-3 py-2 rounded border border-gray-200 text-sm outline-none focus:border-blue-400 resize-none"></textarea>
-          </div>
-          <div class="flex gap-3 pt-1">
-            <button @click="manualItems = []; manualNote = ''"
+<div class="flex gap-3 pt-1">
+            <button @click="manualItems = []"
               class="flex-1 py-2.5 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50">
               초기화
             </button>
@@ -302,6 +344,28 @@
 import { ref, computed } from 'vue'
 import { Plus, X, ClipboardList, CreditCard } from 'lucide-vue-next'
 
+const PRODUCT_UNIT = {
+  '프리미엄 원두':   'kg',
+  '에스프레소 원두': 'kg',
+  '우유(1L)':        '팩',
+  '두유(1L)':        '팩',
+  '바닐라 시럽':     '병',
+  '카라멜 시럽':     '병',
+  '종이컵(M)':       '개',
+  '종이컵(L)':       '개',
+}
+
+const PRODUCT_STOCK = {
+  '프리미엄 원두':   { current: 3,   min: 10  },
+  '에스프레소 원두': { current: 5,   min: 10  },
+  '우유(1L)':        { current: 85,  min: 120 },
+  '두유(1L)':        { current: 55,  min: 60  },
+  '바닐라 시럽':     { current: 5,   min: 30  },
+  '카라멜 시럽':     { current: 12,  min: 30  },
+  '종이컵(M)':       { current: 320, min: 500 },
+  '종이컵(L)':       { current: 150, min: 200 },
+}
+
 const PRODUCT_PRICES = {
   '프리미엄 원두':   25000,
   '에스프레소 원두': 22000,
@@ -371,7 +435,6 @@ const tabs = computed(() => [
 ])
 
 const manualItems = ref([])
-const manualNote = ref('')
 
 function addManualItem() {
   manualItems.value.push({ product: '', qty: 1, unitPrice: 0 })
@@ -413,6 +476,31 @@ function processPayment() {
     alert('결제 및 승인 요청이 완료되었습니다.')
     activeTab.value = 'history'
   }
+}
+
+const addItemForm = ref(null)
+
+function openAddItemForm(order) {
+  addItemForm.value = { orderId: order.id, product: '', qty: 1 }
+}
+
+function availableProducts(order) {
+  const existing = new Set(order.items.map(i => i.product))
+  return Object.keys(PRODUCT_PRICES).filter(p => !existing.has(p))
+}
+
+function confirmAddItem(order) {
+  const form = addItemForm.value
+  if (!form.product) { alert('품목을 선택해주세요.'); return }
+  if (!form.qty || form.qty < 1) { alert('수량을 입력해주세요.'); return }
+  const stock = PRODUCT_STOCK[form.product] ?? { current: '-', min: '-' }
+  order.items.push({ product: form.product, current: stock.current, min: stock.min, suggested: form.qty, adjusted: form.qty })
+  addItemForm.value = null
+}
+
+function removeOrderItem(order, item) {
+  const idx = order.items.indexOf(item)
+  if (idx > -1) order.items.splice(idx, 1)
 }
 
 function rejectOrder(order) {

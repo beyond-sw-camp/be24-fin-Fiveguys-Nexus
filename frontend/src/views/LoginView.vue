@@ -97,7 +97,7 @@ const error = ref('')
 
 const demoAccounts = [
   {
-    id: 'A001', name: '이재혁', avatar: 'HQ', roleLabel: '관리자 (본사)',
+    id: 'A001', name: '이재혁', avatar: 'HQ', roleLabel: '운영자 (본사)',
     colorClass: 'bg-[#F37321]',
     badgeClass: 'bg-orange-50 text-orange-600 border border-orange-200',
   },

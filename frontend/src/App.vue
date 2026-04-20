@@ -138,7 +138,7 @@ import {
   Calculator, Box, ClipboardList,
   PackageSearch, Truck,
   Warehouse, Receipt, Tablet,
-  ChevronDown, User, LogOut,
+  ChevronDown, User, LogOut, UserPlus,
 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
 import NotificationBell from '@/components/NotificationBell.vue'
@@ -174,6 +174,7 @@ const adminMenus = [
   },
   { path: '/delivery',   name: '배송 관리', icon: Truck },
   { path: '/settlement', name: '정산 관리', icon: Calculator },
+  { path: '/admin-account', name: '운영자 계정 관리', icon: UserPlus },
 ]
 
 const storeMenus = [
@@ -236,7 +237,7 @@ function isGroupOpen(menu) {
 
 // ── 역할별 스타일 ─────────────────────────────────────────
 const roleLabel = computed(() => {
-  if (auth.isAdmin)      return '관리자 · 본사'
+  if (auth.isAdmin)      return '운영자 · 본사'
   if (auth.isStoreOwner) return `점주 · ${auth.user?.storeName}`
   return ''
 })

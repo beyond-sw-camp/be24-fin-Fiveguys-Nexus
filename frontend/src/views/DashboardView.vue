@@ -67,7 +67,8 @@
             class="px-5 py-4 hover:bg-gray-50 transition-colors cursor-pointer"
             role="button" tabindex="0"
             @click="router.push('/delivery')"
-            @keydown.enter="router.push('/delivery')">
+            @keydown.enter="router.push('/delivery')"
+            @keydown.space.prevent="router.push('/delivery')">
             <div class="flex items-start gap-3">
               <div class="flex-1 min-w-0">
                 <p class="text-xs text-gray-400">발주 {{ d.num }}</p>
@@ -155,8 +156,9 @@
             <div v-for="w in warnings" :key="w.store + w.product"
               class="flex items-center justify-between py-1.5 cursor-pointer hover:bg-gray-50 rounded px-1 transition-colors"
               role="button" tabindex="0"
-              @click="router.push('/inventory')"
-              @keydown.enter="router.push('/inventory')">
+              @click="router.push('/inventory/franchise')"
+              @keydown.enter="router.push('/inventory/franchise')"
+              @keydown.space.prevent="router.push('/inventory/franchise')">
               <div class="flex items-center gap-2">
                 <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
                 <p class="text-sm text-gray-800 truncate max-w-28">{{ w.product }}</p>

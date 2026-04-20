@@ -3,23 +3,23 @@
     <!-- Header -->
     <div class="flex justify-between items-center">
       <div>
-        <h1 class="text-xl font-bold text-gray-900 tracking-tight">레시피 관리</h1>
+        <h1 class="text-xl font-bold text-gray-900 tracking-tight">메뉴 관리</h1>
         <p class="page-spec-hint">
-          <code>RECIPE_001~005</code>레시피·재료(원자재명·소요량·단위) 등록·수정·삭제, 레시피명·재료명 검색 및 재료 수 표시를 지원합니다.
+          <code>RECIPE_001~005</code>메뉴·재료(원자재명·소요량·단위) 등록·수정·삭제, 메뉴명·재료명 검색 및 재료 수 표시를 지원합니다.
         </p>
       </div>
       <button @click="showNewMenu = true"
         class="bg-[#F37321] text-white px-4 py-2 text-sm font-semibold rounded hover:bg-[#e0661d] transition-colors flex items-center gap-2">
-        <Plus class="w-4 h-4" /> 신규 레시피 등록
+        <Plus class="w-4 h-4" /> 신규 메뉴 등록
       </button>
     </div>
 
-    <!-- 신규 레시피 등록 Modal (RECIPE_001) -->
+    <!-- 신규 메뉴 등록 Modal (RECIPE_001) -->
     <div v-if="showNewMenu" class="fixed inset-0 z-50 flex items-center justify-center">
       <div class="absolute inset-0 bg-black/40" @click="showNewMenu = false"></div>
       <div class="relative bg-white rounded-lg w-full max-w-md border border-gray-200 shadow-xl">
         <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-          <h3 class="font-bold text-gray-900">신규 레시피 등록</h3>
+          <h3 class="font-bold text-gray-900">신규 메뉴 등록</h3>
           <button @click="showNewMenu = false" class="text-gray-400 hover:text-gray-600">✕</button>
         </div>
         <form @submit.prevent="createMenu" class="p-6 space-y-4">
@@ -60,10 +60,10 @@
       <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
         <div class="px-5 py-3 border-b border-gray-200 bg-gray-50/60 space-y-2">
           <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">판매 상품 목록</p>
-          <!-- 레시피 검색 (RECIPE_004) -->
+          <!-- 메뉴 검색 (RECIPE_004) -->
           <div class="relative">
             <Search class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-            <input v-model="searchQuery" type="text" placeholder="레시피명·재료명 검색..."
+            <input v-model="searchQuery" type="text" placeholder="메뉴명·재료명 검색..."
               class="w-full pl-8 pr-3 py-1.5 rounded border border-gray-200 text-xs focus:border-[#F37321] focus:ring-1 focus:ring-[#F37321]/10 outline-none" />
           </div>
         </div>
@@ -83,7 +83,7 @@
                 :class="selectedMenu?.id === menu.id ? 'text-[#F37321]' : 'text-gray-400'">
                 {{ menu.ingredients.length }}종
               </span>
-              <!-- 레시피 삭제 (RECIPE_005) -->
+              <!-- 메뉴 삭제 (RECIPE_005) -->
               <button @click.stop="deleteMenu(menu.id)"
                 class="text-gray-200 hover:text-red-400 transition-colors">
                 <Trash2 class="w-3.5 h-3.5" />
@@ -93,7 +93,7 @@
         </div>
       </div>
 
-      <!-- Right: 레시피 상세 -->
+      <!-- Right: 메뉴 상세 -->
       <div class="col-span-2 space-y-4">
         <div v-if="!selectedMenu" class="bg-white border border-gray-200 flex items-center justify-center h-64">
           <div class="text-center text-gray-400">
@@ -165,7 +165,7 @@
             </button>
             <button @click="saveRecipe"
               class="px-4 py-2 bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d]">
-              레시피 저장
+              메뉴 저장
             </button>
           </div>
         </template>
@@ -212,7 +212,7 @@ const menuItems = ref([
   },
 ])
 
-// 신규 레시피 등록 (RECIPE_001)
+// 신규 메뉴 등록 (RECIPE_001)
 const showNewMenu = ref(false)
 const newMenuForm = ref({ name: '', category: '커피', price: 0 })
 
@@ -254,7 +254,7 @@ function removeIngredient(idx) {
 
 function saveRecipe() {
   selectedMenu.value.ingredients = editingIngredients.value.map(i => ({ ...i }))
-  alert(`'${selectedMenu.value.name}' 레시피가 저장되었습니다.`)
+  alert(`'${selectedMenu.value.name}' 메뉴가 저장되었습니다.`)
 }
 
 function cancelEdit() {
@@ -264,7 +264,7 @@ function cancelEdit() {
 }
 
 function deleteMenu(id) {
-  if (!confirm('해당 상품의 레시피를 삭제하시겠습니까?')) return
+  if (!confirm('해당 상품의 메뉴를 삭제하시겠습니까?')) return
   menuItems.value = menuItems.value.filter(m => m.id !== id)
   if (selectedMenu.value?.id === id) {
     selectedMenu.value = null

@@ -134,7 +134,7 @@
 
     <!-- 가맹점 상세 페이지 모달 -->
     <div v-if="showDetailModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="showDetailModal = false"></div>
+      <div class="absolute inset-0 bg-black/40 " @click="showDetailModal = false"></div>
       <div class="relative bg-white rounded-xl w-full max-w-lg border border-gray-200 shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
         <div class="px-8 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
           <h3 class="font-bold text-gray-900 text-lg">가맹점 상세 정보</h3>

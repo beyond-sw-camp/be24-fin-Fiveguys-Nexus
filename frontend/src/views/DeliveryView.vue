@@ -164,10 +164,10 @@ import { ref, computed } from 'vue'
 const filterStatus = ref('전체')
 const searchQuery = ref('') // 가맹점 검색어 상태
 
-const destinationOptions = computed(() => {
-  const set = new Set(deliveries.value.map((d) => d.destination))
-  return [...set].sort()
-})
+// 배송 지연 사유 모달 관련 상태
+const isModalOpen = ref(false)
+const selectedDelivery = ref(null)
+const delayReasonText = ref('')
 
 const statusFilters = [
   { value: '전체',    label: '전체' },
@@ -222,6 +222,7 @@ const deliveries = ref([
     id: 'DLV-20260413-005', status: '지연',
     destination: '부산센텀점', supplier: '한국포장', driver: '최동욱',
     items: ['종이컵(M) 1000개'],
+    delayReason: '강우로 인한 고속도로 정체로 배송 지연 발생', // 예시 사유
     timeline: [
       { label: '출고 완료 (부산 물류센터)', time: '2026-04-12 20:00', done: true },
       { label: '배송 지연 (교통사고)',       time: '2026-04-13 08:00', done: false, current: true },
@@ -240,21 +241,24 @@ const deliveries = ref([
   },
 ])
 
+// 검색어(searchQuery) 및 상태(filterStatus) 기반 필터링
 const filteredDeliveries = computed(() => {
   let list = deliveries.value
   if (filterStatus.value !== '전체') {
     list = list.filter((d) => d.status === filterStatus.value)
   }
-  if (filterDestination.value) {
-    list = list.filter((d) => d.destination === filterDestination.value)
+  if (searchQuery.value.trim() !== '') {
+    // 가맹점 이름에 검색어가 포함되어 있는지 확인
+    list = list.filter((d) => d.destination.includes(searchQuery.value.trim()))
   }
   return list
 })
 
 function countByStatus(status) {
-  const base = filterDestination.value
-    ? deliveries.value.filter((d) => d.destination === filterDestination.value)
+  const base = searchQuery.value.trim() !== ''
+    ? deliveries.value.filter((d) => d.destination.includes(searchQuery.value.trim()))
     : deliveries.value
+
   if (status === '전체') return base.length
   return base.filter((d) => d.status === status).length
 }
@@ -267,5 +271,28 @@ function statusClass(status) {
     '지연':     'bg-red-50 text-red-600 border border-red-200',
   }
   return map[status] || 'bg-gray-100 text-gray-500 border border-gray-200'
+}
+
+// 모달 제어 로직
+function openModal(delivery) {
+  selectedDelivery.value = delivery
+  delayReasonText.value = delivery.delayReason || '' // 기존 사유가 있다면 텍스트 창에 불러오기
+  isModalOpen.value = true
+}
+
+function closeModal() {
+  isModalOpen.value = false
+  selectedDelivery.value = null
+  delayReasonText.value = ''
+}
+
+function saveDelayReason() {
+  if (selectedDelivery.value) {
+    const target = deliveries.value.find(d => d.id === selectedDelivery.value.id)
+    if (target) {
+      target.delayReason = delayReasonText.value // 사유 업데이트
+    }
+  }
+  closeModal() // 완료 후 모달 닫기
 }
 </script>

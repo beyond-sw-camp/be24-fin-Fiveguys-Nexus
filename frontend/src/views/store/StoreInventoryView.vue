@@ -4,7 +4,7 @@
       <div>
         <h1 class="text-xl font-bold text-gray-900 tracking-tight">매장 재고 관리</h1>
         <p class="page-spec-hint">
-          <code>STOCK_004·005</code>전산 재고·최소재고·유통기한·보정 수량·보정 버튼, 유통기한 순 목록.
+          <code>STOCK_004·005</code>목록은 상품코드·품목명·전산 재고·유통기한·상태만 표시. 행 클릭 시 상세 모달에서 최소 재고·보정 수량·보정 처리.
         </p>
       </div>
       <div class="text-right">
@@ -17,7 +17,7 @@
     <div class="bg-blue-50 px-4 py-3 flex items-start gap-2.5 rounded-md">
       <Info class="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
       <span class="text-sm text-blue-700">
-        전산 재고와 실제 재고가 다른 경우 <strong>보정 수량</strong>을 입력 후 보정 버튼을 눌러주세요.
+        행을 클릭하면 상세 창이 열립니다. 전산 재고와 실제 재고가 다를 경우 <strong>보정 수량</strong>을 입력 후 보정을 진행해 주세요.
         이력은 본사 입출고 이력에 자동으로 기록됩니다.
       </span>
     </div>
@@ -30,55 +30,115 @@
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">상품코드</th>
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">품목명</th>
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">전산 재고</th>
-            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">최소 재고</th>
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">유통기한</th>
-            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">보정 수량</th>
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">상태</th>
-            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">보정</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
-          <tr v-for="item in inventory" :key="item.code" class="hover:bg-gray-50/50 transition-colors">
+          <tr
+            v-for="item in inventory"
+            :key="item.code"
+            role="button"
+            tabindex="0"
+            @click="openDetail(item)"
+            @keydown.enter.prevent="openDetail(item)"
+            @keydown.space.prevent="openDetail(item)"
+            class="hover:bg-blue-50/40 transition-colors cursor-pointer">
             <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ item.code }}</td>
             <td class="px-5 py-3.5 font-semibold text-gray-900">{{ item.name }}</td>
             <td class="px-5 py-3.5 font-bold"
               :class="item.stock < item.min ? 'text-red-600' : 'text-gray-900'">
               {{ item.stock }}
             </td>
-            <td class="px-5 py-3.5 text-gray-500">{{ item.min }}</td>
             <td class="px-5 py-3.5 text-xs font-mono"
               :class="isExpiringSoon(item.expiry) ? 'text-orange-500 font-semibold' : 'text-gray-400'">
               {{ item.expiry || '-' }}
             </td>
             <td class="px-5 py-3.5">
-              <input v-model.number="item.adjustTo" type="number" min="0"
-                placeholder="실제 수량"
-                class="w-28 px-2 py-1.5 rounded border border-gray-200 text-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none" />
-            </td>
-            <td class="px-5 py-3.5">
               <span class="text-xs font-bold px-2 py-0.5 rounded"
                 :class="getStatusClass(item)">{{ getStatus(item) }}</span>
-            </td>
-            <td class="px-5 py-3.5 text-center">
-              <button @click="adjustStock(item)"
-                :disabled="item.adjustTo === null || item.adjustTo === undefined"
-                class="px-3 py-1.5 text-xs font-semibold transition-all"
-                :class="(item.adjustTo !== null && item.adjustTo !== undefined)
-                  ? 'bg-blue-500 text-white hover:bg-blue-600'
-                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'">
-                보정
-              </button>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
+
+    <!-- 상세 모달 -->
+    <Teleport to="body">
+      <div
+        v-if="detailItem"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm"
+        @click.self="closeDetail">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md border border-gray-100 max-h-[90vh] overflow-y-auto">
+          <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center shrink-0">
+            <h2 class="text-base font-bold text-gray-900">재고 상세</h2>
+            <button type="button" class="text-gray-400 hover:text-gray-600 p-1 rounded-md hover:bg-gray-50" aria-label="닫기" @click="closeDetail">
+              <X class="w-5 h-5" />
+            </button>
+          </div>
+
+          <div class="p-5 space-y-5">
+            <dl class="grid grid-cols-[7rem_1fr] gap-x-3 gap-y-2 text-sm">
+              <dt class="text-gray-500">상품코드</dt>
+              <dd class="font-mono text-gray-800">{{ detailItem.code }}</dd>
+              <dt class="text-gray-500">품목명</dt>
+              <dd class="font-semibold text-gray-900">{{ detailItem.name }}</dd>
+              <dt class="text-gray-500">전산 재고</dt>
+              <dd class="font-bold" :class="detailItem.stock < detailItem.min ? 'text-red-600' : 'text-gray-900'">
+                {{ detailItem.stock }}
+              </dd>
+              <dt class="text-gray-500">유통기한</dt>
+              <dd class="font-mono text-xs" :class="isExpiringSoon(detailItem.expiry) ? 'text-orange-600 font-semibold' : 'text-gray-600'">
+                {{ detailItem.expiry || '-' }}
+              </dd>
+              <dt class="text-gray-500">상태</dt>
+              <dd>
+                <span class="text-xs font-bold px-2 py-0.5 rounded inline-block"
+                  :class="getStatusClass(detailItem)">{{ getStatus(detailItem) }}</span>
+              </dd>
+            </dl>
+
+            <div class="border-t border-gray-100 pt-4 space-y-4">
+              <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">최소 재고</label>
+                <p class="text-sm text-gray-700">{{ detailItem.min }} <span class="text-gray-400 font-normal">(본사 기준)</span></p>
+              </div>
+              <div>
+                <label for="adjust-to" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">보정 수량</label>
+                <input
+                  id="adjust-to"
+                  v-model.number="detailItem.adjustTo"
+                  type="number"
+                  min="0"
+                  placeholder="실제 수량 입력"
+                  class="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none" />
+              </div>
+            </div>
+
+            <div class="flex gap-2 pt-1">
+              <button type="button" class="flex-1 py-2.5 rounded-lg border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50" @click="closeDetail">
+                닫기
+              </button>
+              <button type="button"
+                :disabled="detailItem.adjustTo === null || detailItem.adjustTo === undefined"
+                class="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white transition-all"
+                :class="(detailItem.adjustTo !== null && detailItem.adjustTo !== undefined)
+                  ? 'bg-blue-500 hover:bg-blue-600'
+                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'"
+                @click="adjustStock(detailItem)">
+                재고 보정
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
-import { Info } from 'lucide-vue-next'
+import { Info, X } from 'lucide-vue-next'
 
 const inventory = ref([
   { code: 'P100', name: '프리미엄 원두',   stock: 320, min: 100, expiry: '2026-05-30', adjustTo: null },
@@ -89,6 +149,16 @@ const inventory = ref([
   { code: 'P400', name: '종이컵(M)',        stock: 650, min: 500, expiry: null,          adjustTo: null },
   { code: 'P401', name: '종이컵(L)',        stock: 800, min: 500, expiry: null,          adjustTo: null },
 ])
+
+const detailItem = ref(null)
+
+function openDetail(item) {
+  detailItem.value = item
+}
+
+function closeDetail() {
+  detailItem.value = null
+}
 
 function isExpiringSoon(expiry) {
   if (!expiry) return false
@@ -116,6 +186,7 @@ function adjustStock(item) {
     item.stock = item.adjustTo
     item.adjustTo = null
     alert('재고 보정이 완료되었습니다.')
+    closeDetail()
   }
 }
 </script>

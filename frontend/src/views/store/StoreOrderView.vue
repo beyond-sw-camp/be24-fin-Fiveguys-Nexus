@@ -17,10 +17,6 @@
     </div>
 
     <div v-if="activeTab === 'pending'" class="space-y-4">
-      <div class="bg-blue-50 px-4 py-3 text-sm text-blue-700 rounded-lg border border-blue-100">
-        재고 데이터를 기반으로 시스템이 자동 산출한 발주서입니다. 수량을 조정하거나 그대로 확정할 수 있습니다.
-      </div>
-
       <div v-for="order in pendingOrders" :key="order.id" class="bg-white border border-gray-200 rounded-lg overflow-hidden">
         <div class="px-5 py-3.5 border-b border-gray-100 flex justify-between items-center bg-gray-50/60">
           <div>
@@ -139,7 +135,7 @@
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주번호</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">유형</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">품목</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">수량</th>
+              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">총 금액</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주일시</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">상태</th>
             </tr>
@@ -155,8 +151,13 @@
                   {{ h.type }}
                 </span>
               </td>
-              <td class="px-5 py-3.5 font-semibold text-gray-900">{{ h.product }}</td>
-              <td class="px-5 py-3.5 text-gray-600">{{ h.qty.toLocaleString() }}개</td>
+              <td class="px-5 py-3.5 font-semibold text-gray-900">
+                {{ h.items[0].product }}
+                <span v-if="h.items.length > 1" class="text-xs text-gray-400 font-normal"> 외 {{ h.items.length - 1 }}건</span>
+              </td>
+              <td class="px-5 py-3.5 font-semibold text-gray-700">
+                {{ h.items.reduce((s, i) => s + (PRODUCT_PRICES[i.product] ?? 0) * i.qty, 0).toLocaleString() }}원
+              </td>
               <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ h.date }}</td>
               <td class="px-5 py-3.5">
                 <span class="text-xs font-bold px-2 py-0.5 rounded" :class="historyStatusCls(h.status)">
@@ -165,7 +166,7 @@
               </td>
             </tr>
             <tr v-if="orderHistory.length === 0">
-              <td colspan="6" class="px-5 py-10 text-center text-sm text-gray-400">발주 이력이 없습니다.</td>
+              <td colspan="7" class="px-5 py-10 text-center text-sm text-gray-400">발주 이력이 없습니다.</td>
             </tr>
           </tbody>
         </table>
@@ -198,21 +199,40 @@
                 {{ selectedHistory.status }}
               </span>
             </div>
-            <div>
-              <p class="text-xs text-gray-400 mb-1">품목</p>
-              <p class="font-semibold text-gray-900">{{ selectedHistory.product }}</p>
-            </div>
-            <div>
-              <p class="text-xs text-gray-400 mb-1">수량</p>
-              <p class="font-semibold text-gray-900">{{ selectedHistory.qty.toLocaleString() }}개</p>
-            </div>
-            <div>
+            <div class="col-span-2">
               <p class="text-xs text-gray-400 mb-1">발주일시</p>
               <p class="text-gray-700 font-mono text-xs">{{ selectedHistory.date }}</p>
             </div>
-            <div>
-              <p class="text-xs text-gray-400 mb-1">결제 금액</p>
-              <p class="font-bold text-blue-600">{{ ((PRODUCT_PRICES[selectedHistory.product] ?? 0) * selectedHistory.qty).toLocaleString() }}원</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-400 mb-2">품목 목록</p>
+            <div class="border border-gray-100 rounded-lg overflow-hidden">
+              <table class="w-full text-sm">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-4 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase">품목명</th>
+                    <th class="px-4 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase">수량</th>
+                    <th class="px-4 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase">단가</th>
+                    <th class="px-4 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase">금액</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr v-for="item in selectedHistory.items" :key="item.product">
+                    <td class="px-4 py-2.5 text-gray-800 font-semibold">{{ item.product }}</td>
+                    <td class="px-4 py-2.5 text-right text-gray-600">{{ item.qty.toLocaleString() }}개</td>
+                    <td class="px-4 py-2.5 text-right text-xs text-gray-500">{{ (PRODUCT_PRICES[item.product] ?? 0).toLocaleString() }}원</td>
+                    <td class="px-4 py-2.5 text-right font-bold text-blue-600">{{ ((PRODUCT_PRICES[item.product] ?? 0) * item.qty).toLocaleString() }}원</td>
+                  </tr>
+                </tbody>
+                <tfoot class="bg-gray-50 border-t border-gray-200">
+                  <tr>
+                    <td colspan="3" class="px-4 py-2.5 text-right text-xs font-bold text-gray-500">합계</td>
+                    <td class="px-4 py-2.5 text-right font-black text-blue-600">
+                      {{ selectedHistory.items.reduce((s, i) => s + (PRODUCT_PRICES[i.product] ?? 0) * i.qty, 0).toLocaleString() }}원
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
             </div>
           </div>
         </div>
@@ -316,11 +336,16 @@ const pendingOrders = ref([
 ])
 
 const orderHistory = ref([
-  { id: 'ORD-20260413-001', type: '자동', product: '우유(1L)',        qty: 200, date: '2026-04-13 22:00', status: '배송중'   },
-  { id: 'ORD-20260412-002', type: '자동', product: '종이컵(M)',       qty: 500, date: '2026-04-12 22:00', status: '배송중'   },
-  { id: 'ORD-20260411-003', type: '수동', product: '에스프레소 원두', qty: 150, date: '2026-04-11 10:30', status: '입고완료' },
-  { id: 'ORD-20260410-004', type: '자동', product: '바닐라 시럽',     qty: 60,  date: '2026-04-10 22:00', status: '입고완료' },
-  { id: 'ORD-20260409-005', type: '수동', product: '두유(1L)',        qty: 80,  date: '2026-04-09 14:20', status: '입고완료' },
+  { id: 'ORD-20260413-001', type: '자동', date: '2026-04-13 22:00', status: '배송중',
+    items: [{ product: '우유(1L)', qty: 200 }, { product: '두유(1L)', qty: 80 }] },
+  { id: 'ORD-20260412-002', type: '자동', date: '2026-04-12 22:00', status: '배송중',
+    items: [{ product: '종이컵(M)', qty: 500 }, { product: '종이컵(L)', qty: 200 }] },
+  { id: 'ORD-20260411-003', type: '수동', date: '2026-04-11 10:30', status: '입고완료',
+    items: [{ product: '에스프레소 원두', qty: 150 }, { product: '바닐라 시럽', qty: 30 }] },
+  { id: 'ORD-20260410-004', type: '자동', date: '2026-04-10 22:00', status: '입고완료',
+    items: [{ product: '바닐라 시럽', qty: 60 }, { product: '카라멜 시럽', qty: 40 }] },
+  { id: 'ORD-20260409-005', type: '수동', date: '2026-04-09 14:20', status: '입고완료',
+    items: [{ product: '두유(1L)', qty: 80 }, { product: '우유(1L)', qty: 120 }, { product: '종이컵(M)', qty: 300 }] },
 ])
 
 const showHistoryDetail = ref(false)

@@ -37,6 +37,7 @@
             v-model="searchQuery"
             type="text"
             placeholder="가맹점명 검색"
+            @keyup.enter="handleSearch"
             class="pl-10 pr-4 py-2 rounded-lg border border-gray-200 text-sm w-52
              bg-white shadow-sm
              focus:border-[#F37321] focus:ring-1 focus:ring-[#F37321]
@@ -174,15 +175,8 @@
 
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">소재지</label>
-            <div class="relative">
-              <!-- regionChips 상수를 이용한 드롭다운 메뉴 -->
-              <select v-model="form.region" class="w-full px-4 py-2.5 bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-[#F37321]/20 appearance-none transition-all">
-                <option value="" disabled>자치구를 선택해주세요</option>
-                <option v-for="region in regionChips.slice(1)" :key="region" :value="region">
-                  {{ region }}
-                </option>
-              </select>
-              <ChevronDown class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <div class="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm text-gray-600">
+              {{ detailTarget?.region }}
             </div>
           </div>
 
@@ -197,7 +191,7 @@
           <div class="grid grid-cols-2 gap-5 p-4 bg-gray-50 rounded-lg border border-gray-100">
             <div class="space-y-1.5">
               <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
-                <div class="w-1 h-1 bg-green-400 rounded-lg"></div> 개업일
+                <div class="w-1 h-1 bg-green-400 rounded-full"></div> 개업일
               </label>
               <div class="text-sm font-bold text-gray-700">
                 {{ detailTarget?.openDate || '-' }}

@@ -102,6 +102,12 @@
       </div>
     </div>
 
+    <!-- 검색 결과 없음 -->
+    <div v-else class="bg-white border border-gray-200 py-16 text-center rounded-xl shadow-sm">
+      <p class="text-gray-400 text-sm">해당 조건에 일치하는 배송 건이 없습니다.</p>
+    </div>
+
+
     <div v-else class="bg-white border border-gray-200 py-16 text-center text-gray-400 text-sm">
       해당 상태의 배송 건이 없습니다.
     </div>

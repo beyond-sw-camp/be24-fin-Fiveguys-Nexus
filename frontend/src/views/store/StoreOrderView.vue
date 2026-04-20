@@ -132,11 +132,12 @@
     </div>
 
     <div v-if="activeTab === 'history'">
-      <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+      <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
         <table class="w-full text-sm text-left">
           <thead>
             <tr class="border-b border-gray-200 bg-gray-50">
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주번호</th>
+              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">유형</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">품목</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">수량</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주일시</th>
@@ -144,20 +145,81 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
-            <tr v-for="h in orderHistory" :key="h.id" class="hover:bg-gray-50/50 transition-colors">
+            <tr v-for="h in orderHistory" :key="h.id"
+              class="hover:bg-gray-50/50 transition-colors cursor-pointer"
+              @click="openHistoryDetail(h)">
               <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ h.id }}</td>
-              <td class="px-5 py-3.5 font-semibold text-gray-900">{{ h.product }}</td>
-              <td class="px-5 py-3.5 text-gray-600">{{ h.qty }}개</td>
-              <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ h.date }}</td>
               <td class="px-5 py-3.5">
                 <span class="text-xs font-bold px-2 py-0.5 rounded"
-                  :class="h.status === '입고완료' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-blue-50 text-blue-600 border border-blue-200'">
+                  :class="h.type === '자동' ? 'bg-blue-50 text-blue-600 border border-blue-200' : 'bg-purple-50 text-purple-600 border border-purple-200'">
+                  {{ h.type }}
+                </span>
+              </td>
+              <td class="px-5 py-3.5 font-semibold text-gray-900">{{ h.product }}</td>
+              <td class="px-5 py-3.5 text-gray-600">{{ h.qty.toLocaleString() }}개</td>
+              <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ h.date }}</td>
+              <td class="px-5 py-3.5">
+                <span class="text-xs font-bold px-2 py-0.5 rounded" :class="historyStatusCls(h.status)">
                   {{ h.status }}
                 </span>
               </td>
             </tr>
+            <tr v-if="orderHistory.length === 0">
+              <td colspan="6" class="px-5 py-10 text-center text-sm text-gray-400">발주 이력이 없습니다.</td>
+            </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- 이력 상세 모달 -->
+    <div v-if="showHistoryDetail" class="fixed inset-0 z-50 flex items-center justify-center">
+      <div class="absolute inset-0 bg-black/40" @click="showHistoryDetail = false"></div>
+      <div class="relative bg-white rounded-xl w-full max-w-md border border-gray-200 shadow-xl">
+        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+          <div>
+            <h3 class="font-bold text-gray-900">발주 상세</h3>
+            <p class="text-xs text-gray-400 font-mono mt-0.5">{{ selectedHistory?.id }}</p>
+          </div>
+          <button @click="showHistoryDetail = false" class="text-gray-400 hover:text-gray-600">✕</button>
+        </div>
+        <div v-if="selectedHistory" class="p-6 space-y-4 text-sm">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <p class="text-xs text-gray-400 mb-1">유형</p>
+              <span class="text-xs font-bold px-2 py-0.5 rounded border"
+                :class="selectedHistory.type === '자동' ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-purple-50 text-purple-600 border-purple-200'">
+                {{ selectedHistory.type }}
+              </span>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400 mb-1">상태</p>
+              <span class="text-xs font-bold px-2 py-0.5 rounded" :class="historyStatusCls(selectedHistory.status)">
+                {{ selectedHistory.status }}
+              </span>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400 mb-1">품목</p>
+              <p class="font-semibold text-gray-900">{{ selectedHistory.product }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400 mb-1">수량</p>
+              <p class="font-semibold text-gray-900">{{ selectedHistory.qty.toLocaleString() }}개</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400 mb-1">발주일시</p>
+              <p class="text-gray-700 font-mono text-xs">{{ selectedHistory.date }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400 mb-1">결제 금액</p>
+              <p class="font-bold text-blue-600">{{ ((PRODUCT_PRICES[selectedHistory.product] ?? 0) * selectedHistory.qty).toLocaleString() }}원</p>
+            </div>
+          </div>
+        </div>
+        <div class="px-6 py-4 border-t border-gray-100 flex justify-end">
+          <button @click="showHistoryDetail = false"
+            class="px-4 py-2 text-sm font-semibold text-gray-600 border border-gray-200 rounded hover:bg-gray-50">닫기</button>
+        </div>
       </div>
     </div>
 
@@ -254,9 +316,28 @@ const pendingOrders = ref([
 ])
 
 const orderHistory = ref([
-  { id: 'ORD-20260412-001', product: '종이컵(M)',     qty: 500, date: '2026-04-12 22:00', status: '배송중'   },
-  { id: 'ORD-20260411-002', product: '에스프레소 원두', qty: 150, date: '2026-04-11 22:00', status: '입고완료' },
+  { id: 'ORD-20260413-001', type: '자동', product: '우유(1L)',        qty: 200, date: '2026-04-13 22:00', status: '배송중'   },
+  { id: 'ORD-20260412-002', type: '자동', product: '종이컵(M)',       qty: 500, date: '2026-04-12 22:00', status: '배송중'   },
+  { id: 'ORD-20260411-003', type: '수동', product: '에스프레소 원두', qty: 150, date: '2026-04-11 10:30', status: '입고완료' },
+  { id: 'ORD-20260410-004', type: '자동', product: '바닐라 시럽',     qty: 60,  date: '2026-04-10 22:00', status: '입고완료' },
+  { id: 'ORD-20260409-005', type: '수동', product: '두유(1L)',        qty: 80,  date: '2026-04-09 14:20', status: '입고완료' },
 ])
+
+const showHistoryDetail = ref(false)
+const selectedHistory = ref(null)
+
+function openHistoryDetail(h) {
+  selectedHistory.value = h
+  showHistoryDetail.value = true
+}
+
+const HISTORY_STATUS_CLS = {
+  '승인대기': 'bg-gray-100 text-gray-500 border border-gray-200',
+  '배송중':   'bg-blue-50 text-blue-600 border border-blue-200',
+  '입고완료': 'bg-green-50 text-green-700 border border-green-200',
+  '거절':     'bg-red-50 text-red-600 border border-red-200',
+}
+const historyStatusCls = s => HISTORY_STATUS_CLS[s] ?? 'bg-gray-100 text-gray-500 border border-gray-200'
 
 const tabs = computed(() => [
   { id: 'pending', label: '제안 발주서', count: pendingOrders.value.length },

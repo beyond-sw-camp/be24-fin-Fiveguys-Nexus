@@ -70,7 +70,6 @@
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">현재재고</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">최소재고</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">제안수량</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">거래처 / 비고</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">상태</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">처리</th>
             </tr>
@@ -99,7 +98,6 @@
               <td class="px-5 py-3.5 font-bold" :class="row.kind === 'auto' ? 'text-red-500' : 'text-gray-400 font-medium'">{{ row.currentStock }}</td>
               <td class="px-5 py-3.5 text-gray-500">{{ row.minStock }}</td>
               <td class="px-5 py-3.5 font-bold text-[#F37321]">{{ row.kind === 'abnormal' ? row.suggestedQty.toLocaleString() : row.suggestedQty }}</td>
-              <td class="px-5 py-3.5 text-gray-600 text-xs leading-snug">{{ row.supplier }}</td>
               <td class="px-5 py-3.5">
                 <span class="text-xs font-bold px-2 py-0.5 rounded"
                   :class="statusClass(row.status)">{{ row.status }}</span>
@@ -121,7 +119,7 @@
               </td>
             </tr>
             <tr v-if="filteredAutoProposalRows.length === 0">
-              <td colspan="10" class="px-5 py-10 text-center text-sm text-gray-400">
+              <td colspan="9" class="px-5 py-10 text-center text-sm text-gray-400">
                 표시할 항목이 없습니다. 필터를 바꾸거나 이상 발주 탭에서 처리 완료된 건을 확인하세요.
               </td>
             </tr>
@@ -182,16 +180,6 @@
               <option>여의도역점</option>
               <option>판교테크노밸리점</option>
               <option>부산센텀점</option>
-            </select>
-          </div>
-          <div class="space-y-1.5">
-            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">거래처</label>
-            <select v-model="manualForm.supplier"
-              class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none">
-              <option value="">선택</option>
-              <option>서울우유</option>
-              <option>동서식품</option>
-              <option>한국포장</option>
             </select>
           </div>
         </div>
@@ -339,13 +327,12 @@
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">가맹점</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">품목</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">수량</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">거래처</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주일시</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">상태</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
-            <tr v-for="h in filteredOrderHistory" :key="h.id" class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="openDetail({ id: h.id, type: h.type, store: h.store, status: h.status, date: h.date, supplier: h.supplier, items: [{ product: h.product, qty: h.qty }] })">
+            <tr v-for="h in filteredOrderHistory" :key="h.id" class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="openDetail({ id: h.id, type: h.type, store: h.store, status: h.status, date: h.date, items: [{ product: h.product, qty: h.qty }] })">
               <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ h.id }}</td>
               <td class="px-5 py-3.5">
                 <span class="text-xs font-bold px-2 py-0.5 rounded"
@@ -356,7 +343,6 @@
               <td class="px-5 py-3.5 font-semibold text-gray-900">{{ h.store }}</td>
               <td class="px-5 py-3.5 text-gray-700">{{ h.product }}</td>
               <td class="px-5 py-3.5 font-medium text-gray-900">{{ h.qty }}</td>
-              <td class="px-5 py-3.5 text-gray-600">{{ h.supplier }}</td>
               <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ h.date }}</td>
               <td class="px-5 py-3.5">
                 <span class="text-xs font-bold px-2 py-0.5 rounded"
@@ -364,7 +350,7 @@
               </td>
             </tr>
             <tr v-if="filteredOrderHistory.length === 0">
-              <td colspan="8" class="px-5 py-10 text-center text-sm text-gray-400">조건에 맞는 발주 이력이 없습니다.</td>
+              <td colspan="7" class="px-5 py-10 text-center text-sm text-gray-400">조건에 맞는 발주 이력이 없습니다.</td>
             </tr>
           </tbody>
         </table>
@@ -403,10 +389,6 @@
             <div>
               <p class="text-xs text-gray-400 mb-1">발주 일시</p>
               <p class="text-gray-700 font-mono text-xs">{{ selectedOrder.date }}</p>
-            </div>
-            <div v-if="selectedOrder.supplier">
-              <p class="text-xs text-gray-400 mb-1">거래처</p>
-              <p class="text-gray-700">{{ selectedOrder.supplier }}</p>
             </div>
           </div>
           <div>
@@ -512,18 +494,18 @@ const activeTab = ref('auto')
 const proposalListFilter = ref('all')
 
 const autoOrders = ref([
-  { id: 'AUTO-20260413-001', store: '여의도역점',      product: '우유(1L)',        currentStock: 85,  minStock: 120, suggestedQty: 200, supplier: '서울우유',  status: '제안중' },
-  { id: 'AUTO-20260413-002', store: '판교테크노밸리점', product: '에스프레소 원두', currentStock: 12,  minStock: 80,  suggestedQty: 150, supplier: '동서식품', status: '제안중' },
-  { id: 'AUTO-20260413-003', store: '한화빌딩점',      product: '바닐라 시럽',     currentStock: 5,   minStock: 30,  suggestedQty: 60,  supplier: '청정원F&B', status: '제안중' },
-  { id: 'AUTO-20260412-004', store: '부산센텀점',      product: '종이컵(M)',       currentStock: 300, minStock: 500, suggestedQty: 1000, supplier: '한국포장', status: '확정'   },
-  { id: 'AUTO-20260412-005', store: '한화빌딩점',      product: '두유(1L)',        currentStock: 40,  minStock: 60,  suggestedQty: 100, supplier: '서울우유',  status: '거절'   },
+  { id: 'AUTO-20260413-001', store: '여의도역점',       product: '우유(1L)',        currentStock: 85,  minStock: 120, suggestedQty: 200,  status: '제안중' },
+  { id: 'AUTO-20260413-002', store: '판교테크노밸리점', product: '에스프레소 원두', currentStock: 12,  minStock: 80,  suggestedQty: 150,  status: '제안중' },
+  { id: 'AUTO-20260413-003', store: '한화빌딩점',       product: '바닐라 시럽',     currentStock: 5,   minStock: 30,  suggestedQty: 60,   status: '제안중' },
+  { id: 'AUTO-20260412-004', store: '부산센텀점',       product: '종이컵(M)',       currentStock: 300, minStock: 500, suggestedQty: 1000, status: '확정'   },
+  { id: 'AUTO-20260412-005', store: '한화빌딩점',       product: '두유(1L)',        currentStock: 40,  minStock: 60,  suggestedQty: 100,  status: '거절'   },
 ])
 
 const orderHistory = ref([
-  { id: 'ORD-20260413-001', type: '자동', store: '부산센텀점',      product: '종이컵(M)',        qty: 1000, supplier: '한국포장', date: '2026-04-12 22:00', status: '배송중'   },
-  { id: 'ORD-20260413-002', type: '수동', store: '한화빌딩점',      product: '프리미엄 원두',    qty: 50,   supplier: '동서식품', date: '2026-04-11 10:30', status: '입고완료' },
-  { id: 'ORD-20260412-003', type: '자동', store: '여의도역점',      product: '우유(1L)',         qty: 200,  supplier: '서울우유', date: '2026-04-11 22:00', status: '입고완료' },
-  { id: 'ORD-20260411-004', type: '수동', store: '판교테크노밸리점', product: '카라멜 시럽',     qty: 30,   supplier: '청정원F&B', date: '2026-04-10 14:15', status: '입고완료' },
+  { id: 'ORD-20260413-001', type: '자동', store: '부산센텀점',       product: '종이컵(M)',     qty: 1000, date: '2026-04-12 22:00', status: '배송중'   },
+  { id: 'ORD-20260413-002', type: '수동', store: '한화빌딩점',       product: '프리미엄 원두', qty: 50,   date: '2026-04-11 10:30', status: '입고완료' },
+  { id: 'ORD-20260412-003', type: '자동', store: '여의도역점',       product: '우유(1L)',      qty: 200,  date: '2026-04-11 22:00', status: '입고완료' },
+  { id: 'ORD-20260411-004', type: '수동', store: '판교테크노밸리점', product: '카라멜 시럽',   qty: 30,   date: '2026-04-10 14:15', status: '입고완료' },
 ])
 
 const historyFilterType = ref('')
@@ -568,7 +550,6 @@ const combinedAutoProposalRows = computed(() => {
       currentStock: '—',
       minStock: '—',
       suggestedQty: o.qty,
-      supplier: `과거 평균 ${o.avgQty.toLocaleString()} · +${o.ratio}%`,
       status: '검토필요',
       abnormal: o,
     }))
@@ -581,7 +562,6 @@ const combinedAutoProposalRows = computed(() => {
     currentStock: o.currentStock,
     minStock: o.minStock,
     suggestedQty: o.suggestedQty,
-    supplier: o.supplier,
     status: o.status,
     auto: o,
   }))
@@ -670,15 +650,15 @@ const pendingManualOrders = ref([
   { id: 'MAN-20260419-002', store: '판교테크노밸리점', product: '두유(1L)',      qty: 100, date: '2026-04-19 14:30', status: '배송중' },
 ])
 
-const manualForm = ref({ store: '', supplier: '', items: [], note: '' })
+const manualForm = ref({ store: '', items: [], note: '' })
 
 function addManualItem() {
   manualForm.value.items.push({ product: '', qty: 1 })
 }
 
 function submitManualOrder() {
-  if (!manualForm.value.store || !manualForm.value.supplier || manualForm.value.items.length === 0) {
-    alert('가맹점, 거래처, 품목을 모두 입력해주세요.')
+  if (!manualForm.value.store || manualForm.value.items.length === 0) {
+    alert('가맹점과 품목을 입력해주세요.')
     return
   }
   const now = new Date().toISOString().slice(0, 16).replace('T', ' ')
@@ -690,14 +670,13 @@ function submitManualOrder() {
         store: manualForm.value.store,
         product: item.product,
         qty: item.qty,
-        supplier: manualForm.value.supplier,
         date: now,
         status: '확정',
       })
     }
   })
   alert('발주가 생성되었습니다.')
-  manualForm.value = { store: '', supplier: '', items: [], note: '' }
+  manualForm.value = { store: '', items: [], note: '' }
   setOrderViewTab('history')
 }
 
@@ -709,7 +688,6 @@ function confirmOrder(o) {
     store: o.store,
     product: o.product,
     qty: o.suggestedQty,
-    supplier: o.supplier,
     date: new Date().toISOString().slice(0, 16).replace('T', ' '),
     status: '확정',
   })

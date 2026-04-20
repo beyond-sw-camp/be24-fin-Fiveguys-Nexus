@@ -4,9 +4,6 @@
     <div class="flex justify-between items-start gap-4">
       <div class="min-w-0 flex-1">
         <h1 class="text-xl font-bold text-gray-900 tracking-tight">발주 관리</h1>
-        <p class="page-spec-hint">
-          <code>ORDER_001~008</code>자동·수동 발주, 이력, 이상 발주 승인/반려 및 기준(%) 설정. 자동 탭에서 이상 발주를 함께 보거나 필터로 분리할 수 있습니다.
-        </p>
       </div>
       <div class="flex gap-2">
         <button @click="showSettings = true"
@@ -134,9 +131,6 @@
 
     <!-- Tab: 수동 발주 -->
     <div v-if="activeTab === 'manual'" class="max-w-2xl space-y-3">
-      <p class="page-spec-hint">
-        <code>ORDER_003</code>가맹점·거래처·품목·수량·비고 입력 후 발주 생성. 음수·재고 초과는 백엔드 검증과 함께 알림으로 막습니다.
-      </p>
       <div class="bg-white border border-gray-200 rounded-lg p-6 space-y-4">
         <h3 class="font-bold text-gray-900 text-sm">수동 발주 생성</h3>
         <div class="grid grid-cols-2 gap-4">
@@ -207,9 +201,6 @@
 
     <!-- Tab: 이상 발주 (ORDER_007) -->
     <div v-if="activeTab === 'abnormal'" class="space-y-4">
-      <p class="page-spec-hint">
-        <code>ORDER_007·008</code>점주 수동 발주 중 평균 대비 이상 감지 건(DANGER) 목록 및 기준(%)·개월 설정과 연동됩니다.
-      </p>
       <div class="bg-red-50 px-4 py-3 flex items-start gap-2.5 rounded-md">
         <AlertTriangle class="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
         <p class="text-sm text-red-700">
@@ -271,9 +262,6 @@
 
     <!-- Tab: 발주 이력 (ORDER_006) -->
     <div v-if="activeTab === 'history'" class="space-y-3">
-      <p class="page-spec-hint">
-        <code>ORDER_006</code>완료·거절·확정 등 종료된 발주, 유형·가맹점·일시·상태(배송중·입고완료 등) 조회.
-      </p>
       <div class="bg-white border border-gray-200 rounded-lg p-4 flex flex-wrap gap-3 items-end">
         <div class="space-y-1">
           <label class="text-[10px] font-bold text-gray-400 uppercase">유형</label>

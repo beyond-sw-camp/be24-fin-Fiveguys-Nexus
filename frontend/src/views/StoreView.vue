@@ -4,12 +4,10 @@
     <div class="flex justify-between items-center">
       <div>
         <h1 class="text-xl font-bold text-gray-900 tracking-tight">가맹점 관리</h1>
-        <p class="text-[11px] text-gray-400 mt-1">
-          <code>STORE_001~004</code> 신규 등록·목록·지점명/지역 검색·상태(정상·폐업) 관리.
-        </p>
+
       </div>
       <button @click="openModal(null)"
-              class="bg-[#F37321] text-white px-4 py-2 text-sm font-semibold rounded-md hover:bg-[#e0661d] transition-colors flex items-center gap-2 shadow-sm">
+              class="bg-[#F37321] text-white px-4 py-2 text-sm font-semibold rounded-lg hover:bg-[#e0661d] transition-colors flex items-center gap-2 shadow-sm">
         <Plus class="w-4 h-4" /> 신규 가맹점 등록
       </button>
     </div>
@@ -33,14 +31,20 @@
     <!-- Filters & Search -->
     <div class="flex items-center justify-between gap-4">
       <div class="flex items-center gap-2 flex-1 max-w-md">
-        <div class="relative flex-1">
-          <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
-          <input v-model="searchQuery" type="text" placeholder="가맹점명 또는 지역 검색..."
-                 @keyup.enter="handleSearch"
-                 class="w-full pl-9 pr-4 py-2 rounded-md border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all placeholder:text-gray-300" />
+        <div class="relative">
+          <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="가맹점명 검색"
+            class="pl-10 pr-4 py-2 rounded-lg border border-gray-200 text-sm w-52
+             bg-white shadow-sm
+             focus:border-[#F37321] focus:ring-1 focus:ring-[#F37321]
+             outline-none transition-colors"
+          />
         </div>
         <button @click="handleSearch"
-                class="px-4 py-2 bg-white border border-gray-300 text-gray-600 text-sm font-bold rounded-md hover:bg-gray-50 hover:border-gray-400 transition-colors shadow-sm whitespace-nowrap">
+                class="px-4 py-2 bg-white border border-gray-300 text-gray-600 text-sm font-bold rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-colors shadow-sm whitespace-nowrap">
           검색
         </button>
       </div>
@@ -48,7 +52,7 @@
       <div class="flex items-center gap-3">
         <div class="relative">
           <button @click="toggleDropdown('region')"
-                  class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-md text-sm font-bold text-gray-700 hover:border-gray-300 transition-all shadow-sm min-w-[120px] justify-between">
+                  class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:border-gray-300 transition-all shadow-sm min-w-[120px] justify-between">
             <span>지역: {{ filterRegion }}</span>
             <ChevronDown class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-180': activeDropdown === 'region' }" />
           </button>
@@ -63,7 +67,7 @@
 
         <div class="relative">
           <button @click="toggleDropdown('status')"
-                  class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-md text-sm font-bold text-gray-700 hover:border-gray-300 transition-all shadow-sm min-w-[120px] justify-between">
+                  class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:border-gray-300 transition-all shadow-sm min-w-[120px] justify-between">
             <span>상태: {{ filterStatus }}</span>
             <ChevronDown class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-180': activeDropdown === 'status' }" />
           </button>
@@ -103,7 +107,7 @@
           <td class="px-5 py-4 font-bold text-gray-900 group-hover:text-[#F37321] transition-colors">
             <div class="flex items-center gap-2">
               {{ store.name }}
-              <span v-if="store.closeDate" class="text-[9px] font-normal text-red-400 border border-red-200 px-1 rounded italic">CLOSED</span>
+              <span v-if="store.closeDate" class="text-[9px] font-normal text-red-400 border border-red-200 px-1 rounded-lg italic">CLOSED</span>
             </div>
           </td>
           <td class="px-5 py-4 text-gray-600">{{ store.owner }}</td>
@@ -111,7 +115,7 @@
           <td class="px-5 py-4 text-gray-500 text-xs">{{ store.region }}</td>
           <td class="px-5 py-4 font-mono text-xs text-gray-400">{{ store.bizNumber }}</td>
           <td class="px-5 py-4 text-center">
-              <span class="text-[11px] font-bold px-2 py-0.5 rounded"
+              <span class="text-[11px] font-bold px-2 py-0.5 rounded-lg"
                     :class="!store.closeDate
                   ? 'bg-green-100 text-green-700'
                   : 'bg-red-50 text-red-600'">
@@ -135,7 +139,7 @@
     <!-- 가맹점 상세 페이지 모달 -->
     <div v-if="showDetailModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
       <div class="absolute inset-0 bg-black/40 " @click="showDetailModal = false"></div>
-      <div class="relative bg-white rounded-xl w-full max-w-lg border border-gray-200 shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
+      <div class="relative bg-white rounded-lg w-full max-w-lg border border-gray-200 shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
         <div class="px-8 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
           <h3 class="font-bold text-gray-900 text-lg">가맹점 상세 정보</h3>
           <button @click="showDetailModal = false" class="text-gray-400 hover:text-gray-600 font-bold text-xl">✕</button>
@@ -144,7 +148,7 @@
         <div class="p-8 space-y-5">
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">지점명</label>
-            <div class="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-md text-sm font-bold text-gray-900">
+            <div class="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm font-bold text-gray-900">
               {{ detailTarget?.name }}
             </div>
           </div>
@@ -154,13 +158,13 @@
           <div class="grid grid-cols-2 gap-5">
             <div class="space-y-1.5">
               <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">점주명</label>
-              <div class="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-md text-sm text-gray-700">
+              <div class="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm text-gray-700">
                 {{ detailTarget?.owner }}
               </div>
             </div>
             <div class="space-y-1.5">
               <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">이메일 주소</label>
-              <div class="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-md text-sm text-gray-700">
+              <div class="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm text-gray-700">
                 {{ detailTarget?.email }}
               </div>
             </div>
@@ -170,14 +174,14 @@
 
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">소재지</label>
-            <div class="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-md text-sm text-gray-600">
+            <div class="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm text-gray-600">
               {{ detailTarget?.region }}
             </div>
           </div>
 
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">사업자번호</label>
-            <div class="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-md text-sm font-mono text-gray-500">
+            <div class="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm font-mono text-gray-500">
               {{ detailTarget?.bizNumber }}
             </div>
           </div>
@@ -186,7 +190,7 @@
           <div class="grid grid-cols-2 gap-5 p-4 bg-gray-50 rounded-lg border border-gray-100">
             <div class="space-y-1.5">
               <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
-                <div class="w-1 h-1 bg-green-400 rounded-full"></div> 개업일
+                <div class="w-1 h-1 bg-green-400 rounded-lg"></div> 개업일
               </label>
               <div class="text-sm font-bold text-gray-700">
                 {{ detailTarget?.openDate || '-' }}
@@ -194,7 +198,7 @@
             </div>
             <div class="space-y-1.5">
               <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
-                <div class="w-1 h-1 bg-red-400 rounded-full"></div> 폐업일
+                <div class="w-1 h-1 bg-red-400 rounded-lg"></div> 폐업일
               </label>
               <div class="text-sm font-bold" :class="detailTarget?.closeDate ? 'text-red-500' : 'text-gray-300'">
                 {{ detailTarget?.closeDate || '운영 중' }}
@@ -204,12 +208,12 @@
 
           <div class="pt-4 space-y-3">
             <button @click="downloadPdf"
-                    class="w-full flex items-center justify-center gap-2 py-3 rounded-md bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d] transition-colors shadow-sm">
+                    class="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d] transition-colors shadow-sm">
               <FileText class="w-4 h-4 text-white" />
               사업자 PDF 다운로드
             </button>
             <button @click="showDetailModal = false"
-                    class="w-full py-3 rounded-md bg-gray-100 text-gray-600 text-sm font-bold hover:bg-gray-200 transition-colors">
+                    class="w-full py-3 rounded-lg bg-gray-100 text-gray-600 text-sm font-bold hover:bg-gray-200 transition-colors">
               닫기
             </button>
           </div>
@@ -220,7 +224,7 @@
     <!-- 신규 가맹점 등록 / 수정 모달 -->
     <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div class="absolute inset-0 bg-black/40" @click="showModal = false"></div>
-      <div class="relative bg-white rounded-xl w-full max-w-lg border border-gray-200 shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
+      <div class="relative bg-white rounded-lg w-full max-w-lg border border-gray-200 shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
         <div class="px-8 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
           <h3 class="font-bold text-gray-900 text-lg">{{ editTarget ? '가맹점 정보 수정' : '신규 가맹점 등록' }}</h3>
           <button @click="showModal = false" class="text-gray-400 hover:text-gray-600 font-bold text-xl">✕</button>
@@ -230,26 +234,26 @@
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">지점명</label>
             <input v-model="form.name" required type="text" placeholder="예: 한화빌딩점"
-                   class="w-full px-4 py-2 rounded-md border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
+                   class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
           </div>
 
           <div class="grid grid-cols-2 gap-5">
             <div class="space-y-1.5">
               <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">점주명</label>
               <input v-model="form.owner" required type="text" placeholder="성함 입력"
-                     class="w-full px-4 py-2 rounded-md border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
+                     class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
             </div>
             <div class="space-y-1.5">
               <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">이메일</label>
               <input v-model="form.email" type="email" placeholder="example@email.com"
-                     class="w-full px-4 py-2 rounded-md border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
+                     class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
             </div>
           </div>
 
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">소재지</label>
             <input v-model="form.region" type="text" placeholder="주소 입력"
-                   class="w-full px-4 py-2 rounded-md border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
+                   class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
           </div>
 
           <!-- 수정 모달에서만 표시 -->
@@ -257,19 +261,19 @@
             <div class="space-y-1.5">
               <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">개업일</label>
               <input v-model="form.openDate" type="date"
-                     class="w-full px-4 py-2 rounded-md border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
+                     class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
             </div>
             <div class="space-y-1.5">
               <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">폐업일</label>
               <input v-model="form.closeDate" type="date"
-                     class="w-full px-4 py-2 rounded-md border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
+                     class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
             </div>
           </div>
 
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">사업자번호</label>
             <input v-model="form.bizNumber" type="text" placeholder="000-00-00000"
-                   class="w-full px-4 py-2 rounded-md border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
+                   class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
           </div>
 
 
@@ -278,7 +282,7 @@
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">사업자 PDF</label>
             <div class="flex items-center gap-2">
               <label class="flex-1 cursor-pointer">
-                <div class="w-full px-4 py-2 rounded-md border border-gray-200 text-sm text-gray-400 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between">
+                <div class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm text-gray-400 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between">
                   <span>{{ form.bizPdfName || '파일을 선택해주세요' }}</span>
                   <FileText class="w-4 h-4" />
                 </div>
@@ -288,9 +292,9 @@
           </div>
           <div class="flex gap-3 pt-4">
             <button type="button" @click="showModal = false"
-                    class="flex-1 py-3 rounded-md border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-50 transition-colors">취소</button>
+                    class="flex-1 py-3 rounded-lg border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-50 transition-colors">취소</button>
             <button type="submit"
-                    class="flex-1 py-3 rounded-md bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d] transition-colors shadow-sm">저장</button>
+                    class="flex-1 py-3 rounded-lg bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d] transition-colors shadow-sm">저장</button>
           </div>
         </form>
       </div>

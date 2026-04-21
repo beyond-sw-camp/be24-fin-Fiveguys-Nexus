@@ -462,6 +462,7 @@ function renderInventoryCharts() {
 
 watch(activeTab, (tab) => {
   nextTick(() => {
+    destroyCharts()
     if (tab === 'waste') renderWasteCharts()
     else renderInventoryCharts()
   })

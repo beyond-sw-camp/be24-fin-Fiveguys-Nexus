@@ -146,6 +146,12 @@ const router = createRouter({
       component: () => import('@/views/store/StoreNotificationView.vue'),
       meta: { role: 'STORE_OWNER' },
     },
+    {
+      path: '/store-news',
+      name: 'storeNews',
+      component: () => import('@/views/store/StoreNewsView.vue'),
+      meta: { role: 'STORE_OWNER' },
+    },
 
     // ── COMMON ─────────────────────────────────────────
     {

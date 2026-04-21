@@ -176,7 +176,7 @@
 import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { X } from 'lucide-vue-next'
 import { Chart } from 'chart.js/auto'
-import { rawOrders } from '@/views/StatisticsView.vue'
+import { rawOrders } from '@/utils/orderData'
 
 const selectedYear = ref(2026)
 const selectedMonth = ref(0)

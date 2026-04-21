@@ -29,11 +29,11 @@
 
     <!-- List -->
     <div v-if="filtered.length > 0" class="flex flex-col gap-2">
-      <div
+      <button
         v-for="n in filtered"
         :key="n.id"
         @click="store.markRead(n.id)"
-        class="flex gap-3 p-4 rounded-lg border cursor-pointer transition-colors"
+        class="w-full flex gap-3 p-4 rounded-lg border transition-colors text-left"
         :class="n.read
           ? 'bg-white border-gray-100 hover:bg-gray-50'
           : 'bg-blue-50/40 border-blue-100 hover:bg-blue-50/70'"
@@ -57,7 +57,7 @@
           <p class="text-sm text-gray-600 leading-snug">{{ n.body }}</p>
           <p class="text-xs text-gray-400 mt-1">{{ store.relativeTime(n.time) }}</p>
         </div>
-      </div>
+      </button>
     </div>
 
     <!-- Empty -->
@@ -102,6 +102,6 @@ const filtered = computed(() => {
 })
 
 function typeConfig(type) {
-  return store.typeConfig[type] ?? { label: type, color: 'text-gray-600', bg: 'bg-gray-50', border: 'border-gray-200' }
+  return store.typeConfig[type] ?? { label: '알림', color: 'text-gray-600', bg: 'bg-gray-50', border: 'border-gray-200' }
 }
 </script>

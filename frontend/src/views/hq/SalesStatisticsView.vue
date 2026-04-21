@@ -197,9 +197,10 @@ const currentModeLabel = computed(() =>
 
 const filteredOrders = computed(() =>
   rawOrders.filter(o => {
-    const d = new Date(o.date)
-    if (d.getFullYear() !== selectedYear.value) return false
-    if (selectedMonth.value !== 0 && d.getMonth() + 1 !== selectedMonth.value) return false
+    const year = parseInt(o.date.slice(0, 4))
+    const month = parseInt(o.date.slice(5, 7))
+    if (year !== selectedYear.value) return false
+    if (selectedMonth.value !== 0 && month !== selectedMonth.value) return false
     return true
   })
 )
@@ -235,9 +236,10 @@ const summaryCards = computed(() => {
   const topStore = rankingData.value[0]?.label ?? '-'
 
   const prevOrders = rawOrders.filter(o => {
-    const d = new Date(o.date)
-    return d.getFullYear() === selectedYear.value - 1
-      && (selectedMonth.value === 0 || d.getMonth() + 1 === selectedMonth.value)
+    const year = parseInt(o.date.slice(0, 4))
+    const month = parseInt(o.date.slice(5, 7))
+    return year === selectedYear.value - 1
+      && (selectedMonth.value === 0 || month === selectedMonth.value)
   })
   const prevTotal = prevOrders.reduce((s, o) => s + o.amount, 0)
   const growth = prevTotal > 0 ? ((total - prevTotal) / prevTotal) * 100 : null
@@ -272,8 +274,9 @@ const summaryCards = computed(() => {
 
 const monthlyTrend = computed(() => {
   const map = new Map(Array.from({ length: 12 }, (_, i) => [i + 1, 0]))
-  for (const o of rawOrders.filter(o => new Date(o.date).getFullYear() === selectedYear.value)) {
-    const m = new Date(o.date).getMonth() + 1
+  for (const o of rawOrders) {
+    if (parseInt(o.date.slice(0, 4)) !== selectedYear.value) continue
+    const m = parseInt(o.date.slice(5, 7))
     map.set(m, (map.get(m) || 0) + o.amount)
   }
   return {

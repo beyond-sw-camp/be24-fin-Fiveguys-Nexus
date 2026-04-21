@@ -119,8 +119,14 @@ const windowDays = computed(() => {
   return 30 * 8
 })
 
-function parseYmd(s) { return new Date(`${s}T12:00:00`) }
-function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x }
+function parseYmd(s) {
+  return new Date(`${s}T12:00:00`)
+}
+function addDays(d, n) {
+  const x = new Date(d)
+  x.setDate(x.getDate() + n)
+  return x
+}
 function startOfIsoWeek(d) {
   const x = new Date(d)
   const diff = (x.getDay() + 6) % 7
@@ -149,7 +155,10 @@ const anchorDate = '2026-04-22'
 function ordersInRange(orders, endExclusive, days) {
   const end = parseYmd(endExclusive)
   const start = addDays(end, -days)
-  return orders.filter((o) => { const od = parseYmd(o.date); return od >= start && od < end })
+  return orders.filter((o) => {
+    const od = parseYmd(o.date)
+    return od >= start && od < end
+  })
 }
 
 const currentWindowOrders = computed(() =>
@@ -165,7 +174,9 @@ function aggregateByBucket(orders) {
     const key = bucketKey(o.date)
     if (!map.has(key)) map.set(key, { amount: 0, qty: 0, abnormal: 0 })
     const row = map.get(key)
-    row.amount += o.amount; row.qty += o.qty; row.abnormal += o.abnormal
+    row.amount += o.amount
+    row.qty += o.qty
+    row.abnormal += o.abnormal
   }
   return map
 }

@@ -70,8 +70,50 @@
     <!-- 뉴스 요약 탭 -->
     <div v-if="activeTab === 'news'" class="flex flex-col gap-3">
       <p class="text-xs text-gray-400">매일 오전 9시 AI가 치킨 업계 관련 뉴스를 수집·요약합니다.</p>
+
       <div v-if="newsSummaries.length === 0" class="bg-white rounded-lg border border-gray-200 px-5 py-16 text-center text-gray-400 text-sm">
         수집된 뉴스가 없습니다.
+      </div>
+
+      <div
+        v-for="news in newsSummaries"
+        :key="news.idx"
+        class="bg-white rounded-lg border border-gray-200 p-5 flex flex-col gap-3"
+      >
+        <!-- 제목 + 날짜 -->
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex items-center gap-2">
+            <Newspaper class="w-4 h-4 text-[#F37321] shrink-0 mt-0.5" />
+            <span class="font-semibold text-gray-900 text-sm">{{ news.summary_title }}</span>
+          </div>
+          <span class="text-xs text-gray-400 shrink-0">{{ news.summary_date }}</span>
+        </div>
+
+        <!-- 요약 내용 -->
+        <div class="text-sm text-gray-700 leading-relaxed bg-gray-50 rounded-md px-4 py-3">
+          {{ news.summary_content }}
+        </div>
+
+        <!-- 운영 조언 -->
+        <div class="flex gap-2 text-sm bg-orange-50 border border-orange-100 rounded-md px-4 py-3">
+          <Lightbulb class="w-4 h-4 text-[#F37321] shrink-0 mt-0.5" />
+          <p class="text-gray-700 leading-relaxed">{{ news.advice }}</p>
+        </div>
+
+        <!-- 원문 링크 -->
+        <div class="flex flex-wrap gap-2">
+          <a
+            v-for="(url, i) in news.urls"
+            :key="i"
+            :href="url"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-1 text-xs text-blue-500 hover:underline"
+          >
+            <ExternalLink class="w-3 h-3" />
+            원문 {{ i + 1 }}
+          </a>
+        </div>
       </div>
     </div>
   </div>
@@ -79,7 +121,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { FileText, Download } from 'lucide-vue-next'
+import { FileText, Download, Newspaper, Lightbulb, ExternalLink } from 'lucide-vue-next'
 
 const tabs = [
   { label: 'AI 보고서', value: 'report' },
@@ -121,7 +163,32 @@ const reports = ref([
   },
 ])
 
-const newsSummaries = ref([])
+const newsSummaries = ref([
+  {
+    idx: 3,
+    summary_title: '2026-04-21 치킨 업계 주요 이슈 요약',
+    summary_date: '2026-04-21 09:00',
+    summary_content: '1. 국내 생닭 도매가격이 전주 대비 8% 상승하며 3개월 만에 최고치를 기록했습니다. 공급 부족과 여름 성수기 수요 증가가 주요 원인으로 분석됩니다.\n2. 공정거래위원회가 주요 치킨 프랜차이즈 브랜드의 가맹점 원부자재 공급가 실태 점검에 착수했습니다.\n3. 튀김유 원재료인 대두유 국제 선물 가격이 2주 연속 강세를 보이며 국내 식용유 가격 인상 가능성이 제기되고 있습니다.',
+    advice: '생닭 도매가 상승 추세에 따라 단기 재고 확보를 검토하시고, 튀김유 가격 동향을 모니터링하여 구매 시점을 조율하는 것을 권장합니다.',
+    urls: ['https://example.com/news/1', 'https://example.com/news/2', 'https://example.com/news/3'],
+  },
+  {
+    idx: 2,
+    summary_title: '2026-04-20 치킨 업계 주요 이슈 요약',
+    summary_date: '2026-04-20 09:00',
+    summary_content: '1. 치킨 소스류 주요 원재료인 고추 작황 부진으로 핫소스 공급가 상승이 예상됩니다.\n2. 식품의약품안전처가 닭고기 위생 관리 기준을 강화하는 개정안을 예고했습니다. 냉장 유통 온도 기준이 기존 5℃에서 4℃로 조정될 예정입니다.\n3. 배달 플랫폼 수수료 인상 발표로 치킨 프랜차이즈 가맹점주들의 반발이 커지고 있습니다.',
+    advice: '위생 관리 기준 강화에 대비해 냉장 보관 온도 설정을 사전에 점검하시고, 배달 플랫폼 수수료 변동에 따른 정산 계획을 재검토하시기 바랍니다.',
+    urls: ['https://example.com/news/4', 'https://example.com/news/5'],
+  },
+  {
+    idx: 1,
+    summary_title: '2026-04-19 치킨 업계 주요 이슈 요약',
+    summary_date: '2026-04-19 09:00',
+    summary_content: '1. 황금연휴 기간 치킨 주문량이 평일 대비 평균 230% 증가할 것으로 전망됩니다.\n2. 치킨박스·포장재 제조업체들이 원가 상승을 이유로 공급가 인상을 예고했습니다.\n3. 조류독감(AI) 발생 우려가 일부 지역에서 제기되어 당국이 예찰을 강화하고 있습니다.',
+    advice: '연휴 수요 급증에 대비해 생닭·소스·포장재 재고를 충분히 확보하시고, 조류독감 발생 지역 원산지 납품 현황을 확인하시기 바랍니다.',
+    urls: ['https://example.com/news/6', 'https://example.com/news/7', 'https://example.com/news/8'],
+  },
+])
 
 function handleDownload(report) {
   alert(`${report.report_title} 다운로드 준비 중입니다.`)

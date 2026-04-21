@@ -121,6 +121,9 @@
         <RouterView />
       </div>
     </main>
+
+    <!-- AI 챗봇 (관리자 전용) -->
+    <AiChatbot v-if="auth.isAdmin" />
   </div>
 </template>
 
@@ -136,6 +139,7 @@ import {
 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
 import NotificationBell from '@/components/NotificationBell.vue'
+import AiChatbot from '@/components/AiChatbot.vue'
 import nexusLogo from '@/assets/nexus-logo.png'
 
 const route  = useRoute()

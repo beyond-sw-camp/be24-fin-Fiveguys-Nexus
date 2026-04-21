@@ -49,7 +49,7 @@
           </select>
         </div>
 
-        <div class="grid grid-cols-3 gap-4 mt-4">
+        <div class="grid grid-cols-2 gap-4 mt-4">
           <div class="bg-white border border-gray-200 rounded-lg">
             <div class="p-5">
               <p class="text-xs font-bold text-gray-400">
@@ -134,7 +134,7 @@
           </select>
         </div>
 
-        <div class="grid grid-cols-3 gap-4 mt-4">
+        <div class="grid grid-cols-2 gap-4 mt-4">
           <div class="bg-white border border-gray-200 rounded-lg">
             <div class="p-5">
               <p class="text-xs font-bold text-gray-400">
@@ -265,7 +265,7 @@ const salesTotal = computed(() =>
 )
 
 const salesPaid = computed(() =>
-  salesFiltered.value.reduce((s,v)=>s+v.amount,0)
+  salesFiltered.value.filter(s => s.status === '계산완료').reduce((s, v) => s + v.amount, 0)
 )
 
 /* 발주 */
@@ -312,7 +312,7 @@ const totalAmount = computed(() =>
 )
 
 const paidAmount = computed(() =>
-  filteredSettlements.value.reduce((s,v)=>s+v.amount,0)
+  filteredSettlements.value.filter(s => s.status === '납부완료').reduce((s, v) => s + v.amount, 0)
 )
 
 function downloadStatement(row){

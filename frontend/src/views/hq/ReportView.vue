@@ -4,7 +4,6 @@
     <div class="flex items-center justify-between mb-6">
       <div>
         <h1 class="text-xl font-bold text-gray-900">AI 보고서</h1>
-        <p class="text-sm text-gray-500 mt-0.5">AI가 생성한 보고서와 뉴스 요약을 확인할 수 있습니다.</p>
       </div>
     </div>
 
@@ -75,44 +74,77 @@
         수집된 뉴스가 없습니다.
       </div>
 
-      <div
+      <!-- 뉴스 목록 (간략 표시) -->
+      <button
         v-for="news in newsSummaries"
         :key="news.idx"
-        class="bg-white rounded-lg border border-gray-200 p-5 flex flex-col gap-3"
+        @click="selectedNews = news"
+        class="w-full bg-white rounded-lg border border-gray-200 p-4 flex items-start justify-between gap-4 hover:border-[#F37321] hover:bg-orange-50/20 transition-colors text-left"
       >
-        <!-- 제목 + 날짜 -->
-        <div class="flex items-start justify-between gap-4">
-          <div class="flex items-center gap-2">
-            <Newspaper class="w-4 h-4 text-[#F37321] shrink-0 mt-0.5" />
-            <span class="font-semibold text-gray-900 text-sm">{{ news.summary_title }}</span>
+        <div class="flex items-start gap-3 min-w-0">
+          <Newspaper class="w-4 h-4 text-[#F37321] shrink-0 mt-0.5" />
+          <div class="min-w-0">
+            <p class="font-semibold text-gray-900 text-sm">{{ news.summary_title }}</p>
+            <p class="text-xs text-gray-500 mt-1 line-clamp-1">{{ firstLine(news.summary_content) }}</p>
           </div>
-          <span class="text-xs text-gray-400 shrink-0">{{ news.summary_date }}</span>
+        </div>
+        <span class="text-xs text-gray-400 shrink-0">{{ news.summary_date }}</span>
+      </button>
+    </div>
+
+    <!-- 뉴스 상세 모달 -->
+    <div v-if="selectedNews" class="fixed inset-0 z-50 flex items-center justify-center">
+      <div class="absolute inset-0 bg-black/40" @click="selectedNews = null"></div>
+      <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col overflow-hidden">
+
+        <!-- 모달 헤더 -->
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
+          <div class="flex items-center gap-2">
+            <Newspaper class="w-4 h-4 text-[#F37321]" />
+            <span class="font-bold text-gray-900 text-sm">{{ selectedNews.summary_title }}</span>
+          </div>
+          <button @click="selectedNews = null" class="text-gray-400 hover:text-gray-700 transition-colors">
+            <X class="w-5 h-5" />
+          </button>
         </div>
 
-        <!-- 요약 내용 -->
-        <div class="text-sm text-gray-700 leading-relaxed bg-gray-50 rounded-md px-4 py-3">
-          {{ news.summary_content }}
-        </div>
+        <!-- 모달 내용 -->
+        <div class="overflow-y-auto px-6 py-5 flex flex-col gap-4">
+          <!-- 날짜 -->
+          <p class="text-xs text-gray-400">{{ selectedNews.summary_date }}</p>
 
-        <!-- 운영 조언 -->
-        <div class="flex gap-2 text-sm bg-orange-50 border border-orange-100 rounded-md px-4 py-3">
-          <Lightbulb class="w-4 h-4 text-[#F37321] shrink-0 mt-0.5" />
-          <p class="text-gray-700 leading-relaxed">{{ news.advice }}</p>
-        </div>
+          <!-- 요약 내용 -->
+          <div class="bg-gray-50 rounded-lg px-4 py-3">
+            <p class="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">요약</p>
+            <p class="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{{ selectedNews.summary_content }}</p>
+          </div>
 
-        <!-- 원문 링크 -->
-        <div class="flex flex-wrap gap-2">
-          <a
-            v-for="(url, i) in news.urls"
-            :key="i"
-            :href="url"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex items-center gap-1 text-xs text-blue-500 hover:underline"
-          >
-            <ExternalLink class="w-3 h-3" />
-            원문 {{ i + 1 }}
-          </a>
+          <!-- 운영 조언 -->
+          <div class="flex gap-2 bg-orange-50 border border-orange-100 rounded-lg px-4 py-3">
+            <Lightbulb class="w-4 h-4 text-[#F37321] shrink-0 mt-0.5" />
+            <div>
+              <p class="text-xs font-semibold text-[#F37321] mb-1">운영 조언</p>
+              <p class="text-sm text-gray-700 leading-relaxed">{{ selectedNews.advice }}</p>
+            </div>
+          </div>
+
+          <!-- 원문 링크 -->
+          <div>
+            <p class="text-xs font-semibold text-gray-500 mb-2">원문 링크</p>
+            <div class="flex flex-wrap gap-2">
+              <a
+                v-for="(url, i) in selectedNews.urls"
+                :key="i"
+                :href="url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-1 text-xs text-blue-500 hover:underline"
+              >
+                <ExternalLink class="w-3 h-3" />
+                원문 {{ i + 1 }}
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -121,14 +153,15 @@
 
 <script setup>
 import { ref } from 'vue'
-import { FileText, Download, Newspaper, Lightbulb, ExternalLink } from 'lucide-vue-next'
+import { FileText, Download, Newspaper, Lightbulb, ExternalLink, X } from 'lucide-vue-next'
 
 const tabs = [
-  { label: 'AI 보고서', value: 'report' },
+  { label: '보고서', value: 'report' },
   { label: '뉴스 요약', value: 'news' },
 ]
 
 const activeTab = ref('report')
+const selectedNews = ref(null)
 
 const reports = ref([
   {
@@ -189,6 +222,10 @@ const newsSummaries = ref([
     urls: ['https://example.com/news/6', 'https://example.com/news/7', 'https://example.com/news/8'],
   },
 ])
+
+function firstLine(content) {
+  return content.split('\n')[0]
+}
 
 function handleDownload(report) {
   alert(`${report.report_title} 다운로드 준비 중입니다.`)

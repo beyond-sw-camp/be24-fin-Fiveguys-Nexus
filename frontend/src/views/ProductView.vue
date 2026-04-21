@@ -4,9 +4,6 @@
     <div class="flex justify-between items-center">
       <div>
         <h1 class="text-xl font-bold text-gray-900 tracking-tight">제품 목록 관리</h1>
-        <p class="page-spec-hint">
-          <code>PRODUCT_001~005 · CATEGORY_001~003</code>제품코드·명·카테고리·단위·기준/최소재고·단가·위험 유통기한 조회·등록·수정·삭제 및 카테고리 관리입니다.
-        </p>
       </div>
       <div class="flex gap-2">
         <button @click="showCategoryModal = true"

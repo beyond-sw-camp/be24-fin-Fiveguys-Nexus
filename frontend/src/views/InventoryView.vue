@@ -1,13 +1,8 @@
 <template>
   <div class="p-5 space-y-4">
-    <!-- Header -->
     <div class="flex justify-between items-center">
       <div>
         <h1 class="text-xl font-bold text-gray-900 tracking-tight">가맹점 재고 현황</h1>
-        <p class="text-xs text-gray-500 mt-1">가맹점별 보유 수량 기준입니다.</p>
-        <p class="page-spec-hint mt-1">
-          <code>STOCK_002·003</code>지역·가맹점 필터, 상품코드·품목·현재/최소재고·상태. 유통기한·선입선출은 품목 클릭 시 상세에서 확인.
-        </p>
       </div>
       <div class="flex gap-2">
         <RouterLink to="/inventory/history"
@@ -18,7 +13,6 @@
       </div>
     </div>
 
-    <!-- Filters (STOCK_002 지역별 · 가맹점별, STOCK_003 선택값에 따른 목록) -->
     <div class="flex gap-3 items-center flex-wrap">
       <select v-model="filterRegion"
         class="px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none bg-white">
@@ -48,7 +42,6 @@
       </div>
     </div>
 
-    <!-- Table -->
     <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
       <table class="w-full text-sm text-left">
         <thead>
@@ -105,7 +98,6 @@
               <p class="text-xs font-mono text-gray-500 mt-0.5">{{ detailItem.code }} · {{ detailItem.store }}</p>
               <p class="text-xs text-gray-500 mt-2">
                 합계 <span class="font-semibold text-gray-800">{{ totalStock(detailItem).toLocaleString() }}</span>
-                (유통기한 오름차순 · 선입선출)
               </p>
             </div>
             <button type="button"
@@ -174,7 +166,6 @@ const statusFilters = [
   { value: 'normal',   label: '정상' },
 ]
 
-/** lots 합이 현재재고 */
 const items = ref([
   {
     code: 'C100', name: '닭고기(생닭)', store: '한화빌딩점', safe: 60,

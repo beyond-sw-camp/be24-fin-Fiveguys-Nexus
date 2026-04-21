@@ -3,9 +3,6 @@
     <div class="flex justify-between items-center">
       <div>
         <h1 class="text-xl font-bold text-gray-900 tracking-tight">매장 재고 관리</h1>
-        <p class="page-spec-hint">
-          <code>STOCK_004·005</code>목록은 상품코드·품목명·전산 재고(합계)·상태만 표시. 행 클릭 시 상세 모달에서 유통기한별(선입선출) lot·최소 재고·lot별 보정 수량 입력 후 보정.
-        </p>
       </div>
       <div class="text-right">
         <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">마지막 POS 동기화</p>
@@ -13,16 +10,6 @@
       </div>
     </div>
 
-    <!-- Info banner -->
-    <div class="bg-blue-50 px-4 py-3 flex items-start gap-2.5 rounded-md">
-      <Info class="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
-      <span class="text-sm text-blue-700">
-        행을 클릭하면 상세 창이 열립니다. 유통기한(입고)별 <strong>lot마다 전산 수량과 다른 실제 수량</strong>을 입력한 뒤 <strong>lot 보정 반영</strong>을 눌러 주세요.
-        이력은 본사 입출고 이력에 자동으로 기록됩니다.
-      </span>
-    </div>
-
-    <!-- Table -->
     <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
       <table class="w-full text-sm text-left">
         <thead>
@@ -58,7 +45,6 @@
       </table>
     </div>
 
-    <!-- 상세 모달: lot별 선입선출 + lot별 보정 -->
     <Teleport to="body">
       <div
         v-if="detailItem"
@@ -74,7 +60,6 @@
               <p class="text-xs font-mono text-gray-500 mt-0.5">{{ detailItem.code }}</p>
               <p class="text-xs text-gray-500 mt-1.5">
                 합계 <span class="font-semibold text-gray-800">{{ totalStock(detailItem).toLocaleString() }}</span>
-                · 유통기한 오름차순(선입선출)
               </p>
             </div>
             <button type="button" class="text-gray-400 hover:text-gray-600 p-1 rounded-md hover:bg-white shrink-0" aria-label="닫기" @click="closeDetail">
@@ -85,7 +70,7 @@
           <div class="p-5 space-y-4 overflow-y-auto flex-1">
             <div>
               <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">최소 재고</p>
-              <p class="text-sm text-gray-700">{{ detailItem.min.toLocaleString() }} <span class="text-gray-400 font-normal">(본사 기준)</span></p>
+              <p class="text-sm text-gray-700">{{ detailItem.min.toLocaleString() }}</p>
             </div>
 
             <div class="border-t border-gray-100 pt-4">
@@ -120,7 +105,6 @@
                   </tbody>
                 </table>
               </div>
-              <p class="text-[11px] text-gray-400 mt-2">보정 후에는 0 이상의 정수만 반영됩니다.</p>
             </div>
           </div>
 
@@ -143,11 +127,10 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { Info, X } from 'lucide-vue-next'
+import { X } from 'lucide-vue-next'
 
 const detailTitleId = 'store-inv-detail-title'
 const detailItem = ref(null)
-/** 모달 편집용 lot 행 (id·expiry·전산 qty·adjustTo) */
 const draftLots = ref([])
 
 const inventory = ref([
@@ -234,7 +217,6 @@ function hasExpiringSoonLot(item) {
   return (item.lots ?? []).some((l) => isExpiringSoon(l.expiry))
 }
 
-/** 빈 입력은 '변경 없음'으로 간주해 전산 수량 유지 */
 function parseAdjustTo(row) {
   const v = row.adjustTo
   if (v === '' || v === null || v === undefined) return row.qty

@@ -3,10 +3,6 @@
     <div class="flex justify-between items-center">
       <div>
         <h1 class="text-xl font-bold text-gray-900 tracking-tight">본사 재고 현황</h1>
-        <p class="text-xs text-gray-500 mt-1">물류센터·본사 보관 재고 기준입니다.</p>
-        <p class="page-spec-hint mt-1">
-          <code>STOCK_001</code>본사 소유 재고, 창고 단위, 최소재고·상태(정상·임박·부족). 유통기한·선입선출은 품목 클릭 시 상세에서 확인.
-        </p>
       </div>
       <div class="flex gap-2">
         <RouterLink to="/inventory/history"
@@ -78,7 +74,6 @@
       </table>
     </div>
 
-    <!-- 유통기한별 상세 (선입선출 순) -->
     <Teleport to="body">
       <div v-if="detailItem"
         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
@@ -93,7 +88,6 @@
               <p class="text-xs font-mono text-gray-500 mt-0.5">{{ detailItem.code }} · {{ detailItem.warehouse }}</p>
               <p class="text-xs text-gray-500 mt-2">
                 합계 <span class="font-semibold text-gray-800">{{ totalStock(detailItem).toLocaleString() }}</span>
-                (유통기한 오름차순 · 선입선출)
               </p>
             </div>
             <button type="button"
@@ -147,7 +141,6 @@ const statusFilters = [
   { value: 'normal',   label: '정상' },
 ]
 
-/** lots 합이 현재재고. 유통기한은 모달에서 FIFO로만 표시 */
 const items = ref([
   {
     code: 'C100', name: '닭고기(생닭)', warehouse: '본사 창고', safe: 9000,
@@ -204,7 +197,6 @@ function totalStock(item) {
   return (item.lots ?? []).reduce((s, l) => s + l.qty, 0)
 }
 
-/** 선입선출: 유통기한 오름차순, 미표기(무기한) lot은 맨 뒤 */
 function fifoLots(item) {
   const lots = [...(item.lots ?? [])]
   return lots.sort((a, b) => {

@@ -35,6 +35,12 @@ const router = createRouter({
       meta: { role: 'ADMIN' },
     },
     {
+      path: '/statistics/esg',
+      name: 'statisticsEsg',
+      component: () => import('@/views/hq/EsgDashboardView.vue'),
+      meta: { role: 'ADMIN' },
+    },
+    {
       path: '/store',
       name: 'store',
       component: () => import('@/views/StoreView.vue'),

@@ -89,7 +89,7 @@ const adminNotifications = computed(() => store.forRole('ADMIN'))
 const unreadCount = computed(() => store.unreadCount('ADMIN'))
 
 const tabTypeMap = {
-  order:      ['order_new', 'order_approved', 'order_rejected', 'auto_order'],
+  order:      ['order_new', 'auto_order'],
   stock:      ['low_stock'],
   abnormal:   ['abnormal_order'],
   settlement: ['settlement'],

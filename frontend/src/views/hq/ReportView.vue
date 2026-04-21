@@ -13,7 +13,7 @@
       <table class="w-full text-sm">
         <thead>
           <tr class="border-b border-gray-100 bg-gray-50/70">
-            <th class="text-left px-5 py-3 font-semibold text-gray-600 w-12">번호</th>
+            <th class="text-left px-5 py-3 font-semibold text-gray-600 w-20">번호</th>
             <th class="text-left px-5 py-3 font-semibold text-gray-600">보고서 제목</th>
             <th class="text-left px-5 py-3 font-semibold text-gray-600 w-40">생성일시</th>
             <th class="text-center px-5 py-3 font-semibold text-gray-600 w-28">다운로드</th>

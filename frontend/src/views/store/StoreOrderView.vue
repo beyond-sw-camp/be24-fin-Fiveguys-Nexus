@@ -106,6 +106,7 @@
       <div v-if="pendingOrders.length === 0" class="bg-white border border-gray-200 py-12 text-center text-gray-400 rounded-lg">
         <ClipboardList class="w-10 h-10 mx-auto mb-2 opacity-20" />
         <p class="text-sm">현재 검토 대기 중인 발주서가 없습니다.</p>
+        <p class="text-xs mt-1 text-gray-400">발주가 필요한 경우 본사에 문의하세요.</p>
       </div>
     </div>
 
@@ -398,15 +399,12 @@ function processPayment() {
   const order = selectedOrder.value
   const idx = pendingOrders.value.indexOf(order)
   if (idx > -1) {
-    order.items.forEach(item => {
-      orderHistory.value.unshift({
-        id: order.id.replace('AUTO', 'ORD'),
-        product: item.product,
-        qty: item.adjusted,
-        supplier: order.supplier,
-        date: new Date().toISOString().split('T')[0],
-        status: '승인대기',
-      })
+    orderHistory.value.unshift({
+      id: order.id.replace('AUTO', 'ORD'),
+      type: '자동',
+      date: new Date().toISOString().slice(0, 16).replace('T', ' '),
+      status: '승인대기',
+      items: order.items.map(item => ({ product: item.product, qty: item.adjusted })),
     })
     pendingOrders.value.splice(idx, 1)
     isModalOpen.value = false

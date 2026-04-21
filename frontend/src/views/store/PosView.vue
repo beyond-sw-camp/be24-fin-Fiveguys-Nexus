@@ -89,7 +89,8 @@
 
               <!-- 상품 이미지 -->
               <div class="w-full h-28 rounded-lg overflow-hidden mb-3 bg-gray-50 border border-gray-50 relative">
-                <img :src="product.image" :alt="product.name"
+                <img :src="getProductImage(product)" :alt="product.name"
+                  @error="handleProductImageError"
                   class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                   loading="lazy" />
                 <div class="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors"></div>
@@ -379,6 +380,7 @@ import {
   CheckCircle, AlertCircle,
 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
+import defaultMenuImage from '@/assets/store-pos-default-menu.png'
 
 const auth = useAuthStore()
 
@@ -459,6 +461,16 @@ function updateTime() {
   const now = new Date()
   currentTime.value = now.toLocaleDateString('ko-KR') + ' ' +
     now.toLocaleTimeString('ko-KR', { hour12: false })
+}
+
+function getProductImage(product) {
+  return product.image || defaultMenuImage
+}
+
+function handleProductImageError(event) {
+  if (event.target.dataset.fallbackApplied === 'true') return
+  event.target.dataset.fallbackApplied = 'true'
+  event.target.src = defaultMenuImage
 }
 
 // ── 장바구니 액션 ─────────────────────────────────────

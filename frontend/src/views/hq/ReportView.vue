@@ -4,12 +4,27 @@
     <div class="flex items-center justify-between mb-6">
       <div>
         <h1 class="text-xl font-bold text-gray-900">AI 보고서</h1>
-        <p class="text-sm text-gray-500 mt-0.5">챗봇이 생성한 보고서를 조회하고 다운로드할 수 있습니다.</p>
+        <p class="text-sm text-gray-500 mt-0.5">AI가 생성한 보고서와 뉴스 요약을 확인할 수 있습니다.</p>
       </div>
     </div>
 
-    <!-- Table -->
-    <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <!-- Tabs -->
+    <div class="flex gap-1 mb-4 border-b border-gray-200">
+      <button
+        v-for="tab in tabs"
+        :key="tab.value"
+        @click="activeTab = tab.value"
+        class="px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px"
+        :class="activeTab === tab.value
+          ? 'border-[#F37321] text-[#F37321]'
+          : 'border-transparent text-gray-500 hover:text-gray-700'"
+      >
+        {{ tab.label }}
+      </button>
+    </div>
+
+    <!-- AI 보고서 탭 -->
+    <div v-if="activeTab === 'report'" class="bg-white rounded-lg border border-gray-200 overflow-hidden">
       <table class="w-full text-sm">
         <thead>
           <tr class="border-b border-gray-100 bg-gray-50/70">
@@ -51,12 +66,27 @@
         </tbody>
       </table>
     </div>
+
+    <!-- 뉴스 요약 탭 -->
+    <div v-if="activeTab === 'news'" class="flex flex-col gap-3">
+      <p class="text-xs text-gray-400">매일 오전 9시 AI가 치킨 업계 관련 뉴스를 수집·요약합니다.</p>
+      <div v-if="newsSummaries.length === 0" class="bg-white rounded-lg border border-gray-200 px-5 py-16 text-center text-gray-400 text-sm">
+        수집된 뉴스가 없습니다.
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { FileText, Download } from 'lucide-vue-next'
+
+const tabs = [
+  { label: 'AI 보고서', value: 'report' },
+  { label: '뉴스 요약', value: 'news' },
+]
+
+const activeTab = ref('report')
 
 const reports = ref([
   {
@@ -91,8 +121,9 @@ const reports = ref([
   },
 ])
 
+const newsSummaries = ref([])
+
 function handleDownload(report) {
-  // API 연동 후 실제 다운로드로 교체
   alert(`${report.report_title} 다운로드 준비 중입니다.`)
 }
 </script>

@@ -135,6 +135,12 @@ const router = createRouter({
       meta: { role: 'ADMIN' },
     },
     {
+      path: '/report',
+      name: 'report',
+      component: () => import('@/views/hq/ReportView.vue'),
+      meta: { role: 'ADMIN' },
+    },
+    {
       path: '/store-notification',
       name: 'storeNotification',
       component: () => import('@/views/store/StoreNotificationView.vue'),

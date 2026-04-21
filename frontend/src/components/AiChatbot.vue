@@ -69,11 +69,13 @@
         <div class="px-3 py-3 border-t border-gray-100 shrink-0">
           <div class="flex items-end gap-2">
             <textarea
+              ref="textareaRef"
               v-model="input"
               @keydown.enter.exact.prevent="sendMessage"
+              @input="autoResize"
               placeholder="보고서 생성을 요청해보세요..."
               rows="1"
-              class="flex-1 resize-none text-sm px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:border-[#F37321] transition-colors leading-relaxed"
+              class="flex-1 resize-none text-sm px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:border-[#F37321] transition-colors leading-relaxed max-h-28 overflow-y-auto"
               :disabled="isLoading"
             />
             <button
@@ -109,6 +111,14 @@ const isOpen = ref(false)
 const isLoading = ref(false)
 const input = ref('')
 const messageContainer = ref(null)
+const textareaRef = ref(null)
+
+function autoResize() {
+  const el = textareaRef.value
+  if (!el) return
+  el.style.height = 'auto'
+  el.style.height = el.scrollHeight + 'px'
+}
 
 const messages = ref([
   {
@@ -126,6 +136,8 @@ async function sendMessage() {
 
   messages.value.push({ id: nextId++, role: 'user', text })
   input.value = ''
+  await nextTick()
+  if (textareaRef.value) textareaRef.value.style.height = 'auto'
   isLoading.value = true
   await scrollToBottom()
 

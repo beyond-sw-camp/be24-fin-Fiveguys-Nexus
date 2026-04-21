@@ -8,9 +8,6 @@
       <div class="flex justify-between items-start flex-wrap gap-4">
         <div class="min-w-0">
           <h1 class="text-xl font-bold text-gray-900 tracking-tight">정산 관리</h1>
-          <p class="page-spec-hint">
-            <code>INCOME_001~003</code>가맹점·거래처 정산 목록, 기간(월)·주간/월간 보기, 가맹점명 검색, 거래 명세서(S3 PDF) 다운로드 흐름을 반영합니다.
-          </p>
         </div>
       </div>
 
@@ -40,7 +37,7 @@
           <option>2026-02</option>
         </select>
 
-        <button class="bg-gray-900 text-white px-4 py-2 text-sm font-semibold rounded-lg shadow-sm hover:bg-gray-800">
+        <button class="inline-flex items-center gap-2 px-4 py-2.5 rounded bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d]">
           월별 마감 실행
         </button>
       </div>
@@ -80,18 +77,11 @@
     </div>
 
     <!-- Summary -->
-    <div class="grid grid-cols-3 gap-4">
+    <div class="grid grid-cols-2 gap-4">
       <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
         <div class="p-5">
           <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">가맹점 청구 합계</p>
           <p class="text-2xl font-black text-gray-900 mt-2">₩{{ totalStore.toLocaleString() }}</p>
-          <p class="text-xs text-gray-400 mt-2 pt-2 border-t border-gray-100">{{ selectedMonth }}</p>
-        </div>
-      </div>
-      <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
-        <div class="p-5">
-          <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">거래처 지급 합계</p>
-          <p class="text-2xl font-black text-gray-900 mt-2">₩{{ totalSupplier.toLocaleString() }}</p>
           <p class="text-xs text-gray-400 mt-2 pt-2 border-t border-gray-100">{{ selectedMonth }}</p>
         </div>
       </div>

@@ -132,7 +132,7 @@ import {
   Calculator, Box, ClipboardList,
   PackageSearch, Truck,
   Warehouse, Receipt, Tablet,
-  ChevronDown, User, LogOut, UserPlus,
+  ChevronDown, User, LogOut, UserPlus, BarChart3,
 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
 import NotificationBell from '@/components/NotificationBell.vue'
@@ -169,6 +169,7 @@ const adminMenus = [
   { path: '/delivery',   name: '배송 관리', icon: Truck },
   { path: '/settlement', name: '정산 관리', icon: Calculator },
   { path: '/admin-account', name: '계정 관리', icon: UserPlus },
+  { path: '/statistics', name: '통계', icon: BarChart3 },
 ]
 
 const storeMenus = [

@@ -41,6 +41,7 @@
     </div>
 
     <!-- 상세 모달 -->
+    <Teleport to="body">
     <div v-if="selectedNews" class="fixed inset-0 z-50 flex items-center justify-center">
       <div class="absolute inset-0 bg-black/40" @click="selectedNews = null"></div>
       <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col overflow-hidden">
@@ -103,6 +104,7 @@
         </div>
       </div>
     </div>
+    </Teleport>
   </div>
 </template>
 
@@ -124,7 +126,7 @@ function categoryStyle(category) {
 }
 
 function firstLine(content) {
-  return content?.split('\n')[0] ?? ''
+  return content?.split('\n')?.[0] ?? ''
 }
 
 const newsList = ref([

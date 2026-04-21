@@ -135,7 +135,7 @@ import {
   Calculator, Box, ClipboardList,
   PackageSearch, Truck,
   Warehouse, Receipt, Tablet,
-  ChevronDown, User, LogOut, UserPlus, BarChart3, Bell, FileText,
+  ChevronDown, User, LogOut, UserPlus, BarChart3, Bell, FileText, Newspaper,
 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
 import NotificationBell from '@/components/NotificationBell.vue'
@@ -185,6 +185,7 @@ const storeMenus = [
   { path: '/store-inventory', name: '매장 재고',  icon: Warehouse },
   { path: '/store-delivery',  name: '배송 현황',  icon: Truck },
   { path: '/store-settlement',name: '정산 내역',  icon: Receipt },
+  { path: '/store-news',       name: '지역 뉴스', icon: Newspaper },
   { path: '/store-notification', name: '알림', icon: Bell },
 ]
 

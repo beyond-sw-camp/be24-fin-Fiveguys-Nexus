@@ -173,7 +173,13 @@ const adminMenus = [
   { path: '/delivery',   name: '배송 관리', icon: Truck },
   { path: '/settlement', name: '정산 관리', icon: Calculator },
   { path: '/admin-account', name: '계정 관리', icon: UserPlus },
-  { path: '/statistics', name: '통계', icon: BarChart3 },
+  {
+    path: '/statistics', name: '통계', icon: BarChart3,
+    children: [
+      { path: '/statistics', name: '발주 통계' },
+      { path: '/statistics/sales', name: '판매/매출 분석' },
+    ],
+  },
   { path: '/report', name: '보고서', icon: FileText },
   { path: '/notification', name: '알림', icon: Bell },
 ]

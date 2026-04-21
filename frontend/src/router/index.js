@@ -29,6 +29,12 @@ const router = createRouter({
       meta: { role: 'ADMIN' },
     },
     {
+      path: '/statistics/sales',
+      name: 'statisticsSales',
+      component: () => import('@/views/hq/SalesStatisticsView.vue'),
+      meta: { role: 'ADMIN' },
+    },
+    {
       path: '/store',
       name: 'store',
       component: () => import('@/views/StoreView.vue'),

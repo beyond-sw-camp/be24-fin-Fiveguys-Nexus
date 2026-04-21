@@ -1,14 +1,9 @@
 <template>
   <div class="p-5 space-y-4">
-    <!-- Header -->
     <div>
       <h1 class="text-xl font-bold text-gray-900 tracking-tight">배송 관리</h1>
-      <p class="text-sm text-gray-500 mt-1">
-        본사→가맹점 배송 목록. 가맹점 이름으로 검색 및 지연 건의 사유를 관리할 수 있습니다.
-      </p>
     </div>
 
-    <!-- 1. Search Bar (가맹점 이름 검색) -->
     <div class="flex flex-wrap gap-3 items-center mt-2">
       <div class="relative w-full sm:w-80">
         <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -25,12 +20,11 @@
       </div>
     </div>
 
-    <!-- Status filter -->
     <div class="flex gap-2 flex-wrap">
       <button v-for="f in statusFilters" :key="f.value"
-        @click="filterStatus = f.value"
-        class="px-3.5 py-1.5 text-sm font-semibold border rounded-md transition-colors"
-        :class="filterStatus === f.value
+              @click="filterStatus = f.value"
+              class="px-3.5 py-1.5 text-sm font-semibold border rounded-md transition-colors"
+              :class="filterStatus === f.value
           ? 'bg-[#F37321] text-white border-[#F37321]'
           : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'">
         {{ f.label }}
@@ -38,7 +32,6 @@
       </button>
     </div>
 
-    <!-- Delivery list (table style) -->
     <div v-if="filteredDeliveries.length > 0" class="space-y-3">
       <div v-for="d in filteredDeliveries" :key="d.id"
            @click="d.status === '지연' ? openModal(d) : null"
@@ -48,7 +41,6 @@
             ? 'border-red-300 cursor-pointer hover:border-red-400 hover:shadow-md'
             : 'border-gray-200'
         ]">
-        <!-- Card header -->
         <div class="px-5 py-3 border-b flex justify-between items-center"
              :class="d.status === '지연' ? 'bg-red-50/60 border-red-200' : 'bg-gray-50/60 border-gray-100'">
           <div class="flex items-center gap-3">
@@ -63,7 +55,6 @@
           </div>
         </div>
 
-        <!-- Timeline -->
         <div class="px-5 py-4 flex items-start gap-0 overflow-x-auto hide-scrollbar">
           <div v-for="(step, idx) in d.timeline" :key="idx" class="flex items-center">
             <div class="flex flex-col items-center">
@@ -85,7 +76,6 @@
           </div>
         </div>
 
-        <!-- 지연 사유 표시 영역 -->
         <div v-if="d.status === '지연'" class="px-5 pb-4 pt-1">
           <div v-if="d.delayReason" class="bg-red-50/80 text-red-700 text-xs p-3 rounded-md border border-red-100 flex items-start gap-2">
             <svg class="w-4 h-4 shrink-0 mt-0.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
@@ -102,15 +92,12 @@
       </div>
     </div>
 
-    <!-- 검색 결과 없음 -->
     <div v-else class="bg-white border border-gray-200 py-16 text-center rounded-xl shadow-sm">
       <p class="text-gray-400 text-sm">해당 조건에 일치하는 배송 건이 없습니다.</p>
     </div>
 
-    <!-- 2. 배송 지연 사유 입력 모달 -->
     <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
       <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden" @click.stop>
-        <!-- 모달 헤더 -->
         <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
           <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
             <span class="w-2 h-2 rounded-full bg-red-500"></span>
@@ -121,7 +108,6 @@
           </button>
         </div>
 
-        <!-- 모달 본문 -->
         <div class="p-6">
           <div class="mb-5 text-sm text-gray-600 bg-gray-50 p-3.5 rounded-lg border border-gray-100">
             <div class="flex justify-between mb-1">
@@ -144,7 +130,6 @@
           </div>
         </div>
 
-        <!-- 모달 푸터 -->
         <div class="px-6 py-4 bg-gray-50 flex justify-end gap-2 border-t border-gray-100">
           <button @click="closeModal" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-semibold transition-colors">
             취소
@@ -180,8 +165,8 @@ const statusFilters = [
 const deliveries = ref([
   {
     id: 'DLV-20260413-001', status: '배송중',
-    destination: '여의도역점', supplier: '서울우유', driver: '홍길동',
-    items: ['우유(1L) 200팩'],
+    destination: '여의도역점', supplier: '하림', driver: '홍길동',
+    items: ['닭(10호) 200마리'],
     timeline: [
       { label: '출고 완료 (용인 중앙물류센터)', time: '2026-04-13 08:30', done: true },
       { label: '배송 중',                       time: '2026-04-13 10:15', done: false, current: true },
@@ -190,8 +175,8 @@ const deliveries = ref([
   },
   {
     id: 'DLV-20260413-002', status: '배송중',
-    destination: '판교테크노밸리점', supplier: '동서식품', driver: '이민수',
-    items: ['에스프레소 원두 150kg'],
+    destination: '판교테크노밸리점', supplier: 'BBQ물류', driver: '이민수',
+    items: ['엑스트라 버진 올리브오일 15통'],
     timeline: [
       { label: '출고 완료 (성남 물류센터)', time: '2026-04-13 09:00', done: true },
       { label: '배송 중',                  time: '2026-04-13 11:00', done: false, current: true },
@@ -200,8 +185,8 @@ const deliveries = ref([
   },
   {
     id: 'DLV-20260413-004', status: '입고완료',
-    destination: '한화빌딩점', supplier: '동서식품', driver: '박상현',
-    items: ['프리미엄 원두 50kg'],
+    destination: '한화빌딩점', supplier: 'BBQ물류', driver: '박상현',
+    items: ['시크릿 양념소스 50팩'],
     timeline: [
       { label: '출고 완료', time: '2026-04-12 16:00', done: true },
       { label: '배송 중',   time: '2026-04-12 17:30', done: true },
@@ -211,7 +196,7 @@ const deliveries = ref([
   {
     id: 'DLV-20260413-005', status: '지연',
     destination: '부산센텀점', supplier: '한국포장', driver: '최동욱',
-    items: ['종이컵(M) 1000개'],
+    items: ['포장용 치킨박스 1000개'],
     delayReason: '강우로 인한 고속도로 정체로 배송 지연 발생', // 예시 사유
     timeline: [
       { label: '출고 완료 (부산 물류센터)', time: '2026-04-12 20:00', done: true },

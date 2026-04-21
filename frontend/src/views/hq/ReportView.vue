@@ -129,7 +129,7 @@
           </div>
 
           <!-- 원문 링크 -->
-          <div>
+          <div v-if="selectedNews.urls?.length">
             <p class="text-xs font-semibold text-gray-500 mb-2">원문 링크</p>
             <div class="flex flex-wrap gap-2">
               <a
@@ -224,7 +224,7 @@ const newsSummaries = ref([
 ])
 
 function firstLine(content) {
-  return content.split('\n')[0]
+  return content?.split('\n')[0] ?? ''
 }
 
 function handleDownload(report) {

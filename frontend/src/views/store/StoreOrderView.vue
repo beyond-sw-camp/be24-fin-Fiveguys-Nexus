@@ -109,67 +109,6 @@
       </div>
     </div>
 
-    <div v-if="activeTab === 'manual'" class="max-w-2xl">
-      <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/60">
-          <h3 class="font-bold text-gray-900">직접 발주 요청</h3>
-          <p class="text-xs text-gray-400 mt-0.5">필요한 품목과 수량을 직접 입력해 본사에 발주를 요청합니다.</p>
-        </div>
-        <div class="p-6 space-y-4">
-          <div class="space-y-2">
-            <div class="flex justify-between items-center">
-              <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">발주 품목</label>
-              <button @click="addManualItem"
-                class="text-xs text-blue-500 font-semibold hover:underline flex items-center gap-1">
-                <Plus class="w-3 h-3" /> 품목 추가
-              </button>
-            </div>
-            <div v-for="(item, idx) in manualItems" :key="idx" class="flex gap-2 items-center">
-              <select v-model="item.product" @change="item.unitPrice = PRODUCT_PRICES[item.product] ?? 0"
-                class="flex-1 px-3 py-2 rounded border border-gray-200 text-sm outline-none focus:border-blue-400">
-                <option value="">품목 선택</option>
-                <option>생닭(1kg)</option>
-                <option>튀김유(18L)</option>
-                <option>치킨파우더</option>
-                <option>황금올리브소스</option>
-                <option>양념소스</option>
-                <option>간장소스</option>
-                <option>치킨박스(중)</option>
-                <option>치킨박스(대)</option>
-                <option>비닐장갑</option>
-                <option>냅킨</option>
-              </select>
-              <div class="flex items-center gap-1.5">
-                <input v-model.number="item.qty" type="number" min="1" placeholder="수량"
-                  class="w-20 px-3 py-2 rounded border border-gray-200 text-sm outline-none focus:border-blue-400" />
-                <span class="text-xs text-gray-400 font-medium w-4">{{ PRODUCT_UNIT[item.product] ?? '' }}</span>
-              </div>
-              <button @click="manualItems.splice(idx, 1)"
-                class="px-3 py-2 text-xs font-semibold rounded border border-red-200 text-red-500 bg-red-50 hover:bg-red-500 hover:text-white hover:cursor-pointer transition-colors shrink-0">
-                삭제
-              </button>
-            </div>
-            <div v-if="manualItems.length === 0"
-              class="text-sm text-gray-400 text-center py-4 bg-gray-50 border border-gray-100 rounded">
-              품목 추가 버튼을 눌러 발주 품목을 입력하세요.
-            </div>
-            <div v-if="manualItems.length > 0" class="text-right text-sm font-bold text-blue-600">
-              합계: {{ manualTotal.toLocaleString() }}원
-            </div>
-          </div>
-<div class="flex gap-3 pt-1">
-            <button @click="manualItems = []"
-              class="flex-1 py-2.5 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50">
-              초기화
-            </button>
-            <button @click="submitManual"
-              class="flex-2 py-2.5 bg-blue-500 text-white font-bold hover:bg-blue-600 rounded text-sm">
-              발주 요청
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <div v-if="activeTab === 'history'">
       <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
@@ -344,7 +283,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { Plus, X, ClipboardList, CreditCard } from 'lucide-vue-next'
+import { X, ClipboardList, CreditCard } from 'lucide-vue-next'
 
 const PRODUCT_UNIT = {
   '생닭(1kg)':      'kg',
@@ -438,19 +377,9 @@ const historyStatusCls = s => HISTORY_STATUS_CLS[s] ?? 'bg-gray-100 text-gray-50
 
 const tabs = computed(() => [
   { id: 'pending', label: '제안 발주서', count: pendingOrders.value.length },
-  { id: 'manual', label: '직접 발주', count: 0 },
   { id: 'history', label: '발주 이력', count: orderHistory.value.length },
 ])
 
-const manualItems = ref([])
-
-function addManualItem() {
-  manualItems.value.push({ product: '', qty: 1, unitPrice: 0 })
-}
-
-const manualTotal = computed(() =>
-  manualItems.value.reduce((s, i) => s + (PRODUCT_PRICES[i.product] ?? 0) * (i.qty || 0), 0)
-)
 
 // 모달 열기 함수
 function openPaymentModal(order) {
@@ -518,23 +447,6 @@ function rejectOrder(order) {
   }
 }
 
-function submitManual() {
-  if (manualItems.value.length === 0) { alert('품목을 추가해주세요.'); return }
-  manualItems.value.forEach(item => {
-    if (item.product) {
-      orderHistory.value.unshift({
-        id: `ORD-${Date.now().toString().slice(-6)}`,
-        product: item.product,
-        qty: item.qty,
-        supplier: '본사 직접발주',
-        date: new Date().toISOString().split('T')[0],
-        status: '승인대기',
-      })
-    }
-  })
-  manualItems.value = []
-  activeTab.value = 'history'
-}
 </script>
 
 <style scoped>

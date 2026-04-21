@@ -1,5 +1,5 @@
 <template>
-  <div class="p-6 max-w-3xl mx-auto">
+  <div class="p-6">
     <!-- Header -->
     <div class="flex items-center justify-between mb-5">
       <h1 class="text-xl font-bold text-gray-900">알림</h1>

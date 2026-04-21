@@ -178,6 +178,7 @@ const adminMenus = [
     children: [
       { path: '/statistics', name: '발주 통계' },
       { path: '/statistics/sales', name: '판매/매출 분석' },
+      { path: '/statistics/esg', name: 'ESG 대시보드' },
     ],
   },
   { path: '/report', name: '보고서', icon: FileText },

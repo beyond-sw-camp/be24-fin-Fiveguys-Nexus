@@ -48,7 +48,7 @@
           </div>
 
           <div v-for="n in items" :key="n.id"
-            @click="notifStore.markRead(n.id)"
+            @click="handleNotifClick(n)"
             class="flex gap-3 px-4 py-3.5 cursor-pointer transition-colors"
             :class="n.read ? 'bg-white hover:bg-gray-50/50' : unreadRowClass">
 
@@ -95,10 +95,12 @@ import { ref, computed } from 'vue'
 import { Bell } from 'lucide-vue-next'
 import { useNotificationStore } from '@/stores/notification'
 import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
 
 const open = ref(false)
 const notifStore = useNotificationStore()
 const auth = useAuthStore()
+const router = useRouter()
 
 const role = computed(() => {
   if (auth.isAdmin) return 'ADMIN'
@@ -115,6 +117,13 @@ const unreadRowClass = computed(() => isStoreOwnerRole.value ? 'bg-blue-50/30 ho
 
 function markAll() {
   if (role.value) notifStore.markAllRead(role.value)
+}
+
+function handleNotifClick(n) {
+  notifStore.markRead(n.id)
+  open.value = false
+  const path = auth.isAdmin ? '/notification' : '/store-notification'
+  router.push(path)
 }
 
 function typeColor(type) {

@@ -134,12 +134,6 @@ const router = createRouter({
       component: () => import('@/views/hq/HqNotificationView.vue'),
       meta: { role: 'ADMIN' },
     },
-    {
-      path: '/store-notification',
-      name: 'storeNotification',
-      component: () => import('@/views/store/StoreNotificationView.vue'),
-      meta: { role: 'STORE_OWNER' },
-    },
 
     // ── COMMON ─────────────────────────────────────────
     {

@@ -107,14 +107,14 @@
           </div>
 
           <div class="shrink-0 px-6 py-4 border-t border-gray-100 flex justify-end gap-2">
-            <button type="button" class="flex-1 py-2.5 rounded-lg border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50" @click="closeDetail">
-              닫기
-            </button>
             <button type="button"
               class="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white bg-blue-500 hover:bg-blue-600 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed"
               :disabled="!hasDraftLotChanges"
               @click="applyLotAdjustments">
               lot 보정 반영
+            </button>
+            <button type="button" class="flex-1 py-2.5 rounded-lg border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50" @click="closeDetail">
+              닫기
             </button>
           </div>
         </div>

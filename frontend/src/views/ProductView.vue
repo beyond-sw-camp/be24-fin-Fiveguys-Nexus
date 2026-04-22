@@ -72,7 +72,7 @@
           <td class="px-5 py-3.5 text-gray-600">{{ p.unit }}</td>
           <td class="px-5 py-3.5 font-medium text-gray-900">{{ p.baseStock.toLocaleString() }}</td>
           <td class="px-5 py-3.5 font-semibold text-[#F37321]">{{ p.minStock.toLocaleString() }}</td>
-          <td class="px-5 py-3.5 font-medium text-gray-900">₩{{ p.price.toLocaleString() }}</td>
+          <td class="px-5 py-3.5 font-medium text-gray-900">₩ {{ p.price.toLocaleString() }}</td>
           <td class="px-5 py-3.5 text-xs font-mono"
               :class="p.expiryDays ? 'text-amber-600 font-semibold' : 'text-gray-400'">
             {{ p.expiryDays ? `D-${p.expiryDays}` : '-' }}

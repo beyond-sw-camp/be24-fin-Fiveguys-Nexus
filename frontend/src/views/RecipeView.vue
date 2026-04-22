@@ -76,12 +76,12 @@
             <td class="px-4 py-4" @click.stop>
               <div class="flex justify-center gap-2">
                 <button @click="openEditMenuModal(menu)"
-                        class="text-gray-300 hover:text-[#F97316] transition-colors cursor-pointer" title="수정">
-                  <Pencil class="w-4 h-4" />
+                        class="px-3 py-1.5 text-xs font-semibold text-[#F37321] border border-[#F37321] rounded hover:bg-orange-50 transition-colors cursor-pointer">
+                  수정
                 </button>
                 <button @click="openDeleteConfirm(menu)"
-                        class="text-gray-300 hover:text-red-500 transition-colors cursor-pointer" title="삭제">
-                  <Trash2 class="w-4 h-4" />
+                        class="px-3 py-1.5 text-xs font-semibold text-red-500 border border-red-400 rounded hover:bg-red-50 transition-colors cursor-pointer">
+                  삭제
                 </button>
               </div>
             </td>
@@ -314,7 +314,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { Plus, Pencil, Trash2, Search, Image as ImageIcon, ChevronDown } from 'lucide-vue-next'
+import { Plus, Trash2, Search, Image as ImageIcon, ChevronDown } from 'lucide-vue-next'
 
 // ─────────────────────────────────────────────
 //  상품 목록 (제품 관리에서 연동 가정)

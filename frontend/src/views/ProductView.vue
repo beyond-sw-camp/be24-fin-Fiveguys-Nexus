@@ -78,12 +78,12 @@
             {{ p.expiryDays ? `D-${p.expiryDays}` : '-' }}
           </td>
           <td class="px-5 py-3.5">
-            <div class="flex justify-center gap-3">
-              <button @click="openModal(p)" class="text-gray-300 hover:text-[#F37321] transition-colors cursor-pointer">
-                <Pencil class="w-4 h-4" />
+            <div class="flex justify-center gap-2">
+              <button @click="openModal(p)" class="px-3 py-1.5 text-xs font-semibold text-[#F37321] border border-[#F37321] rounded hover:bg-orange-50 transition-colors cursor-pointer">
+                수정
               </button>
-              <button @click="deleteProduct(p.code)" class="text-gray-300 hover:text-red-500 transition-colors cursor-pointer">
-                <Trash2 class="w-4 h-4" />
+              <button @click="deleteProduct(p.code)" class="px-3 py-1.5 text-xs font-semibold text-red-500 border border-red-400 rounded hover:bg-red-50 transition-colors cursor-pointer">
+                삭제
               </button>
             </div>
           </td>
@@ -208,7 +208,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { Plus, Pencil, Trash2, Search, Tag } from 'lucide-vue-next'
+import { Plus, Trash2, Search, Tag } from 'lucide-vue-next'
 
 const categories = ref(['육류', '소스', '채소', '가공식품', '음료'])
 const selectedCategory = ref('전체')

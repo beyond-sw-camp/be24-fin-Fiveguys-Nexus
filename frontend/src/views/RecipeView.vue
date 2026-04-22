@@ -224,7 +224,7 @@
     ══════════════════════════════════════════ -->
     <div v-if="showIngredientModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div class="absolute inset-0 bg-black/40 " @click="showIngredientModal = false"></div>
-      <div class="relative bg-white rounded-xl w-full max-w-lg border border-gray-200 shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
+      <div class="relative bg-white rounded-xl w-full max-w-lg border border-gray-200 shadow-xl overflow-hidden max-h-[85vh] flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-200">
 
         <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
           <div>
@@ -234,7 +234,7 @@
           <button @click="showIngredientModal = false" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
         </div>
 
-        <div class="p-6">
+        <div class="p-6 overflow-y-auto flex-1">
           <table class="w-full text-sm text-left">
             <thead>
             <tr class="border-b border-gray-200 bg-gray-50">

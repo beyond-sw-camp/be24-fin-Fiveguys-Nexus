@@ -129,12 +129,12 @@
     <Teleport to="body">
       <div v-if="showFullList" class="fixed inset-0 z-50 flex items-center justify-center">
         <div class="absolute inset-0 bg-black/40" @click="showFullList = false"></div>
-        <div class="relative bg-white rounded-xl shadow-xl w-full max-w-2xl mx-4 border border-gray-200">
-          <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+        <div class="relative bg-white rounded-xl shadow-xl w-full max-w-2xl mx-4 max-h-[85vh] flex flex-col overflow-hidden border border-gray-200">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 shrink-0">
             <span class="font-bold text-gray-900">{{ currentModeLabel }} 전체 매출 순위</span>
             <button @click="showFullList = false" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
           </div>
-          <div>
+          <div class="overflow-y-auto flex-1">
             <table class="w-full text-sm">
               <thead class="sticky top-0 bg-gray-50 border-b border-gray-200">
                 <tr>
@@ -161,7 +161,7 @@
               </tbody>
             </table>
           </div>
-          <div class="px-6 py-4 border-t border-gray-100 flex justify-end">
+          <div class="px-6 py-4 border-t border-gray-100 flex justify-end shrink-0">
             <button @click="showFullList = false"
               class="px-4 py-2 text-sm font-semibold text-gray-600 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer">닫기</button>
           </div>

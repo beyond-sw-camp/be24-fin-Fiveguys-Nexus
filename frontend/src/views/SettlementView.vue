@@ -19,7 +19,7 @@
             v-for="p in periodGranularityOptions"
             :key="p"
             type="button"
-            class="text-xs px-2.5 py-1.5 rounded-md font-semibold transition-colors"
+            class="text-xs px-2.5 py-1.5 rounded-md font-semibold transition-colors cursor-pointer"
             :class="periodGranularity === p ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'"
             @click="periodGranularity = p"
           >
@@ -37,7 +37,7 @@
           <option>2026-02</option>
         </select>
 
-        <button class="inline-flex items-center gap-2 px-4 py-2.5 rounded bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d]">
+        <button class="inline-flex items-center gap-2 px-4 py-2.5 rounded bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d] cursor-pointer">
           월별 마감 실행
         </button>
       </div>
@@ -100,7 +100,7 @@
         v-for="tab in ['가맹점 정산']"
         :key="tab"
         @click="activeTab = tab"
-        class="px-5 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors"
+        class="px-5 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors cursor-pointer"
         :class="activeTab === tab
           ? 'border-[#F37321] text-[#F37321]'
           : 'border-transparent text-gray-500 hover:text-gray-700'"
@@ -142,7 +142,7 @@
           <td class="px-5 py-3.5 text-center">
             <button
               type="button"
-              class="text-gray-300 hover:text-[#F37321] transition-colors"
+              class="text-gray-300 hover:text-[#F37321] transition-colors cursor-pointer"
               @click="downloadStatement(s)"
             >
               <Download class="w-4 h-4 mx-auto" />

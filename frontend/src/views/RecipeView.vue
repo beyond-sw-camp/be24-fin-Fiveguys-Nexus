@@ -8,7 +8,7 @@
 
       </div>
       <button @click="openNewMenuModal"
-              class="flex items-center gap-2 px-4 py-2 bg-[#F97316] text-white text-sm font-bold rounded-lg hover:bg-[#EA6700] transition-colors shadow-sm">
+              class="flex items-center gap-2 px-4 py-2 bg-[#F97316] text-white text-sm font-bold rounded-lg hover:bg-[#EA6700] transition-colors shadow-sm cursor-pointer">
         <Plus class="w-4 h-4" /> 신규 메뉴 등록
       </button>
     </div>
@@ -76,11 +76,11 @@
             <td class="px-4 py-4" @click.stop>
               <div class="flex justify-center gap-2">
                 <button @click="openEditMenuModal(menu)"
-                        class="text-gray-300 hover:text-[#F97316] transition-colors" title="수정">
+                        class="text-gray-300 hover:text-[#F97316] transition-colors cursor-pointer" title="수정">
                   <Pencil class="w-4 h-4" />
                 </button>
                 <button @click="openDeleteConfirm(menu)"
-                        class="text-gray-300 hover:text-red-500 transition-colors" title="삭제">
+                        class="text-gray-300 hover:text-red-500 transition-colors cursor-pointer" title="삭제">
                   <Trash2 class="w-4 h-4" />
                 </button>
               </div>
@@ -104,7 +104,7 @@
         <!-- 모달 헤더 -->
         <div class="px-7 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
           <h3 class="font-bold text-gray-900 text-lg">{{ editTarget ? '메뉴 수정' : '신규 메뉴 등록' }}</h3>
-          <button @click="showMenuModal = false" class="text-gray-400 hover:text-gray-600 font-bold text-xl">✕</button>
+          <button @click="showMenuModal = false" class="text-gray-400 hover:text-gray-600 font-bold text-xl cursor-pointer">✕</button>
         </div>
 
         <form @submit.prevent="saveMenu" class="p-7 space-y-5">
@@ -137,7 +137,7 @@
                       :class="menuForm.category === cat
                         ? 'bg-[#F97316] text-white border-[#F97316]'
                         : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:bg-gray-50'"
-                      class="px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all">
+                      class="px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all cursor-pointer">
                 {{ cat }}
               </button>
             </div>
@@ -160,7 +160,7 @@
             <div class="flex items-center justify-between mb-3">
               <span class="text-sm font-bold text-gray-700">재료 등록</span>
               <button type="button" @click="addIngredientRow"
-                      class="flex items-center gap-1 text-xs font-bold text-[#F97316] hover:text-[#EA6700] transition-colors">
+                      class="flex items-center gap-1 text-xs font-bold text-[#F97316] hover:text-[#EA6700] transition-colors cursor-pointer">
                 <Plus class="w-3.5 h-3.5" /> 재료 추가
               </button>
             </div>
@@ -197,7 +197,7 @@
                   <option>묶음</option>
                 </select>
                 <button type="button" @click="removeIngredientRow(idx)"
-                        class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 transition-colors text-sm font-bold">
+                        class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 transition-colors text-sm font-bold cursor-pointer">
                   ✕
                 </button>
               </div>
@@ -210,11 +210,11 @@
           <!-- 버튼 -->
           <div class="flex gap-3 pt-2">
             <button type="button" @click="showMenuModal = false"
-                    class="flex-1 py-3 rounded-lg border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-50 transition-colors">
+                    class="flex-1 py-3 rounded-lg border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-50 transition-colors cursor-pointer">
               취소
             </button>
             <button type="submit"
-                    class="flex-1 py-3 rounded-lg bg-[#F97316] text-white text-sm font-bold hover:bg-[#EA6700] transition-colors shadow-sm">
+                    class="flex-1 py-3 rounded-lg bg-[#F97316] text-white text-sm font-bold hover:bg-[#EA6700] transition-colors shadow-sm cursor-pointer">
               {{ editTarget ? '수정 저장' : '등록하기' }}
             </button>
           </div>
@@ -237,7 +237,7 @@
           <div class="flex items-center gap-4">
             <!-- 추가 요청 사항: 재료 추가 버튼 -->
 
-            <button @click="showIngredientModal = false" class="text-gray-400 hover:text-gray-600 font-bold text-xl">✕</button>
+            <button @click="showIngredientModal = false" class="text-gray-400 hover:text-gray-600 font-bold text-xl cursor-pointer">✕</button>
           </div>
         </div>
 
@@ -262,7 +262,7 @@
               <td class="px-3 py-3">
                 <div class="flex justify-center gap-2">
                   <button @click="deleteIngredient(idx)"
-                          class="text-gray-300 hover:text-red-500 transition-colors" title="삭제">
+                          class="text-gray-300 hover:text-red-500 transition-colors cursor-pointer" title="삭제">
                     <Trash2 class="w-4 h-4" />
                   </button>
                 </div>
@@ -275,11 +275,11 @@
           </table>
 
           <div class="mt-5 flex justify-end gap-2"> <button @click="editIngredient"
-                                                            class="flex items-center gap-1 px-3 py-1.5 bg-[#F97316] text-white text-xs font-bold rounded-lg hover:bg-[#EA6700] transition-colors shadow-sm">
+                                                            class="flex items-center gap-1 px-3 py-1.5 bg-[#F97316] text-white text-xs font-bold rounded-lg hover:bg-[#EA6700] transition-colors shadow-sm cursor-pointer">
             <Plus class="w-3 h-3" /> 재료 추가
           </button>
             <button @click="showIngredientModal = false"
-                    class="px-5 py-2.5 rounded-lg bg-gray-100 text-gray-600 text-sm font-bold hover:bg-gray-200 transition-colors">
+                    class="px-5 py-2.5 rounded-lg bg-gray-100 text-gray-600 text-sm font-bold hover:bg-gray-200 transition-colors cursor-pointer">
               닫기
             </button>
           </div>
@@ -298,11 +298,11 @@
         <p class="text-xs text-gray-400 mb-6">이 작업은 되돌릴 수 없습니다.</p>
         <div class="flex gap-3">
           <button @click="showDeleteConfirm = false"
-                  class="flex-1 py-2.5 rounded-lg border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-50 transition-colors">
+                  class="flex-1 py-2.5 rounded-lg border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-50 transition-colors cursor-pointer">
             취소
           </button>
           <button @click="confirmDelete"
-                  class="flex-1 py-2.5 rounded-lg bg-red-500 text-white text-sm font-bold hover:bg-red-600 transition-colors">
+                  class="flex-1 py-2.5 rounded-lg bg-red-500 text-white text-sm font-bold hover:bg-red-600 transition-colors cursor-pointer">
             삭제
           </button>
         </div>

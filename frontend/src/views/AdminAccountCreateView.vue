@@ -7,7 +7,7 @@
       </div>
       <button
         @click="openCreateModal"
-        class="inline-flex items-center gap-2 px-4 py-2.5 rounded bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d]"
+        class="inline-flex items-center gap-2 px-4 py-2.5 rounded bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d] cursor-pointer"
       >
         + 계정 생성
       </button>
@@ -45,13 +45,13 @@
               <div class="flex items-center justify-center gap-2">
                 <button
                   @click="openEditModal(account)"
-                  class="px-2.5 py-1.5 rounded border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50"
+                  class="px-2.5 py-1.5 rounded border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50 cursor-pointer"
                 >
                   수정
                 </button>
                 <button
                   @click="openDeleteModal(account)"
-                  class="px-2.5 py-1.5 rounded border border-red-200 text-xs font-semibold text-red-500 hover:bg-red-50"
+                  class="px-2.5 py-1.5 rounded border border-red-200 text-xs font-semibold text-red-500 hover:bg-red-50 cursor-pointer"
                 >
                   삭제
                 </button>
@@ -70,7 +70,7 @@
       <div class="relative w-full max-w-lg bg-white rounded-lg border border-gray-200 shadow-xl">
         <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
           <h3 class="font-bold text-gray-900">{{ formMode === 'create' ? '계정 생성' : '계정 수정' }}</h3>
-          <button @click="closeFormModal" class="text-gray-400 hover:text-gray-600">✕</button>
+          <button @click="closeFormModal" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
         </div>
 
         <form class="p-6 space-y-4" @submit.prevent="submitForm">
@@ -137,13 +137,13 @@
             <button
               type="button"
               @click="closeFormModal"
-              class="flex-1 py-2.5 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50"
+              class="flex-1 py-2.5 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 cursor-pointer"
             >
               취소
             </button>
             <button
               type="submit"
-              class="flex-1 py-2.5 rounded bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d]"
+              class="flex-1 py-2.5 rounded bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d] cursor-pointer"
             >
               {{ formMode === 'create' ? '생성' : '수정 저장' }}
             </button>
@@ -164,14 +164,14 @@
           <button
             type="button"
             @click="closeDeleteModal"
-            class="flex-1 py-2.5 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50"
+            class="flex-1 py-2.5 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 cursor-pointer"
           >
             취소
           </button>
           <button
             type="button"
             @click="confirmDelete"
-            class="flex-1 py-2.5 rounded bg-red-500 text-white text-sm font-bold hover:bg-red-600"
+            class="flex-1 py-2.5 rounded bg-red-500 text-white text-sm font-bold hover:bg-red-600 cursor-pointer"
           >
             삭제
           </button>

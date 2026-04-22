@@ -13,7 +13,7 @@
         v-for="tab in tabs"
         :key="tab.value"
         @click="activeTab = tab.value"
-        class="px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px"
+        class="px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px cursor-pointer"
         :class="activeTab === tab.value
           ? 'border-[#F37321] text-[#F37321]'
           : 'border-transparent text-gray-500 hover:text-gray-700'"
@@ -55,7 +55,7 @@
             <td class="px-5 py-3.5 text-center">
               <button
                 @click="handleDownload(report)"
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#F37321] border border-[#F37321] rounded hover:bg-orange-50 transition-colors"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#F37321] border border-[#F37321] rounded hover:bg-orange-50 transition-colors cursor-pointer"
               >
                 <Download class="w-3.5 h-3.5" />
                 PDF
@@ -79,7 +79,7 @@
         v-for="news in newsSummaries"
         :key="news.idx"
         @click="selectedNews = news"
-        class="w-full bg-white rounded-lg border border-gray-200 p-4 flex items-start justify-between gap-4 hover:border-[#F37321] hover:bg-orange-50/20 transition-colors text-left"
+        class="w-full bg-white rounded-lg border border-gray-200 p-4 flex items-start justify-between gap-4 hover:border-[#F37321] hover:bg-orange-50/20 transition-colors text-left cursor-pointer"
       >
         <div class="flex items-start gap-3 min-w-0">
           <Newspaper class="w-4 h-4 text-[#F37321] shrink-0 mt-0.5" />
@@ -103,7 +103,7 @@
             <Newspaper class="w-4 h-4 text-[#F37321]" />
             <span class="font-bold text-gray-900 text-sm">{{ selectedNews.summary_title }}</span>
           </div>
-          <button @click="selectedNews = null" class="text-gray-400 hover:text-gray-700 transition-colors">
+          <button @click="selectedNews = null" class="text-gray-400 hover:text-gray-700 transition-colors cursor-pointer">
             <X class="w-5 h-5" />
           </button>
         </div>

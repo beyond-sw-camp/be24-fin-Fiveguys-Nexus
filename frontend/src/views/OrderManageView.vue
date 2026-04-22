@@ -7,11 +7,11 @@
       </div>
       <div class="flex gap-2">
         <button @click="showSettings = true"
-          class="px-4 py-2 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 flex items-center gap-2">
+          class="px-4 py-2 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 flex items-center gap-2 cursor-pointer">
           <Settings class="w-4 h-4" /> 이상 발주 기준 설정
         </button>
         <button @click="showManualForm = true"
-          class="bg-[#F37321] text-white px-4 py-2 text-sm font-semibold rounded hover:bg-[#e0661d] transition-colors flex items-center gap-2">
+          class="bg-[#F37321] text-white px-4 py-2 text-sm font-semibold rounded hover:bg-[#e0661d] transition-colors flex items-center gap-2 cursor-pointer">
           <Plus class="w-4 h-4" /> 수동 발주 생성
         </button>
       </div>
@@ -21,7 +21,7 @@
     <div class="flex border-b border-gray-200">
       <button v-for="tab in tabs" :key="tab.id"
         @click="setOrderViewTab(tab.id)"
-        class="px-5 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors"
+        class="px-5 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors cursor-pointer"
         :class="activeTab === tab.id
           ? 'border-[#F37321] text-[#F37321]'
           : 'border-transparent text-gray-500 hover:text-gray-700'">
@@ -154,9 +154,9 @@
               <td class="px-5 py-3.5">
                 <div v-if="!o.processed" class="flex justify-center gap-1.5">
                   <button @click.stop="approveAbnormal(o)"
-                    class="px-2.5 py-1 bg-[#F37321] text-white text-xs font-semibold hover:bg-[#e0661d] rounded">승인</button>
+                    class="px-2.5 py-1 bg-[#F37321] text-white text-xs font-semibold hover:bg-[#e0661d] rounded cursor-pointer">승인</button>
                   <button @click.stop="rejectAbnormal(o)"
-                    class="px-2.5 py-1 border border-gray-200 text-gray-600 text-xs font-medium hover:bg-gray-50 rounded">반려</button>
+                    class="px-2.5 py-1 border border-gray-200 text-gray-600 text-xs font-medium hover:bg-gray-50 rounded cursor-pointer">반려</button>
                 </div>
                 <span v-else class="text-xs text-gray-400 block text-center">—</span>
               </td>
@@ -191,7 +191,7 @@
           <div class="flex gap-2 items-center">
             <input v-model="historySearch" type="search" placeholder="발주번호·가맹점·품목"
               class="flex-1 px-3 py-2 rounded border border-gray-200 text-sm outline-none focus:border-[#F37321]" />
-            <button type="button" class="text-xs font-semibold text-gray-500 border border-gray-200 px-4 py-2 rounded hover:bg-gray-50 shrink-0"
+            <button type="button" class="text-xs font-semibold text-gray-500 border border-gray-200 px-4 py-2 rounded hover:bg-gray-50 shrink-0 cursor-pointer"
               @click="historyFilterType = ''; historyDateFrom = ''; historyDateTo = ''; historySearch = ''">
               초기화
             </button>
@@ -241,7 +241,7 @@
       <div class="relative bg-white rounded-xl w-full max-w-lg border border-gray-200 shadow-xl">
         <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
           <h3 class="font-bold text-gray-900">수동 발주 생성</h3>
-          <button @click="showManualForm = false" class="text-gray-400 hover:text-gray-600">✕</button>
+          <button @click="showManualForm = false" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
         </div>
         <div class="p-6 space-y-4">
           <div class="space-y-1.5">
@@ -258,7 +258,7 @@
           <div class="space-y-2">
             <div class="flex justify-between items-center">
               <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">발주 품목</label>
-              <button @click="addManualItem" class="text-xs text-[#F37321] font-semibold hover:underline flex items-center gap-1">
+              <button @click="addManualItem" class="text-xs text-[#F37321] font-semibold hover:underline flex items-center gap-1 cursor-pointer">
                 <Plus class="w-3 h-3" /> 품목 추가
               </button>
             </div>
@@ -301,9 +301,9 @@
         </div>
         <div class="px-6 py-4 border-t border-gray-100 flex gap-3">
           <button @click="showManualForm = false"
-            class="flex-1 py-2.5 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50">취소</button>
+            class="flex-1 py-2.5 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 cursor-pointer">취소</button>
           <button @click="submitManualOrder"
-            class="flex-1 py-2.5 rounded bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d]">발주 생성</button>
+            class="flex-1 py-2.5 rounded bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d] cursor-pointer">발주 생성</button>
         </div>
       </div>
     </div>
@@ -317,7 +317,7 @@
             <h3 class="font-bold text-gray-900">발주 상세</h3>
             <p class="text-xs text-gray-400 font-mono mt-0.5">{{ selectedOrder?.id }}</p>
           </div>
-          <button @click="showDetail = false" class="text-gray-400 hover:text-gray-600">✕</button>
+          <button @click="showDetail = false" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
         </div>
         <div v-if="selectedOrder" class="p-6 space-y-4">
           <div class="grid grid-cols-2 gap-4 text-sm">
@@ -412,7 +412,7 @@
         </div>
         <div class="px-6 py-4 border-t border-gray-100 flex justify-end">
           <button @click="showDetail = false"
-            class="px-4 py-2 text-sm font-semibold text-gray-600 border border-gray-200 rounded hover:bg-gray-50">닫기</button>
+            class="px-4 py-2 text-sm font-semibold text-gray-600 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer">닫기</button>
         </div>
       </div>
     </div>
@@ -423,7 +423,7 @@
       <div class="relative bg-white rounded-lg w-full max-w-sm border border-gray-200 shadow-xl">
         <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
           <h3 class="font-bold text-gray-900">이상 발주 기준 설정</h3>
-          <button @click="showSettings = false" class="text-gray-400 hover:text-gray-600">✕</button>
+          <button @click="showSettings = false" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
         </div>
         <div class="p-6 space-y-5">
           <div class="space-y-3">
@@ -453,9 +453,9 @@
           </div>
           <div class="flex gap-3 pt-1">
             <button @click="showSettings = false"
-              class="flex-1 py-2.5 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50">취소</button>
+              class="flex-1 py-2.5 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 cursor-pointer">취소</button>
             <button @click="showSettings = false"
-              class="flex-1 py-2.5 rounded bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d]">저장</button>
+              class="flex-1 py-2.5 rounded bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d] cursor-pointer">저장</button>
           </div>
         </div>
       </div>

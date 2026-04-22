@@ -13,7 +13,7 @@
             v-for="p in periodOptions"
             :key="p.value"
             type="button"
-            class="text-xs px-3 py-1.5 rounded-md font-semibold transition-colors"
+            class="text-xs px-3 py-1.5 rounded-md font-semibold transition-colors cursor-pointer"
             :class="period === p.value ? 'bg-gray-900 text-white' : 'text-gray-500 hover:bg-gray-50'"
             @click="period = p.value"
           >
@@ -29,7 +29,7 @@
         </select>
         <button
           type="button"
-          class="text-xs px-3 py-2 rounded-lg border border-gray-200 bg-white font-semibold text-gray-600 hover:bg-gray-50"
+          class="text-xs px-3 py-2 rounded-lg border border-gray-200 bg-white font-semibold text-gray-600 hover:bg-gray-50 cursor-pointer"
           @click="downloadCsv"
         >
           CSV 다운로드

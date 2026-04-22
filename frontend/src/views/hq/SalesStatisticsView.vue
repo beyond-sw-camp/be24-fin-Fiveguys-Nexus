@@ -49,7 +49,7 @@
             :key="mode.value"
             type="button"
             @click="analysisMode = mode.value"
-            class="text-xs px-3 py-1.5 rounded-md font-semibold transition-colors"
+            class="text-xs px-3 py-1.5 rounded-md font-semibold transition-colors cursor-pointer"
             :class="analysisMode === mode.value ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'"
           >
             {{ mode.label }}
@@ -58,7 +58,7 @@
         <button
           type="button"
           @click="showFullList = true"
-          class="text-xs px-3 py-1.5 rounded-lg border border-gray-200 font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+          class="text-xs px-3 py-1.5 rounded-lg border border-gray-200 font-semibold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer"
         >
           전체 목록 보기
         </button>
@@ -135,7 +135,7 @@
         <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col overflow-hidden">
           <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
             <span class="font-bold text-gray-900 text-sm">{{ currentModeLabel }} 전체 매출 순위</span>
-            <button @click="showFullList = false" class="text-gray-400 hover:text-gray-700 transition-colors">
+            <button @click="showFullList = false" class="text-gray-400 hover:text-gray-700 transition-colors cursor-pointer">
               <X class="w-5 h-5" />
             </button>
           </div>

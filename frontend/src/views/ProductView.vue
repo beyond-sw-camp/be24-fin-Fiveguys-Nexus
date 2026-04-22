@@ -7,11 +7,11 @@
       </div>
       <div class="flex gap-2">
         <button @click="showCategoryModal = true"
-                class="px-4 py-2 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 flex items-center gap-2">
+                class="px-4 py-2 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 flex items-center gap-2 cursor-pointer">
           <Tag class="w-4 h-4" /> 카테고리 관리
         </button>
         <button @click="openModal(null)"
-                class="bg-[#F37321] text-white px-4 py-2 text-sm font-semibold rounded hover:bg-[#e0661d] transition-colors flex items-center gap-2">
+                class="bg-[#F37321] text-white px-4 py-2 text-sm font-semibold rounded hover:bg-[#e0661d] transition-colors flex items-center gap-2 cursor-pointer">
           <Plus class="w-4 h-4" /> 제품 등록
         </button>
       </div>
@@ -37,7 +37,7 @@
           :key="cat"
           @click="selectedCategory = cat"
           class="px-3 py-1.5 text-sm font-semibold border rounded-lg
-                transition-colors shadow-sm"
+                transition-colors shadow-sm cursor-pointer"
           :class="selectedCategory === cat
             ? 'bg-[#F37321] text-white border-[#F37321]'
             : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'">
@@ -79,10 +79,10 @@
           </td>
           <td class="px-5 py-3.5">
             <div class="flex justify-center gap-3">
-              <button @click="openModal(p)" class="text-gray-300 hover:text-[#F37321] transition-colors">
+              <button @click="openModal(p)" class="text-gray-300 hover:text-[#F37321] transition-colors cursor-pointer">
                 <Pencil class="w-4 h-4" />
               </button>
-              <button @click="deleteProduct(p.code)" class="text-gray-300 hover:text-red-500 transition-colors">
+              <button @click="deleteProduct(p.code)" class="text-gray-300 hover:text-red-500 transition-colors cursor-pointer">
                 <Trash2 class="w-4 h-4" />
               </button>
             </div>
@@ -101,7 +101,7 @@
       <div class="relative bg-white rounded-lg w-full max-w-lg border border-gray-200 shadow-xl">
         <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
           <h3 class="font-bold text-gray-900">{{ editTarget ? '제품 정보 수정' : '신규 제품 등록' }}</h3>
-          <button @click="showModal = false" class="text-gray-400 hover:text-gray-600">✕</button>
+          <button @click="showModal = false" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
         </div>
         <form @submit.prevent="saveProduct" class="p-6 space-y-4">
           <div class="grid grid-cols-2 gap-4">
@@ -149,9 +149,9 @@
           </div>
           <div class="flex gap-3 pt-2">
             <button type="button" @click="showModal = false"
-                    class="flex-1 py-2.5 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50">취소</button>
+                    class="flex-1 py-2.5 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 cursor-pointer">취소</button>
             <button type="submit"
-                    class="flex-1 py-2.5 rounded bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d]">저장</button>
+                    class="flex-1 py-2.5 rounded bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d] cursor-pointer">저장</button>
           </div>
         </form>
       </div>
@@ -163,7 +163,7 @@
       <div class="relative bg-white rounded-lg w-full max-w-md border border-gray-200 shadow-xl">
         <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
           <h3 class="font-bold text-gray-900">카테고리 관리</h3>
-          <button @click="showCategoryModal = false" class="text-gray-400 hover:text-gray-600">✕</button>
+          <button @click="showCategoryModal = false" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
         </div>
         <div class="p-6 space-y-4">
           <!-- 등록 폼 -->
@@ -172,7 +172,7 @@
                    @keyup.enter="addCategory"
                    class="flex-1 px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none" />
             <button @click="addCategory"
-                    class="px-4 py-2 bg-[#F37321] text-white text-sm font-semibold rounded hover:bg-[#e0661d]">
+                    class="px-4 py-2 bg-[#F37321] text-white text-sm font-semibold rounded hover:bg-[#e0661d] cursor-pointer">
               추가
             </button>
           </div>
@@ -186,7 +186,7 @@
                    class="flex items-center justify-between px-4 py-2.5 hover:bg-gray-50">
                 <span class="text-sm font-medium text-gray-700">{{ cat }}</span>
                 <button @click="deleteCategory(cat)"
-                        class="text-gray-300 hover:text-red-500 transition-colors">
+                        class="text-gray-300 hover:text-red-500 transition-colors cursor-pointer">
                   <Trash2 class="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -197,7 +197,7 @@
             </div>
           </div>
           <button @click="showCategoryModal = false"
-                  class="w-full py-2.5 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50">
+                  class="w-full py-2.5 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 cursor-pointer">
             닫기
           </button>
         </div>

@@ -9,7 +9,7 @@
           class="px-4 py-2 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 flex items-center gap-2">
           <History class="w-4 h-4" /> 입출고 이력
         </RouterLink>
-        <button class="px-4 py-2 border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50">재고 동기화</button>
+        <button class="px-4 py-2 border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 cursor-pointer">재고 동기화</button>
       </div>
     </div>
 
@@ -33,7 +33,7 @@
         <button v-for="f in statusFilters" :key="f.value"
           type="button"
           @click="filterStatus = f.value"
-          class="px-3 py-2 text-sm font-semibold border transition-colors"
+          class="px-3 py-2 text-sm font-semibold border transition-colors cursor-pointer"
           :class="filterStatus === f.value
             ? 'bg-[#F37321] text-white border-[#F37321]'
             : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'">
@@ -101,7 +101,7 @@
               </p>
             </div>
             <button type="button"
-              class="shrink-0 p-1.5 rounded border border-gray-200 text-gray-500 hover:bg-white hover:text-gray-800"
+              class="shrink-0 p-1.5 rounded border border-gray-200 text-gray-500 hover:bg-white hover:text-gray-800 cursor-pointer"
               aria-label="닫기"
               @click="closeDetail">
               ✕

@@ -7,7 +7,7 @@
 
       </div>
       <button @click="openModal(null)"
-              class="bg-[#F37321] text-white px-4 py-2 text-sm font-semibold rounded-lg hover:bg-[#e0661d] transition-colors flex items-center gap-2 shadow-sm">
+              class="bg-[#F37321] text-white px-4 py-2 text-sm font-semibold rounded-lg hover:bg-[#e0661d] transition-colors flex items-center gap-2 shadow-sm cursor-pointer">
         <Plus class="w-4 h-4" /> 신규 가맹점 등록
       </button>
     </div>
@@ -45,7 +45,7 @@
           />
         </div>
         <button @click="handleSearch"
-                class="px-4 py-2 bg-white border border-gray-300 text-gray-600 text-sm font-bold rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-colors shadow-sm whitespace-nowrap">
+                class="px-4 py-2 bg-white border border-gray-300 text-gray-600 text-sm font-bold rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-colors shadow-sm whitespace-nowrap cursor-pointer">
           검색
         </button>
       </div>
@@ -53,13 +53,13 @@
       <div class="flex items-center gap-3">
         <div class="relative">
           <button @click="toggleDropdown('region')"
-                  class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:border-gray-300 transition-all shadow-sm min-w-[120px] justify-between">
+                  class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:border-gray-300 transition-all shadow-sm min-w-[120px] justify-between cursor-pointer">
             <span>지역: {{ filterRegion }}</span>
             <ChevronDown class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-180': activeDropdown === 'region' }" />
           </button>
           <div v-if="activeDropdown === 'region'" class="absolute right-0 mt-1 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-20 py-1 animate-in fade-in zoom-in-95 duration-100">
             <button v-for="r in regionChips" :key="r" @click="selectFilter('region', r)"
-                    class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors"
+                    class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors cursor-pointer"
                     :class="filterRegion === r ? 'text-[#F37321] font-bold' : 'text-gray-600'">
               {{ r }}
             </button>
@@ -68,13 +68,13 @@
 
         <div class="relative">
           <button @click="toggleDropdown('status')"
-                  class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:border-gray-300 transition-all shadow-sm min-w-[120px] justify-between">
+                  class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:border-gray-300 transition-all shadow-sm min-w-[120px] justify-between cursor-pointer">
             <span>상태: {{ filterStatus }}</span>
             <ChevronDown class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-180': activeDropdown === 'status' }" />
           </button>
           <div v-if="activeDropdown === 'status'" class="absolute right-0 mt-1 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-20 py-1 animate-in fade-in zoom-in-95 duration-100">
             <button v-for="s in statusOptions" :key="s" @click="selectFilter('status', s)"
-                    class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors"
+                    class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors cursor-pointer"
                     :class="filterStatus === s ? 'text-[#F37321] font-bold' : 'text-gray-600'">
               {{ s }}
             </button>
@@ -126,7 +126,7 @@
           <td class="px-5 py-4">
             <div class="flex justify-center">
               <button @click.stop="openModal(store)"
-                      class="px-3 py-1.5 text-xs font-semibold text-[#F37321] border border-[#F37321] rounded hover:bg-orange-50 transition-colors">
+                      class="px-3 py-1.5 text-xs font-semibold text-[#F37321] border border-[#F37321] rounded hover:bg-orange-50 transition-colors cursor-pointer">
                 수정
               </button>
             </div>
@@ -142,7 +142,7 @@
       <div class="relative bg-white rounded-lg w-full max-w-lg border border-gray-200 shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
         <div class="px-8 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
           <h3 class="font-bold text-gray-900 text-lg">가맹점 상세 정보</h3>
-          <button @click="showDetailModal = false" class="text-gray-400 hover:text-gray-600 font-bold text-xl">✕</button>
+          <button @click="showDetailModal = false" class="text-gray-400 hover:text-gray-600 font-bold text-xl cursor-pointer">✕</button>
         </div>
 
         <div class="p-8 space-y-5">
@@ -208,12 +208,12 @@
 
           <div class="pt-4 space-y-3">
             <button @click="downloadPdf"
-                    class="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d] transition-colors shadow-sm">
+                    class="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d] transition-colors shadow-sm cursor-pointer">
               <FileText class="w-4 h-4 text-white" />
               사업자 PDF 다운로드
             </button>
             <button @click="showDetailModal = false"
-                    class="w-full py-3 rounded-lg bg-gray-100 text-gray-600 text-sm font-bold hover:bg-gray-200 transition-colors">
+                    class="w-full py-3 rounded-lg bg-gray-100 text-gray-600 text-sm font-bold hover:bg-gray-200 transition-colors cursor-pointer">
               닫기
             </button>
           </div>
@@ -227,7 +227,7 @@
       <div class="relative bg-white rounded-lg w-full max-w-lg border border-gray-200 shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
         <div class="px-8 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
           <h3 class="font-bold text-gray-900 text-lg">{{ editTarget ? '가맹점 정보 수정' : '신규 가맹점 등록' }}</h3>
-          <button @click="showModal = false" class="text-gray-400 hover:text-gray-600 font-bold text-xl">✕</button>
+          <button @click="showModal = false" class="text-gray-400 hover:text-gray-600 font-bold text-xl cursor-pointer">✕</button>
         </div>
 
         <form @submit.prevent="saveStore" class="p-8 space-y-5">
@@ -306,9 +306,9 @@
           </div>
           <div class="flex gap-3 pt-4">
             <button type="button" @click="showModal = false"
-                    class="flex-1 py-3 rounded-lg border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-50 transition-colors">취소</button>
+                    class="flex-1 py-3 rounded-lg border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-50 transition-colors cursor-pointer">취소</button>
             <button type="submit"
-                    class="flex-1 py-3 rounded-lg bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d] transition-colors shadow-sm">저장</button>
+                    class="flex-1 py-3 rounded-lg bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d] transition-colors shadow-sm cursor-pointer">저장</button>
           </div>
         </form>
       </div>

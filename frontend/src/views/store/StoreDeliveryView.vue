@@ -5,7 +5,7 @@
         <h1 class="text-xl font-bold text-gray-900 tracking-tight">배송 현황</h1>
       </div>
 
-      <div class="space-y-3">
+      <div class="flex flex-wrap gap-3 items-center">
         <div class="relative w-full sm:w-80">
           <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
             <svg class="w-4 h-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -75,10 +75,6 @@
           </div>
           <div class="flex items-center gap-4">
             <div class="flex items-center">
-              <span v-if="d.driver !== '미배정'" class="text-xs font-medium text-gray-500 px-2 py-1 bg-gray-100 rounded-md">
-                기사: {{ d.driver }}
-              </span>
-              <span v-else class="text-xs text-gray-400">기사: 미배정</span>
             </div>
             <span class="text-xs font-bold px-2 py-0.5 rounded whitespace-nowrap"
                   :class="statusClass(d.status)">{{ d.status }}</span>
@@ -164,7 +160,7 @@ const filterOptions = ['전체', '출고대기', '배송중', '지연', '배송 
 
 const deliveries = ref([
   {
-    id: 'DLV-20260413-001', date: '2026-04-13', status: '배송중', driver: '홍길동',
+    id: 'DLV-20260413-001', date: '2026-04-13', status: '배송중',
     items: ['염지닭(10호) 100수', '치킨 파우더 40kg'],
     timeline: [
       { label: '발주 확정',    time: '08:00', done: true },
@@ -174,7 +170,7 @@ const deliveries = ref([
     ],
   },
   {
-    id: 'DLV-20260413-003', date: '2026-04-13', status: '지연', driver: '최동욱',
+    id: 'DLV-20260413-003', date: '2026-04-13', status: '지연',
     items: ['치킨 상자(L) 1000개', '콜라(1.5L) 10박스'],
     delayReason: '강우로 인한 고속도로 정체로 배송이 약 2시간 지연되고 있습니다.',
     timeline: [
@@ -185,7 +181,7 @@ const deliveries = ref([
     ],
   },
   {
-    id: 'DLV-20260412-099', date: '2026-04-12', status: '배송 완료', driver: '김배송',
+    id: 'DLV-20260412-099', date: '2026-04-12', status: '배송 완료',
     items: ['치킨무 500팩', '포장 비닐 2000매'],
     timeline: [
       { label: '발주 확정',    time: '07:00', done: true },

@@ -39,9 +39,9 @@
           : 'bg-orange-50/40 border-orange-100 hover:bg-orange-50/70'"
       >
         <!-- Type badge -->
-        <div class="shrink-0 pt-0.5">
+        <div class="shrink-0 pt-0.5 w-18 flex items-start justify-center">
           <span
-            class="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full border"
+            class="text-[10px] font-bold px-2 py-0.5 rounded border whitespace-nowrap"
             :class="[typeConfig(n.type).color, typeConfig(n.type).bg, typeConfig(n.type).border]"
           >
             {{ typeConfig(n.type).label }}

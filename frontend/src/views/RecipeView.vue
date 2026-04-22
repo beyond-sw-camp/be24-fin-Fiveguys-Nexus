@@ -246,7 +246,6 @@
               <th class="px-3 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">제품명</th>
               <th class="px-3 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">소요량</th>
               <th class="px-3 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">단위</th>
-              <th class="px-3 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">관리</th>
             </tr>
             </thead>
             <tbody class="divide-y divide-gray-50">
@@ -256,25 +255,14 @@
               <td class="px-3 py-3 font-semibold text-gray-800">{{ getProductName(item.productId) }}</td>
               <td class="px-3 py-3 text-right text-gray-700 font-mono">{{ item.amount }}</td>
               <td class="px-3 py-3 text-gray-500">{{ item.unit }}</td>
-              <td class="px-3 py-3">
-                <div class="flex justify-center gap-2">
-                  <button @click="deleteIngredient(idx)"
-                          class="text-gray-300 hover:text-red-500 transition-colors cursor-pointer" title="삭제">
-                    <Trash2 class="w-4 h-4" />
-                  </button>
-                </div>
-              </td>
             </tr>
             <tr v-if="!selectedMenu?.ingredients?.length">
-              <td colspan="5" class="px-3 py-8 text-center text-gray-300 text-sm">등록된 재료가 없습니다</td>
+              <td colspan="4" class="px-3 py-8 text-center text-gray-400 text-sm">등록된 재료가 없습니다.</td>
             </tr>
             </tbody>
           </table>
 
-          <div class="mt-5 flex justify-end gap-2"> <button @click="editIngredient"
-                                                            class="flex items-center gap-1 px-3 py-1.5 bg-[#F97316] text-white text-xs font-bold rounded-lg hover:bg-[#EA6700] transition-colors shadow-sm cursor-pointer">
-            <Plus class="w-3 h-3" /> 재료 추가
-          </button>
+          <div class="mt-5 flex justify-end">
             <button @click="showIngredientModal = false"
                     class="px-5 py-2.5 rounded-lg bg-gray-100 text-gray-600 text-sm font-bold hover:bg-gray-200 transition-colors cursor-pointer">
               닫기

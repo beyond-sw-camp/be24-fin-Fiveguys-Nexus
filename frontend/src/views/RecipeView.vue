@@ -1,10 +1,10 @@
 <template>
-  <div class="p-6 space-y-4 font-sans text-gray-900">
+  <div class="p-5 space-y-4">
 
     <!-- ── 페이지 헤더 ── -->
     <div class="flex items-center justify-between">
       <div>
-        <h1 class="text-xl font-black text-gray-900">메뉴 관리</h1>
+        <h1 class="text-xl font-bold text-gray-900 tracking-tight">메뉴 관리</h1>
 
       </div>
       <button @click="openNewMenuModal"
@@ -46,14 +46,11 @@
     </div>
 
     <!-- ── 검색 ── -->
-    <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
-
-
-      <!-- ── 메뉴 테이블 ── -->
+    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full text-sm text-left">
           <thead>
-          <tr class="border-b border-gray-100 bg-gray-50/60">
+          <tr class="border-b border-gray-200 bg-gray-50">
             <th class="px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">메뉴번호</th>
             <th class="px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">메뉴명</th>
             <th class="px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">가격</th>
@@ -61,19 +58,19 @@
             <th class="px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">관리</th>
           </tr>
           </thead>
-          <tbody class="divide-y divide-gray-50">
+          <tbody class="divide-y divide-gray-100">
           <tr v-for="menu in filteredMenus" :key="menu.id"
               @click="openIngredientModal(menu)"
-              class="hover:bg-gray-50/80 transition-colors cursor-pointer group">
-            <td class="px-4 py-4 font-mono text-xs text-gray-400">{{ menu.id }}</td>
-            <td class="px-4 py-4 font-bold text-gray-900 group-hover:text-[#F97316] transition-colors">{{ menu.name }}</td>
-            <td class="px-4 py-4 text-gray-700 font-semibold">{{ formatPrice(menu.price) }}</td>
-            <td class="px-4 py-4 text-center">
+              class="hover:bg-gray-50/50 transition-colors cursor-pointer group">
+            <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ menu.id }}</td>
+            <td class="px-5 py-3.5 font-bold text-gray-900 group-hover:text-[#F97316] transition-colors">{{ menu.name }}</td>
+            <td class="px-5 py-3.5 text-gray-700 font-semibold">{{ formatPrice(menu.price) }}</td>
+            <td class="px-5 py-3.5 text-center">
                 <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-orange-50 text-orange-600">
                   {{ menu.ingredients.length }}종
                 </span>
             </td>
-            <td class="px-4 py-4" @click.stop>
+            <td class="px-5 py-3.5" @click.stop>
               <div class="flex justify-center gap-2">
                 <button @click="openEditMenuModal(menu)"
                         class="px-3 py-1.5 text-xs font-semibold text-[#F37321] border border-[#F37321] rounded hover:bg-orange-50 transition-colors cursor-pointer">
@@ -87,7 +84,7 @@
             </td>
           </tr>
           <tr v-if="filteredMenus.length === 0">
-            <td colspan="5" class="px-4 py-12 text-center text-gray-300 text-sm">검색 결과가 없습니다</td>
+            <td colspan="5" class="px-5 py-12 text-center text-gray-400 text-sm">검색 결과가 없습니다.</td>
           </tr>
           </tbody>
         </table>

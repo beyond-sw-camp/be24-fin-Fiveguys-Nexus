@@ -58,7 +58,7 @@
                 {{ salesYear }}-{{ salesMonth }} 총 매출액
               </p>
               <p class="text-2xl font-black text-gray-900 mt-2">
-                ₩{{ salesTotal.toLocaleString() }}
+                ₩ {{ salesTotal.toLocaleString() }}
               </p>
             </div>
           </div>
@@ -67,7 +67,7 @@
             <div class="p-5">
               <p class="text-xs font-bold text-gray-400">계산 완료</p>
               <p class="text-2xl font-black text-green-600 mt-2">
-                ₩{{ salesPaid.toLocaleString() }}
+                ₩ {{ salesPaid.toLocaleString() }}
               </p>
             </div>
           </div>
@@ -91,7 +91,7 @@
               <td class="px-5 py-3 text-gray-600">{{ s.count }}건</td>
               <td class="px-5 py-3 text-xs text-gray-400">{{ s.period }}</td>
               <td class="px-5 py-3 font-bold">
-                ₩{{ s.amount.toLocaleString() }}
+                ₩ {{ s.amount.toLocaleString() }}
               </td>
               <td class="px-5 py-3">
                   <span class="text-xs px-2 py-0.5 rounded"
@@ -143,7 +143,7 @@
                 {{ selectedYear }}-{{ selectedMonth }} 총 납부액
               </p>
               <p class="text-2xl font-black text-gray-900 mt-2">
-                ₩{{ totalAmount.toLocaleString() }}
+                ₩ {{ totalAmount.toLocaleString() }}
               </p>
             </div>
           </div>
@@ -152,7 +152,7 @@
             <div class="p-5">
               <p class="text-xs font-bold text-gray-400">납부 완료</p>
               <p class="text-2xl font-black text-green-600 mt-2">
-                ₩{{ paidAmount.toLocaleString() }}
+                ₩ {{ paidAmount.toLocaleString() }}
               </p>
             </div>
           </div>
@@ -178,7 +178,7 @@
               <td class="px-5 py-3 text-gray-600">{{ s.count }}건</td>
               <td class="px-5 py-3 text-xs text-gray-400">{{ s.period }}</td>
               <td class="px-5 py-3 font-bold">
-                ₩{{ s.amount.toLocaleString() }}
+                ₩ {{ s.amount.toLocaleString() }}
               </td>
               <td class="px-5 py-3">
                   <span class="text-xs px-2 py-0.5 rounded"

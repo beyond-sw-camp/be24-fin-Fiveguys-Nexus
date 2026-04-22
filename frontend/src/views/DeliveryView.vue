@@ -70,7 +70,6 @@
             <span class="text-xs text-gray-500">{{ d.items.join(' · ') }}</span>
           </div>
           <div class="flex items-center gap-4">
-            <span class="text-xs text-gray-500 hidden sm:inline-block">거래처: {{ d.supplier }} · 기사: {{ d.driver }}</span>
             <span class="text-xs font-bold px-2 py-0.5 rounded whitespace-nowrap"
                   :class="statusClass(d.status)">{{ d.status }}</span>
           </div>
@@ -191,7 +190,7 @@ const statusFilters = [
 const deliveries = ref([
   {
     id: 'DLV-20260413-001', status: '배송중',
-    destination: '여의도역점', supplier: '하림', driver: '홍길동',
+    destination: '여의도역점',
     items: ['닭(10호) 200마리'],
     timeline: [
       { label: '출고 완료 (용인 중앙물류센터)', time: '2026-04-13 08:30', done: true },
@@ -201,7 +200,7 @@ const deliveries = ref([
   },
   {
     id: 'DLV-20260413-002', status: '배송중',
-    destination: '판교테크노밸리점', supplier: 'BBQ물류', driver: '이민수',
+    destination: '판교테크노밸리점',
     items: ['엑스트라 버진 올리브오일 15통'],
     timeline: [
       { label: '출고 완료 (성남 물류센터)', time: '2026-04-13 09:00', done: true },
@@ -211,7 +210,7 @@ const deliveries = ref([
   },
   {
     id: 'DLV-20260413-004', status: '입고완료',
-    destination: '한화빌딩점', supplier: 'BBQ물류', driver: '박상현',
+    destination: '한화빌딩점',
     items: ['시크릿 양념소스 50팩'],
     timeline: [
       { label: '출고 완료', time: '2026-04-12 16:00', done: true },
@@ -221,7 +220,7 @@ const deliveries = ref([
   },
   {
     id: 'DLV-20260413-005', status: '지연',
-    destination: '부산센텀점', supplier: '한국포장', driver: '최동욱',
+    destination: '부산센텀점',
     items: ['포장용 치킨박스 1000개'],
     delayReason: '강우로 인한 고속도로 정체로 배송 지연 발생',
     timeline: [

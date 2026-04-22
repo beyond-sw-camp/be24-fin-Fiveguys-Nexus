@@ -29,19 +29,19 @@
 
     <!-- List -->
     <div v-if="filtered.length > 0" class="flex flex-col gap-2">
-      <div
+      <button
         v-for="n in filtered"
         :key="n.id"
         @click="store.markRead(n.id)"
-        class="flex gap-3 p-4 rounded-lg border cursor-pointer transition-colors"
+        class="w-full flex gap-3 p-4 rounded-lg border transition-colors text-left"
         :class="n.read
           ? 'bg-white border-gray-100 hover:bg-gray-50'
           : 'bg-orange-50/40 border-orange-100 hover:bg-orange-50/70'"
       >
         <!-- Type badge -->
-        <div class="shrink-0 pt-0.5 w-18 flex items-start justify-center">
+        <div class="shrink-0 pt-0.5">
           <span
-            class="text-[10px] font-bold px-2 py-0.5 rounded border whitespace-nowrap"
+            class="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full border"
             :class="[typeConfig(n.type).color, typeConfig(n.type).bg, typeConfig(n.type).border]"
           >
             {{ typeConfig(n.type).label }}
@@ -57,7 +57,7 @@
           <p class="text-sm text-gray-600 leading-snug">{{ n.body }}</p>
           <p class="text-xs text-gray-400 mt-1">{{ store.relativeTime(n.time) }}</p>
         </div>
-      </div>
+      </button>
     </div>
 
     <!-- Empty -->

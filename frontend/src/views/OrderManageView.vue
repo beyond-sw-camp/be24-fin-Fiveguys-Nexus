@@ -498,7 +498,7 @@ const productPrices = {
 }
 
 function formatPrice(n) {
-  return n.toLocaleString('ko-KR') + '원'
+  return '₩ ' + n.toLocaleString('ko-KR')
 }
 
 const abnormalCount = computed(() => abnormalOrders.value.filter(o => !o.processed).length)

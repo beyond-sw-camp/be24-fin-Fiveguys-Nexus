@@ -81,14 +81,14 @@
       <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
         <div class="p-5">
           <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">가맹점 청구 합계</p>
-          <p class="text-2xl font-black text-gray-900 mt-2">₩{{ totalStore.toLocaleString() }}</p>
+          <p class="text-2xl font-black text-gray-900 mt-2">₩ {{ totalStore.toLocaleString() }}</p>
           <p class="text-xs text-gray-400 mt-2 pt-2 border-t border-gray-100">{{ selectedMonth }}</p>
         </div>
       </div>
       <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
         <div class="p-5">
           <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">순이익 (차액)</p>
-          <p class="text-2xl font-black text-green-600 mt-2">₩{{ (totalStore - totalSupplier).toLocaleString() }}</p>
+          <p class="text-2xl font-black text-green-600 mt-2">₩ {{ (totalStore - totalSupplier).toLocaleString() }}</p>
           <p class="text-xs text-gray-400 mt-2 pt-2 border-t border-gray-100">{{ selectedMonth }}</p>
         </div>
       </div>
@@ -128,7 +128,7 @@
           <td class="px-5 py-3.5 font-semibold text-gray-900">{{ s.name }}</td>
           <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ s.period }}</td>
           <td class="px-5 py-3.5 text-gray-600">{{ s.count }}건</td>
-          <td class="px-5 py-3.5 font-bold text-gray-900">₩{{ s.amount.toLocaleString() }}</td>
+          <td class="px-5 py-3.5 font-bold text-gray-900">₩ {{ s.amount.toLocaleString() }}</td>
           <td class="px-5 py-3.5">
               <span
                 class="text-xs font-bold px-2 py-0.5 rounded"

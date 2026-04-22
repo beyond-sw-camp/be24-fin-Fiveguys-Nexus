@@ -5,7 +5,7 @@
         <h1 class="text-[22px] font-bold text-gray-900 tracking-tight">운영 현황</h1>
       </div>
       <div class="flex items-center gap-2">
-        <button v-for="tab in periodTabs" :key="tab" class="text-xs px-3 py-1.5 rounded-md border transition-colors"
+        <button v-for="tab in periodTabs" :key="tab" class="text-xs px-3 py-1.5 rounded-md border transition-colors cursor-pointer"
           :class="activePeriod === tab ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'"
           @click="activePeriod = tab">
           {{ tab }}

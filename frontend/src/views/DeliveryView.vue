@@ -23,7 +23,7 @@
     <div class="flex gap-2 flex-wrap">
       <button v-for="f in statusFilters" :key="f.value"
               @click="filterStatus = f.value"
-              class="px-3.5 py-1.5 text-sm font-semibold border rounded-md transition-colors"
+              class="px-3.5 py-1.5 text-sm font-semibold border rounded-md transition-colors cursor-pointer"
               :class="filterStatus === f.value
           ? 'bg-[#F37321] text-white border-[#F37321]'
           : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'">
@@ -103,7 +103,7 @@
             <span class="w-2 h-2 rounded-full bg-red-500"></span>
             배송 지연 사유 입력
           </h3>
-          <button @click="closeModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <button @click="closeModal" class="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
           </button>
         </div>
@@ -131,10 +131,10 @@
         </div>
 
         <div class="px-6 py-4 bg-gray-50 flex justify-end gap-2 border-t border-gray-100">
-          <button @click="closeModal" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-semibold transition-colors">
+          <button @click="closeModal" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-semibold transition-colors cursor-pointer">
             취소
           </button>
-          <button @click="saveDelayReason" class="px-5 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm font-semibold transition-colors shadow-sm">
+          <button @click="saveDelayReason" class="px-5 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm font-semibold transition-colors shadow-sm cursor-pointer">
             사유 저장
           </button>
         </div>

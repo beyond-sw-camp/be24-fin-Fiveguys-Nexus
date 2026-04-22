@@ -166,8 +166,8 @@ const adminMenus = [
   {
     path: '/inventory/head-office', name: '재고 관리', icon: Box,
     children: [
-      { path: '/inventory/head-office', name: '본사재고현황' },
-      { path: '/inventory/franchise', name: '가맹점재고현황' },
+      { path: '/inventory/head-office', name: '본사 재고 현황' },
+      { path: '/inventory/franchise', name: '가맹점 재고 현황' },
     ],
   },
   { path: '/delivery',   name: '배송 관리', icon: Truck },

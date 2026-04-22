@@ -6,7 +6,7 @@
       <button
         v-if="unreadCount > 0"
         @click="store.markAllRead('ADMIN')"
-        class="text-sm text-[#F37321] hover:underline font-medium"
+        class="text-sm text-[#F37321] hover:underline font-medium cursor-pointer"
       >
         전체 읽음 처리
       </button>
@@ -18,7 +18,7 @@
         v-for="tab in tabs"
         :key="tab.value"
         @click="activeTab = tab.value"
-        class="px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px"
+        class="px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px cursor-pointer"
         :class="activeTab === tab.value
           ? 'border-[#F37321] text-[#F37321]'
           : 'border-transparent text-gray-500 hover:text-gray-700'"
@@ -39,9 +39,9 @@
           : 'bg-orange-50/40 border-orange-100 hover:bg-orange-50/70'"
       >
         <!-- Type badge -->
-        <div class="shrink-0 pt-0.5">
+        <div class="shrink-0 pt-0.5 w-18 flex items-start justify-center">
           <span
-            class="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full border"
+            class="text-[10px] font-bold px-2 py-0.5 rounded border whitespace-nowrap"
             :class="[typeConfig(n.type).color, typeConfig(n.type).bg, typeConfig(n.type).border]"
           >
             {{ typeConfig(n.type).label }}

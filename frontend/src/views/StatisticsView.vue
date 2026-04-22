@@ -3,9 +3,6 @@
     <div class="flex flex-wrap items-start justify-between gap-4">
       <div>
         <h1 class="text-[22px] font-bold text-gray-900 tracking-tight">발주 통계</h1>
-        <p class="text-sm text-gray-500 mt-1">
-          치킨 프랜차이즈 본사·가맹 발주 기준 데모입니다. 기간·카테고리에 따라 트렌드·비중·이상 발주를 확인할 수 있습니다.
-        </p>
       </div>
       <div class="flex flex-wrap items-center gap-2">
         <div class="flex rounded-lg border border-gray-200 bg-white p-0.5">
@@ -13,7 +10,7 @@
             v-for="p in periodOptions"
             :key="p.value"
             type="button"
-            class="text-xs px-3 py-1.5 rounded-md font-semibold transition-colors"
+            class="text-xs px-3 py-1.5 rounded-md font-semibold transition-colors cursor-pointer"
             :class="period === p.value ? 'bg-gray-900 text-white' : 'text-gray-500 hover:bg-gray-50'"
             @click="period = p.value"
           >
@@ -29,7 +26,7 @@
         </select>
         <button
           type="button"
-          class="text-xs px-3 py-2 rounded-lg border border-gray-200 bg-white font-semibold text-gray-600 hover:bg-gray-50"
+          class="text-xs px-3 py-2 rounded-lg border border-gray-200 bg-white font-semibold text-gray-600 hover:bg-gray-50 cursor-pointer"
           @click="downloadCsv"
         >
           CSV 다운로드
@@ -46,7 +43,7 @@
       >
         <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.12em]">{{ card.title }}</p>
         <div class="flex items-end gap-1 mt-2.5">
-          <p class="text-[26px] leading-none font-extrabold text-gray-900 tracking-tight">{{ card.value }}</p>
+          <p class="text-[26px] leading-none font-extrabold tracking-tight" :class="card.colorClass ?? 'text-gray-900'">{{ card.value }}</p>
           <span v-if="card.unit" class="text-sm text-gray-400 mb-0.5">{{ card.unit }}</span>
         </div>
         <p class="text-xs text-gray-500 mt-3">{{ card.sub }}</p>
@@ -208,8 +205,8 @@ const summaryCards = computed(() => {
   const { totalAmount, momPct, abnormalCount, topProduct } = summary.value
   const periodLabel = periodOptions.find((p) => p.value === period.value)?.label ?? ''
   return [
-    { title: '총 발주 금액', value: `₩${Math.round(totalAmount).toLocaleString()}`, unit: '', sub: `${periodLabel} · 선택 구간 합계` },
-    { title: '전 기간 대비', value: `${momPct >= 0 ? '+' : ''}${momPct.toFixed(1)}`, unit: '%', sub: '직전 동일 길이 구간 대비 변동률' },
+    { title: '총 발주 금액', value: `₩ ${Math.round(totalAmount).toLocaleString()}`, unit: '', sub: `${periodLabel} · 선택 구간 합계` },
+    { title: '전 기간 대비', value: `${momPct >= 0 ? '+' : ''}${momPct.toFixed(1)}`, unit: '%', sub: '직전 동일 길이 구간 대비 변동률', colorClass: momPct >= 0 ? 'text-green-600' : 'text-red-500' },
     { title: '이상 발주 건수', value: String(abnormalCount), unit: '건', sub: '선택 구간 내 이상 플래그 합계' },
     { title: '최다 발주 품목', value: topProduct, unit: '', sub: '금액 기준 상위 1개 품목' },
   ]

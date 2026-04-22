@@ -3,7 +3,6 @@
     <!-- Header -->
     <div>
       <h1 class="text-[22px] font-bold text-gray-900 tracking-tight">ESG 대시보드</h1>
-      <p class="text-sm text-gray-500 mt-1">폐기 최소화 및 재고 효율 지표를 확인합니다.</p>
     </div>
 
     <!-- 탭 -->
@@ -13,7 +12,7 @@
         :key="tab.value"
         type="button"
         @click="activeTab = tab.value"
-        class="px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px"
+        class="px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px cursor-pointer"
         :class="activeTab === tab.value
           ? 'border-[#F37321] text-[#F37321]'
           : 'border-transparent text-gray-500 hover:text-gray-700'"

@@ -3,9 +3,6 @@
     <div class="flex flex-wrap items-start justify-between gap-4">
       <div>
         <h1 class="text-[22px] font-bold text-gray-900 tracking-tight">판매/매출 분석</h1>
-        <p class="text-sm text-gray-500 mt-1">
-          가맹점·제품·카테고리 기준 매출 현황을 분석합니다.
-        </p>
       </div>
       <div class="flex flex-wrap items-center gap-2">
         <select

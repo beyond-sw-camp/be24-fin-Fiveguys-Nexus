@@ -3,7 +3,6 @@
     <!-- Header -->
     <div>
       <h1 class="text-[22px] font-bold text-gray-900 tracking-tight">ESG 대시보드</h1>
-      <p class="text-sm text-gray-500 mt-1">폐기 최소화 및 재고 효율 지표를 확인합니다.</p>
     </div>
 
     <!-- 탭 -->

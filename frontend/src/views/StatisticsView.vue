@@ -3,9 +3,6 @@
     <div class="flex flex-wrap items-start justify-between gap-4">
       <div>
         <h1 class="text-[22px] font-bold text-gray-900 tracking-tight">발주 통계</h1>
-        <p class="text-sm text-gray-500 mt-1">
-          치킨 프랜차이즈 본사·가맹 발주 기준 데모입니다. 기간·카테고리에 따라 트렌드·비중·이상 발주를 확인할 수 있습니다.
-        </p>
       </div>
       <div class="flex flex-wrap items-center gap-2">
         <div class="flex rounded-lg border border-gray-200 bg-white p-0.5">

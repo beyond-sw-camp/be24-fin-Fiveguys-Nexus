@@ -3,7 +3,6 @@
     <div class="flex items-center justify-between">
       <div>
         <h1 class="text-xl font-bold text-gray-900 tracking-tight">계정 관리</h1>
-        <p class="text-sm text-gray-500 mt-1">계정 목록을 조회하고, 계정을 생성/수정/삭제할 수 있습니다.</p>
       </div>
       <button
         @click="openCreateModal"

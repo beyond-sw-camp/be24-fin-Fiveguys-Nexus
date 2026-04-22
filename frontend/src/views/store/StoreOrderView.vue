@@ -26,15 +26,15 @@
           </div>
           <div class="flex gap-2">
             <button @click="openPaymentModal(order)"
-              class="px-4 py-2 bg-blue-500 text-white text-sm font-bold hover:bg-blue-600 rounded transition-colors cursor-pointer">
+              class="px-4 py-2 bg-blue-500 text-white text-sm font-bold hover:bg-blue-600 rounded-lg transition-colors cursor-pointer">
               전체 확정
             </button>
             <button @click="openAddItemForm(order)"
-              class="px-4 py-2 border border-blue-200 text-blue-500 bg-blue-50 text-sm font-semibold hover:bg-blue-100 rounded transition-colors cursor-pointer">
+              class="px-4 py-2 border border-blue-200 text-blue-500 bg-blue-50 text-sm font-semibold hover:bg-blue-100 rounded-lg transition-colors cursor-pointer">
               + 품목 추가
             </button>
             <button @click="rejectOrder(order)"
-              class="px-4 py-2 border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 rounded cursor-pointer">
+              class="px-4 py-2 border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 rounded-lg cursor-pointer">
               거절
             </button>
           </div>
@@ -60,7 +60,7 @@
               <td class="px-5 py-3.5">
                 <div class="flex items-center gap-1.5">
                   <input v-model.number="item.adjusted" type="number" min="0"
-                    class="w-20 px-2 py-1.5 rounded border border-gray-200 text-sm focus:border-blue-400 outline-none" />
+                    class="w-20 px-2 py-1.5 rounded-lg border border-gray-200 text-sm focus:border-blue-400 outline-none" />
                   <span class="text-xs text-gray-400 font-medium">{{ PRODUCT_UNIT[item.product] ?? '' }}</span>
                 </div>
               </td>
@@ -71,7 +71,7 @@
                 <button
                   @click="removeOrderItem(order, item)"
                   :disabled="order.items.length <= 1"
-                  class="px-3 py-1.5 text-xs font-semibold rounded border border-red-200 text-red-500 bg-red-50 hover:bg-red-500 hover:text-white hover:cursor-pointer transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                  class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-red-200 text-red-500 bg-red-50 hover:bg-red-500 hover:text-white hover:cursor-pointer transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
                   삭제
                 </button>
               </td>
@@ -88,17 +88,17 @@
               <td class="px-5 py-3 text-xs text-gray-400">—</td>
               <td class="px-5 py-3">
                 <input v-model.number="addItemForm.qty" type="number" min="1" placeholder="수량"
-                  class="w-24 px-2 py-1.5 rounded border border-blue-200 text-sm outline-none focus:border-blue-400" />
+                  class="w-24 px-2 py-1.5 rounded-lg border border-blue-200 text-sm outline-none focus:border-blue-400" />
               </td>
               <td class="px-5 py-3 text-xs text-gray-400 text-right">—</td>
               <td class="px-5 py-3">
                 <div class="flex gap-1.5">
                   <button @click="confirmAddItem(order)"
-                    class="px-3 py-1.5 text-xs font-semibold rounded border border-blue-300 text-blue-600 bg-white hover:bg-blue-500 hover:text-white hover:cursor-pointer transition-colors">
+                    class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-blue-300 text-blue-600 bg-white hover:bg-blue-500 hover:text-white hover:cursor-pointer transition-colors">
                     추가
                   </button>
                   <button @click="addItemForm = null"
-                    class="px-3 py-1.5 text-xs font-semibold rounded border border-gray-200 text-gray-500 bg-white hover:bg-gray-100 hover:cursor-pointer transition-colors">
+                    class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-gray-200 text-gray-500 bg-white hover:bg-gray-100 hover:cursor-pointer transition-colors">
                     취소
                   </button>
                 </div>
@@ -237,7 +237,7 @@
         </div>
         <div class="px-6 py-4 border-t border-gray-100 flex justify-end">
           <button @click="showHistoryDetail = false"
-            class="px-4 py-2 text-sm font-semibold text-gray-600 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer">닫기</button>
+            class="px-4 py-2 text-sm font-semibold text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">닫기</button>
         </div>
       </div>
     </div>
@@ -246,7 +246,7 @@
       <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-modal-up">
         <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
           <h2 class="text-lg font-bold text-gray-900">결제 및 승인</h2>
-          <button @click="isModalOpen = false" class="text-gray-400 hover:text-gray-600 cursor-pointer"><X class="w-5 h-5"/></button>
+          <button @click="isModalOpen = false" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
         </div>
 
         <div class="p-6 space-y-6">
@@ -270,7 +270,7 @@
             <div class="space-y-2 pb-3 border-b border-gray-200">
               <div v-for="item in selectedOrder?.items" :key="item.product" class="flex justify-between text-xs">
                 <span class="text-gray-500">{{ item.product }} ({{ item.adjusted }}개 × {{ (PRODUCT_PRICES[item.product] ?? 0).toLocaleString() }}원)</span>
-                <span class="font-medium text-gray-900">₩ {{((item.adjusted * (PRODUCT_PRICES[item.product] ?? 0))).toLocaleString() }}</span>
+                <span class="font-medium text-gray-900">₩ {{ ((item.adjusted || 0) * (PRODUCT_PRICES[item.product] ?? 0)).toLocaleString() }}</span>
               </div>
             </div>
             <div class="flex justify-between items-center pt-3">
@@ -299,7 +299,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { X, ClipboardList, CreditCard } from 'lucide-vue-next'
+import { ClipboardList, CreditCard } from 'lucide-vue-next'
 
 const PRODUCT_UNIT = {
   '생닭(1kg)':      'kg',

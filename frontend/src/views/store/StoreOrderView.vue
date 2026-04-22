@@ -47,6 +47,7 @@
               <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">최소 재고</th>
               <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">제안 수량</th>
               <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">수정 수량</th>
+              <th class="px-5 py-3 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wider">금액</th>
               <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider"></th>
             </tr>
           </thead>
@@ -62,6 +63,9 @@
                     class="w-20 px-2 py-1.5 rounded border border-gray-200 text-sm focus:border-blue-400 outline-none" />
                   <span class="text-xs text-gray-400 font-medium">{{ PRODUCT_UNIT[item.product] ?? '' }}</span>
                 </div>
+              </td>
+              <td class="px-5 py-3.5 text-right font-semibold text-gray-700">
+                ₩ {{ ((item.adjusted || 0) * (PRODUCT_PRICES[item.product] ?? 0)).toLocaleString() }}
               </td>
               <td class="px-5 py-3.5">
                 <button
@@ -86,6 +90,7 @@
                 <input v-model.number="addItemForm.qty" type="number" min="1" placeholder="수량"
                   class="w-24 px-2 py-1.5 rounded border border-blue-200 text-sm outline-none focus:border-blue-400" />
               </td>
+              <td class="px-5 py-3 text-xs text-gray-400 text-right">—</td>
               <td class="px-5 py-3">
                 <div class="flex gap-1.5">
                   <button @click="confirmAddItem(order)"
@@ -100,6 +105,16 @@
               </td>
             </tr>
           </tbody>
+          <tfoot class="border-t border-gray-200 bg-gray-50/60">
+            <tr>
+              <td class="px-5 py-3 text-left text-xs font-bold text-gray-500">합계</td>
+              <td colspan="4"></td>
+              <td class="px-5 py-3 text-right font-black text-blue-600">
+                ₩ {{ orderTotal(order).toLocaleString() }}
+              </td>
+              <td></td>
+            </tr>
+          </tfoot>
         </table>
       </div>
 
@@ -436,6 +451,10 @@ function confirmAddItem(order) {
 function removeOrderItem(order, item) {
   const idx = order.items.indexOf(item)
   if (idx > -1) order.items.splice(idx, 1)
+}
+
+function orderTotal(order) {
+  return order.items.reduce((s, item) => s + (item.adjusted || 0) * (PRODUCT_PRICES[item.product] ?? 0), 0)
 }
 
 function rejectOrder(order) {

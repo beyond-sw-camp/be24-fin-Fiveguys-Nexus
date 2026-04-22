@@ -1,17 +1,14 @@
 <template>
   <div class="p-5 space-y-4">
 
-    <!-- Header -->
     <div class="flex flex-col gap-3">
 
-      <!-- 타이틀 -->
       <div class="flex justify-between items-start flex-wrap gap-4">
         <div class="min-w-0">
           <h1 class="text-xl font-bold text-gray-900 tracking-tight">정산 관리</h1>
         </div>
       </div>
 
-      <!-- 🔥 버튼 영역 (검색창 위로 이동됨) -->
       <div class="flex flex-wrap gap-2 items-center">
 
         <div class="flex rounded-lg border border-gray-200 bg-gray-50/90 p-0.5">
@@ -37,13 +34,15 @@
           <option>2026-02</option>
         </select>
 
-        <button class="inline-flex items-center gap-2 px-4 py-2.5 rounded bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d] cursor-pointer">
-          월별 마감 실행
+        <button
+          @click="isModalOpen = true"
+          class="inline-flex items-center gap-2 px-4 py-2.5 rounded bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d] cursor-pointer"
+        >
+          월별 마감
         </button>
       </div>
     </div>
 
-    <!-- 검색창 -->
     <div class="flex flex-wrap gap-3 items-center">
       <div class="relative flex-1 min-w-[12rem] max-w-md">
 
@@ -76,7 +75,6 @@
       </div>
     </div>
 
-    <!-- Summary -->
     <div class="grid grid-cols-2 gap-4">
       <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
         <div class="p-5">
@@ -94,7 +92,6 @@
       </div>
     </div>
 
-    <!-- Tabs -->
     <div class="flex border-b border-gray-200">
       <button
         v-for="tab in ['가맹점 정산']"
@@ -109,7 +106,6 @@
       </button>
     </div>
 
-    <!-- Table -->
     <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
       <table class="w-full text-sm text-left">
         <thead>
@@ -159,6 +155,36 @@
       </table>
     </div>
 
+    <Teleport to="body">
+      <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+        <div class="bg-white rounded-xl shadow-xl max-w-sm w-full overflow-hidden">
+          <div class="p-6 text-center">
+            <div class="mb-4 flex justify-center text-amber-500">
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">마감 확인</h3>
+            <p class="text-sm text-gray-600 leading-relaxed">
+              마감된 기간의 데이터는 입력 및 수정이 불가합니다.<br/>마감하시겠습니까?
+            </p>
+          </div>
+          <div class="flex border-t border-gray-100">
+            <button
+              @click="isModalOpen = false"
+              class="flex-1 px-4 py-3 text-sm font-semibold text-gray-500 hover:bg-gray-50 transition-colors"
+            >
+              아니오
+            </button>
+            <button
+              @click="confirmClosing"
+              class="flex-1 px-4 py-3 text-sm font-semibold text-[#F37321] hover:bg-orange-50 border-l border-gray-100 transition-colors"
+            >
+              예
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
   </div>
 </template>
 
@@ -171,6 +197,9 @@ const activeTab = ref('가맹점 정산')
 const settlementSearch = ref('')
 const periodGranularity = ref('월간')
 const periodGranularityOptions = ['주간', '월간', '년간']
+
+// 모달 상태 관리
+const isModalOpen = ref(false)
 
 const storeSettlements = ref([
   { name: '한화빌딩점', period: '2026-04-01 ~ 04-30', count: 28, amount: 12500000, status: '정산완료' },
@@ -198,6 +227,12 @@ const filteredSettlements = computed(() => {
 
 function downloadStatement(row) {
   alert(`[INCOME_003] ${row.name} 거래 명세서(PDF) 다운로드`)
+}
+
+// 모달 '예' 클릭 시 실행 함수
+function confirmClosing() {
+  alert(`${selectedMonth.value} 재고 마감이 완료되었습니다.`)
+  isModalOpen.value = false
 }
 
 const totalStore = computed(() => storeSettlements.value.reduce((s, v) => s + v.amount, 0))

@@ -129,39 +129,41 @@
     <Teleport to="body">
       <div v-if="showFullList" class="fixed inset-0 z-50 flex items-center justify-center">
         <div class="absolute inset-0 bg-black/40" @click="showFullList = false"></div>
-        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col overflow-hidden">
-          <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
-            <span class="font-bold text-gray-900 text-sm">{{ currentModeLabel }} 전체 매출 순위</span>
-            <button @click="showFullList = false" class="text-gray-400 hover:text-gray-700 transition-colors cursor-pointer">
-              <X class="w-5 h-5" />
-            </button>
+        <div class="relative bg-white rounded-xl shadow-xl w-full max-w-2xl mx-4 border border-gray-200">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+            <span class="font-bold text-gray-900">{{ currentModeLabel }} 전체 매출 순위</span>
+            <button @click="showFullList = false" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
           </div>
-          <div class="overflow-y-auto flex-1">
+          <div>
             <table class="w-full text-sm">
-              <thead class="sticky top-0 bg-white border-b border-gray-100">
+              <thead class="sticky top-0 bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th class="text-left px-5 py-3 font-semibold text-gray-500 w-12">순위</th>
-                  <th class="text-left px-5 py-3 font-semibold text-gray-500">{{ currentModeLabel }}</th>
-                  <th class="text-right px-5 py-3 font-semibold text-gray-500">매출액</th>
-                  <th class="text-right px-5 py-3 font-semibold text-gray-500 w-20">비중</th>
+                  <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center whitespace-nowrap">순위</th>
+                  <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">{{ currentModeLabel }}</th>
+                  <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">매출액</th>
+                  <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">비중</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-gray-50">
+              <tbody class="divide-y divide-gray-100">
                 <tr
                   v-for="(item, i) in rankingData"
                   :key="item.label"
                   class="hover:bg-gray-50/50 transition-colors"
                 >
-                  <td class="px-5 py-3 text-gray-400">{{ i + 1 }}</td>
-                  <td class="px-5 py-3 font-medium text-gray-800">{{ item.label }}</td>
-                  <td class="px-5 py-3 text-right text-gray-800">₩{{ item.amount.toLocaleString() }}</td>
-                  <td class="px-5 py-3 text-right text-gray-500">{{ item.pct.toFixed(1) }}%</td>
+                  <td class="px-5 py-3.5 text-center text-gray-400">{{ i + 1 }}</td>
+                  <td class="px-5 py-3.5 text-center font-semibold text-gray-900">{{ item.label }}</td>
+                  <td class="px-5 py-3.5 text-center font-semibold text-gray-700">₩ {{ item.amount.toLocaleString() }}</td>
+                  <td class="px-5 py-3.5 text-center text-gray-500">{{ item.pct.toFixed(1) }}%</td>
                 </tr>
                 <tr v-if="rankingData.length === 0">
                   <td colspan="4" class="px-5 py-12 text-center text-gray-400">데이터 없음</td>
                 </tr>
               </tbody>
             </table>
+          </div>
+          <div class="px-6 py-4 border-t border-gray-100 flex justify-end">
+            <button @click="showFullList = false"
+              class="px-4 py-2 text-sm font-semibold text-gray-600 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer">닫기</button>
           </div>
         </div>
       </div>
@@ -171,7 +173,6 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
-import { X } from 'lucide-vue-next'
 import { Chart } from 'chart.js/auto'
 import { rawOrders } from '@/utils/orderData'
 

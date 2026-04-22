@@ -126,9 +126,8 @@
           <td class="px-5 py-4">
             <div class="flex justify-center">
               <button @click.stop="openModal(store)"
-                      class="text-gray-300 hover:text-[#F37321] transition-colors"
-                      title="수정">
-                <Pencil class="w-4 h-4" />
+                      class="px-3 py-1.5 text-xs font-semibold text-[#F37321] border border-[#F37321] rounded hover:bg-orange-50 transition-colors">
+                수정
               </button>
             </div>
           </td>
@@ -319,7 +318,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { Plus, Pencil, Search, FileText, ChevronDown } from 'lucide-vue-next'
+import { Plus, Search, FileText, ChevronDown } from 'lucide-vue-next'
 
 const searchQuery = ref('')
 const filterRegion = ref('전체')

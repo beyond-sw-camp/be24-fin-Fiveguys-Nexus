@@ -34,10 +34,6 @@
       </div>
     </div>
 
-    <p class="px-6 py-2 border-b border-gray-100 bg-gray-50/80 text-[11px] text-gray-500 leading-relaxed shrink-0">
-      <code class="font-mono text-gray-400">MENU_001 · PAY_001~002 · CLOSED_001</code>
-      메뉴·카테고리·검색, 장바구니 결제, 일일 마감 시 본사로 판매·재고 데이터 전송 및 전산 재고 차감에 연동됩니다.
-    </p>
 
     <!-- ── 주문/결제 탭 ─────────────────────────────── -->
     <div v-if="activeTab === 'order'" class="flex-1 flex overflow-hidden">
@@ -372,7 +368,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import {
-  ShoppingCart, ShoppingBag,
+  ShoppingCart, ShoppingBag, TrendingUp,
   Search, XCircle, X, Minus, Plus,
   CreditCard, Banknote,
   CheckCircle, AlertCircle,

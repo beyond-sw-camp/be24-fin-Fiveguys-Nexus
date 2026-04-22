@@ -44,13 +44,13 @@
               <div class="flex items-center justify-center gap-2">
                 <button
                   @click="openEditModal(account)"
-                  class="px-2.5 py-1.5 rounded border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50 cursor-pointer"
+                  class="px-2.5 py-1.5 rounded border border-[#F37321] text-xs font-semibold text-[#F37321] hover:bg-orange-50 cursor-pointer"
                 >
                   수정
                 </button>
                 <button
                   @click="openDeleteModal(account)"
-                  class="px-2.5 py-1.5 rounded border border-red-200 text-xs font-semibold text-red-500 hover:bg-red-50 cursor-pointer"
+                  class="px-2.5 py-1.5 rounded border border-red-400 text-xs font-semibold text-red-500 hover:bg-red-50 cursor-pointer"
                 >
                   삭제
                 </button>

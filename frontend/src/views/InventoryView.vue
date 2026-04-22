@@ -50,6 +50,7 @@
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">품목명</th>
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">가맹점</th>
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">현재재고</th>
+            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">평균재고</th>
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">최소재고</th>
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">상태</th>
           </tr>
@@ -69,6 +70,7 @@
               :class="totalStock(item) < item.safe ? 'text-red-600' : 'text-gray-900'">
               {{ totalStock(item).toLocaleString() }}
             </td>
+            <td class="px-5 py-3.5 text-gray-500">{{ formatAverageStock(item.avgStock) }}</td>
             <td class="px-5 py-3.5 text-gray-500">{{ item.safe.toLocaleString() }}</td>
             <td class="px-5 py-3.5">
               <span class="text-xs font-bold px-2 py-0.5 rounded"
@@ -78,7 +80,7 @@
             </td>
           </tr>
           <tr v-if="filteredItems.length === 0">
-            <td colspan="6" class="px-5 py-12 text-center text-gray-400 text-sm">조회된 재고가 없습니다.</td>
+            <td colspan="7" class="px-5 py-12 text-center text-gray-400 text-sm">조회된 재고가 없습니다.</td>
           </tr>
         </tbody>
       </table>
@@ -173,6 +175,7 @@ const statusFilters = [
 const items = ref([
   {
     code: 'C100', name: '닭고기(생닭)', store: '한화빌딩점', safe: 60,
+    avgStock: 82,
     lots: [
       { expiry: '2026-04-22', qty: 38 },
       { expiry: '2026-04-25', qty: 50 },
@@ -180,6 +183,7 @@ const items = ref([
   },
   {
     code: 'C110', name: '순살 정육', store: '한화빌딩점', safe: 40,
+    avgStock: 36,
     lots: [
       { expiry: '2026-04-18', qty: 12 },
       { expiry: '2026-04-20', qty: 22 },
@@ -187,6 +191,7 @@ const items = ref([
   },
   {
     code: 'C100', name: '닭고기(생닭)', store: '여의도역점', safe: 65,
+    avgStock: 59,
     lots: [
       { expiry: '2026-04-19', qty: 20 },
       { expiry: '2026-04-21', qty: 32 },
@@ -194,14 +199,17 @@ const items = ref([
   },
   {
     code: 'C200', name: '튀김가루', store: '판교테크노밸리점', safe: 25,
+    avgStock: 24,
     lots: [{ expiry: '2026-07-10', qty: 26 }],
   },
   {
     code: 'C210', name: '양념소스', store: '한화빌딩점', safe: 20,
+    avgStock: 19,
     lots: [{ expiry: '2026-05-02', qty: 17 }],
   },
   {
     code: 'C220', name: '핫양념소스', store: '여의도역점', safe: 12,
+    avgStock: 9,
     lots: [
       { expiry: '2026-04-19', qty: 5 },
       { expiry: '2026-04-22', qty: 3 },
@@ -209,6 +217,7 @@ const items = ref([
   },
   {
     code: 'C300', name: '치즈볼(냉동)', store: '부산센텀점', safe: 70,
+    avgStock: 88,
     lots: [
       { expiry: '2026-06-05', qty: 40 },
       { expiry: '2026-06-10', qty: 56 },
@@ -216,14 +225,17 @@ const items = ref([
   },
   {
     code: 'C310', name: '감자튀김(냉동)', store: '판교테크노밸리점', safe: 50,
+    avgStock: 47,
     lots: [{ expiry: '2026-06-18', qty: 41 }],
   },
   {
     code: 'C500', name: '치킨 박스(대)', store: '한화빌딩점', safe: 300,
+    avgStock: 410,
     lots: [{ expiry: null, qty: 420 }],
   },
   {
     code: 'C510', name: '소스컵/뚜껑 세트', store: '부산센텀점', safe: 400,
+    avgStock: null,
     lots: [
       { expiry: null, qty: 200 },
       { expiry: null, qty: 310 },
@@ -233,6 +245,13 @@ const items = ref([
 
 function totalStock(item) {
   return (item.lots ?? []).reduce((s, l) => s + l.qty, 0)
+}
+
+function formatAverageStock(value) {
+  if (value === null || value === undefined || value === '') return '-'
+  const numeric = Number(value)
+  if (!Number.isFinite(numeric)) return '-'
+  return Math.round(numeric).toLocaleString()
 }
 
 function fifoLots(item) {

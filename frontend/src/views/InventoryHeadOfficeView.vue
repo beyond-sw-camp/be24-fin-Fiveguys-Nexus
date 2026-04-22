@@ -15,7 +15,7 @@
 
     <div class="flex gap-3 items-center flex-wrap">
       <select v-model="filterWarehouse"
-        class="px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none bg-white">
+        class="px-3 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none bg-white">
         <option value="">전체 창고</option>
         <option>본사 창고</option>
       </select>
@@ -23,7 +23,7 @@
         <button v-for="f in statusFilters" :key="f.value"
           type="button"
           @click="filterStatus = f.value"
-          class="px-3 py-2 text-sm font-semibold border transition-colors cursor-pointer"
+          class="px-3 py-1.5 text-sm font-semibold border rounded-lg transition-colors cursor-pointer"
           :class="filterStatus === f.value
             ? 'bg-[#F37321] text-white border-[#F37321]'
             : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'">

@@ -30,22 +30,22 @@
         <h1 class="text-xl font-bold text-gray-900 tracking-tight">매출 정산 내역</h1>
 
         <div class="flex gap-2 mt-3">
-          <select v-model="salesYear" class="px-3 py-2 rounded border border-gray-200 text-sm bg-white">
+          <select v-model="salesYear" class="px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white">
             <option value="">년도</option>
             <option v-for="y in years" :key="y">{{ y }}</option>
           </select>
 
-          <select v-model="salesMonth" class="px-3 py-2 rounded border border-gray-200 text-sm bg-white">
+          <select v-model="salesMonth" class="px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white">
             <option value="">월</option>
             <option v-for="m in months" :key="m">{{ m }}</option>
           </select>
 
-          <select v-model="salesWeek" class="px-3 py-2 rounded border border-gray-200 text-sm bg-white">
+          <select v-model="salesWeek" class="px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white">
             <option value="">주간</option>
             <option v-for="w in weeks" :key="w" :value="w">{{ w }}주차</option>
           </select>
 
-          <select v-model="salesDay" class="px-3 py-2 rounded border border-gray-200 text-sm bg-white">
+          <select v-model="salesDay" class="px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white">
             <option value="">일</option>
             <option v-for="d in days" :key="d">{{ d }}</option>
           </select>
@@ -115,22 +115,22 @@
         <h1 class="text-xl font-bold text-gray-900 tracking-tight">발주 정산 내역</h1>
 
         <div class="flex gap-2 mt-3">
-          <select v-model="selectedYear" class="px-3 py-2 rounded border border-gray-200 text-sm bg-white">
+          <select v-model="selectedYear" class="px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white">
             <option value="">년도</option>
             <option v-for="y in years" :key="y">{{ y }}</option>
           </select>
 
-          <select v-model="selectedMonth" class="px-3 py-2 rounded border border-gray-200 text-sm bg-white">
+          <select v-model="selectedMonth" class="px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white">
             <option value="">월</option>
             <option v-for="m in months" :key="m">{{ m }}</option>
           </select>
 
-          <select v-model="selectedWeek" class="px-3 py-2 rounded border border-gray-200 text-sm bg-white">
+          <select v-model="selectedWeek" class="px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white">
             <option value="">주간</option>
             <option v-for="w in weeks" :key="w" :value="w">{{ w }}주차</option>
           </select>
 
-          <select v-model="selectedDay" class="px-3 py-2 rounded border border-gray-200 text-sm bg-white">
+          <select v-model="selectedDay" class="px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white">
             <option value="">일</option>
             <option v-for="d in days" :key="d">{{ d }}</option>
           </select>

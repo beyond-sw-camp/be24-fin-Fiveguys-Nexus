@@ -45,7 +45,7 @@
       <div class="flex gap-2 flex-wrap pt-1">
         <button v-for="f in filterOptions" :key="f"
                 @click="currentFilter = f"
-                class="px-3.5 py-1.5 text-sm font-semibold border rounded-md transition-colors cursor-pointer"
+                class="px-3.5 py-1.5 text-sm font-semibold border rounded-lg transition-colors cursor-pointer"
                 :class="currentFilter === f
             ? 'bg-blue-500 text-white border-blue-500 shadow-sm'
             : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'">

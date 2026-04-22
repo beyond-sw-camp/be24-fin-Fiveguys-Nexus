@@ -75,7 +75,7 @@
             <tr v-if="addItemForm?.orderId === order.id" class="bg-blue-50/50 border-t border-blue-100">
               <td class="px-5 py-3" colspan="2">
                 <select v-model="addItemForm.product"
-                  class="w-full px-2 py-1.5 rounded border border-blue-200 text-sm outline-none focus:border-blue-400 bg-white">
+                  class="w-full px-2 py-1.5 rounded-lg border border-blue-200 text-sm outline-none focus:border-blue-400 bg-white">
                   <option value="">품목 선택</option>
                   <option v-for="p in availableProducts(order)" :key="p" :value="p">{{ p }}</option>
                 </select>

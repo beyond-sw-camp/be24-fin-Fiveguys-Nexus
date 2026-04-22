@@ -226,48 +226,43 @@
       <div class="absolute inset-0 bg-black/40 " @click="showIngredientModal = false"></div>
       <div class="relative bg-white rounded-xl w-full max-w-lg border border-gray-200 shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
 
-        <div class="px-7 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
           <div>
-            <h3 class="font-bold text-gray-900 text-lg">{{ selectedMenu?.name }}</h3>
-            <p class="text-xs text-gray-400 mt-0.5">{{selectedMenu?.id}}</p>
+            <h3 class="font-bold text-gray-900">{{ selectedMenu?.name }}</h3>
+            <p class="text-xs text-gray-400 font-mono mt-0.5">{{ selectedMenu?.id }}</p>
           </div>
-          <div class="flex items-center gap-4">
-            <!-- 추가 요청 사항: 재료 추가 버튼 -->
-
-            <button @click="showIngredientModal = false" class="text-gray-400 hover:text-gray-600 font-bold text-xl cursor-pointer">✕</button>
-          </div>
+          <button @click="showIngredientModal = false" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
         </div>
 
-        <div class="p-7">
+        <div class="p-6">
           <table class="w-full text-sm text-left">
             <thead>
-            <tr class="border-b border-gray-100 bg-gray-50/60">
-              <th class="px-3 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">재료번호</th>
-              <th class="px-3 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">제품명</th>
-              <th class="px-3 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">소요량</th>
-              <th class="px-3 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">단위</th>
+            <tr class="border-b border-gray-200 bg-gray-50">
+              <th class="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">재료번호</th>
+              <th class="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">제품명</th>
+              <th class="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">소요량</th>
+              <th class="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">단위</th>
             </tr>
             </thead>
-            <tbody class="divide-y divide-gray-50">
+            <tbody class="divide-y divide-gray-100">
             <tr v-for="(item, idx) in selectedMenu?.ingredients" :key="idx"
-                class="hover:bg-gray-50/80 transition-colors">
-              <td class="px-3 py-3 font-mono text-xs text-gray-400">R-{{ String(idx + 1).padStart(3, '0') }}</td>
-              <td class="px-3 py-3 font-semibold text-gray-800">{{ getProductName(item.productId) }}</td>
-              <td class="px-3 py-3 text-right text-gray-700 font-mono">{{ item.amount }}</td>
-              <td class="px-3 py-3 text-gray-500">{{ item.unit }}</td>
+                class="hover:bg-gray-50/50 transition-colors">
+              <td class="px-4 py-3 font-mono text-xs text-gray-400">R-{{ String(idx + 1).padStart(3, '0') }}</td>
+              <td class="px-4 py-3 font-semibold text-gray-800">{{ getProductName(item.productId) }}</td>
+              <td class="px-4 py-3 text-right text-gray-700 font-mono">{{ item.amount }}</td>
+              <td class="px-4 py-3 text-gray-500">{{ item.unit }}</td>
             </tr>
             <tr v-if="!selectedMenu?.ingredients?.length">
-              <td colspan="4" class="px-3 py-8 text-center text-gray-400 text-sm">등록된 재료가 없습니다.</td>
+              <td colspan="4" class="px-4 py-8 text-center text-gray-400 text-sm">등록된 재료가 없습니다.</td>
             </tr>
             </tbody>
           </table>
-
-          <div class="mt-5 flex justify-end">
-            <button @click="showIngredientModal = false"
-                    class="px-5 py-2.5 rounded-lg bg-gray-100 text-gray-600 text-sm font-bold hover:bg-gray-200 transition-colors cursor-pointer">
-              닫기
-            </button>
-          </div>
+        </div>
+        <div class="px-6 py-4 border-t border-gray-100 flex justify-end">
+          <button @click="showIngredientModal = false"
+                  class="px-4 py-2 text-sm font-semibold text-gray-600 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer">
+            닫기
+          </button>
         </div>
       </div>
     </div>

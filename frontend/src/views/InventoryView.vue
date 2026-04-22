@@ -91,10 +91,10 @@
         aria-modal="true"
         :aria-labelledby="detailTitleId"
         @click.self="closeDetail">
-        <div class="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-[85vh] overflow-hidden flex flex-col border border-gray-200">
-          <div class="flex items-start justify-between gap-3 px-5 py-4 border-b border-gray-200 bg-gray-50">
+        <div class="relative bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[85vh] overflow-hidden flex flex-col border border-gray-200">
+          <div class="flex items-start justify-between gap-3 px-6 py-4 border-b border-gray-200">
             <div class="min-w-0">
-              <p :id="detailTitleId" class="text-lg font-bold text-gray-900 truncate">{{ detailItem.name }}</p>
+              <p :id="detailTitleId" class="font-bold text-gray-900 truncate">{{ detailItem.name }}</p>
               <p class="text-xs font-mono text-gray-500 mt-0.5">{{ detailItem.code }} · {{ detailItem.store }}</p>
               <p class="text-xs text-gray-500 mt-2">
                 합계 <span class="font-semibold text-gray-800">{{ totalStock(detailItem).toLocaleString() }}</span>
@@ -107,7 +107,7 @@
               ✕
             </button>
           </div>
-          <div class="overflow-y-auto">
+          <div class="overflow-y-auto flex-1">
             <table class="w-full text-sm text-left">
               <thead>
                 <tr class="border-b border-gray-100 bg-white sticky top-0">
@@ -127,6 +127,10 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+          <div class="px-6 py-4 border-t border-gray-100 flex justify-end">
+            <button type="button" @click="closeDetail"
+              class="px-4 py-2 text-sm font-semibold text-gray-600 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer">닫기</button>
           </div>
         </div>
       </div>

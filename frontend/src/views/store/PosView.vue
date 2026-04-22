@@ -235,7 +235,7 @@
           </div>
           <table class="w-full text-sm">
             <thead class="bg-gray-50 text-xs text-gray-500 uppercase">
-              <tr>
+              <tr class="border-b border-gray-200">
                 <th class="px-5 py-3 text-left">수단</th>
                 <th class="px-5 py-3 text-center">비율</th>
                 <th class="px-5 py-3 text-right">금액</th>
@@ -269,7 +269,7 @@
           <div class="overflow-auto flex-1">
             <table class="w-full text-sm">
               <thead class="bg-gray-50 text-xs text-gray-500 uppercase sticky top-0">
-                <tr>
+                <tr class="border-b border-gray-200">
                   <th class="px-6 py-3 text-left">결제 시간</th>
                   <th class="px-6 py-3 text-left">주문 내역</th>
                   <th class="px-6 py-3 text-center">결제 수단</th>

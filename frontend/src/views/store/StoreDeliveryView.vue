@@ -45,7 +45,7 @@
       <div class="flex gap-2 flex-wrap pt-1">
         <button v-for="f in filterOptions" :key="f"
                 @click="currentFilter = f"
-                class="px-3.5 py-1.5 text-sm font-semibold border rounded-md transition-colors"
+                class="px-3.5 py-1.5 text-sm font-semibold border rounded-lg transition-colors cursor-pointer"
                 :class="currentFilter === f
             ? 'bg-blue-500 text-white border-blue-500 shadow-sm'
             : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'">
@@ -118,12 +118,10 @@
     </div>
 
     <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm" @click="closeModal">
-      <div class="bg-white rounded-lg shadow-xl w-full max-w-sm overflow-hidden" @click.stop>
-        <div class="px-5 py-4 border-b border-red-100 bg-red-50 flex justify-between items-center">
+      <div class="bg-white rounded-xl border border-gray-200 shadow-xl w-full max-w-sm overflow-hidden" @click.stop>
+        <div class="px-6 py-4 border-b border-red-100 bg-red-50 flex justify-between items-center">
           <h3 class="text-base font-bold text-red-700">배송 지연 안내</h3>
-          <button @click="closeModal" class="text-red-400 hover:text-red-600 transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-          </button>
+          <button @click="closeModal" class="text-red-400 hover:text-red-600 cursor-pointer">✕</button>
         </div>
         <div class="p-6 space-y-4">
           <div class="flex flex-col gap-1">
@@ -141,8 +139,8 @@
             </div>
           </div>
         </div>
-        <div class="px-6 py-4 bg-gray-50 flex justify-end border-t border-gray-100">
-          <button @click="closeModal" class="px-4 py-2 bg-blue-500 text-white text-sm font-bold hover:bg-blue-600 rounded transition-colors shadow-sm">
+        <div class="px-6 py-4 border-t border-gray-100 flex justify-end">
+          <button @click="closeModal" class="px-4 py-2 bg-blue-500 text-white text-sm font-bold hover:bg-blue-600 rounded cursor-pointer transition-colors shadow-sm">
             확인
           </button>
         </div>

@@ -86,23 +86,23 @@
         </div>
         <table class="w-full text-sm">
           <thead>
-            <tr class="border-b border-gray-100 bg-gray-50">
-              <th class="px-5 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">품목</th>
-              <th class="px-5 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wider">제안 수량</th>
-              <th class="px-5 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wider">금액</th>
-              <th class="px-5 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wider">상태</th>
+            <tr class="border-b border-gray-200 bg-gray-50">
+              <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">품목</th>
+              <th class="px-5 py-3 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wider">제안 수량</th>
+              <th class="px-5 py-3 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wider">금액</th>
+              <th class="px-5 py-3 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wider">상태</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-50">
+          <tbody class="divide-y divide-gray-100">
             <tr v-for="o in pendingOrders" :key="o.id"
               class="hover:bg-gray-50/50 cursor-pointer"
               role="button" tabindex="0"
               @click="router.push('/store-order')"
               @keydown.enter="router.push('/store-order')">
-              <td class="px-5 py-3 font-semibold text-gray-800">{{ o.product }}</td>
-              <td class="px-5 py-3 text-right text-gray-600">{{ o.qty.toLocaleString() }}개</td>
-              <td class="px-5 py-3 text-right font-semibold text-gray-700">{{ (o.qty * o.unitPrice).toLocaleString() }}원</td>
-              <td class="px-5 py-3 text-right">
+              <td class="px-5 py-3.5 font-semibold text-gray-800">{{ o.product }}</td>
+              <td class="px-5 py-3.5 text-right text-gray-600">{{ o.qty.toLocaleString() }}개</td>
+              <td class="px-5 py-3.5 text-right font-semibold text-gray-700">₩ {{ (o.qty * o.unitPrice).toLocaleString() }}</td>
+              <td class="px-5 py-3.5 text-right">
                 <span class="text-xs font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-200">제안중</span>
               </td>
             </tr>
@@ -117,23 +117,23 @@
         </div>
         <table class="w-full text-sm">
           <thead>
-            <tr class="border-b border-gray-100 bg-gray-50">
-              <th class="px-5 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">품목</th>
-              <th class="px-5 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wider">현재 재고</th>
-              <th class="px-5 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wider">최소 재고</th>
-              <th class="px-5 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wider">상태</th>
+            <tr class="border-b border-gray-200 bg-gray-50">
+              <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">품목</th>
+              <th class="px-5 py-3 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wider">현재 재고</th>
+              <th class="px-5 py-3 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wider">최소 재고</th>
+              <th class="px-5 py-3 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wider">상태</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-50">
+          <tbody class="divide-y divide-gray-100">
             <tr v-for="w in warnings" :key="w.product"
               class="hover:bg-gray-50/50 cursor-pointer"
               role="button" tabindex="0"
               @click="router.push('/store-inventory')"
               @keydown.enter="router.push('/store-inventory')">
-              <td class="px-5 py-3 font-semibold text-gray-800">{{ w.product }}</td>
-              <td class="px-5 py-3 text-right font-bold text-red-600">{{ w.current }}</td>
-              <td class="px-5 py-3 text-right text-gray-400">{{ w.min }}</td>
-              <td class="px-5 py-3 text-right">
+              <td class="px-5 py-3.5 font-semibold text-gray-800">{{ w.product }}</td>
+              <td class="px-5 py-3.5 text-right font-bold text-red-600">{{ w.current }}</td>
+              <td class="px-5 py-3.5 text-right text-gray-400">{{ w.min }}</td>
+              <td class="px-5 py-3.5 text-right">
                 <span class="text-xs font-bold px-2 py-0.5 rounded"
                   :class="w.danger ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-orange-50 text-orange-600 border border-orange-200'">
                   {{ w.danger ? '위험' : '주의' }}

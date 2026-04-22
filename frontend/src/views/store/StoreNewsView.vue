@@ -44,21 +44,19 @@
     <Teleport to="body">
     <div v-if="selectedNews" class="fixed inset-0 z-50 flex items-center justify-center">
       <div class="absolute inset-0 bg-black/40" @click="selectedNews = null"></div>
-      <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col overflow-hidden">
+      <div class="relative bg-white rounded-xl border border-gray-200 shadow-xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
 
         <!-- 모달 헤더 -->
-        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
+        <div class="shrink-0 flex items-center justify-between px-6 py-4 border-b border-gray-200">
           <div class="flex items-center gap-2">
             <Newspaper class="w-4 h-4 text-blue-500" />
             <span class="font-bold text-gray-900 text-sm">{{ selectedNews.summary_title }}</span>
           </div>
-          <button @click="selectedNews = null" class="text-gray-400 hover:text-gray-700 transition-colors">
-            <X class="w-5 h-5" />
-          </button>
+          <button @click="selectedNews = null" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
         </div>
 
         <!-- 모달 내용 -->
-        <div class="overflow-y-auto px-6 py-5 flex flex-col gap-4">
+        <div class="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-4">
           <div class="flex items-center gap-2">
             <span
               class="text-[11px] font-semibold px-2 py-0.5 rounded-full border"
@@ -102,6 +100,10 @@
             </div>
           </div>
         </div>
+        <div class="shrink-0 px-6 py-4 border-t border-gray-100 flex justify-end">
+          <button @click="selectedNews = null"
+            class="px-4 py-2 text-sm font-semibold text-gray-600 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer">닫기</button>
+        </div>
       </div>
     </div>
     </Teleport>
@@ -110,7 +112,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { Newspaper, Lightbulb, ExternalLink, X } from 'lucide-vue-next'
+import { Newspaper, Lightbulb, ExternalLink } from 'lucide-vue-next'
 
 const selectedNews = ref(null)
 

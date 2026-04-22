@@ -6,7 +6,7 @@
 
     <div class="flex border-b border-gray-200">
       <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id"
-        class="px-5 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors"
+        class="px-5 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors cursor-pointer"
         :class="activeTab === tab.id ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'">
         {{ tab.label }}
         <span v-if="tab.count > 0" class="ml-1.5 text-xs font-bold px-1.5 py-0.5 rounded"
@@ -26,48 +26,52 @@
           </div>
           <div class="flex gap-2">
             <button @click="openPaymentModal(order)"
-              class="px-4 py-2 bg-blue-500 text-white text-sm font-bold hover:bg-blue-600 rounded transition-colors">
+              class="px-4 py-2 bg-blue-500 text-white text-sm font-bold hover:bg-blue-600 rounded-lg transition-colors cursor-pointer">
               전체 확정
             </button>
             <button @click="openAddItemForm(order)"
-              class="px-4 py-2 border border-blue-200 text-blue-500 bg-blue-50 text-sm font-semibold hover:bg-blue-100 rounded transition-colors">
+              class="px-4 py-2 border border-blue-200 text-blue-500 bg-blue-50 text-sm font-semibold hover:bg-blue-100 rounded-lg transition-colors cursor-pointer">
               + 품목 추가
             </button>
             <button @click="rejectOrder(order)"
-              class="px-4 py-2 border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 rounded">
+              class="px-4 py-2 border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 rounded-lg cursor-pointer">
               거절
             </button>
           </div>
         </div>
         <table class="w-full text-sm">
           <thead>
-            <tr class="border-b border-gray-100 bg-gray-50">
-              <th class="px-5 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">품목명</th>
-              <th class="px-5 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">현재 재고</th>
-              <th class="px-5 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">최소 재고</th>
-              <th class="px-5 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">제안 수량</th>
-              <th class="px-5 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">수정 수량</th>
-              <th class="px-5 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider"></th>
+            <tr class="border-b border-gray-200 bg-gray-50">
+              <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">품목명</th>
+              <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">현재 재고</th>
+              <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">최소 재고</th>
+              <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">제안 수량</th>
+              <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">수정 수량</th>
+              <th class="px-5 py-3 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wider">금액</th>
+              <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider"></th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
             <tr v-for="item in order.items" :key="item.product" class="hover:bg-gray-50/50">
-              <td class="px-5 py-3 font-semibold text-gray-900">{{ item.product }}</td>
-              <td class="px-5 py-3 font-bold text-red-500">{{ item.current }}<span class="text-xs font-normal ml-0.5">{{ PRODUCT_UNIT[item.product] ?? '' }}</span></td>
-              <td class="px-5 py-3 text-gray-500">{{ item.min }}<span class="text-xs ml-0.5">{{ PRODUCT_UNIT[item.product] ?? '' }}</span></td>
-              <td class="px-5 py-3 font-semibold text-blue-600">{{ item.suggested }}<span class="text-xs font-normal ml-0.5">{{ PRODUCT_UNIT[item.product] ?? '' }}</span></td>
-              <td class="px-5 py-3">
+              <td class="px-5 py-3.5 font-semibold text-gray-900">{{ item.product }}</td>
+              <td class="px-5 py-3.5 font-bold text-red-500">{{ item.current }}<span class="text-xs font-normal ml-0.5">{{ PRODUCT_UNIT[item.product] ?? '' }}</span></td>
+              <td class="px-5 py-3.5 text-gray-500">{{ item.min }}<span class="text-xs ml-0.5">{{ PRODUCT_UNIT[item.product] ?? '' }}</span></td>
+              <td class="px-5 py-3.5 font-semibold text-blue-600">{{ item.suggested }}<span class="text-xs font-normal ml-0.5">{{ PRODUCT_UNIT[item.product] ?? '' }}</span></td>
+              <td class="px-5 py-3.5">
                 <div class="flex items-center gap-1.5">
                   <input v-model.number="item.adjusted" type="number" min="0"
-                    class="w-20 px-2 py-1.5 rounded border border-gray-200 text-sm focus:border-blue-400 outline-none" />
+                    class="w-20 px-2 py-1.5 rounded-lg border border-gray-200 text-sm focus:border-blue-400 outline-none" />
                   <span class="text-xs text-gray-400 font-medium">{{ PRODUCT_UNIT[item.product] ?? '' }}</span>
                 </div>
               </td>
-              <td class="px-5 py-3">
+              <td class="px-5 py-3.5 text-right font-semibold text-gray-700">
+                ₩ {{ ((item.adjusted || 0) * (PRODUCT_PRICES[item.product] ?? 0)).toLocaleString() }}
+              </td>
+              <td class="px-5 py-3.5">
                 <button
                   @click="removeOrderItem(order, item)"
                   :disabled="order.items.length <= 1"
-                  class="px-3 py-1.5 text-xs font-semibold rounded border border-red-200 text-red-500 bg-red-50 hover:bg-red-500 hover:text-white hover:cursor-pointer transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                  class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-red-200 text-red-500 bg-red-50 hover:bg-red-500 hover:text-white hover:cursor-pointer transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
                   삭제
                 </button>
               </td>
@@ -75,7 +79,7 @@
             <tr v-if="addItemForm?.orderId === order.id" class="bg-blue-50/50 border-t border-blue-100">
               <td class="px-5 py-3" colspan="2">
                 <select v-model="addItemForm.product"
-                  class="w-full px-2 py-1.5 rounded border border-blue-200 text-sm outline-none focus:border-blue-400 bg-white">
+                  class="w-full px-2 py-1.5 rounded-lg border border-blue-200 text-sm outline-none focus:border-blue-400 bg-white">
                   <option value="">품목 선택</option>
                   <option v-for="p in availableProducts(order)" :key="p" :value="p">{{ p }}</option>
                 </select>
@@ -84,22 +88,33 @@
               <td class="px-5 py-3 text-xs text-gray-400">—</td>
               <td class="px-5 py-3">
                 <input v-model.number="addItemForm.qty" type="number" min="1" placeholder="수량"
-                  class="w-24 px-2 py-1.5 rounded border border-blue-200 text-sm outline-none focus:border-blue-400" />
+                  class="w-24 px-2 py-1.5 rounded-lg border border-blue-200 text-sm outline-none focus:border-blue-400" />
               </td>
+              <td class="px-5 py-3 text-xs text-gray-400 text-right">—</td>
               <td class="px-5 py-3">
                 <div class="flex gap-1.5">
                   <button @click="confirmAddItem(order)"
-                    class="px-3 py-1.5 text-xs font-semibold rounded border border-blue-300 text-blue-600 bg-white hover:bg-blue-500 hover:text-white hover:cursor-pointer transition-colors">
+                    class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-blue-300 text-blue-600 bg-white hover:bg-blue-500 hover:text-white hover:cursor-pointer transition-colors">
                     추가
                   </button>
                   <button @click="addItemForm = null"
-                    class="px-3 py-1.5 text-xs font-semibold rounded border border-gray-200 text-gray-500 bg-white hover:bg-gray-100 hover:cursor-pointer transition-colors">
+                    class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-gray-200 text-gray-500 bg-white hover:bg-gray-100 hover:cursor-pointer transition-colors">
                     취소
                   </button>
                 </div>
               </td>
             </tr>
           </tbody>
+          <tfoot class="border-t border-gray-200 bg-gray-50/60">
+            <tr>
+              <td class="px-5 py-3 text-left text-xs font-bold text-gray-500">합계</td>
+              <td colspan="4"></td>
+              <td class="px-5 py-3 text-right font-black text-blue-600">
+                ₩ {{ orderTotal(order).toLocaleString() }}
+              </td>
+              <td></td>
+            </tr>
+          </tfoot>
         </table>
       </div>
 
@@ -140,7 +155,7 @@
                 <span v-if="h.items.length > 1" class="text-xs text-gray-400 font-normal"> 외 {{ h.items.length - 1 }}건</span>
               </td>
               <td class="px-5 py-3.5 font-semibold text-gray-700">
-                {{ h.items.reduce((s, i) => s + (PRODUCT_PRICES[i.product] ?? 0) * i.qty, 0).toLocaleString() }}원
+                ₩ {{ h.items.reduce((s, i) => s + (PRODUCT_PRICES[i.product] ?? 0) * i.qty, 0).toLocaleString() }}
               </td>
               <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ h.date }}</td>
               <td class="px-5 py-3.5">
@@ -166,7 +181,7 @@
             <h3 class="font-bold text-gray-900">발주 상세</h3>
             <p class="text-xs text-gray-400 font-mono mt-0.5">{{ selectedHistory?.id }}</p>
           </div>
-          <button @click="showHistoryDetail = false" class="text-gray-400 hover:text-gray-600">✕</button>
+          <button @click="showHistoryDetail = false" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
         </div>
         <div v-if="selectedHistory" class="p-6 space-y-4 text-sm">
           <div class="grid grid-cols-2 gap-4">
@@ -204,15 +219,15 @@
                   <tr v-for="item in selectedHistory.items" :key="item.product">
                     <td class="px-4 py-2.5 text-gray-800 font-semibold">{{ item.product }}</td>
                     <td class="px-4 py-2.5 text-right text-gray-600">{{ item.qty.toLocaleString() }}개</td>
-                    <td class="px-4 py-2.5 text-right text-xs text-gray-500">{{ (PRODUCT_PRICES[item.product] ?? 0).toLocaleString() }}원</td>
-                    <td class="px-4 py-2.5 text-right font-bold text-blue-600">{{ ((PRODUCT_PRICES[item.product] ?? 0) * item.qty).toLocaleString() }}원</td>
+                    <td class="px-4 py-2.5 text-right text-xs text-gray-500">₩ {{ (PRODUCT_PRICES[item.product] ?? 0).toLocaleString() }}</td>
+                    <td class="px-4 py-2.5 text-right font-bold text-blue-600">₩ {{ ((PRODUCT_PRICES[item.product] ?? 0) * item.qty).toLocaleString() }}</td>
                   </tr>
                 </tbody>
                 <tfoot class="bg-gray-50 border-t border-gray-200">
                   <tr>
                     <td colspan="3" class="px-4 py-2.5 text-right text-xs font-bold text-gray-500">합계</td>
                     <td class="px-4 py-2.5 text-right font-black text-blue-600">
-                      {{ selectedHistory.items.reduce((s, i) => s + (PRODUCT_PRICES[i.product] ?? 0) * i.qty, 0).toLocaleString() }}원
+                      ₩ {{ selectedHistory.items.reduce((s, i) => s + (PRODUCT_PRICES[i.product] ?? 0) * i.qty, 0).toLocaleString() }}
                     </td>
                   </tr>
                 </tfoot>
@@ -222,7 +237,7 @@
         </div>
         <div class="px-6 py-4 border-t border-gray-100 flex justify-end">
           <button @click="showHistoryDetail = false"
-            class="px-4 py-2 text-sm font-semibold text-gray-600 border border-gray-200 rounded hover:bg-gray-50">닫기</button>
+            class="px-4 py-2 text-sm font-semibold text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">닫기</button>
         </div>
       </div>
     </div>
@@ -231,7 +246,7 @@
       <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-modal-up">
         <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
           <h2 class="text-lg font-bold text-gray-900">결제 및 승인</h2>
-          <button @click="isModalOpen = false" class="text-gray-400 hover:text-gray-600"><X class="w-5 h-5"/></button>
+          <button @click="isModalOpen = false" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
         </div>
 
         <div class="p-6 space-y-6">
@@ -247,7 +262,7 @@
                   <p class="text-[10px] text-gray-500 mt-1">현대카드 (****-1234)</p>
                 </div>
               </div>
-              <button class="flex-1 border border-dashed border-gray-300 rounded-lg p-3 text-gray-400 text-xs font-bold hover:bg-gray-50">+ 신규 등록</button>
+              <button class="flex-1 border border-dashed border-gray-300 rounded-lg p-3 text-gray-400 text-xs font-bold hover:bg-gray-50 cursor-pointer">+ 신규 등록</button>
             </div>
           </section>
 
@@ -255,12 +270,12 @@
             <div class="space-y-2 pb-3 border-b border-gray-200">
               <div v-for="item in selectedOrder?.items" :key="item.product" class="flex justify-between text-xs">
                 <span class="text-gray-500">{{ item.product }} ({{ item.adjusted }}개 × {{ (PRODUCT_PRICES[item.product] ?? 0).toLocaleString() }}원)</span>
-                <span class="font-medium text-gray-900">₩{{ ((item.adjusted * (PRODUCT_PRICES[item.product] ?? 0))).toLocaleString() }}</span>
+                <span class="font-medium text-gray-900">₩ {{ ((item.adjusted || 0) * (PRODUCT_PRICES[item.product] ?? 0)).toLocaleString() }}</span>
               </div>
             </div>
             <div class="flex justify-between items-center pt-3">
               <span class="text-sm font-bold text-gray-900">총 결제 금액</span>
-              <span class="text-lg font-black text-blue-600">₩{{ totalPrice.toLocaleString() }}</span>
+              <span class="text-lg font-black text-blue-600">₩ {{totalPrice.toLocaleString() }}</span>
             </div>
           </section>
 
@@ -272,8 +287,8 @@
         </div>
 
         <div class="px-6 py-4 bg-gray-50 flex gap-2">
-          <button @click="isModalOpen = false" class="flex-1 py-3 bg-white border border-gray-200 text-gray-600 font-bold rounded-lg text-sm">취소</button>
-          <button @click="processPayment" class="flex-2 py-3 bg-blue-600 text-white font-bold rounded-lg text-sm flex items-center justify-center gap-2">
+          <button @click="isModalOpen = false" class="flex-1 py-3 bg-white border border-gray-200 text-gray-600 font-bold rounded-lg text-sm cursor-pointer">취소</button>
+          <button @click="processPayment" class="flex-2 py-3 bg-blue-600 text-white font-bold rounded-lg text-sm flex items-center justify-center gap-2 cursor-pointer">
             <CreditCard class="w-4 h-4"/> 결제 및 승인 요청
           </button>
         </div>
@@ -284,7 +299,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { X, ClipboardList, CreditCard } from 'lucide-vue-next'
+import { ClipboardList, CreditCard } from 'lucide-vue-next'
 
 const PRODUCT_UNIT = {
   '생닭(1kg)':      'kg',
@@ -436,6 +451,10 @@ function confirmAddItem(order) {
 function removeOrderItem(order, item) {
   const idx = order.items.indexOf(item)
   if (idx > -1) order.items.splice(idx, 1)
+}
+
+function orderTotal(order) {
+  return order.items.reduce((s, item) => s + (item.adjusted || 0) * (PRODUCT_PRICES[item.product] ?? 0), 0)
 }
 
 function rejectOrder(order) {

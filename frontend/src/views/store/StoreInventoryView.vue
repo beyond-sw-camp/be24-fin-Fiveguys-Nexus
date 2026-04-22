@@ -53,8 +53,8 @@
         aria-modal="true"
         :aria-labelledby="detailTitleId"
         @click.self="closeDetail">
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-lg border border-gray-100 max-h-[90vh] flex flex-col overflow-hidden">
-          <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center shrink-0 bg-gray-50/80">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-lg border border-gray-200 max-h-[85vh] flex flex-col overflow-hidden">
+          <div class="shrink-0 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
             <div class="min-w-0 pr-2">
               <h2 :id="detailTitleId" class="text-base font-bold text-gray-900 truncate">{{ detailItem.name }}</h2>
               <p class="text-xs font-mono text-gray-500 mt-0.5">{{ detailItem.code }}</p>
@@ -62,12 +62,10 @@
                 합계 <span class="font-semibold text-gray-800">{{ totalStock(detailItem).toLocaleString() }}</span>
               </p>
             </div>
-            <button type="button" class="text-gray-400 hover:text-gray-600 p-1 rounded-md hover:bg-white shrink-0" aria-label="닫기" @click="closeDetail">
-              <X class="w-5 h-5" />
-            </button>
+            <button type="button" class="text-gray-400 hover:text-gray-600 cursor-pointer" aria-label="닫기" @click="closeDetail">✕</button>
           </div>
 
-          <div class="p-5 space-y-4 overflow-y-auto flex-1">
+          <div class="p-6 space-y-4 overflow-y-auto flex-1">
             <div>
               <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">최소 재고</p>
               <p class="text-sm text-gray-700">{{ detailItem.min.toLocaleString() }}</p>
@@ -108,15 +106,15 @@
             </div>
           </div>
 
-          <div class="flex gap-2 p-5 pt-0 shrink-0">
-            <button type="button" class="flex-1 py-2.5 rounded-lg border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50" @click="closeDetail">
-              닫기
-            </button>
+          <div class="shrink-0 px-6 py-4 border-t border-gray-100 flex justify-end gap-2">
             <button type="button"
               class="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white bg-blue-500 hover:bg-blue-600 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed"
               :disabled="!hasDraftLotChanges"
               @click="applyLotAdjustments">
               lot 보정 반영
+            </button>
+            <button type="button" class="flex-1 py-2.5 rounded-lg border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50" @click="closeDetail">
+              닫기
             </button>
           </div>
         </div>

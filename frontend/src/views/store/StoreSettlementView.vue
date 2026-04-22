@@ -4,6 +4,7 @@
     <div class="flex gap-6 border-b border-gray-200 pb-2">
       <button
         @click="activeTab = 'sales'"
+        class="cursor-pointer"
         :class="activeTab === 'sales'
           ? 'text-blue-600 font-bold border-b-2 border-blue-600 pb-2'
           : 'text-gray-400'"
@@ -13,6 +14,7 @@
 
       <button
         @click="activeTab = 'order'"
+        class="cursor-pointer"
         :class="activeTab === 'order'
           ? 'text-blue-600 font-bold border-b-2 border-blue-600 pb-2'
           : 'text-gray-400'"
@@ -28,22 +30,22 @@
         <h1 class="text-xl font-bold text-gray-900 tracking-tight">매출 정산 내역</h1>
 
         <div class="flex gap-2 mt-3">
-          <select v-model="salesYear" class="px-3 py-2 rounded border border-gray-200 text-sm bg-white">
+          <select v-model="salesYear" class="px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white">
             <option value="">년도</option>
             <option v-for="y in years" :key="y">{{ y }}</option>
           </select>
 
-          <select v-model="salesMonth" class="px-3 py-2 rounded border border-gray-200 text-sm bg-white">
+          <select v-model="salesMonth" class="px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white">
             <option value="">월</option>
             <option v-for="m in months" :key="m">{{ m }}</option>
           </select>
 
-          <select v-model="salesWeek" class="px-3 py-2 rounded border border-gray-200 text-sm bg-white">
+          <select v-model="salesWeek" class="px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white">
             <option value="">주간</option>
             <option v-for="w in weeks" :key="w" :value="w">{{ w }}주차</option>
           </select>
 
-          <select v-model="salesDay" class="px-3 py-2 rounded border border-gray-200 text-sm bg-white">
+          <select v-model="salesDay" class="px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white">
             <option value="">일</option>
             <option v-for="d in days" :key="d">{{ d }}</option>
           </select>
@@ -56,7 +58,7 @@
                 {{ salesYear }}-{{ salesMonth }} 총 매출액
               </p>
               <p class="text-2xl font-black text-gray-900 mt-2">
-                ₩{{ salesTotal.toLocaleString() }}
+                ₩ {{ salesTotal.toLocaleString() }}
               </p>
             </div>
           </div>
@@ -65,7 +67,7 @@
             <div class="p-5">
               <p class="text-xs font-bold text-gray-400">계산 완료</p>
               <p class="text-2xl font-black text-green-600 mt-2">
-                ₩{{ salesPaid.toLocaleString() }}
+                ₩ {{ salesPaid.toLocaleString() }}
               </p>
             </div>
           </div>
@@ -89,7 +91,7 @@
               <td class="px-5 py-3 text-gray-600">{{ s.count }}건</td>
               <td class="px-5 py-3 text-xs text-gray-400">{{ s.period }}</td>
               <td class="px-5 py-3 font-bold">
-                ₩{{ s.amount.toLocaleString() }}
+                ₩ {{ s.amount.toLocaleString() }}
               </td>
               <td class="px-5 py-3">
                   <span class="text-xs px-2 py-0.5 rounded"
@@ -113,22 +115,22 @@
         <h1 class="text-xl font-bold text-gray-900 tracking-tight">발주 정산 내역</h1>
 
         <div class="flex gap-2 mt-3">
-          <select v-model="selectedYear" class="px-3 py-2 rounded border border-gray-200 text-sm bg-white">
+          <select v-model="selectedYear" class="px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white">
             <option value="">년도</option>
             <option v-for="y in years" :key="y">{{ y }}</option>
           </select>
 
-          <select v-model="selectedMonth" class="px-3 py-2 rounded border border-gray-200 text-sm bg-white">
+          <select v-model="selectedMonth" class="px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white">
             <option value="">월</option>
             <option v-for="m in months" :key="m">{{ m }}</option>
           </select>
 
-          <select v-model="selectedWeek" class="px-3 py-2 rounded border border-gray-200 text-sm bg-white">
+          <select v-model="selectedWeek" class="px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white">
             <option value="">주간</option>
             <option v-for="w in weeks" :key="w" :value="w">{{ w }}주차</option>
           </select>
 
-          <select v-model="selectedDay" class="px-3 py-2 rounded border border-gray-200 text-sm bg-white">
+          <select v-model="selectedDay" class="px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white">
             <option value="">일</option>
             <option v-for="d in days" :key="d">{{ d }}</option>
           </select>
@@ -141,7 +143,7 @@
                 {{ selectedYear }}-{{ selectedMonth }} 총 납부액
               </p>
               <p class="text-2xl font-black text-gray-900 mt-2">
-                ₩{{ totalAmount.toLocaleString() }}
+                ₩ {{ totalAmount.toLocaleString() }}
               </p>
             </div>
           </div>
@@ -150,7 +152,7 @@
             <div class="p-5">
               <p class="text-xs font-bold text-gray-400">납부 완료</p>
               <p class="text-2xl font-black text-green-600 mt-2">
-                ₩{{ paidAmount.toLocaleString() }}
+                ₩ {{ paidAmount.toLocaleString() }}
               </p>
             </div>
           </div>
@@ -176,7 +178,7 @@
               <td class="px-5 py-3 text-gray-600">{{ s.count }}건</td>
               <td class="px-5 py-3 text-xs text-gray-400">{{ s.period }}</td>
               <td class="px-5 py-3 font-bold">
-                ₩{{ s.amount.toLocaleString() }}
+                ₩ {{ s.amount.toLocaleString() }}
               </td>
               <td class="px-5 py-3">
                   <span class="text-xs px-2 py-0.5 rounded"
@@ -189,7 +191,7 @@
               <td class="px-5 py-3.5 text-center">
                 <button
                   type="button"
-                  class="text-gray-300 hover:text-[#F37321] transition-colors"
+                  class="text-gray-300 hover:text-[#F37321] transition-colors cursor-pointer"
                   @click="downloadStatement(s)"
                 >
                   <Download class="w-4 h-4 mx-auto" />

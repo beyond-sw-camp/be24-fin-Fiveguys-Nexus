@@ -89,7 +89,6 @@
       <table class="w-full text-sm text-left">
         <thead>
         <tr class="border-b border-gray-200 bg-gray-50">
-          <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider w-16 text-center">IDX</th>
           <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">지점명</th>
           <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">점주명</th>
           <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">이메일</th>
@@ -104,7 +103,6 @@
             @click="openDetail(store)"
             class="hover:bg-gray-50/50 transition-colors cursor-pointer group"
             :class="{ 'bg-gray-50/40 opacity-70': store.closeDate }">
-          <td class="px-5 py-3.5 text-gray-400 text-xs font-mono text-center">{{ index + 1 }}</td>
           <td class="px-5 py-3.5 font-bold text-gray-900 group-hover:text-[#F37321] transition-colors">
             <div class="flex items-center gap-2">
               {{ store.name }}

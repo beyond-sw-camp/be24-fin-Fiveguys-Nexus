@@ -313,12 +313,10 @@
     <!-- ── 결제 모달 ──────────────────────────────────── -->
     <div v-if="showPaymentModal"
       class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-md border border-gray-100">
-        <div class="border-b border-gray-100 p-5 flex justify-between items-center bg-gray-50 rounded-t-2xl">
+      <div class="bg-white rounded-xl border border-gray-200 shadow-xl w-full max-w-md">
+        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
           <h2 class="text-lg font-bold text-gray-800">결제 수단 선택</h2>
-          <button @click="showPaymentModal = false" class="text-gray-400 hover:text-gray-600 cursor-pointer">
-            <X class="w-5 h-5" />
-          </button>
+          <button @click="showPaymentModal = false" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
         </div>
         <div class="p-8">
           <div class="text-center mb-8">
@@ -344,7 +342,7 @@
     <!-- ── 마감 확인 모달 ─────────────────────────────── -->
     <div v-if="showCloseModal"
       class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm border border-gray-100 text-center p-8">
+      <div class="bg-white rounded-xl border border-gray-200 shadow-xl w-full max-w-sm text-center p-8">
         <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-5">
           <AlertCircle class="w-8 h-8 text-red-500" />
         </div>

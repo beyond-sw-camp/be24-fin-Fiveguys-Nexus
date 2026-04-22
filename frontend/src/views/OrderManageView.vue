@@ -4,17 +4,14 @@
     <div class="flex justify-between items-start gap-4">
       <div class="min-w-0 flex-1">
         <h1 class="text-xl font-bold text-gray-900 tracking-tight">발주 관리</h1>
-        <p class="page-spec-hint">
-          <code>ORDER_001~008</code>자동·수동 발주, 이력, 이상 발주 승인/반려 및 기준(%) 설정. 자동 탭에서 이상 발주를 함께 보거나 필터로 분리할 수 있습니다.
-        </p>
       </div>
       <div class="flex gap-2">
         <button @click="showSettings = true"
-          class="px-4 py-2 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 flex items-center gap-2">
+          class="px-4 py-2 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 flex items-center gap-2 cursor-pointer">
           <Settings class="w-4 h-4" /> 이상 발주 기준 설정
         </button>
-        <button @click="setOrderViewTab('manual')"
-          class="bg-[#F37321] text-white px-4 py-2 text-sm font-semibold rounded hover:bg-[#e0661d] transition-colors flex items-center gap-2">
+        <button @click="showManualForm = true"
+          class="bg-[#F37321] text-white px-4 py-2 text-sm font-semibold rounded hover:bg-[#e0661d] transition-colors flex items-center gap-2 cursor-pointer">
           <Plus class="w-4 h-4" /> 수동 발주 생성
         </button>
       </div>
@@ -24,7 +21,7 @@
     <div class="flex border-b border-gray-200">
       <button v-for="tab in tabs" :key="tab.id"
         @click="setOrderViewTab(tab.id)"
-        class="px-5 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors"
+        class="px-5 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors cursor-pointer"
         :class="activeTab === tab.id
           ? 'border-[#F37321] text-[#F37321]'
           : 'border-transparent text-gray-500 hover:text-gray-700'">
@@ -37,95 +34,38 @@
       </button>
     </div>
 
-    <!-- Tab: 자동 발주 제안 (이상 발주 미처리 건 포함, 상단 필터로 구분 조회) -->
+    <!-- Tab: 자동 발주 제안 -->
     <div v-if="activeTab === 'auto'" class="space-y-4">
-      <div class="bg-amber-50 px-4 py-3 flex items-start gap-2.5 rounded-md">
-        <AlertTriangle class="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-        <p class="text-sm text-amber-700">
-          재고 기준 이하로 산출된 <strong class="font-semibold">자동 발주 제안</strong>과, 과거 평균 대비 비정상적으로 큰 수량이 감지된
-          <strong class="font-semibold">이상 발주</strong>가 함께 표시됩니다. 아래 필터로 유형별로 나누어 볼 수 있습니다.
-        </p>
-      </div>
-      <div class="flex flex-wrap items-center gap-2">
-        <span class="text-xs font-semibold text-gray-500">표시</span>
-        <button
-          v-for="btn in proposalFilterButtons"
-          :key="btn.id"
-          type="button"
-          @click="setProposalListFilter(btn.id)"
-          class="text-xs px-3 py-1.5 rounded-md border font-semibold transition-colors"
-          :class="proposalListFilter === btn.id
-            ? 'bg-[#F37321] text-white border-[#F37321]'
-            : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'"
-        >
-          {{ btn.label }}
-        </button>
-        <span class="text-[11px] text-gray-400 ml-auto hidden sm:inline">URL에 <code class="text-gray-500">?tab=auto&proposal=abnormal</code> 로 이상 발주만 열 수 있습니다.</span>
-      </div>
       <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
         <table class="w-full text-sm text-left">
           <thead>
             <tr class="border-b border-gray-200 bg-gray-50">
-              <th class="px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">유형</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주번호</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">대상 가맹점</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">품목명</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">현재재고</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">최소재고</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">제안수량</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">거래처 / 비고</th>
+              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주일시</th>
+              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">총 수량</th>
+              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">총 금액</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">상태</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">처리</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
             <tr
-              v-for="row in filteredAutoProposalRows"
-              :key="row.key"
-              class="hover:bg-gray-50/50 transition-colors"
-              :class="row.kind === 'abnormal' ? 'bg-rose-50/35' : ''"
+              v-for="o in autoOrders"
+              :key="o.id"
+              class="hover:bg-gray-50/50 transition-colors cursor-pointer"
+              @click="openDetail({ id: o.id, type: '자동', store: o.store, status: o.status, date: o.date, items: o.items })"
             >
-              <td class="px-4 py-3.5">
-                <span
-                  class="text-[10px] font-bold px-2 py-0.5 rounded border"
-                  :class="row.kind === 'auto'
-                    ? 'bg-blue-50 text-blue-700 border-blue-200'
-                    : 'bg-rose-100 text-rose-800 border-rose-200'"
-                >
-                  {{ row.kind === 'auto' ? '자동' : '이상' }}
-                </span>
-              </td>
-              <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ row.id }}</td>
-              <td class="px-5 py-3.5 font-semibold text-gray-900">{{ row.store }}</td>
-              <td class="px-5 py-3.5 text-gray-700">{{ row.product }}</td>
-              <td class="px-5 py-3.5 font-bold" :class="row.kind === 'auto' ? 'text-red-500' : 'text-gray-400 font-medium'">{{ row.currentStock }}</td>
-              <td class="px-5 py-3.5 text-gray-500">{{ row.minStock }}</td>
-              <td class="px-5 py-3.5 font-bold text-[#F37321]">{{ row.kind === 'abnormal' ? row.suggestedQty.toLocaleString() : row.suggestedQty }}</td>
-              <td class="px-5 py-3.5 text-gray-600 text-xs leading-snug">{{ row.supplier }}</td>
+              <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ o.id }}</td>
+              <td class="px-5 py-3.5 font-semibold text-gray-900">{{ o.store }}</td>
+              <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ o.date ?? '-' }}</td>
+              <td class="px-5 py-3.5 font-bold text-[#F37321]">{{ (o.items ?? []).reduce((s, i) => s + i.qty, 0).toLocaleString() }}</td>
+              <td class="px-5 py-3.5 font-semibold text-gray-700">{{ formatPrice((o.items ?? []).reduce((s, i) => s + i.unitPrice * i.qty, 0)) }}</td>
               <td class="px-5 py-3.5">
-                <span class="text-xs font-bold px-2 py-0.5 rounded"
-                  :class="statusClass(row.status)">{{ row.status }}</span>
-              </td>
-              <td class="px-5 py-3.5">
-                <div v-if="row.kind === 'auto' && row.status === '제안중'" class="flex justify-center gap-1.5">
-                  <button @click="confirmOrder(row.auto)"
-                    class="px-2.5 py-1 bg-[#F37321] text-white text-xs font-semibold hover:bg-[#e0661d]">확정</button>
-                  <button @click="rejectOrder(row.auto)"
-                    class="px-2.5 py-1 border border-gray-200 text-gray-600 text-xs font-medium hover:bg-gray-50">거절</button>
-                </div>
-                <div v-else-if="row.kind === 'abnormal' && row.status === '검토필요'" class="flex justify-center gap-1.5">
-                  <button @click="approveAbnormal(row.abnormal)"
-                    class="px-2.5 py-1 bg-[#F37321] text-white text-xs font-semibold hover:bg-[#e0661d] rounded">승인</button>
-                  <button @click="rejectAbnormal(row.abnormal)"
-                    class="px-2.5 py-1 border border-gray-200 text-gray-600 text-xs font-medium hover:bg-gray-50 rounded">반려</button>
-                </div>
-                <span v-else class="text-xs text-gray-400 block text-center">—</span>
+                <span class="text-xs font-bold px-2 py-0.5 rounded" :class="statusClass(o.status)">{{ o.status }}</span>
               </td>
             </tr>
-            <tr v-if="filteredAutoProposalRows.length === 0">
-              <td colspan="10" class="px-5 py-10 text-center text-sm text-gray-400">
-                표시할 항목이 없습니다. 필터를 바꾸거나 이상 발주 탭에서 처리 완료된 건을 확인하세요.
-              </td>
+            <tr v-if="autoOrders.length === 0">
+              <td colspan="6" class="px-5 py-10 text-center text-sm text-gray-400">자동 발주 제안이 없습니다.</td>
             </tr>
           </tbody>
         </table>
@@ -133,99 +73,54 @@
     </div>
 
     <!-- Tab: 수동 발주 -->
-    <div v-if="activeTab === 'manual'" class="max-w-2xl space-y-3">
-      <p class="page-spec-hint">
-        <code>ORDER_003</code>가맹점·거래처·품목·수량·비고 입력 후 발주 생성. 음수·재고 초과는 백엔드 검증과 함께 알림으로 막습니다.
-      </p>
-      <div class="bg-white border border-gray-200 rounded-lg p-6 space-y-4">
-        <h3 class="font-bold text-gray-900 text-sm">수동 발주 생성</h3>
-        <div class="grid grid-cols-2 gap-4">
-          <div class="space-y-1.5">
-            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">대상 가맹점</label>
-            <select v-model="manualForm.store"
-              class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none">
-              <option value="">선택</option>
-              <option>한화빌딩점</option>
-              <option>여의도역점</option>
-              <option>판교테크노밸리점</option>
-              <option>부산센텀점</option>
-            </select>
-          </div>
-          <div class="space-y-1.5">
-            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">거래처</label>
-            <select v-model="manualForm.supplier"
-              class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none">
-              <option value="">선택</option>
-              <option>서울우유</option>
-              <option>동서식품</option>
-              <option>한국포장</option>
-            </select>
-          </div>
+    <div v-if="activeTab === 'manual'" class="space-y-5">
+
+      <!-- ORDER_004: 진행 중인 수동 발주 목록 -->
+      <div>
+        <h3 class="text-sm font-bold text-gray-700 mb-2">진행 중인 수동 발주</h3>
+        <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+          <table class="w-full text-sm text-left">
+            <thead>
+              <tr class="border-b border-gray-200 bg-gray-50">
+                <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주번호</th>
+                <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">대상 가맹점</th>
+                <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주일시</th>
+                <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">총 금액</th>
+                <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">상태</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr v-for="o in pendingManualOrders" :key="o.id" class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="openDetail({ id: o.id, type: '수동', store: o.store, status: o.status, date: o.date, items: o.items })">
+                <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ o.id }}</td>
+                <td class="px-5 py-3.5 font-semibold text-gray-900">{{ o.store }}</td>
+                <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ o.date }}</td>
+                <td class="px-5 py-3.5 font-semibold text-gray-700">{{ formatPrice((o.items ?? []).reduce((s, i) => s + i.unitPrice * i.qty, 0)) }}</td>
+                <td class="px-5 py-3.5">
+                  <span class="text-xs font-bold px-2 py-0.5 rounded" :class="statusClass(o.status)">{{ o.status }}</span>
+                </td>
+              </tr>
+              <tr v-if="pendingManualOrders.length === 0">
+                <td colspan="5" class="px-5 py-8 text-center text-sm text-gray-400">진행 중인 수동 발주가 없습니다.</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <div class="space-y-2">
-          <div class="flex justify-between items-center">
-            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">발주 품목</label>
-            <button @click="addManualItem" class="text-xs text-[#F37321] font-semibold hover:underline flex items-center gap-1">
-              <Plus class="w-3 h-3" /> 품목 추가
-            </button>
-          </div>
-          <div v-for="(item, idx) in manualForm.items" :key="idx" class="flex gap-2 items-center">
-            <select v-model="item.product"
-              class="flex-1 px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none">
-              <option value="">품목 선택</option>
-              <option>프리미엄 원두</option>
-              <option>에스프레소 원두</option>
-              <option>우유(1L)</option>
-              <option>두유(1L)</option>
-              <option>바닐라 시럽</option>
-              <option>카라멜 시럽</option>
-              <option>종이컵(M)</option>
-              <option>종이컵(L)</option>
-            </select>
-            <input v-model.number="item.qty" type="number" min="1" placeholder="수량"
-              class="w-24 px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none" />
-            <button @click="manualForm.items.splice(idx, 1)" class="text-gray-300 hover:text-red-500 transition-colors shrink-0">
-              <X class="w-4 h-4" />
-            </button>
-          </div>
-          <div v-if="manualForm.items.length === 0"
-            class="text-sm text-gray-400 text-center py-4 bg-gray-50 border border-gray-100">
-            품목 추가 버튼을 눌러 발주 품목을 입력하세요.
-          </div>
-        </div>
-        <div class="space-y-1.5">
-          <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">비고</label>
-          <textarea v-model="manualForm.note" rows="2" placeholder="특이사항 입력 (선택)"
-            class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none resize-none"></textarea>
-        </div>
-        <button @click="submitManualOrder"
-          class="w-full rounded bg-[#F37321] text-white py-3 font-bold hover:bg-[#e0661d] text-sm">
-          발주 생성
-        </button>
       </div>
+
     </div>
 
     <!-- Tab: 이상 발주 (ORDER_007) -->
     <div v-if="activeTab === 'abnormal'" class="space-y-4">
-      <p class="page-spec-hint">
-        <code>ORDER_007·008</code>점주 수동 발주 중 평균 대비 이상 감지 건(DANGER) 목록 및 기준(%)·개월 설정과 연동됩니다.
-      </p>
-      <div class="bg-red-50 px-4 py-3 flex items-start gap-2.5 rounded-md">
-        <AlertTriangle class="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-        <p class="text-sm text-red-700">
-          평균 발주량 대비 <strong>{{ abnormalThreshold }}% 이상</strong> 초과한 발주건입니다. 승인 또는 반려 처리가 필요합니다.
-        </p>
-      </div>
       <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
         <table class="w-full text-sm text-left">
           <thead>
             <tr class="border-b border-gray-200 bg-gray-50">
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주번호</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">가맹점</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">품목명</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주수량</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">평균수량</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">초과율</th>
+              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">총 금액</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주일시</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">상태</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">처리</th>
@@ -233,11 +128,12 @@
           </thead>
           <tbody class="divide-y divide-gray-100">
             <tr v-for="o in abnormalOrders" :key="o.id"
-              class="hover:bg-gray-50/50 transition-colors"
-              :class="o.processed ? 'opacity-50' : ''">
+              class="hover:bg-gray-50/50 transition-colors cursor-pointer"
+              :class="o.processed ? 'opacity-50' : ''"
+              @click="openDetail({ id: o.id, type: '이상', store: o.store, status: o.processed ? '처리완료' : 'DANGER', date: o.date, items: o.items, avgQty: o.avgQty, ratio: o.ratio })"
+            >
               <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ o.id }}</td>
               <td class="px-5 py-3.5 font-semibold text-gray-900">{{ o.store }}</td>
-              <td class="px-5 py-3.5 text-gray-700">{{ o.product }}</td>
               <td class="px-5 py-3.5 font-bold text-red-600">{{ o.qty.toLocaleString() }}</td>
               <td class="px-5 py-3.5 text-gray-500">{{ o.avgQty.toLocaleString() }}</td>
               <td class="px-5 py-3.5">
@@ -245,6 +141,7 @@
                   +{{ o.ratio }}%
                 </span>
               </td>
+              <td class="px-5 py-3.5 font-semibold text-gray-700">{{ formatPrice((o.items ?? []).reduce((s, i) => s + i.unitPrice * i.qty, 0)) }}</td>
               <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ o.date }}</td>
               <td class="px-5 py-3.5">
                 <span class="text-xs font-bold px-2 py-0.5 rounded"
@@ -256,10 +153,10 @@
               </td>
               <td class="px-5 py-3.5">
                 <div v-if="!o.processed" class="flex justify-center gap-1.5">
-                  <button @click="approveAbnormal(o)"
-                    class="px-2.5 py-1 bg-[#F37321] text-white text-xs font-semibold hover:bg-[#e0661d] rounded">승인</button>
-                  <button @click="rejectAbnormal(o)"
-                    class="px-2.5 py-1 border border-gray-200 text-gray-600 text-xs font-medium hover:bg-gray-50 rounded">반려</button>
+                  <button @click.stop="approveAbnormal(o)"
+                    class="px-2.5 py-1 bg-[#F37321] text-white text-xs font-semibold hover:bg-[#e0661d] rounded cursor-pointer">승인</button>
+                  <button @click.stop="rejectAbnormal(o)"
+                    class="px-2.5 py-1 border border-gray-200 text-gray-600 text-xs font-medium hover:bg-gray-50 rounded cursor-pointer">반려</button>
                 </div>
                 <span v-else class="text-xs text-gray-400 block text-center">—</span>
               </td>
@@ -271,36 +168,35 @@
 
     <!-- Tab: 발주 이력 (ORDER_006) -->
     <div v-if="activeTab === 'history'" class="space-y-3">
-      <p class="page-spec-hint">
-        <code>ORDER_006</code>완료·거절·확정 등 종료된 발주, 유형·가맹점·일시·상태(배송중·입고완료 등) 조회.
-      </p>
-      <div class="bg-white border border-gray-200 rounded-lg p-4 flex flex-wrap gap-3 items-end">
-        <div class="space-y-1">
-          <label class="text-[10px] font-bold text-gray-400 uppercase">유형</label>
+      <div class="bg-white border border-gray-200 rounded-lg px-5 py-4 flex flex-wrap gap-5 items-end">
+        <label class="flex flex-col gap-2">
+          <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">유형</span>
           <select v-model="historyFilterType"
-            class="px-3 py-2 rounded border border-gray-200 text-sm outline-none focus:border-[#F37321]">
+            class="w-24 px-3 py-2 rounded border border-gray-200 text-sm outline-none focus:border-[#F37321]">
             <option value="">전체</option>
             <option value="자동">자동</option>
             <option value="수동">수동</option>
           </select>
+        </label>
+        <label class="flex flex-col gap-2">
+          <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">기간 시작</span>
+          <input v-model="historyDateFrom" type="date" class="px-3 py-2 rounded border border-gray-200 text-sm outline-none focus:border-[#F37321]" />
+        </label>
+        <label class="flex flex-col gap-2">
+          <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">기간 종료</span>
+          <input v-model="historyDateTo" type="date" class="px-3 py-2 rounded border border-gray-200 text-sm outline-none focus:border-[#F37321]" />
+        </label>
+        <div class="flex flex-col gap-2 flex-1 min-w-40">
+          <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">검색</span>
+          <div class="flex gap-2 items-center">
+            <input v-model="historySearch" type="search" placeholder="발주번호·가맹점·품목"
+              class="flex-1 px-3 py-2 rounded border border-gray-200 text-sm outline-none focus:border-[#F37321]" />
+            <button type="button" class="text-xs font-semibold text-gray-500 border border-gray-200 px-4 py-2 rounded hover:bg-gray-50 shrink-0 cursor-pointer"
+              @click="historyFilterType = ''; historyDateFrom = ''; historyDateTo = ''; historySearch = ''">
+              초기화
+            </button>
+          </div>
         </div>
-        <div class="space-y-1">
-          <label class="text-[10px] font-bold text-gray-400 uppercase">기간 시작</label>
-          <input v-model="historyDateFrom" type="date" class="px-3 py-2 rounded border border-gray-200 text-sm outline-none" />
-        </div>
-        <div class="space-y-1">
-          <label class="text-[10px] font-bold text-gray-400 uppercase">기간 종료</label>
-          <input v-model="historyDateTo" type="date" class="px-3 py-2 rounded border border-gray-200 text-sm outline-none" />
-        </div>
-        <div class="space-y-1 flex-1 min-w-[10rem]">
-          <label class="text-[10px] font-bold text-gray-400 uppercase">검색</label>
-          <input v-model="historySearch" type="search" placeholder="발주번호·가맹점·품목"
-            class="w-full px-3 py-2 rounded border border-gray-200 text-sm outline-none" />
-        </div>
-        <button type="button" class="text-xs font-semibold text-gray-500 border border-gray-200 px-3 py-2 rounded hover:bg-gray-50"
-          @click="historyFilterType = ''; historyDateFrom = ''; historyDateTo = ''; historySearch = ''">
-          초기화
-        </button>
       </div>
       <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
         <table class="w-full text-sm text-left">
@@ -309,15 +205,13 @@
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주번호</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">유형</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">가맹점</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">품목</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">수량</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">거래처</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주일시</th>
+              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">총 금액</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">상태</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
-            <tr v-for="h in filteredOrderHistory" :key="h.id" class="hover:bg-gray-50/50 transition-colors">
+            <tr v-for="h in filteredOrderHistory" :key="h.id" class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="openDetail({ id: h.id, type: h.type, store: h.store, status: h.status, date: h.date, items: h.items })">
               <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ h.id }}</td>
               <td class="px-5 py-3.5">
                 <span class="text-xs font-bold px-2 py-0.5 rounded"
@@ -326,29 +220,210 @@
                 </span>
               </td>
               <td class="px-5 py-3.5 font-semibold text-gray-900">{{ h.store }}</td>
-              <td class="px-5 py-3.5 text-gray-700">{{ h.product }}</td>
-              <td class="px-5 py-3.5 font-medium text-gray-900">{{ h.qty }}</td>
-              <td class="px-5 py-3.5 text-gray-600">{{ h.supplier }}</td>
               <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ h.date }}</td>
+              <td class="px-5 py-3.5 font-semibold text-gray-700">{{ formatPrice((h.items ?? []).reduce((s, i) => s + i.unitPrice * i.qty, 0)) }}</td>
               <td class="px-5 py-3.5">
                 <span class="text-xs font-bold px-2 py-0.5 rounded"
                   :class="statusClass(h.status)">{{ h.status }}</span>
               </td>
             </tr>
             <tr v-if="filteredOrderHistory.length === 0">
-              <td colspan="8" class="px-5 py-10 text-center text-sm text-gray-400">조건에 맞는 발주 이력이 없습니다.</td>
+              <td colspan="6" class="px-5 py-10 text-center text-sm text-gray-400">조건에 맞는 발주 이력이 없습니다.</td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
+
+    <!-- 수동 발주 생성 Modal (ORDER_003) -->
+    <div v-if="showManualForm" class="fixed inset-0 z-50 flex items-center justify-center">
+      <div class="absolute inset-0 bg-black/40" @click="showManualForm = false"></div>
+      <div class="relative bg-white rounded-xl w-full max-w-lg border border-gray-200 shadow-xl">
+        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+          <h3 class="font-bold text-gray-900">수동 발주 생성</h3>
+          <button @click="showManualForm = false" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
+        </div>
+        <div class="p-6 space-y-4">
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">대상 가맹점</label>
+            <select v-model="manualForm.store"
+              class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none">
+              <option value="">선택</option>
+              <option>한화빌딩점</option>
+              <option>여의도역점</option>
+              <option>판교테크노밸리점</option>
+              <option>부산센텀점</option>
+            </select>
+          </div>
+          <div class="space-y-2">
+            <div class="flex justify-between items-center">
+              <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">발주 품목</label>
+              <button @click="addManualItem" class="text-xs text-[#F37321] font-semibold hover:underline flex items-center gap-1 cursor-pointer">
+                <Plus class="w-3 h-3" /> 품목 추가
+              </button>
+            </div>
+            <div v-for="(item, idx) in manualForm.items" :key="idx" class="flex gap-2 items-center">
+              <select v-model="item.product" @change="item.unitPrice = productPrices[item.product] ?? 0"
+                class="flex-1 px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none">
+                <option value="">품목 선택</option>
+                <option>생닭(1kg)</option>
+                <option>튀김유(18L)</option>
+                <option>치킨파우더</option>
+                <option>황금올리브소스</option>
+                <option>양념소스</option>
+                <option>간장소스</option>
+                <option>치킨박스(중)</option>
+                <option>치킨박스(대)</option>
+                <option>비닐장갑</option>
+                <option>냅킨</option>
+              </select>
+              <div class="flex items-center gap-1.5">
+                <input v-model.number="item.qty" type="number" min="1" placeholder="수량"
+                  class="w-20 px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none" />
+                <span class="text-xs text-gray-400 font-medium w-6">{{ PRODUCT_UNIT[item.product] ?? '' }}</span>
+              </div>
+              <div class="w-28 px-3 py-2 rounded border border-gray-100 bg-gray-50 text-sm text-gray-500 text-right shrink-0">
+                {{ item.product ? formatPrice(productPrices[item.product] ?? 0) : '-' }}
+              </div>
+              <button @click="manualForm.items.splice(idx, 1)"
+                class="px-3 py-2 text-xs font-semibold rounded border border-red-200 text-red-500 bg-red-50 hover:bg-red-500 hover:text-white hover:cursor-pointer transition-colors shrink-0">
+                삭제
+              </button>
+            </div>
+            <div v-if="manualForm.items.length === 0"
+              class="text-sm text-gray-400 text-center py-4 bg-gray-50 border border-gray-100 rounded">
+              품목 추가 버튼을 눌러 발주 품목을 입력하세요.
+            </div>
+            <div v-if="manualForm.items.length > 0" class="text-right text-sm font-bold text-[#F37321]">
+              합계: {{ formatPrice(manualForm.items.reduce((s, i) => s + (i.unitPrice || 0) * (i.qty || 0), 0)) }}
+            </div>
+          </div>
+        </div>
+        <div class="px-6 py-4 border-t border-gray-100 flex gap-3">
+          <button @click="showManualForm = false"
+            class="flex-1 py-2.5 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 cursor-pointer">취소</button>
+          <button @click="submitManualOrder"
+            class="flex-1 py-2.5 rounded bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d] cursor-pointer">발주 생성</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 발주 상세 조회 Modal (ORDER_005) -->
+    <div v-if="showDetail" class="fixed inset-0 z-50 flex items-center justify-center">
+      <div class="absolute inset-0 bg-black/40" @click="showDetail = false"></div>
+      <div class="relative bg-white rounded-xl w-full max-w-lg border border-gray-200 shadow-xl">
+        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+          <div>
+            <h3 class="font-bold text-gray-900">발주 상세</h3>
+            <p class="text-xs text-gray-400 font-mono mt-0.5">{{ selectedOrder?.id }}</p>
+          </div>
+          <button @click="showDetail = false" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
+        </div>
+        <div v-if="selectedOrder" class="p-6 space-y-4">
+          <div class="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <p class="text-xs text-gray-400 mb-1">유형</p>
+              <span class="text-xs font-bold px-2 py-0.5 rounded border"
+                :class="selectedOrder.type === '자동' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-purple-50 text-purple-700 border-purple-200'">
+                {{ selectedOrder.type }}
+              </span>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400 mb-1">상태</p>
+              <span class="text-xs font-bold px-2 py-0.5 rounded" :class="statusClass(selectedOrder.status)">
+                {{ selectedOrder.status }}
+              </span>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400 mb-1">대상 가맹점</p>
+              <p class="font-semibold text-gray-900">{{ selectedOrder.store }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400 mb-1">발주 일시</p>
+              <p class="text-gray-700 font-mono text-xs">{{ selectedOrder.date }}</p>
+            </div>
+          </div>
+          <div>
+            <p class="text-xs text-gray-400 mb-2">품목 목록</p>
+            <div class="border border-gray-100 rounded-lg overflow-hidden">
+              <table class="w-full text-sm">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-4 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase">품목명</th>
+                    <th class="px-4 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase">수량</th>
+                    <template v-if="selectedOrder.type === '이상'">
+                      <th class="px-4 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase">평균수량</th>
+                      <th class="px-4 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase">초과율</th>
+                    </template>
+                    <template v-else>
+                      <th class="px-4 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase">단가</th>
+                      <th class="px-4 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase">금액</th>
+                    </template>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr v-for="item in selectedOrder.items" :key="item.product"
+                    :class="item.isAbnormal ? 'bg-red-50/60' : ''">
+                    <td class="px-4 py-2.5">
+                      <div class="flex items-center gap-1.5">
+                        <span :class="item.isAbnormal ? 'text-red-700 font-semibold' : 'text-gray-800'">{{ item.product }}</span>
+                        <span v-if="item.isAbnormal" class="text-[10px] font-black px-1.5 py-0.5 rounded bg-red-100 text-red-600 border border-red-200">이상</span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-2.5 text-right font-semibold" :class="item.isAbnormal ? 'text-red-600' : 'text-gray-900'">{{ item.qty.toLocaleString() }}</td>
+                    <template v-if="selectedOrder.type === '이상'">
+                      <td class="px-4 py-2.5 text-right text-gray-500">{{ item.avgQty?.toLocaleString() ?? '-' }}</td>
+                      <td class="px-4 py-2.5 text-right">
+                        <span v-if="item.isAbnormal" class="text-xs font-black px-2 py-0.5 rounded bg-red-50 text-red-600 border border-red-200">+{{ item.ratio }}%</span>
+                        <span v-else class="text-xs text-gray-400">+{{ item.ratio }}%</span>
+                      </td>
+                    </template>
+                    <template v-else>
+                      <td class="px-4 py-2.5 text-right text-xs text-gray-500">{{ item.unitPrice ? item.unitPrice.toLocaleString() + '원' : '-' }}</td>
+                      <td class="px-4 py-2.5 text-right font-bold text-[#F37321]">{{ item.unitPrice ? formatPrice(item.unitPrice * item.qty) : '-' }}</td>
+                    </template>
+                  </tr>
+                </tbody>
+                <tfoot v-if="selectedOrder.type !== '이상'" class="bg-gray-50 border-t border-gray-200">
+                  <tr>
+                    <td colspan="3" class="px-4 py-2.5 text-right text-xs font-bold text-gray-500">합계</td>
+                    <td class="px-4 py-2.5 text-right font-black text-[#F37321]">
+                      {{ formatPrice((selectedOrder.items ?? []).reduce((s, i) => s + (i.unitPrice ? i.unitPrice * i.qty : 0), 0)) }}
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+          <div v-if="selectedOrder.avgQty" class="grid grid-cols-2 gap-4 text-sm p-3 bg-rose-50 rounded-lg border border-rose-100">
+            <div>
+              <p class="text-xs text-rose-400 mb-1">평균 발주수량</p>
+              <p class="font-semibold text-gray-800">{{ selectedOrder.avgQty.toLocaleString() }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-rose-400 mb-1">초과율</p>
+              <p class="font-bold text-red-600">+{{ selectedOrder.ratio }}%</p>
+            </div>
+          </div>
+          <div v-if="selectedOrder.note" class="text-sm">
+            <p class="text-xs text-gray-400 mb-1">비고</p>
+            <p class="text-gray-600 bg-gray-50 px-3 py-2 rounded border border-gray-100">{{ selectedOrder.note }}</p>
+          </div>
+        </div>
+        <div class="px-6 py-4 border-t border-gray-100 flex justify-end">
+          <button @click="showDetail = false"
+            class="px-4 py-2 text-sm font-semibold text-gray-600 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer">닫기</button>
+        </div>
+      </div>
+    </div>
+
     <!-- 이상 발주 기준 설정 Modal (ORDER_008) -->
     <div v-if="showSettings" class="fixed inset-0 z-50 flex items-center justify-center">
       <div class="absolute inset-0 bg-black/40" @click="showSettings = false"></div>
       <div class="relative bg-white rounded-lg w-full max-w-sm border border-gray-200 shadow-xl">
         <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
           <h3 class="font-bold text-gray-900">이상 발주 기준 설정</h3>
-          <button @click="showSettings = false" class="text-gray-400 hover:text-gray-600">✕</button>
+          <button @click="showSettings = false" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
         </div>
         <div class="p-6 space-y-5">
           <div class="space-y-3">
@@ -378,9 +453,9 @@
           </div>
           <div class="flex gap-3 pt-1">
             <button @click="showSettings = false"
-              class="flex-1 py-2.5 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50">취소</button>
+              class="flex-1 py-2.5 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 cursor-pointer">취소</button>
             <button @click="showSettings = false"
-              class="flex-1 py-2.5 rounded bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d]">저장</button>
+              class="flex-1 py-2.5 rounded bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d] cursor-pointer">저장</button>
           </div>
         </div>
       </div>
@@ -391,41 +466,74 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Plus, X, AlertTriangle, Settings } from 'lucide-vue-next'
+import { Plus, X, Settings } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
 
+const PRODUCT_UNIT = {
+  '생닭(1kg)':      'kg',
+  '튀김유(18L)':    '통',
+  '치킨파우더':     'kg',
+  '황금올리브소스': '병',
+  '양념소스':       '병',
+  '간장소스':       '병',
+  '치킨박스(중)':   '개',
+  '치킨박스(대)':   '개',
+  '비닐장갑':       '개',
+  '냅킨':           '개',
+}
+
+const productPrices = {
+  '생닭(1kg)':      5000,
+  '튀김유(18L)':    35000,
+  '치킨파우더':     8000,
+  '황금올리브소스': 12000,
+  '양념소스':       10000,
+  '간장소스':       10000,
+  '치킨박스(중)':   150,
+  '치킨박스(대)':   200,
+  '비닐장갑':       20,
+  '냅킨':           10,
+}
+
+function formatPrice(n) {
+  return '₩ ' + n.toLocaleString('ko-KR')
+}
+
 const abnormalCount = computed(() => abnormalOrders.value.filter(o => !o.processed).length)
 
-const autoTabPendingTotal = computed(
-  () => autoOrders.value.filter((o) => o.status === '제안중').length + abnormalOrders.value.filter((o) => !o.processed).length,
-)
-
 const tabs = computed(() => [
-  { id: 'auto',     label: '자동 발주 제안', badge: autoTabPendingTotal.value || null },
-  { id: 'manual',   label: '수동 발주' },
+  { id: 'auto',     label: '자동 발주 제안', badge: autoOrders.value.filter(o => o.status === '제안중').length || null },
+  { id: 'manual',   label: '수동 발주 제안' },
   { id: 'history',  label: '발주 이력' },
   { id: 'abnormal', label: '이상 발주', badge: abnormalCount.value || null },
 ])
 const activeTab = ref('auto')
 
-/** 자동 탭 내 표시: 전체 / 자동 제안만 / 이상 발주만 (URL ?tab=auto&proposal= ) */
-const proposalListFilter = ref('all')
 
 const autoOrders = ref([
-  { id: 'AUTO-20260413-001', store: '여의도역점',      product: '우유(1L)',        currentStock: 85,  minStock: 120, suggestedQty: 200, supplier: '서울우유',  status: '제안중' },
-  { id: 'AUTO-20260413-002', store: '판교테크노밸리점', product: '에스프레소 원두', currentStock: 12,  minStock: 80,  suggestedQty: 150, supplier: '동서식품', status: '제안중' },
-  { id: 'AUTO-20260413-003', store: '한화빌딩점',      product: '바닐라 시럽',     currentStock: 5,   minStock: 30,  suggestedQty: 60,  supplier: '청정원F&B', status: '제안중' },
-  { id: 'AUTO-20260412-004', store: '부산센텀점',      product: '종이컵(M)',       currentStock: 300, minStock: 500, suggestedQty: 1000, supplier: '한국포장', status: '확정'   },
-  { id: 'AUTO-20260412-005', store: '한화빌딩점',      product: '두유(1L)',        currentStock: 40,  minStock: 60,  suggestedQty: 100, supplier: '서울우유',  status: '거절'   },
+  { id: 'AUTO-20260413-001', store: '여의도역점',       date: '2026-04-13 22:00', status: '제안중',
+    items: [{ product: '생닭(1kg)', qty: 100, unitPrice: 5000 }, { product: '튀김유(18L)', qty: 10, unitPrice: 35000 }] },
+  { id: 'AUTO-20260413-002', store: '판교테크노밸리점', date: '2026-04-13 22:00', status: '제안중',
+    items: [{ product: '황금올리브소스', qty: 30, unitPrice: 12000 }, { product: '양념소스', qty: 30, unitPrice: 10000 }, { product: '치킨박스(중)', qty: 500, unitPrice: 150 }] },
+  { id: 'AUTO-20260413-003', store: '한화빌딩점',       date: '2026-04-13 22:00', status: '제안중',
+    items: [{ product: '간장소스', qty: 30, unitPrice: 10000 }, { product: '치킨파우더', qty: 20, unitPrice: 8000 }] },
+  { id: 'AUTO-20260412-004', store: '부산센텀점',       date: '2026-04-12 22:00', status: '확정',
+    items: [{ product: '치킨박스(중)', qty: 1000, unitPrice: 150 }, { product: '치킨박스(대)', qty: 300, unitPrice: 200 }] },
+  { id: 'AUTO-20260412-005', store: '한화빌딩점',       date: '2026-04-12 22:00', status: '거절',
+    items: [{ product: '비닐장갑', qty: 2000, unitPrice: 20 }, { product: '냅킨', qty: 3000, unitPrice: 10 }] },
 ])
 
 const orderHistory = ref([
-  { id: 'ORD-20260413-001', type: '자동', store: '부산센텀점',      product: '종이컵(M)',        qty: 1000, supplier: '한국포장', date: '2026-04-12 22:00', status: '배송중'   },
-  { id: 'ORD-20260413-002', type: '수동', store: '한화빌딩점',      product: '프리미엄 원두',    qty: 50,   supplier: '동서식품', date: '2026-04-11 10:30', status: '입고완료' },
-  { id: 'ORD-20260412-003', type: '자동', store: '여의도역점',      product: '우유(1L)',         qty: 200,  supplier: '서울우유', date: '2026-04-11 22:00', status: '입고완료' },
-  { id: 'ORD-20260411-004', type: '수동', store: '판교테크노밸리점', product: '카라멜 시럽',     qty: 30,   supplier: '청정원F&B', date: '2026-04-10 14:15', status: '입고완료' },
+  { id: 'ORD-20260413-001', type: '자동', store: '부산센텀점',       date: '2026-04-12 22:00', status: '배송중',
+    items: [{ product: '치킨박스(중)', qty: 1000, unitPrice: 150 }, { product: '치킨박스(대)', qty: 200, unitPrice: 200 }] },
+  { id: 'ORD-20260413-002', type: '수동', store: '한화빌딩점',       date: '2026-04-11 10:30', status: '입고완료',
+    items: [{ product: '생닭(1kg)', qty: 50, unitPrice: 5000 }, { product: '튀김유(18L)', qty: 10, unitPrice: 35000 }] },
+  { id: 'ORD-20260412-003', type: '자동', store: '여의도역점',       date: '2026-04-11 22:00', status: '입고완료',
+    items: [{ product: '황금올리브소스', qty: 30, unitPrice: 12000 }, { product: '양념소스', qty: 30, unitPrice: 10000 }, { product: '간장소스', qty: 20, unitPrice: 10000 }] },
+  { id: 'ORD-20260411-004', type: '수동', store: '판교테크노밸리점', date: '2026-04-10 14:15', status: '입고완료',
+    items: [{ product: '치킨파우더', qty: 30, unitPrice: 8000 }, { product: '비닐장갑', qty: 1000, unitPrice: 20 }] },
 ])
 
 const historyFilterType = ref('')
@@ -440,68 +548,30 @@ const filteredOrderHistory = computed(() =>
     if (historyDateFrom.value && day < historyDateFrom.value) return false
     if (historyDateTo.value && day > historyDateTo.value) return false
     const q = historySearch.value.trim()
-    if (q && !h.id.includes(q) && !h.store.includes(q) && !h.product.includes(q)) return false
+    if (q && !h.id.includes(q) && !h.store.includes(q) && !h.items.some(i => i.product.includes(q))) return false
     return true
   }),
 )
 
 // 이상 발주 데이터 (ORDER_007)
 const abnormalOrders = ref([
-  { id: 'ORD-20260414-ABN1', store: '여의도역점',       product: '에스프레소 원두', qty: 850, avgQty: 150, ratio: 567, date: '2026-04-14 11:22', processed: false },
-  { id: 'ORD-20260413-ABN2', store: '판교테크노밸리점', product: '우유(1L)',         qty: 1200, avgQty: 300, ratio: 400, date: '2026-04-13 09:15', processed: false },
-  { id: 'ORD-20260412-ABN3', store: '부산센텀점',        product: '바닐라 시럽',     qty: 500,  avgQty: 60,  ratio: 833, date: '2026-04-12 16:40', processed: true  },
+  { id: 'ORD-20260414-ABN1', store: '여의도역점',       qty: 850,  avgQty: 150, ratio: 567, date: '2026-04-14 11:22', processed: false,
+    items: [
+      { product: '생닭(1kg)',   qty: 850, unitPrice: 5000,  avgQty: 150, ratio: 567, isAbnormal: true  },
+      { product: '튀김유(18L)', qty: 12,  unitPrice: 35000, avgQty: 10,  ratio: 20,  isAbnormal: false },
+    ] },
+  { id: 'ORD-20260413-ABN2', store: '판교테크노밸리점', qty: 600,  avgQty: 100, ratio: 500, date: '2026-04-13 09:15', processed: false,
+    items: [
+      { product: '황금올리브소스', qty: 600, unitPrice: 12000, avgQty: 100, ratio: 500, isAbnormal: true  },
+      { product: '양념소스',      qty: 120, unitPrice: 10000, avgQty: 110, ratio: 9,   isAbnormal: false },
+    ] },
+  { id: 'ORD-20260412-ABN3', store: '부산센텀점',       qty: 5000, avgQty: 500, ratio: 900, date: '2026-04-12 16:40', processed: true,
+    items: [
+      { product: '치킨박스(중)', qty: 5000, unitPrice: 150, avgQty: 500, ratio: 900, isAbnormal: true  },
+      { product: '치킨박스(대)', qty: 400,  unitPrice: 200, avgQty: 380, ratio: 5,   isAbnormal: false },
+    ] },
 ])
 
-const proposalFilterButtons = [
-  { id: 'all', label: '전체' },
-  { id: 'auto', label: '자동 제안만' },
-  { id: 'abnormal', label: '이상 발주만' },
-]
-
-const combinedAutoProposalRows = computed(() => {
-  const abnormal = abnormalOrders.value
-    .filter((o) => !o.processed)
-    .map((o) => ({
-      kind: 'abnormal',
-      key: `abn-${o.id}`,
-      id: o.id,
-      store: o.store,
-      product: o.product,
-      currentStock: '—',
-      minStock: '—',
-      suggestedQty: o.qty,
-      supplier: `과거 평균 ${o.avgQty.toLocaleString()} · +${o.ratio}%`,
-      status: '검토필요',
-      abnormal: o,
-    }))
-  const auto = autoOrders.value.map((o) => ({
-    kind: 'auto',
-    key: `auto-${o.id}`,
-    id: o.id,
-    store: o.store,
-    product: o.product,
-    currentStock: o.currentStock,
-    minStock: o.minStock,
-    suggestedQty: o.suggestedQty,
-    supplier: o.supplier,
-    status: o.status,
-    auto: o,
-  }))
-  return [...abnormal, ...auto]
-})
-
-const filteredAutoProposalRows = computed(() => {
-  const rows = combinedAutoProposalRows.value
-  if (proposalListFilter.value === 'auto') return rows.filter((r) => r.kind === 'auto')
-  if (proposalListFilter.value === 'abnormal') return rows.filter((r) => r.kind === 'abnormal')
-  return rows
-})
-
-function setProposalListFilter(id) {
-  proposalListFilter.value = id
-  activeTab.value = 'auto'
-  router.replace({ path: '/order', query: { ...route.query, tab: 'auto', proposal: id } })
-}
 
 function applyOrderRouteQuery() {
   const q = route.query
@@ -520,10 +590,6 @@ function applyOrderRouteQuery() {
   if (q.tab === 'auto') {
     activeTab.value = 'auto'
   }
-  if (q.proposal === 'all' || q.proposal === 'auto' || q.proposal === 'abnormal') {
-    activeTab.value = 'auto'
-    proposalListFilter.value = q.proposal
-  }
 }
 
 onMounted(() => {
@@ -533,7 +599,7 @@ onMounted(() => {
 function setOrderViewTab(id) {
   activeTab.value = id
   if (id === 'auto') {
-    router.replace({ path: '/order', query: { tab: 'auto', proposal: proposalListFilter.value } })
+    router.replace({ path: '/order', query: { tab: 'auto' } })
     return
   }
   if (id === 'abnormal') {
@@ -549,6 +615,15 @@ function setOrderViewTab(id) {
   }
 }
 
+// 발주 상세 조회 (ORDER_005)
+const showDetail = ref(false)
+const selectedOrder = ref(null)
+
+function openDetail(order) {
+  selectedOrder.value = order
+  showDetail.value = true
+}
+
 // 이상 발주 기준 설정 (ORDER_008)
 const showSettings = ref(false)
 const abnormalThreshold = ref(200) // 평균 대비 %
@@ -558,54 +633,43 @@ const abnormalMonths = ref(3)      // 분석 기준 개월 수
 function approveAbnormal(o) { o.processed = true; alert(`${o.store} 발주 승인 처리되었습니다.`) }
 function rejectAbnormal(o)  { o.processed = true; alert(`${o.store} 발주 반려 처리되었습니다.`) }
 
-const manualForm = ref({ store: '', supplier: '', items: [], note: '' })
+const pendingManualOrders = ref([
+  { id: 'MAN-20260420-001', store: '여의도역점',       date: '2026-04-20 09:10', status: '확정',
+    items: [{ product: '생닭(1kg)', qty: 50, unitPrice: 5000 }, { product: '치킨파우더', qty: 20, unitPrice: 8000 }] },
+  { id: 'MAN-20260419-002', store: '판교테크노밸리점', date: '2026-04-19 14:30', status: '배송중',
+    items: [{ product: '황금올리브소스', qty: 30, unitPrice: 12000 }, { product: '간장소스', qty: 20, unitPrice: 10000 }, { product: '치킨박스(대)', qty: 200, unitPrice: 200 }] },
+])
+
+const showManualForm = ref(false)
+const manualForm = ref({ store: '', items: [] })
 
 function addManualItem() {
-  manualForm.value.items.push({ product: '', qty: 1 })
+  manualForm.value.items.push({ product: '', qty: 1, unitPrice: 0 })
 }
 
 function submitManualOrder() {
-  if (!manualForm.value.store || !manualForm.value.supplier || manualForm.value.items.length === 0) {
-    alert('가맹점, 거래처, 품목을 모두 입력해주세요.')
+  if (!manualForm.value.store || manualForm.value.items.length === 0) {
+    alert('가맹점과 품목을 입력해주세요.')
     return
   }
   const now = new Date().toISOString().slice(0, 16).replace('T', ' ')
-  manualForm.value.items.forEach(item => {
-    if (item.product) {
-      orderHistory.value.unshift({
-        id: `ORD-${Date.now()}`,
-        type: '수동',
-        store: manualForm.value.store,
-        product: item.product,
-        qty: item.qty,
-        supplier: manualForm.value.supplier,
-        date: now,
-        status: '확정',
-      })
-    }
-  })
+  const validItems = manualForm.value.items.filter(i => i.product)
+  if (validItems.length > 0) {
+    orderHistory.value.unshift({
+      id: `ORD-${Date.now()}`,
+      type: '수동',
+      store: manualForm.value.store,
+      date: now,
+      status: '확정',
+      items: validItems.map(i => ({ product: i.product, qty: i.qty, unitPrice: productPrices[i.product] ?? 0 })),
+    })
+  }
   alert('발주가 생성되었습니다.')
-  manualForm.value = { store: '', supplier: '', items: [], note: '' }
+  manualForm.value = { store: '', items: [] }
+  showManualForm.value = false
   setOrderViewTab('history')
 }
 
-function confirmOrder(o) {
-  o.status = '확정'
-  orderHistory.value.unshift({
-    id: o.id.replace('AUTO', 'ORD'),
-    type: '자동',
-    store: o.store,
-    product: o.product,
-    qty: o.suggestedQty,
-    supplier: o.supplier,
-    date: new Date().toISOString().slice(0, 16).replace('T', ' '),
-    status: '확정',
-  })
-}
-
-function rejectOrder(o) {
-  o.status = '거절'
-}
 
 function statusClass(status) {
   const map = {

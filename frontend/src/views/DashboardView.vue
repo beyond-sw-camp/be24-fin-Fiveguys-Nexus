@@ -3,31 +3,21 @@
     <div class="flex items-start justify-between gap-4">
       <div>
         <h1 class="text-[22px] font-bold text-gray-900 tracking-tight">운영 현황</h1>
-        <p class="page-spec-hint">
-          <code>DASH_001~006</code>가맹점·금일 발주·배송·재고 위험·비정상 발주·자동 발주 제안을 한 화면에서 확인합니다. 수치 없음은 0건으로 처리합니다.
-        </p>
       </div>
       <div class="flex items-center gap-2">
-        <button
-          v-for="tab in periodTabs"
-          :key="tab"
-          class="text-xs px-3 py-1.5 rounded-md border transition-colors"
+        <button v-for="tab in periodTabs" :key="tab" class="text-xs px-3 py-1.5 rounded-md border transition-colors cursor-pointer"
           :class="activePeriod === tab ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'"
-          @click="activePeriod = tab"
-        >
+          @click="activePeriod = tab">
           {{ tab }}
         </button>
         <span class="text-xs text-gray-400 border border-gray-200 px-3 py-1.5 rounded-md bg-white">{{ today }}</span>
       </div>
     </div>
 
+    <!-- KPI 카드 4개 -->
     <div class="grid grid-cols-4 gap-4">
-      <RouterLink
-        v-for="kpi in kpis"
-        :key="kpi.title"
-        :to="kpi.to"
-        class="block rounded-2xl border border-gray-200 bg-white p-5 shadow-[0_2px_8px_rgba(15,23,42,0.03)] transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(15,23,42,0.08)]"
-      >
+      <RouterLink v-for="kpi in kpis" :key="kpi.title" :to="kpi.to"
+        class="block rounded-2xl border border-gray-200 bg-white p-5 shadow-[0_2px_8px_rgba(15,23,42,0.03)] transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
         <div>
           <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.14em]">{{ kpi.title }}</p>
           <div class="flex items-end gap-1 mt-2.5">
@@ -44,183 +34,344 @@
       </RouterLink>
     </div>
 
-    <div class="grid grid-cols-12 gap-4">
-      <section
-        class="col-span-8 rounded-2xl border border-gray-200 bg-white p-4 cursor-pointer transition-shadow hover:shadow-[0_8px_20px_rgba(15,23,42,0.06)]"
-        @click="goTo('/delivery')"
-      >
-        <div class="flex items-center justify-between">
+    <!-- 중간 행: 라인차트 + 진행중 배송 -->
+    <div class="grid grid-cols-3 gap-4">
+
+      <!-- 발주 통계 라인차트 -->
+      <div class="col-span-2 bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col"
+        style="min-height:280px">
+        <div class="flex items-center justify-between mb-5 shrink-0">
           <div>
-            <h3 class="text-base font-bold text-gray-900">주간 배송/발주 추이</h3>
+            <h2 class="font-bold text-gray-900">주간 발주 통계</h2>
+            <p class="text-xs text-gray-400 mt-0.5">이번 주 vs 지난 주 (단위: 건)</p>
+          </div>
+          <div class="flex items-center gap-4 text-xs text-gray-500">
+            <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-orange-500 inline-block rounded"></span>이번
+              주</span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-gray-300 inline-block rounded"></span>지난
+              주</span>
           </div>
         </div>
-        <div class="mt-3 rounded-xl border border-gray-100 bg-gray-50/60 p-3">
-          <svg viewBox="0 0 640 220" class="w-full h-44">
-            <g stroke="#e5e7eb" stroke-width="1">
-              <line v-for="y in [20, 60, 100, 140, 180]" :key="`grid-${y}`" x1="20" :y1="y" x2="620" :y2="y" />
-            </g>
-            <polyline points="20,160 110,152 200,148 290,120 380,112 470,98 560,106 620,92" fill="none" stroke="#f97316" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
-            <polyline points="20,172 110,166 200,158 290,150 380,136 470,124 560,126 620,118" fill="none" stroke="#64748b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 7" />
-            <circle class="chart-point" cx="470" cy="98" r="6.5" fill="#f97316" />
-            <g class="chart-tooltip-group">
-              <rect x="410" y="32" width="150" height="56" rx="10" fill="#111827" />
-              <text x="428" y="56" fill="#d1d5db" font-size="11">목요일</text>
-              <text x="428" y="76" fill="#ffffff" font-size="14" font-weight="700">배송 완료 128건</text>
-            </g>
-            <g fill="#9ca3af" font-size="11">
-              <text x="18" y="210">월</text><text x="106" y="210">화</text><text x="197" y="210">수</text><text x="286" y="210">목</text><text x="375" y="210">금</text><text x="463" y="210">토</text><text x="553" y="210">일</text>
-            </g>
-          </svg>
+        <div class="flex-1 min-h-0 relative" style="height:200px">
+          <canvas ref="lineCanvas" style="display:block; width:100%; height:100%;"></canvas>
         </div>
-        <div class="mt-3 flex items-center gap-6 text-xs text-gray-500">
-          <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-orange-500"></span>배송 완료</div>
-          <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-slate-500"></span>제안 발주</div>
-        </div>
-      </section>
+      </div>
 
-      <section
-        class="col-span-4 rounded-2xl border border-gray-200 bg-white p-4 cursor-pointer transition-shadow hover:shadow-[0_8px_20px_rgba(15,23,42,0.06)]"
-        @click="goTo('/delivery')"
-      >
-        <h3 class="text-base font-bold text-gray-900">배송 성공률</h3>
-        <div class="mt-3 flex items-center justify-center">
-          <div class="relative w-32 h-32 rounded-full chart-ring">
-            <div class="absolute inset-3 rounded-full bg-white flex items-center justify-center">
-              <div class="text-center">
-                <p class="text-[24px] leading-none font-extrabold text-gray-900">{{ deliveryRate }}%</p>
+      <!-- 진행중 배송 -->
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col">
+        <div class="px-5 pt-5 pb-4 border-b border-gray-100">
+          <h2 class="font-bold text-gray-900">진행중 배송</h2>
+        </div>
+        <div class="flex-1 divide-y divide-gray-50 overflow-y-auto">
+          <div v-for="d in ongoingDeliveries" :key="d.id"
+            class="px-5 py-4 hover:bg-gray-50 transition-colors cursor-pointer"
+            role="button" tabindex="0"
+            @click="router.push('/delivery')"
+            @keydown.enter="router.push('/delivery')"
+            @keydown.space.prevent="router.push('/delivery')">
+            <div class="flex items-start gap-3">
+              <div class="flex-1 min-w-0">
+                <p class="text-xs text-gray-400">발주 {{ d.num }}</p>
+                <p class="text-sm font-bold text-gray-900 font-mono">{{ d.id }}</p>
+                <div class="flex items-center gap-1.5 mt-1.5 text-xs text-gray-500">
+                  <span class="flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-blue-400 inline-block"></span>{{ d.from }}
+                  </span>
+                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                  <span class="flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-green-400 inline-block"></span>{{ d.to }}
+                  </span>
+                </div>
               </div>
+              <span class="text-xs px-2 py-0.5 rounded-full font-medium shrink-0" :class="deliveryCls(d.status)">{{
+                d.status }}</span>
             </div>
           </div>
         </div>
-        <div class="mt-4 space-y-2.5">
-          <div v-for="status in deliveryBreakdown" :key="status.label" class="flex items-center justify-between text-sm">
-            <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full" :style="{ backgroundColor: status.color }"></span><span class="text-gray-500">{{ status.label }}</span></div>
-            <span class="font-semibold text-gray-900">{{ status.count }}건</span>
-          </div>
-        </div>
-      </section>
+      </div>
     </div>
 
-    <div class="grid grid-cols-2 gap-4">
-      <section
-        class="rounded-2xl border border-gray-200 bg-white overflow-hidden cursor-pointer transition-shadow hover:shadow-[0_8px_20px_rgba(15,23,42,0.06)]"
-        @click="goTo('/inventory')"
-      >
-        <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-          <h3 class="text-sm font-bold text-gray-900">재고 위험 경고</h3>
-        </div>
-        <table class="w-full text-sm">
-          <thead class="bg-gray-50/70">
-            <tr>
-              <th class="px-5 py-2.5 text-left text-[11px] font-semibold text-gray-400">매장</th>
-              <th class="px-5 py-2.5 text-left text-[11px] font-semibold text-gray-400">상품</th>
-              <th class="px-5 py-2.5 text-right text-[11px] font-semibold text-gray-400">현재 / 최소</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-100">
-            <tr v-for="w in warnings" :key="w.store + w.product" class="hover:bg-gray-50/70">
-              <td class="px-5 py-2.5 text-xs text-gray-500">{{ w.store }}</td>
-              <td class="px-5 py-2.5 text-sm font-semibold text-gray-800">{{ w.product }}</td>
-              <td class="px-5 py-2.5 text-right"><span class="font-bold text-red-600">{{ w.current }}</span><span class="text-xs text-gray-400"> / {{ w.min }}</span></td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
+    <!-- 하단 행: 이상발주 바그래프 + 배송비율 도넛/재고위험 -->
+    <div class="grid grid-cols-3 gap-4">
 
-      <section
-        class="rounded-2xl border border-gray-200 bg-white overflow-hidden transition-shadow hover:shadow-[0_8px_20px_rgba(15,23,42,0.06)]"
-      >
-        <div class="px-4 py-3 border-b border-gray-100 flex flex-wrap items-center justify-between gap-2">
-          <h3 class="text-sm font-bold text-gray-900">오늘의 자동 발주 제안</h3>
-          <div class="flex flex-wrap items-center gap-2" @click.stop>
-            <div class="flex rounded-lg border border-gray-200 bg-gray-50/90 p-0.5">
-              <button
-                v-for="f in dashboardProposalFilters"
-                :key="f.id"
-                type="button"
-                class="text-[11px] px-2.5 py-1 rounded-md font-semibold transition-colors"
-                :class="dashboardProposalFilter === f.id ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'"
-                @click="dashboardProposalFilter = f.id"
-              >
-                {{ f.label }}
-              </button>
+      <!-- 이상 발주 통계 바그래프 -->
+      <div class="col-span-2 bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col"
+        style="min-height:280px">
+        <div class="flex items-center justify-between mb-5 shrink-0">
+          <div>
+            <h2 class="font-bold text-gray-900">이상 발주 통계</h2>
+            <p class="text-xs text-gray-400 mt-0.5">최근 6개월 이상 발주 현황 (단위: 건)</p>
+          </div>
+          <div class="flex items-center gap-4 text-xs text-gray-500">
+            <span class="flex items-center gap-1.5"><span
+                class="w-2.5 h-2.5 rounded-sm bg-red-400 inline-block"></span>승인 대기</span>
+            <span class="flex items-center gap-1.5"><span
+                class="w-2.5 h-2.5 rounded-sm bg-green-400 inline-block"></span>승인</span>
+            <span class="flex items-center gap-1.5"><span
+                class="w-2.5 h-2.5 rounded-sm bg-gray-300 inline-block"></span>반려</span>
+          </div>
+        </div>
+        <div class="flex-1 min-h-0 relative" style="height:200px">
+          <canvas ref="barCanvas" style="display:block; width:100%; height:100%;"></canvas>
+        </div>
+      </div>
+
+      <!-- 오른쪽: 배송 비율 도넛 + 재고 위험 -->
+      <div class="space-y-4">
+
+        <!-- 배송 비율 도넛 -->
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="font-bold text-gray-900">배송 비율</h2>
+            <span class="text-xs text-gray-400">오늘 기준</span>
+          </div>
+          <div class="relative mx-auto" style="width:140px;height:140px">
+            <canvas ref="donutCanvas"></canvas>
+            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <p class="text-2xl font-bold text-gray-900">{{ deliveryRate }}%</p>
+              <p class="text-xs text-gray-400 mt-0.5">배송완료율</p>
             </div>
-            <RouterLink
-              :to="{ path: '/order', query: { tab: 'auto', proposal: dashboardProposalFilter } }"
-              class="text-xs font-semibold text-[#F37321] hover:underline shrink-0"
-            >
-              발주 관리에서 보기
-            </RouterLink>
+          </div>
+          <div class="mt-4 space-y-2">
+            <div v-for="item in donutLegend" :key="item.label" class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full shrink-0" :style="{ background: item.color }"></span>
+              <span class="text-xs text-gray-500 flex-1">{{ item.label }}</span>
+              <div class="w-16 h-1 rounded-full bg-gray-100 overflow-hidden">
+                <div class="h-full rounded-full" :style="{ width: item.pct + '%', background: item.color }"></div>
+              </div>
+              <span class="text-xs font-semibold text-gray-700 w-7 text-right">{{ item.pct }}%</span>
+            </div>
           </div>
         </div>
-        <table class="w-full text-sm">
-          <thead class="bg-gray-50/70">
-            <tr>
-              <th class="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 w-[72px]">구분</th>
-              <th class="px-5 py-2.5 text-left text-[11px] font-semibold text-gray-400">발주 지점</th>
-              <th class="px-5 py-2.5 text-left text-[11px] font-semibold text-gray-400">제안 요약</th>
-              <th class="px-5 py-2.5 text-right text-[11px] font-semibold text-gray-400">상태</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-100">
-            <tr
-              v-for="o in dashboardProposalsDisplayed"
-              :key="o.kind + '-' + o.id"
-              class="hover:bg-gray-50/70"
-              :class="o.kind === 'abnormal' ? 'bg-rose-50/40' : ''"
-            >
-              <td class="px-4 py-2.5">
-                <span
-                  class="text-[10px] font-bold px-1.5 py-0.5 rounded border"
-                  :class="o.kind === 'auto' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-rose-100 text-rose-800 border-rose-200'"
-                >
-                  {{ o.kind === 'auto' ? '자동' : '이상' }}
-                </span>
-              </td>
-              <td class="px-5 py-2.5 text-sm font-semibold text-gray-900">{{ o.store }}</td>
-              <td class="px-5 py-2.5 text-xs text-gray-500">
-                <template v-if="o.kind === 'auto'">
-                  <span class="font-mono text-gray-700">{{ o.proposalId }}</span>
-                  <span class="text-gray-400"> · 품목 {{ o.itemCount }}건</span>
-                </template>
-                <template v-else>
-                  <span class="font-mono text-gray-700">{{ o.proposalId }}</span>
-                  <span class="text-rose-700 font-medium"> · {{ o.lineSummary }}</span>
-                </template>
-              </td>
-              <td class="px-5 py-2.5 text-right">
-                <span
-                  class="text-xs px-2.5 py-1 rounded-full font-semibold"
-                  :class="o.status === '제안중'
-                    ? 'bg-blue-50 text-blue-600'
-                    : o.status === '검토필요'
-                      ? 'bg-rose-50 text-rose-700'
-                      : 'bg-emerald-50 text-emerald-600'"
-                >
-                  {{ o.status }}
-                </span>
-              </td>
-            </tr>
-            <tr v-if="dashboardProposalsDisplayed.length === 0">
-              <td colspan="4" class="px-5 py-10 text-center text-sm text-gray-400">데이터가 없습니다</td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
+
+        <!-- 재고 위험 경고 -->
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+          <div class="mb-3">
+            <h2 class="font-bold text-gray-900">재고 위험</h2>
+          </div>
+          <div class="space-y-2">
+            <div v-for="w in warnings" :key="w.store + w.product"
+              class="flex items-center justify-between py-1.5 cursor-pointer hover:bg-gray-50 rounded px-1 transition-colors"
+              role="button" tabindex="0"
+              @click="router.push('/inventory/franchise')"
+              @keydown.enter="router.push('/inventory/franchise')"
+              @keydown.space.prevent="router.push('/inventory/franchise')">
+              <div class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                <p class="text-sm text-gray-800 truncate max-w-28">{{ w.product }}</p>
+              </div>
+              <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-red-100 text-red-600">
+                {{ w.current }}/{{ w.min }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+      </div>
     </div>
+
   </div>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
-
-const router = useRouter()
+import { Chart } from 'chart.js/auto'
 
 const periodTabs = ['일간', '주간', '월간']
+const router = useRouter()
 const activePeriod = ref('주간')
 
 const today = computed(() => new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' }))
+
+const lineCanvas = ref(null)
+const barCanvas = ref(null)
+const donutCanvas = ref(null)
+
+const thisWeek = [32, 48, 38, 65, 52, 78, 58]
+const lastWeek = [22, 38, 42, 48, 58, 52, 48]
+const weekLabels = ['일', '월', '화', '수', '목', '금', '토']
+
+const abnormalLabels = ['11월', '12월', '1월', '2월', '3월', '4월']
+const abnormalDanger = [3, 5, 2, 7, 4, 2]
+const abnormalApprove = [2, 4, 2, 5, 3, 1]
+const abnormalReject = [1, 1, 0, 2, 1, 1]
+
+const donutLegend = [
+  { label: '배송완료', pct: 65, color: '#f97316' },
+  { label: '배송중', pct: 20, color: '#60a5fa' },
+  { label: '배송지연', pct: 10, color: '#f87171' },
+  { label: '출고대기', pct: 5, color: '#a78bfa' },
+]
+
+const deliveryRate = computed(() => donutLegend[0].pct)
+
+onMounted(() => {
+  // 라인차트
+  new Chart(lineCanvas.value, {
+    type: 'line',
+    data: {
+      labels: weekLabels,
+      datasets: [
+        {
+          label: '이번 주',
+          data: thisWeek,
+          borderColor: '#f97316',
+          backgroundColor: (ctx) => {
+            const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, ctx.chart.height)
+            g.addColorStop(0, 'rgba(249,115,22,0.18)')
+            g.addColorStop(1, 'rgba(249,115,22,0)')
+            return g
+          },
+          fill: true,
+          tension: 0.45,
+          borderWidth: 2.5,
+          pointRadius: (ctx) => ctx.dataIndex === thisWeek.indexOf(Math.max(...thisWeek)) ? 5 : 0,
+          pointHoverRadius: 6,
+          pointBackgroundColor: '#f97316',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+        },
+        {
+          label: '지난 주',
+          data: lastWeek,
+          borderColor: '#d1d5db',
+          backgroundColor: 'transparent',
+          fill: false,
+          tension: 0.45,
+          borderWidth: 2,
+          pointRadius: 0,
+          pointHoverRadius: 5,
+          pointBackgroundColor: '#d1d5db',
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1f2937',
+          titleColor: '#f9fafb',
+          bodyColor: '#d1d5db',
+          padding: 10,
+          cornerRadius: 10,
+          callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y}건` },
+        },
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: '#9ca3af', font: { size: 12 } },
+          border: { display: false },
+        },
+        y: {
+          min: 10, max: 90,
+          grid: { color: '#f3f4f6' },
+          ticks: { color: '#9ca3af', font: { size: 11 }, stepSize: 20 },
+          border: { display: false },
+        },
+      },
+    },
+  })
+
+  // 도넛차트
+  new Chart(donutCanvas.value, {
+    type: 'doughnut',
+    data: {
+      labels: donutLegend.map(d => d.label),
+      datasets: [{
+        data: donutLegend.map(d => d.pct),
+        backgroundColor: donutLegend.map(d => d.color),
+        borderWidth: 3,
+        borderColor: '#ffffff',
+        hoverBorderWidth: 3,
+        hoverOffset: 6,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      cutout: '72%',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1f2937',
+          titleColor: '#f9fafb',
+          bodyColor: '#d1d5db',
+          padding: 10,
+          cornerRadius: 10,
+          callbacks: { label: (ctx) => ` ${ctx.label}: ${ctx.parsed}%` },
+        },
+      },
+    },
+  })
+
+  // 바차트
+  new Chart(barCanvas.value, {
+    type: 'bar',
+    data: {
+      labels: abnormalLabels,
+      datasets: [
+        {
+          label: '승인 대기',
+          data: abnormalDanger,
+          backgroundColor: '#f87171',
+          borderRadius: 4,
+          borderSkipped: false,
+        },
+        {
+          label: '승인',
+          data: abnormalApprove,
+          backgroundColor: '#4ade80',
+          borderRadius: 4,
+          borderSkipped: false,
+        },
+        {
+          label: '반려',
+          data: abnormalReject,
+          backgroundColor: '#d1d5db',
+          borderRadius: 4,
+          borderSkipped: false,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1f2937',
+          titleColor: '#f9fafb',
+          bodyColor: '#d1d5db',
+          padding: 10,
+          cornerRadius: 10,
+          callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y}건` },
+        },
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: '#9ca3af', font: { size: 12 } },
+          border: { display: false },
+        },
+        y: {
+          min: 0,
+          grid: { color: '#f3f4f6' },
+          ticks: { color: '#9ca3af', font: { size: 11 }, stepSize: 2, precision: 0 },
+          border: { display: false },
+        },
+      },
+    },
+  })
+})
 
 const kpis = ref([
   { title: '총 매출', value: '89.2', unit: '백만', sub: '전일 대비', delta: 12.4, to: '/settlement' },
@@ -230,73 +381,25 @@ const kpis = ref([
 ])
 
 const warnings = ref([
-  { store: '여의도역점', product: '우유(1L)', current: 85, min: 120 },
-  { store: '판교테크노밸리점', product: '에스프레소 원두', current: 12, min: 80 },
-  { store: '한화빌딩점', product: '바닐라 시럽', current: 5, min: 30 },
-  { store: '부산센텀점', product: '종이컵(M)', current: 300, min: 500 },
+  { store: '여의도역점',       product: '생닭(1kg)',      current: 30,  min: 50   },
+  { store: '판교테크노밸리점', product: '튀김유(18L)',    current: 2,   min: 5    },
+  { store: '한화빌딩점',       product: '황금올리브소스', current: 8,   min: 20   },
+  { store: '부산센텀점',       product: '치킨박스(중)',   current: 200, min: 500  },
 ])
 
-const dashboardProposalFilter = ref('all')
-const dashboardProposalFilters = [
-  { id: 'all', label: '전체' },
-  { id: 'auto', label: '자동' },
-  { id: 'abnormal', label: '이상' },
+const ongoingDeliveries = [
+  { num: 1, id: 'ORD-2604-001', from: '본사 창고', to: '신도방이거리점', status: '배송중' },
+  { num: 2, id: 'ORD-2604-002', from: '본사 창고', to: '강남역점', status: '출고대기' },
+  { num: 3, id: 'ORD-2604-004', from: '본사 창고', to: '종로3가점', status: '배송지연' },
+  { num: 4, id: 'ORD-2604-005', from: '본사 창고', to: '부산서면점', status: '출고완료' },
 ]
 
-const todayOrders = ref([
-  { id: 1, kind: 'auto', store: '여의도역점', proposalId: 'AO-20260420-014', itemCount: 4, status: '제안중' },
-  { id: 2, kind: 'auto', store: '판교테크노밸리점', proposalId: 'AO-20260420-021', itemCount: 2, status: '제안중' },
-  { id: 3, kind: 'auto', store: '한화빌딩점', proposalId: 'AO-20260420-008', itemCount: 6, status: '제안중' },
-  { id: 4, kind: 'auto', store: '부산센텀점', proposalId: 'AO-20260420-003', itemCount: 1, status: '확정' },
-])
+const deliveryCls = s => ({
+  '배송중': 'bg-blue-50 text-blue-600 border border-blue-200',
+  '출고대기': 'bg-gray-100 text-gray-600 border border-gray-200',
+  '출고완료': 'bg-green-50 text-green-700 border border-green-200',
+  '배송완료': 'bg-green-50 text-green-700 border border-green-200',
+  '배송지연': 'bg-red-50 text-red-600 border border-red-200',
+}[s] || 'bg-gray-100 text-gray-500 border border-gray-200')
 
-const todayAbnormalOrders = ref([
-  { id: 'abn-dash-1', kind: 'abnormal', store: '여의도역점', proposalId: 'ORD-20260414-ABN1', lineSummary: '평균 대비 수량 +567%', status: '검토필요' },
-  { id: 'abn-dash-2', kind: 'abnormal', store: '판교테크노밸리점', proposalId: 'ORD-20260413-ABN2', lineSummary: '평균 대비 수량 +400%', status: '검토필요' },
-])
-
-const dashboardProposalsDisplayed = computed(() => {
-  const merged = [...todayAbnormalOrders.value, ...todayOrders.value]
-  const f = dashboardProposalFilter.value
-  if (f === 'auto') return merged.filter((r) => r.kind === 'auto')
-  if (f === 'abnormal') return merged.filter((r) => r.kind === 'abnormal')
-  return merged
-})
-
-const deliveryBreakdown = ref([
-  { label: '배송 완료', count: 128, color: '#f97316' },
-  { label: '배송 중', count: 42, color: '#fb923c' },
-  { label: '지연', count: 8, color: '#fda4af' },
-  { label: '반송', count: 6, color: '#e5e7eb' },
-])
-
-const deliveryRate = computed(() => {
-  const total = deliveryBreakdown.value.reduce((sum, item) => sum + item.count, 0)
-  const completed = deliveryBreakdown.value[0]?.count ?? 0
-  return Math.round((completed / total) * 100)
-})
-
-function goTo(path) {
-  router.push(path)
-}
 </script>
-
-<style scoped>
-.chart-ring {
-  background: conic-gradient(#f97316 0deg 252deg, #fb923c 252deg 324deg, #fda4af 324deg 338deg, #e5e7eb 338deg 360deg);
-}
-
-.chart-point {
-  cursor: pointer;
-}
-
-.chart-tooltip-group {
-  opacity: 0;
-  transition: opacity 0.15s ease;
-  pointer-events: none;
-}
-
-.chart-point:hover + .chart-tooltip-group {
-  opacity: 1;
-}
-</style>

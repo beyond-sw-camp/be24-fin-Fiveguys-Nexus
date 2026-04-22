@@ -23,6 +23,24 @@ const router = createRouter({
       meta: { role: 'ADMIN' },
     },
     {
+      path: '/statistics',
+      name: 'statistics',
+      component: () => import('@/views/StatisticsView.vue'),
+      meta: { role: 'ADMIN' },
+    },
+    {
+      path: '/statistics/sales',
+      name: 'statisticsSales',
+      component: () => import('@/views/hq/SalesStatisticsView.vue'),
+      meta: { role: 'ADMIN' },
+    },
+    {
+      path: '/statistics/esg',
+      name: 'statisticsEsg',
+      component: () => import('@/views/hq/EsgDashboardView.vue'),
+      meta: { role: 'ADMIN' },
+    },
+    {
       path: '/store',
       name: 'store',
       component: () => import('@/views/StoreView.vue'),
@@ -77,6 +95,12 @@ const router = createRouter({
       component: () => import('@/views/SettlementView.vue'),
       meta: { role: 'ADMIN' },
     },
+    {
+      path: '/admin-account',
+      name: 'adminAccount',
+      component: () => import('@/views/AdminAccountCreateView.vue'),
+      meta: { role: 'ADMIN' },
+    },
 
     // ── STORE OWNER ────────────────────────────────────
     {
@@ -113,6 +137,31 @@ const router = createRouter({
       path: '/store-settlement',
       name: 'storeSettlement',
       component: () => import('@/views/store/StoreSettlementView.vue'),
+      meta: { role: 'STORE_OWNER' },
+    },
+
+    {
+      path: '/notification',
+      name: 'notification',
+      component: () => import('@/views/hq/HqNotificationView.vue'),
+      meta: { role: 'ADMIN' },
+    },
+    {
+      path: '/report',
+      name: 'report',
+      component: () => import('@/views/hq/ReportView.vue'),
+      meta: { role: 'ADMIN' },
+    },
+    {
+      path: '/store-notification',
+      name: 'storeNotification',
+      component: () => import('@/views/store/StoreNotificationView.vue'),
+      meta: { role: 'STORE_OWNER' },
+    },
+    {
+      path: '/store-news',
+      name: 'storeNews',
+      component: () => import('@/views/store/StoreNewsView.vue'),
       meta: { role: 'STORE_OWNER' },
     },
 

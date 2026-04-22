@@ -8,7 +8,8 @@
       class="relative flex items-center justify-center w-9 h-9 rounded hover:bg-gray-100 transition-colors z-50">
       <Bell class="w-4.5 h-4.5 text-gray-500" />
       <span v-if="count > 0"
-        class="absolute top-1 right-1 min-w-[16px] h-4 flex items-center justify-center text-[10px] font-black bg-[#F37321] text-white rounded-full px-1 leading-none">
+        class="absolute top-1 right-1 min-w-[16px] h-4 flex items-center justify-center text-[10px] font-black text-white rounded-full px-1 leading-none"
+        :class="accentBadgeClass">
         {{ count > 9 ? '9+' : count }}
       </span>
     </button>
@@ -29,7 +30,8 @@
           <div class="flex items-center gap-2">
             <span class="text-sm font-bold text-gray-900">알림</span>
             <span v-if="count > 0"
-              class="text-[11px] font-bold px-1.5 py-0.5 bg-[#F37321] text-white rounded">
+              class="text-[11px] font-bold px-1.5 py-0.5 text-white rounded"
+              :class="accentBadgeClass">
               {{ count }}
             </span>
           </div>
@@ -46,9 +48,9 @@
           </div>
 
           <div v-for="n in items" :key="n.id"
-            @click="notifStore.markRead(n.id)"
+            @click="handleNotifClick(n)"
             class="flex gap-3 px-4 py-3.5 cursor-pointer transition-colors"
-            :class="n.read ? 'bg-white hover:bg-gray-50/50' : 'bg-orange-50/30 hover:bg-orange-50/60'">
+            :class="n.read ? 'bg-white hover:bg-gray-50/50' : unreadRowClass">
 
             <!-- Type badge dot -->
             <div class="shrink-0 mt-0.5">
@@ -74,7 +76,7 @@
 
             <!-- Unread indicator -->
             <div class="shrink-0 self-center">
-              <div v-if="!n.read" class="w-1.5 h-1.5 rounded-full bg-[#F37321]"></div>
+              <div v-if="!n.read" class="w-1.5 h-1.5 rounded-full" :class="accentDotClass"></div>
             </div>
           </div>
         </div>
@@ -93,10 +95,12 @@ import { ref, computed } from 'vue'
 import { Bell } from 'lucide-vue-next'
 import { useNotificationStore } from '@/stores/notification'
 import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
 
 const open = ref(false)
 const notifStore = useNotificationStore()
 const auth = useAuthStore()
+const router = useRouter()
 
 const role = computed(() => {
   if (auth.isAdmin) return 'ADMIN'
@@ -106,9 +110,20 @@ const role = computed(() => {
 
 const items = computed(() => role.value ? notifStore.forRole(role.value) : [])
 const count = computed(() => role.value ? notifStore.unreadCount(role.value) : 0)
+const isStoreOwnerRole = computed(() => role.value === 'STORE_OWNER')
+const accentBadgeClass = computed(() => isStoreOwnerRole.value ? 'bg-blue-500' : 'bg-[#F37321]')
+const accentDotClass = accentBadgeClass
+const unreadRowClass = computed(() => isStoreOwnerRole.value ? 'bg-blue-50/30 hover:bg-blue-50/60' : 'bg-orange-50/30 hover:bg-orange-50/60')
 
 function markAll() {
   if (role.value) notifStore.markAllRead(role.value)
+}
+
+function handleNotifClick(n) {
+  notifStore.markRead(n.id)
+  open.value = false
+  const path = auth.isAdmin ? '/notification' : '/store-notification'
+  router.push(path)
 }
 
 function typeColor(type) {

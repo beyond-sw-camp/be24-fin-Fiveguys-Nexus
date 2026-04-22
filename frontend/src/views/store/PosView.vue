@@ -8,13 +8,13 @@
         <div class="flex border border-gray-200">
           <button
             @click="activeTab = 'order'"
-            :class="['px-4 py-2 text-sm font-semibold transition-all flex items-center gap-2',
+            :class="['px-4 py-2 text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer',
               activeTab === 'order' ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:bg-gray-50']">
             <ShoppingCart class="w-4 h-4" /> 주문 및 결제
           </button>
           <button
             @click="activeTab = 'settlement'"
-            :class="['px-4 py-2 text-sm font-semibold transition-all flex items-center gap-2 border-l border-gray-200',
+            :class="['px-4 py-2 text-sm font-semibold transition-all flex items-center gap-2 border-l border-gray-200 cursor-pointer',
               activeTab === 'settlement' ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:bg-gray-50']">
             <TrendingUp class="w-4 h-4" /> 일일 마감 (정산)
           </button>
@@ -34,10 +34,6 @@
       </div>
     </div>
 
-    <p class="px-6 py-2 border-b border-gray-100 bg-gray-50/80 text-[11px] text-gray-500 leading-relaxed shrink-0">
-      <code class="font-mono text-gray-400">MENU_001 · PAY_001~002 · CLOSED_001</code>
-      메뉴·카테고리·검색, 장바구니 결제, 일일 마감 시 본사로 판매·재고 데이터 전송 및 전산 재고 차감에 연동됩니다.
-    </p>
 
     <!-- ── 주문/결제 탭 ─────────────────────────────── -->
     <div v-if="activeTab === 'order'" class="flex-1 flex overflow-hidden">
@@ -55,7 +51,7 @@
               v-model="searchQuery"
               placeholder="상품명 검색..."
               class="bg-transparent border-none outline-none text-sm w-full text-gray-700" />
-            <button v-if="searchQuery" @click="searchQuery = ''" class="text-gray-400 hover:text-gray-600 ml-1">
+            <button v-if="searchQuery" @click="searchQuery = ''" class="text-gray-400 hover:text-gray-600 ml-1 cursor-pointer">
               <XCircle class="w-4 h-4" />
             </button>
           </div>
@@ -64,7 +60,7 @@
           <div class="flex gap-2 overflow-x-auto pb-1">
             <button v-for="cat in categories" :key="cat"
               @click="selectedCategory = cat"
-              :class="['px-5 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all border shrink-0',
+              :class="['px-5 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all border shrink-0 cursor-pointer',
                 selectedCategory === cat
                   ? 'bg-gray-800 text-white border-gray-800 shadow-sm'
                   : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50']">
@@ -89,7 +85,8 @@
 
               <!-- 상품 이미지 -->
               <div class="w-full h-28 rounded-lg overflow-hidden mb-3 bg-gray-50 border border-gray-50 relative">
-                <img :src="product.image" :alt="product.name"
+                <img :src="getProductImage(product)" :alt="product.name"
+                  @error="handleProductImageError"
                   class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                   loading="lazy" />
                 <div class="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors"></div>
@@ -113,7 +110,7 @@
             <ShoppingCart class="w-4 h-4 text-gray-500" /> 현재 주문 내역
           </h2>
           <button @click="clearCart"
-            class="text-xs text-gray-500 hover:text-red-500 border border-gray-200 px-3 py-1.5 rounded-md hover:bg-red-50 hover:border-red-100 transition-colors">
+            class="text-xs text-gray-500 hover:text-red-500 border border-gray-200 px-3 py-1.5 rounded-md hover:bg-red-50 hover:border-red-100 transition-colors cursor-pointer">
             전체 삭제
           </button>
         </div>
@@ -132,7 +129,7 @@
             class="bg-white border border-gray-200 p-4">
             <div class="flex justify-between items-start mb-3">
               <span class="font-semibold text-gray-900 text-sm leading-tight">{{ item.name }}</span>
-              <button @click="removeFromCart(item.id)" class="text-gray-300 hover:text-red-500 transition-colors ml-2 shrink-0">
+              <button @click="removeFromCart(item.id)" class="text-gray-300 hover:text-red-500 transition-colors ml-2 shrink-0 cursor-pointer">
                 <X class="w-4 h-4" />
               </button>
             </div>
@@ -141,12 +138,12 @@
               <!-- 수량 조절 -->
               <div class="flex items-center border border-gray-200 rounded-lg overflow-hidden">
                 <button @click="decreaseQty(item)"
-                  class="w-8 h-7 flex items-center justify-center bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-blue-500 transition-colors">
+                  class="w-8 h-7 flex items-center justify-center bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-blue-500 transition-colors cursor-pointer">
                   <Minus class="w-3 h-3" />
                 </button>
                 <span class="w-9 h-7 flex items-center justify-center text-xs font-bold text-gray-800 border-x border-gray-200">{{ item.quantity }}</span>
                 <button @click="increaseQty(item)"
-                  class="w-8 h-7 flex items-center justify-center bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-blue-500 transition-colors">
+                  class="w-8 h-7 flex items-center justify-center bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-blue-500 transition-colors cursor-pointer">
                   <Plus class="w-3 h-3" />
                 </button>
               </div>
@@ -168,7 +165,7 @@
           <button @click="openPaymentModal"
             :disabled="cart.length === 0 || salesData.isClosed"
             :class="['w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all text-white shadow-sm',
-              (cart.length === 0 || salesData.isClosed) ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none' : 'bg-blue-500 hover:bg-blue-600 active:scale-[0.98]']">
+              (cart.length === 0 || salesData.isClosed) ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none' : 'bg-blue-500 hover:bg-blue-600 active:scale-[0.98] cursor-pointer']">
             {{ salesData.isClosed ? '마감됨 — 주문 불가' : '결제 진행하기' }}
           </button>
         </div>
@@ -179,18 +176,14 @@
     <div v-if="activeTab === 'settlement'" class="flex-1 overflow-auto p-8 space-y-6">
       <div class="flex justify-between items-end">
         <div>
-          <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <TrendingUp class="w-6 h-6 text-blue-500" />
-            일일 정산
-          </h1>
+          <h1 class="text-2xl font-bold text-gray-900">일일 정산</h1>
           <p class="text-sm text-gray-500 mt-1">매출 내역과 결제 이력을 확인하고 영업 마감을 관리합니다.</p>
         </div>
 
         <!-- 마감 / 영업 시작 버튼 -->
         <button @click="toggleStoreStatus"
-          :class="['text-sm px-6 py-2.5 rounded-lg font-bold transition-all flex items-center gap-2 shadow-sm text-white',
+          :class="['text-sm px-6 py-2.5 rounded-lg font-bold transition-all shadow-sm text-white cursor-pointer',
             salesData.isClosed ? 'bg-blue-500 hover:bg-blue-600 ring-4 ring-blue-100' : 'bg-gray-800 hover:bg-gray-700']">
-          <component :is="salesData.isClosed ? Play : Power" class="w-4 h-4" />
           {{ salesData.isClosed ? '새로운 영업 시작하기' : '영업 마감하기' }}
         </button>
       </div>
@@ -198,48 +191,33 @@
       <!-- KPI 카드 -->
       <div class="grid grid-cols-3 gap-4">
         <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
-          <div class="flex justify-between items-start">
-            <div>
-              <p class="text-sm font-medium text-gray-500">총 매출액</p>
-              <div class="flex items-end gap-1 mt-2">
-                <h3 class="text-3xl font-bold text-gray-900">{{ salesData.total.toLocaleString() }}</h3>
-                <span class="text-base font-medium text-gray-500 mb-1">원</span>
-              </div>
-            </div>
-            <div class="p-2 rounded-lg bg-blue-50 text-blue-500">
-              <Coins class="w-5 h-5" />
+          <div>
+            <p class="text-sm font-medium text-gray-500">총 매출액</p>
+            <div class="flex items-end gap-1 mt-2">
+              <h3 class="text-3xl font-bold text-gray-900">{{ salesData.total.toLocaleString() }}</h3>
+              <span class="text-base font-medium text-gray-500 mb-1">원</span>
             </div>
           </div>
         </div>
 
         <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
-          <div class="flex justify-between items-start">
-            <div>
-              <p class="text-sm font-medium text-gray-500">총 결제 건수</p>
-              <div class="flex items-end gap-1 mt-2">
-                <h3 class="text-3xl font-bold text-gray-900">{{ salesData.count }}</h3>
-                <span class="text-base font-medium text-gray-500 mb-1">건</span>
-              </div>
-            </div>
-            <div class="p-2 rounded-lg bg-purple-50 text-purple-500">
-              <Receipt class="w-5 h-5" />
+          <div>
+            <p class="text-sm font-medium text-gray-500">총 결제 건수</p>
+            <div class="flex items-end gap-1 mt-2">
+              <h3 class="text-3xl font-bold text-gray-900">{{ salesData.count }}</h3>
+              <span class="text-base font-medium text-gray-500 mb-1">건</span>
             </div>
           </div>
         </div>
 
         <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
-          <div class="flex justify-between items-start">
-            <div>
-              <p class="text-sm font-medium text-gray-500">평균 객단가</p>
-              <div class="flex items-end gap-1 mt-2">
-                <h3 class="text-3xl font-bold text-gray-900">
-                  {{ salesData.count > 0 ? Math.floor(salesData.total / salesData.count).toLocaleString() : 0 }}
-                </h3>
-                <span class="text-base font-medium text-gray-500 mb-1">원</span>
-              </div>
-            </div>
-            <div class="p-2 rounded-lg bg-green-50 text-green-500">
-              <Users class="w-5 h-5" />
+          <div>
+            <p class="text-sm font-medium text-gray-500">평균 객단가</p>
+            <div class="flex items-end gap-1 mt-2">
+              <h3 class="text-3xl font-bold text-gray-900">
+                {{ salesData.count > 0 ? Math.floor(salesData.total / salesData.count).toLocaleString() : 0 }}
+              </h3>
+              <span class="text-base font-medium text-gray-500 mb-1">원</span>
             </div>
           </div>
         </div>
@@ -248,12 +226,12 @@
       <div class="grid grid-cols-3 gap-6">
         <!-- 결제 수단별 매출 -->
         <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-          <div class="px-5 py-4 border-b border-gray-100 font-semibold text-gray-900 flex items-center gap-2 text-sm">
-            <PieChart class="w-4 h-4 text-gray-400" /> 결제 수단별 매출
+          <div class="px-5 py-4 border-b border-gray-100 font-semibold text-gray-900 text-sm">
+            결제 수단별 매출
           </div>
           <table class="w-full text-sm">
             <thead class="bg-gray-50 text-xs text-gray-500 uppercase">
-              <tr>
+              <tr class="border-b border-gray-200">
                 <th class="px-5 py-3 text-left">수단</th>
                 <th class="px-5 py-3 text-center">비율</th>
                 <th class="px-5 py-3 text-right">금액</th>
@@ -261,24 +239,14 @@
             </thead>
             <tbody class="divide-y divide-gray-100">
               <tr class="hover:bg-gray-50/50">
-                <td class="px-5 py-4 font-medium flex items-center gap-2">
-                  <div class="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center">
-                    <CreditCard class="w-3.5 h-3.5 text-gray-600" />
-                  </div>
-                  신용카드
-                </td>
+                <td class="px-5 py-4 font-medium">신용카드</td>
                 <td class="px-5 py-4 text-center text-gray-500">
                   {{ salesData.total > 0 ? Math.round((salesData.card / salesData.total) * 100) : 0 }}%
                 </td>
                 <td class="px-5 py-4 font-bold text-right">{{ formatPrice(salesData.card) }}</td>
               </tr>
               <tr class="hover:bg-gray-50/50">
-                <td class="px-5 py-4 font-medium flex items-center gap-2">
-                  <div class="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center">
-                    <Banknote class="w-3.5 h-3.5 text-gray-600" />
-                  </div>
-                  현금
-                </td>
+                <td class="px-5 py-4 font-medium">현금</td>
                 <td class="px-5 py-4 text-center text-gray-500">
                   {{ salesData.total > 0 ? Math.round((salesData.cash / salesData.total) * 100) : 0 }}%
                 </td>
@@ -291,13 +259,13 @@
         <!-- 실시간 결제 내역 -->
         <div class="col-span-2 bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col max-h-[360px]">
           <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center font-semibold text-gray-900 text-sm shrink-0">
-            <span class="flex items-center gap-2"><Receipt class="w-4 h-4 text-gray-400" /> 실시간 결제 내역</span>
+            <span>실시간 결제 내역</span>
             <span class="text-xs text-gray-400 font-normal">최신 순</span>
           </div>
           <div class="overflow-auto flex-1">
             <table class="w-full text-sm">
               <thead class="bg-gray-50 text-xs text-gray-500 uppercase sticky top-0">
-                <tr>
+                <tr class="border-b border-gray-200">
                   <th class="px-6 py-3 text-left">결제 시간</th>
                   <th class="px-6 py-3 text-left">주문 내역</th>
                   <th class="px-6 py-3 text-center">결제 수단</th>
@@ -307,7 +275,6 @@
               <tbody class="divide-y divide-gray-100">
                 <tr v-if="paymentHistory.length === 0">
                   <td colspan="4" class="px-6 py-12 text-center text-gray-400">
-                    <Receipt class="w-8 h-8 mx-auto mb-2 opacity-30" />
                     <p class="text-sm">오늘 등록된 결제 내역이 없습니다.</p>
                   </td>
                 </tr>
@@ -342,12 +309,10 @@
     <!-- ── 결제 모달 ──────────────────────────────────── -->
     <div v-if="showPaymentModal"
       class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-md border border-gray-100">
-        <div class="border-b border-gray-100 p-5 flex justify-between items-center bg-gray-50 rounded-t-2xl">
+      <div class="bg-white rounded-xl border border-gray-200 shadow-xl w-full max-w-md">
+        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
           <h2 class="text-lg font-bold text-gray-800">결제 수단 선택</h2>
-          <button @click="showPaymentModal = false" class="text-gray-400 hover:text-gray-600">
-            <X class="w-5 h-5" />
-          </button>
+          <button @click="showPaymentModal = false" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
         </div>
         <div class="p-8">
           <div class="text-center mb-8">
@@ -356,12 +321,12 @@
           </div>
           <div class="grid grid-cols-2 gap-4">
             <button @click="processPayment('card')"
-              class="flex flex-col items-center justify-center p-6 border border-gray-200 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition-all group shadow-sm hover:shadow-md">
+              class="flex flex-col items-center justify-center p-6 border border-gray-200 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition-all group shadow-sm hover:shadow-md cursor-pointer">
               <CreditCard class="w-10 h-10 text-gray-400 group-hover:text-blue-500 mb-3 transition-colors" />
               <span class="font-semibold text-gray-700 group-hover:text-blue-600">신용카드</span>
             </button>
             <button @click="processPayment('cash')"
-              class="flex flex-col items-center justify-center p-6 border border-gray-200 rounded-xl hover:border-emerald-400 hover:bg-emerald-50 transition-all group shadow-sm hover:shadow-md">
+              class="flex flex-col items-center justify-center p-6 border border-gray-200 rounded-xl hover:border-emerald-400 hover:bg-emerald-50 transition-all group shadow-sm hover:shadow-md cursor-pointer">
               <Banknote class="w-10 h-10 text-gray-400 group-hover:text-emerald-500 mb-3 transition-colors" />
               <span class="font-semibold text-gray-700 group-hover:text-emerald-600">현금</span>
             </button>
@@ -373,7 +338,7 @@
     <!-- ── 마감 확인 모달 ─────────────────────────────── -->
     <div v-if="showCloseModal"
       class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm border border-gray-100 text-center p-8">
+      <div class="bg-white rounded-xl border border-gray-200 shadow-xl w-full max-w-sm text-center p-8">
         <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-5">
           <AlertCircle class="w-8 h-8 text-red-500" />
         </div>
@@ -386,11 +351,11 @@
         </p>
         <div class="flex gap-3">
           <button @click="showCloseModal = false"
-            class="flex-1 py-3 bg-white border border-gray-200 text-gray-600 rounded-xl text-sm font-bold hover:bg-gray-50 transition-colors">
+            class="flex-1 py-3 bg-white border border-gray-200 text-gray-600 rounded-xl text-sm font-bold hover:bg-gray-50 transition-colors cursor-pointer">
             취소
           </button>
           <button @click="confirmClose"
-            class="flex-1 py-3 bg-red-500 text-white rounded-xl text-sm font-bold hover:bg-red-600 shadow-sm transition-colors">
+            class="flex-1 py-3 bg-red-500 text-white rounded-xl text-sm font-bold hover:bg-red-600 shadow-sm transition-colors cursor-pointer">
             마감 승인
           </button>
         </div>
@@ -405,11 +370,11 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import {
   ShoppingCart, ShoppingBag, TrendingUp,
   Search, XCircle, X, Minus, Plus,
-  CreditCard, Banknote, Coins,
-  Receipt, Users, PieChart,
-  CheckCircle, AlertCircle, Power, Play,
+  CreditCard, Banknote,
+  CheckCircle, AlertCircle,
 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
+import defaultMenuImage from '@/assets/store-pos-default-menu.png'
 
 const auth = useAuthStore()
 
@@ -426,22 +391,22 @@ let timer = null
 let toastTimer = null
 
 // ── 카테고리 ──────────────────────────────────────────
-const categories = ['전체', '커피', '라커피', '디저트', '베이커리']
+const categories = ['전체', '치킨', '사이드', '음료', '세트']
 
 // ── 상품 데이터 ───────────────────────────────────────
 const allProducts = ref([
-  { id: 1,  name: '아메리카노 (HOT)', price: 4000, category: '커피',     image: 'https://images.unsplash.com/photo-1559525839-b184a4d698c7?auto=format&fit=crop&w=200&q=80' },
-  { id: 2,  name: '아메리카노 (ICE)', price: 4500, category: '커피',     image: 'https://images.unsplash.com/photo-1517701550927-30cfcb64db10?auto=format&fit=crop&w=200&q=80' },
-  { id: 3,  name: '카페라떼',         price: 5000, category: '커피',     image: 'https://images.unsplash.com/photo-1570968915860-54d5c301fa9f?auto=format&fit=crop&w=200&q=80' },
-  { id: 4,  name: '바닐라 라떼',      price: 5500, category: '커피',     image: 'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&w=200&q=80' },
-  { id: 5,  name: '카라멜 마끼아또',  price: 5800, category: '커피',     image: 'https://images.unsplash.com/photo-1485808191679-5f86510681a2?auto=format&fit=crop&w=200&q=80' },
-  { id: 6,  name: '블루베리 스무디',  price: 6500, category: '라커피',   image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=200&q=80' },
-  { id: 7,  name: '복숭아 아이스티',  price: 5500, category: '라커피',   image: 'https://images.unsplash.com/photo-1588713028246-17b5f1af8f13?auto=format&fit=crop&w=200&q=80' },
-  { id: 8,  name: '레몬 에이드',      price: 6000, category: '라커피',   image: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=200&q=80' },
-  { id: 9,  name: '치즈 케이크',      price: 6500, category: '디저트',   image: 'https://images.unsplash.com/photo-1524351199678-941a58a3df50?auto=format&fit=crop&w=200&q=80' },
-  { id: 10, name: '초코 머핀',        price: 3500, category: '디저트',   image: 'https://images.unsplash.com/photo-1606890737304-57a1ca8a5b62?auto=format&fit=crop&w=200&q=80' },
-  { id: 11, name: '크로플',           price: 5000, category: '베이커리', image: 'https://images.unsplash.com/photo-1626075191062-817b7f2f114d?auto=format&fit=crop&w=200&q=80' },
-  { id: 12, name: '소금빵',           price: 3000, category: '베이커리', image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=200&q=80' },
+  { id: 1,  name: '황금올리브치킨',      price: 23000, category: '치킨', image: 'https://images.unsplash.com/photo-1562967916-eb82221dfb92?auto=format&fit=crop&w=500&q=80' },
+  { id: 2,  name: '황금올리브순살',      price: 24000, category: '치킨', image: 'https://images.unsplash.com/photo-1527477396000-e27163b481c2?auto=format&fit=crop&w=500&q=80' },
+  { id: 3,  name: '핫황금올리브치킨',    price: 24000, category: '치킨', image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=500&q=80' },
+  { id: 4,  name: '양념치킨',            price: 24500, category: '치킨', image: 'https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=500&q=80' },
+  { id: 5,  name: '반반치킨',            price: 25000, category: '치킨', image: 'https://images.unsplash.com/photo-1626645738196-c2a7c87d8f5b?auto=format&fit=crop&w=500&q=80' },
+  { id: 6,  name: '자메이카 통다리',     price: 25500, category: '치킨', image: 'https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?auto=format&fit=crop&w=500&q=80' },
+  { id: 7,  name: '치즈볼(5개)',         price: 5500,  category: '사이드', image: 'https://images.unsplash.com/photo-1625944230945-1b7dd3b949ab?auto=format&fit=crop&w=500&q=80' },
+  { id: 8,  name: '케이준 감자튀김',     price: 4500,  category: '사이드', image: 'https://images.unsplash.com/photo-1576107232684-1279f390859f?auto=format&fit=crop&w=500&q=80' },
+  { id: 9,  name: '콜라 1.25L',          price: 3000,  category: '음료', image: 'https://images.unsplash.com/photo-1581636625402-29b2a704ef13?auto=format&fit=crop&w=500&q=80' },
+  { id: 10, name: '사이다 1.25L',        price: 3000,  category: '음료', image: 'https://images.unsplash.com/photo-1581006852262-e4307cf6283a?auto=format&fit=crop&w=500&q=80' },
+  { id: 11, name: '황금올리브+콜라세트', price: 26000, category: '세트', image: 'https://images.unsplash.com/photo-1512152272829-e3139592d56f?auto=format&fit=crop&w=500&q=80' },
+  { id: 12, name: '반반+치즈볼세트',     price: 29900, category: '세트', image: 'https://images.unsplash.com/photo-1548340748-6d98d2fe7806?auto=format&fit=crop&w=500&q=80' },
 ])
 
 // ── 장바구니 ──────────────────────────────────────────
@@ -449,13 +414,15 @@ const cart = ref([])
 
 // ── 매출 데이터 ───────────────────────────────────────
 const salesData = ref({
-  total: 34500, card: 24500, cash: 10000, count: 3, isClosed: false,
+  total: 124800, card: 92800, cash: 32000, count: 5, isClosed: false,
 })
 
 const paymentHistory = ref([
-  { id: 3, time: '14:30:12', method: '신용카드', items: '아메리카노 (HOT) 외 1건', amount: 8500  },
-  { id: 2, time: '13:15:00', method: '현금',     items: '카페라떼 2개',             amount: 10000 },
-  { id: 1, time: '12:05:45', method: '신용카드', items: '치즈 케이크 외 2건',       amount: 16000 },
+  { id: 5, time: '20:42:17', method: '신용카드', items: '황금올리브치킨 외 1건',      amount: 29000 },
+  { id: 4, time: '19:58:03', method: '현금',     items: '양념치킨 1마리',             amount: 24500 },
+  { id: 3, time: '18:26:44', method: '신용카드', items: '반반치킨 외 2건',            amount: 36500 },
+  { id: 2, time: '17:11:20', method: '신용카드', items: '자메이카 통다리 1마리',       amount: 25500 },
+  { id: 1, time: '16:40:09', method: '현금',     items: '황금올리브순살 1마리',        amount: 24000 },
 ])
 
 // ── Computed ──────────────────────────────────────────
@@ -475,7 +442,7 @@ const totalQuantity = computed(() => cart.value.reduce((s, i) => s + i.quantity,
 
 // ── 유틸 ──────────────────────────────────────────────
 function formatPrice(price) {
-  return price.toLocaleString() + '원'
+  return '₩ ' + price.toLocaleString()
 }
 
 function showToastMsg(msg) {
@@ -488,6 +455,16 @@ function updateTime() {
   const now = new Date()
   currentTime.value = now.toLocaleDateString('ko-KR') + ' ' +
     now.toLocaleTimeString('ko-KR', { hour12: false })
+}
+
+function getProductImage(product) {
+  return product.image || defaultMenuImage
+}
+
+function handleProductImageError(event) {
+  if (event.target.dataset.fallbackApplied === 'true') return
+  event.target.dataset.fallbackApplied = 'true'
+  event.target.src = defaultMenuImage
 }
 
 // ── 장바구니 액션 ─────────────────────────────────────

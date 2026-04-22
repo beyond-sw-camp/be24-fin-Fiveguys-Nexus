@@ -11,7 +11,9 @@
         class="px-4 py-2 text-sm font-semibold border transition-colors rounded"
         :class="isEditing
           ? 'border-gray-200 text-gray-600 hover:bg-gray-50'
-          : 'bg-[#F37321] text-white border-[#F37321] hover:bg-[#e0661d]'">
+          : (auth.isAdmin
+            ? 'bg-[#F37321] text-white border-[#F37321] hover:bg-[#e0661d]'
+            : 'bg-blue-500 text-white border-blue-500 hover:bg-blue-600')">
         {{ isEditing ? '취소' : '정보 수정' }}
       </button>
     </div>

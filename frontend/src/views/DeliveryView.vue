@@ -18,6 +18,27 @@
           placeholder="가맹점 이름 검색..."
         >
       </div>
+
+      <div class="flex flex-wrap gap-2">
+        <div class="relative w-32">
+          <select v-model="selectedYear" class="bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-[#F37321] focus:border-[#F37321] outline-none block w-full p-2.5 cursor-pointer shadow-sm">
+            <option value="전체">연도 전체</option>
+            <option v-for="y in uniqueYears" :key="y" :value="y">{{ y }}년</option>
+          </select>
+        </div>
+        <div class="relative w-28">
+          <select v-model="selectedMonth" class="bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-[#F37321] focus:border-[#F37321] outline-none block w-full p-2.5 cursor-pointer shadow-sm">
+            <option value="전체">월 전체</option>
+            <option v-for="m in uniqueMonths" :key="m" :value="m">{{ m }}월</option>
+          </select>
+        </div>
+        <div class="relative w-28">
+          <select v-model="selectedDay" class="bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-[#F37321] focus:border-[#F37321] outline-none block w-full p-2.5 cursor-pointer shadow-sm">
+            <option value="전체">일 전체</option>
+            <option v-for="d in uniqueDays" :key="d" :value="d">{{ d }}일</option>
+          </select>
+        </div>
+      </div>
     </div>
 
     <div class="flex gap-2 flex-wrap">
@@ -147,7 +168,12 @@
 import { ref, computed } from 'vue'
 
 const filterStatus = ref('전체')
-const searchQuery = ref('') // 가맹점 검색어 상태
+const searchQuery = ref('')
+
+// 날짜 검색 상태 추가
+const selectedYear = ref('전체')
+const selectedMonth = ref('전체')
+const selectedDay = ref('전체')
 
 // 배송 지연 사유 모달 관련 상태
 const isModalOpen = ref(false)
@@ -197,7 +223,7 @@ const deliveries = ref([
     id: 'DLV-20260413-005', status: '지연',
     destination: '부산센텀점', supplier: '한국포장', driver: '최동욱',
     items: ['포장용 치킨박스 1000개'],
-    delayReason: '강우로 인한 고속도로 정체로 배송 지연 발생', // 예시 사유
+    delayReason: '강우로 인한 고속도로 정체로 배송 지연 발생',
     timeline: [
       { label: '출고 완료 (부산 물류센터)', time: '2026-04-12 20:00', done: true },
       { label: '배송 지연 (교통사고)',       time: '2026-04-13 08:00', done: false, current: true },
@@ -206,26 +232,55 @@ const deliveries = ref([
   },
 ])
 
-// 검색어(searchQuery) 및 상태(filterStatus) 기반 필터링
+// --- 날짜 필터 옵션 동적 생성 ---
+// 데이터의 첫 번째 타임라인 시간을 기준으로 날짜 정보 추출
+const uniqueYears = computed(() => {
+  const years = deliveries.value.map(d => d.timeline[0].time.substring(0, 4))
+  return [...new Set(years)].sort().reverse()
+})
+
+const uniqueMonths = computed(() => {
+  const months = deliveries.value.map(d => d.timeline[0].time.substring(5, 7))
+  return [...new Set(months)].sort()
+})
+
+const uniqueDays = computed(() => {
+  const days = deliveries.value.map(d => d.timeline[0].time.substring(8, 10))
+  return [...new Set(days)].sort()
+})
+
+// --- 필터링 통합 로직 ---
 const filteredDeliveries = computed(() => {
-  let list = deliveries.value
-  if (filterStatus.value !== '전체') {
-    list = list.filter((d) => d.status === filterStatus.value)
-  }
-  if (searchQuery.value.trim() !== '') {
-    // 가맹점 이름에 검색어가 포함되어 있는지 확인
-    list = list.filter((d) => d.destination.includes(searchQuery.value.trim()))
-  }
-  return list
+  return deliveries.value.filter((d) => {
+    // 1. 상태 필터
+    const matchStatus = filterStatus.value === '전체' || d.status === filterStatus.value
+
+    // 2. 가맹점 검색어 필터
+    const matchSearch = searchQuery.value.trim() === '' || d.destination.includes(searchQuery.value.trim())
+
+    // 3. 날짜 필터 (타임라인의 첫 번째 항목 기준)
+    const dateStr = d.timeline[0].time // "YYYY-MM-DD ..."
+    const matchYear = selectedYear.value === '전체' || dateStr.startsWith(selectedYear.value)
+    const matchMonth = selectedMonth.value === '전체' || dateStr.substring(5, 7) === selectedMonth.value
+    const matchDay = selectedDay.value === '전체' || dateStr.substring(8, 10) === selectedDay.value
+
+    return matchStatus && matchSearch && matchYear && matchMonth && matchDay
+  })
 })
 
 function countByStatus(status) {
-  const base = searchQuery.value.trim() !== ''
-    ? deliveries.value.filter((d) => d.destination.includes(searchQuery.value.trim()))
-    : deliveries.value
+  // 현재 검색어와 날짜 필터가 적용된 상태에서 각 상태별 갯수 산출
+  const baseList = deliveries.value.filter((d) => {
+    const matchSearch = searchQuery.value.trim() === '' || d.destination.includes(searchQuery.value.trim())
+    const dateStr = d.timeline[0].time
+    const matchYear = selectedYear.value === '전체' || dateStr.startsWith(selectedYear.value)
+    const matchMonth = selectedMonth.value === '전체' || dateStr.substring(5, 7) === selectedMonth.value
+    const matchDay = selectedDay.value === '전체' || dateStr.substring(8, 10) === selectedDay.value
+    return matchSearch && matchYear && matchMonth && matchDay
+  })
 
-  if (status === '전체') return base.length
-  return base.filter((d) => d.status === status).length
+  if (status === '전체') return baseList.length
+  return baseList.filter((d) => d.status === status).length
 }
 
 function statusClass(status) {
@@ -241,7 +296,7 @@ function statusClass(status) {
 // 모달 제어 로직
 function openModal(delivery) {
   selectedDelivery.value = delivery
-  delayReasonText.value = delivery.delayReason || '' // 기존 사유가 있다면 텍스트 창에 불러오기
+  delayReasonText.value = delivery.delayReason || ''
   isModalOpen.value = true
 }
 
@@ -255,15 +310,14 @@ function saveDelayReason() {
   if (selectedDelivery.value) {
     const target = deliveries.value.find(d => d.id === selectedDelivery.value.id)
     if (target) {
-      target.delayReason = delayReasonText.value // 사유 업데이트
+      target.delayReason = delayReasonText.value
     }
   }
-  closeModal() // 완료 후 모달 닫기
+  closeModal()
 }
 </script>
 
 <style scoped>
-/* 모바일에서 타임라인 가로 스크롤 시 스크롤바 숨김 처리용 */
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }

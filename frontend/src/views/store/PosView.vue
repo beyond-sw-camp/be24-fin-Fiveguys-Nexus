@@ -8,13 +8,13 @@
         <div class="flex border border-gray-200">
           <button
             @click="activeTab = 'order'"
-            :class="['px-4 py-2 text-sm font-semibold transition-all flex items-center gap-2',
+            :class="['px-4 py-2 text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer',
               activeTab === 'order' ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:bg-gray-50']">
             <ShoppingCart class="w-4 h-4" /> 주문 및 결제
           </button>
           <button
             @click="activeTab = 'settlement'"
-            :class="['px-4 py-2 text-sm font-semibold transition-all flex items-center gap-2 border-l border-gray-200',
+            :class="['px-4 py-2 text-sm font-semibold transition-all flex items-center gap-2 border-l border-gray-200 cursor-pointer',
               activeTab === 'settlement' ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:bg-gray-50']">
             <TrendingUp class="w-4 h-4" /> 일일 마감 (정산)
           </button>
@@ -55,7 +55,7 @@
               v-model="searchQuery"
               placeholder="상품명 검색..."
               class="bg-transparent border-none outline-none text-sm w-full text-gray-700" />
-            <button v-if="searchQuery" @click="searchQuery = ''" class="text-gray-400 hover:text-gray-600 ml-1">
+            <button v-if="searchQuery" @click="searchQuery = ''" class="text-gray-400 hover:text-gray-600 ml-1 cursor-pointer">
               <XCircle class="w-4 h-4" />
             </button>
           </div>
@@ -64,7 +64,7 @@
           <div class="flex gap-2 overflow-x-auto pb-1">
             <button v-for="cat in categories" :key="cat"
               @click="selectedCategory = cat"
-              :class="['px-5 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all border shrink-0',
+              :class="['px-5 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all border shrink-0 cursor-pointer',
                 selectedCategory === cat
                   ? 'bg-gray-800 text-white border-gray-800 shadow-sm'
                   : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50']">
@@ -114,7 +114,7 @@
             <ShoppingCart class="w-4 h-4 text-gray-500" /> 현재 주문 내역
           </h2>
           <button @click="clearCart"
-            class="text-xs text-gray-500 hover:text-red-500 border border-gray-200 px-3 py-1.5 rounded-md hover:bg-red-50 hover:border-red-100 transition-colors">
+            class="text-xs text-gray-500 hover:text-red-500 border border-gray-200 px-3 py-1.5 rounded-md hover:bg-red-50 hover:border-red-100 transition-colors cursor-pointer">
             전체 삭제
           </button>
         </div>
@@ -133,7 +133,7 @@
             class="bg-white border border-gray-200 p-4">
             <div class="flex justify-between items-start mb-3">
               <span class="font-semibold text-gray-900 text-sm leading-tight">{{ item.name }}</span>
-              <button @click="removeFromCart(item.id)" class="text-gray-300 hover:text-red-500 transition-colors ml-2 shrink-0">
+              <button @click="removeFromCart(item.id)" class="text-gray-300 hover:text-red-500 transition-colors ml-2 shrink-0 cursor-pointer">
                 <X class="w-4 h-4" />
               </button>
             </div>
@@ -142,12 +142,12 @@
               <!-- 수량 조절 -->
               <div class="flex items-center border border-gray-200 rounded-lg overflow-hidden">
                 <button @click="decreaseQty(item)"
-                  class="w-8 h-7 flex items-center justify-center bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-blue-500 transition-colors">
+                  class="w-8 h-7 flex items-center justify-center bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-blue-500 transition-colors cursor-pointer">
                   <Minus class="w-3 h-3" />
                 </button>
                 <span class="w-9 h-7 flex items-center justify-center text-xs font-bold text-gray-800 border-x border-gray-200">{{ item.quantity }}</span>
                 <button @click="increaseQty(item)"
-                  class="w-8 h-7 flex items-center justify-center bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-blue-500 transition-colors">
+                  class="w-8 h-7 flex items-center justify-center bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-blue-500 transition-colors cursor-pointer">
                   <Plus class="w-3 h-3" />
                 </button>
               </div>
@@ -169,7 +169,7 @@
           <button @click="openPaymentModal"
             :disabled="cart.length === 0 || salesData.isClosed"
             :class="['w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all text-white shadow-sm',
-              (cart.length === 0 || salesData.isClosed) ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none' : 'bg-blue-500 hover:bg-blue-600 active:scale-[0.98]']">
+              (cart.length === 0 || salesData.isClosed) ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none' : 'bg-blue-500 hover:bg-blue-600 active:scale-[0.98] cursor-pointer']">
             {{ salesData.isClosed ? '마감됨 — 주문 불가' : '결제 진행하기' }}
           </button>
         </div>
@@ -186,7 +186,7 @@
 
         <!-- 마감 / 영업 시작 버튼 -->
         <button @click="toggleStoreStatus"
-          :class="['text-sm px-6 py-2.5 rounded-lg font-bold transition-all shadow-sm text-white',
+          :class="['text-sm px-6 py-2.5 rounded-lg font-bold transition-all shadow-sm text-white cursor-pointer',
             salesData.isClosed ? 'bg-blue-500 hover:bg-blue-600 ring-4 ring-blue-100' : 'bg-gray-800 hover:bg-gray-700']">
           {{ salesData.isClosed ? '새로운 영업 시작하기' : '영업 마감하기' }}
         </button>
@@ -316,7 +316,7 @@
       <div class="bg-white rounded-2xl shadow-xl w-full max-w-md border border-gray-100">
         <div class="border-b border-gray-100 p-5 flex justify-between items-center bg-gray-50 rounded-t-2xl">
           <h2 class="text-lg font-bold text-gray-800">결제 수단 선택</h2>
-          <button @click="showPaymentModal = false" class="text-gray-400 hover:text-gray-600">
+          <button @click="showPaymentModal = false" class="text-gray-400 hover:text-gray-600 cursor-pointer">
             <X class="w-5 h-5" />
           </button>
         </div>
@@ -327,12 +327,12 @@
           </div>
           <div class="grid grid-cols-2 gap-4">
             <button @click="processPayment('card')"
-              class="flex flex-col items-center justify-center p-6 border border-gray-200 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition-all group shadow-sm hover:shadow-md">
+              class="flex flex-col items-center justify-center p-6 border border-gray-200 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition-all group shadow-sm hover:shadow-md cursor-pointer">
               <CreditCard class="w-10 h-10 text-gray-400 group-hover:text-blue-500 mb-3 transition-colors" />
               <span class="font-semibold text-gray-700 group-hover:text-blue-600">신용카드</span>
             </button>
             <button @click="processPayment('cash')"
-              class="flex flex-col items-center justify-center p-6 border border-gray-200 rounded-xl hover:border-emerald-400 hover:bg-emerald-50 transition-all group shadow-sm hover:shadow-md">
+              class="flex flex-col items-center justify-center p-6 border border-gray-200 rounded-xl hover:border-emerald-400 hover:bg-emerald-50 transition-all group shadow-sm hover:shadow-md cursor-pointer">
               <Banknote class="w-10 h-10 text-gray-400 group-hover:text-emerald-500 mb-3 transition-colors" />
               <span class="font-semibold text-gray-700 group-hover:text-emerald-600">현금</span>
             </button>
@@ -357,11 +357,11 @@
         </p>
         <div class="flex gap-3">
           <button @click="showCloseModal = false"
-            class="flex-1 py-3 bg-white border border-gray-200 text-gray-600 rounded-xl text-sm font-bold hover:bg-gray-50 transition-colors">
+            class="flex-1 py-3 bg-white border border-gray-200 text-gray-600 rounded-xl text-sm font-bold hover:bg-gray-50 transition-colors cursor-pointer">
             취소
           </button>
           <button @click="confirmClose"
-            class="flex-1 py-3 bg-red-500 text-white rounded-xl text-sm font-bold hover:bg-red-600 shadow-sm transition-colors">
+            class="flex-1 py-3 bg-red-500 text-white rounded-xl text-sm font-bold hover:bg-red-600 shadow-sm transition-colors cursor-pointer">
             마감 승인
           </button>
         </div>

@@ -4,6 +4,7 @@
     <div class="flex gap-6 border-b border-gray-200 pb-2">
       <button
         @click="activeTab = 'sales'"
+        class="cursor-pointer"
         :class="activeTab === 'sales'
           ? 'text-blue-600 font-bold border-b-2 border-blue-600 pb-2'
           : 'text-gray-400'"
@@ -13,6 +14,7 @@
 
       <button
         @click="activeTab = 'order'"
+        class="cursor-pointer"
         :class="activeTab === 'order'
           ? 'text-blue-600 font-bold border-b-2 border-blue-600 pb-2'
           : 'text-gray-400'"
@@ -189,7 +191,7 @@
               <td class="px-5 py-3.5 text-center">
                 <button
                   type="button"
-                  class="text-gray-300 hover:text-[#F37321] transition-colors"
+                  class="text-gray-300 hover:text-[#F37321] transition-colors cursor-pointer"
                   @click="downloadStatement(s)"
                 >
                   <Download class="w-4 h-4 mx-auto" />

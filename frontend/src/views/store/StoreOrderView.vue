@@ -6,7 +6,7 @@
 
     <div class="flex border-b border-gray-200">
       <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id"
-        class="px-5 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors"
+        class="px-5 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors cursor-pointer"
         :class="activeTab === tab.id ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'">
         {{ tab.label }}
         <span v-if="tab.count > 0" class="ml-1.5 text-xs font-bold px-1.5 py-0.5 rounded"
@@ -26,15 +26,15 @@
           </div>
           <div class="flex gap-2">
             <button @click="openPaymentModal(order)"
-              class="px-4 py-2 bg-blue-500 text-white text-sm font-bold hover:bg-blue-600 rounded transition-colors">
+              class="px-4 py-2 bg-blue-500 text-white text-sm font-bold hover:bg-blue-600 rounded transition-colors cursor-pointer">
               전체 확정
             </button>
             <button @click="openAddItemForm(order)"
-              class="px-4 py-2 border border-blue-200 text-blue-500 bg-blue-50 text-sm font-semibold hover:bg-blue-100 rounded transition-colors">
+              class="px-4 py-2 border border-blue-200 text-blue-500 bg-blue-50 text-sm font-semibold hover:bg-blue-100 rounded transition-colors cursor-pointer">
               + 품목 추가
             </button>
             <button @click="rejectOrder(order)"
-              class="px-4 py-2 border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 rounded">
+              class="px-4 py-2 border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 rounded cursor-pointer">
               거절
             </button>
           </div>
@@ -166,7 +166,7 @@
             <h3 class="font-bold text-gray-900">발주 상세</h3>
             <p class="text-xs text-gray-400 font-mono mt-0.5">{{ selectedHistory?.id }}</p>
           </div>
-          <button @click="showHistoryDetail = false" class="text-gray-400 hover:text-gray-600">✕</button>
+          <button @click="showHistoryDetail = false" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
         </div>
         <div v-if="selectedHistory" class="p-6 space-y-4 text-sm">
           <div class="grid grid-cols-2 gap-4">
@@ -222,7 +222,7 @@
         </div>
         <div class="px-6 py-4 border-t border-gray-100 flex justify-end">
           <button @click="showHistoryDetail = false"
-            class="px-4 py-2 text-sm font-semibold text-gray-600 border border-gray-200 rounded hover:bg-gray-50">닫기</button>
+            class="px-4 py-2 text-sm font-semibold text-gray-600 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer">닫기</button>
         </div>
       </div>
     </div>
@@ -231,7 +231,7 @@
       <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-modal-up">
         <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
           <h2 class="text-lg font-bold text-gray-900">결제 및 승인</h2>
-          <button @click="isModalOpen = false" class="text-gray-400 hover:text-gray-600"><X class="w-5 h-5"/></button>
+          <button @click="isModalOpen = false" class="text-gray-400 hover:text-gray-600 cursor-pointer"><X class="w-5 h-5"/></button>
         </div>
 
         <div class="p-6 space-y-6">
@@ -247,7 +247,7 @@
                   <p class="text-[10px] text-gray-500 mt-1">현대카드 (****-1234)</p>
                 </div>
               </div>
-              <button class="flex-1 border border-dashed border-gray-300 rounded-lg p-3 text-gray-400 text-xs font-bold hover:bg-gray-50">+ 신규 등록</button>
+              <button class="flex-1 border border-dashed border-gray-300 rounded-lg p-3 text-gray-400 text-xs font-bold hover:bg-gray-50 cursor-pointer">+ 신규 등록</button>
             </div>
           </section>
 
@@ -272,8 +272,8 @@
         </div>
 
         <div class="px-6 py-4 bg-gray-50 flex gap-2">
-          <button @click="isModalOpen = false" class="flex-1 py-3 bg-white border border-gray-200 text-gray-600 font-bold rounded-lg text-sm">취소</button>
-          <button @click="processPayment" class="flex-2 py-3 bg-blue-600 text-white font-bold rounded-lg text-sm flex items-center justify-center gap-2">
+          <button @click="isModalOpen = false" class="flex-1 py-3 bg-white border border-gray-200 text-gray-600 font-bold rounded-lg text-sm cursor-pointer">취소</button>
+          <button @click="processPayment" class="flex-2 py-3 bg-blue-600 text-white font-bold rounded-lg text-sm flex items-center justify-center gap-2 cursor-pointer">
             <CreditCard class="w-4 h-4"/> 결제 및 승인 요청
           </button>
         </div>

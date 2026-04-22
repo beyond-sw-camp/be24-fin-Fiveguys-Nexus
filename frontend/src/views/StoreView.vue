@@ -1,5 +1,5 @@
 <template>
-  <div class="p-5 space-y-4 font-sans text-gray-900">
+  <div class="p-5 space-y-4">
     <!-- Header -->
     <div class="flex justify-between items-center">
       <div>
@@ -88,7 +88,7 @@
     <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
       <table class="w-full text-sm text-left">
         <thead>
-        <tr class="border-b border-gray-100 bg-gray-50/50">
+        <tr class="border-b border-gray-200 bg-gray-50">
           <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider w-16 text-center">IDX</th>
           <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">지점명</th>
           <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">점주명</th>
@@ -99,23 +99,23 @@
           <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">관리</th>
         </tr>
         </thead>
-        <tbody class="divide-y divide-gray-50">
+        <tbody class="divide-y divide-gray-100">
         <tr v-for="(store, index) in filteredStores" :key="store.id"
             @click="openDetail(store)"
-            class="hover:bg-gray-50/80 transition-colors cursor-pointer group"
+            class="hover:bg-gray-50/50 transition-colors cursor-pointer group"
             :class="{ 'bg-gray-50/40 opacity-70': store.closeDate }">
-          <td class="px-5 py-4 text-gray-400 text-xs font-mono text-center">{{ index + 1 }}</td>
-          <td class="px-5 py-4 font-bold text-gray-900 group-hover:text-[#F37321] transition-colors">
+          <td class="px-5 py-3.5 text-gray-400 text-xs font-mono text-center">{{ index + 1 }}</td>
+          <td class="px-5 py-3.5 font-bold text-gray-900 group-hover:text-[#F37321] transition-colors">
             <div class="flex items-center gap-2">
               {{ store.name }}
               <span v-if="store.closeDate" class="text-[9px] font-normal text-red-400 border border-red-200 px-1 rounded-lg italic">CLOSED</span>
             </div>
           </td>
-          <td class="px-5 py-4 text-gray-600">{{ store.owner }}</td>
-          <td class="px-5 py-4 text-gray-500 text-xs truncate max-w-[150px]">{{ store.email }}</td>
-          <td class="px-5 py-4 text-gray-500 text-xs">{{ store.region }}</td>
-          <td class="px-5 py-4 font-mono text-xs text-gray-400">{{ store.bizNumber }}</td>
-          <td class="px-5 py-4 text-center">
+          <td class="px-5 py-3.5 text-gray-600">{{ store.owner }}</td>
+          <td class="px-5 py-3.5 text-gray-500 text-xs truncate max-w-[150px]">{{ store.email }}</td>
+          <td class="px-5 py-3.5 text-gray-500 text-xs">{{ store.region }}</td>
+          <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ store.bizNumber }}</td>
+          <td class="px-5 py-3.5 text-center">
               <span class="text-[11px] font-bold px-2 py-0.5 rounded-lg"
                     :class="!store.closeDate
                   ? 'bg-green-100 text-green-700'
@@ -123,7 +123,7 @@
                 {{ store.closeDate ? '폐업' : '정상' }}
               </span>
           </td>
-          <td class="px-5 py-4">
+          <td class="px-5 py-3.5">
             <div class="flex justify-center">
               <button @click.stop="openModal(store)"
                       class="px-3 py-1.5 text-xs font-semibold text-[#F37321] border border-[#F37321] rounded hover:bg-orange-50 transition-colors cursor-pointer">

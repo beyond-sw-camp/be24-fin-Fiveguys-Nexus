@@ -281,7 +281,7 @@
 
           <section>
             <label class="text-[11px] font-bold text-gray-400 uppercase block mb-2">승인 요청 메시지</label>
-            <textarea v-model="approvalMessage" placeholder="메모를 입력하세요." 
+            <textarea v-model="approvalMessage" placeholder="메모를 입력하세요."
               class="w-full border border-gray-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-100 outline-none resize-none h-20"></textarea>
           </section>
         </div>
@@ -289,7 +289,7 @@
         <div class="px-6 py-4 bg-gray-50 flex gap-2">
           <button @click="isModalOpen = false" class="flex-1 py-3 bg-white border border-gray-200 text-gray-600 font-bold rounded-lg text-sm cursor-pointer">취소</button>
           <button @click="processPayment" class="flex-2 py-3 bg-blue-600 text-white font-bold rounded-lg text-sm flex items-center justify-center gap-2 cursor-pointer">
-            <CreditCard class="w-4 h-4"/> 결제 및 승인 요청
+            <CreditCard class="w-4 h-4"/> 결제
           </button>
         </div>
       </div>

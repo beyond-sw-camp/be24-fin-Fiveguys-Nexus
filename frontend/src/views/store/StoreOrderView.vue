@@ -140,7 +140,7 @@
                 <span v-if="h.items.length > 1" class="text-xs text-gray-400 font-normal"> 외 {{ h.items.length - 1 }}건</span>
               </td>
               <td class="px-5 py-3.5 font-semibold text-gray-700">
-                {{ h.items.reduce((s, i) => s + (PRODUCT_PRICES[i.product] ?? 0) * i.qty, 0).toLocaleString() }}원
+                ₩ {{ h.items.reduce((s, i) => s + (PRODUCT_PRICES[i.product] ?? 0) * i.qty, 0).toLocaleString() }}
               </td>
               <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ h.date }}</td>
               <td class="px-5 py-3.5">
@@ -204,15 +204,15 @@
                   <tr v-for="item in selectedHistory.items" :key="item.product">
                     <td class="px-4 py-2.5 text-gray-800 font-semibold">{{ item.product }}</td>
                     <td class="px-4 py-2.5 text-right text-gray-600">{{ item.qty.toLocaleString() }}개</td>
-                    <td class="px-4 py-2.5 text-right text-xs text-gray-500">{{ (PRODUCT_PRICES[item.product] ?? 0).toLocaleString() }}원</td>
-                    <td class="px-4 py-2.5 text-right font-bold text-blue-600">{{ ((PRODUCT_PRICES[item.product] ?? 0) * item.qty).toLocaleString() }}원</td>
+                    <td class="px-4 py-2.5 text-right text-xs text-gray-500">₩ {{ (PRODUCT_PRICES[item.product] ?? 0).toLocaleString() }}</td>
+                    <td class="px-4 py-2.5 text-right font-bold text-blue-600">₩ {{ ((PRODUCT_PRICES[item.product] ?? 0) * item.qty).toLocaleString() }}</td>
                   </tr>
                 </tbody>
                 <tfoot class="bg-gray-50 border-t border-gray-200">
                   <tr>
                     <td colspan="3" class="px-4 py-2.5 text-right text-xs font-bold text-gray-500">합계</td>
                     <td class="px-4 py-2.5 text-right font-black text-blue-600">
-                      {{ selectedHistory.items.reduce((s, i) => s + (PRODUCT_PRICES[i.product] ?? 0) * i.qty, 0).toLocaleString() }}원
+                      ₩ {{ selectedHistory.items.reduce((s, i) => s + (PRODUCT_PRICES[i.product] ?? 0) * i.qty, 0).toLocaleString() }}
                     </td>
                   </tr>
                 </tfoot>
@@ -255,12 +255,12 @@
             <div class="space-y-2 pb-3 border-b border-gray-200">
               <div v-for="item in selectedOrder?.items" :key="item.product" class="flex justify-between text-xs">
                 <span class="text-gray-500">{{ item.product }} ({{ item.adjusted }}개 × {{ (PRODUCT_PRICES[item.product] ?? 0).toLocaleString() }}원)</span>
-                <span class="font-medium text-gray-900">₩{{ ((item.adjusted * (PRODUCT_PRICES[item.product] ?? 0))).toLocaleString() }}</span>
+                <span class="font-medium text-gray-900">₩ {{((item.adjusted * (PRODUCT_PRICES[item.product] ?? 0))).toLocaleString() }}</span>
               </div>
             </div>
             <div class="flex justify-between items-center pt-3">
               <span class="text-sm font-bold text-gray-900">총 결제 금액</span>
-              <span class="text-lg font-black text-blue-600">₩{{ totalPrice.toLocaleString() }}</span>
+              <span class="text-lg font-black text-blue-600">₩ {{totalPrice.toLocaleString() }}</span>
             </div>
           </section>
 

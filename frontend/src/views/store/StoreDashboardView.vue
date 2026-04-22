@@ -101,7 +101,7 @@
               @keydown.enter="router.push('/store-order')">
               <td class="px-5 py-3.5 font-semibold text-gray-800">{{ o.product }}</td>
               <td class="px-5 py-3.5 text-right text-gray-600">{{ o.qty.toLocaleString() }}개</td>
-              <td class="px-5 py-3.5 text-right font-semibold text-gray-700">{{ (o.qty * o.unitPrice).toLocaleString() }}원</td>
+              <td class="px-5 py-3.5 text-right font-semibold text-gray-700">₩ {{ (o.qty * o.unitPrice).toLocaleString() }}</td>
               <td class="px-5 py-3.5 text-right">
                 <span class="text-xs font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-200">제안중</span>
               </td>

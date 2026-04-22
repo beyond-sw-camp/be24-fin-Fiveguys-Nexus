@@ -446,7 +446,7 @@ const totalQuantity = computed(() => cart.value.reduce((s, i) => s + i.quantity,
 
 // ── 유틸 ──────────────────────────────────────────────
 function formatPrice(price) {
-  return price.toLocaleString() + '원'
+  return '₩ ' + price.toLocaleString()
 }
 
 function showToastMsg(msg) {

@@ -101,7 +101,7 @@
               </p>
             </div>
             <button type="button"
-              class="shrink-0 p-1.5 rounded border border-gray-200 text-gray-500 hover:bg-white hover:text-gray-800 cursor-pointer"
+              class="text-gray-400 hover:text-gray-600 cursor-pointer"
               aria-label="닫기"
               @click="closeDetail">
               ✕

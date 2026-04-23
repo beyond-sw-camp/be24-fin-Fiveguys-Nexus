@@ -9,24 +9,13 @@
       </button>
     </div>
 
-    <!-- Tabs -->
-    <div class="flex border-b border-gray-200">
-      <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id"
-        class="px-5 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors cursor-pointer"
-        :class="activeTab === tab.id
-          ? 'border-[#F37321] text-[#F37321]'
-          : 'border-transparent text-gray-500 hover:text-gray-700'">
-        {{ tab.label }}
-      </button>
-    </div>
-
-    <!-- ── 전체 제품 목록 탭 ── -->
-    <div v-if="activeTab === 'all'">
+    <!-- ── 전체 제품 목록 ── -->
+    <div>
       <div class="flex gap-3 items-center flex-wrap mb-4">
         <div class="relative">
           <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input v-model="searchQuery" type="text" placeholder="제품명 검색..."
-            class="pl-10 pr-4 py-2 rounded-lg border border-gray-200 text-sm w-52 bg-white shadow-sm
+          <input v-model="searchQuery" type="text" placeholder="제품명 또는 매장명 검색..."
+            class="pl-10 pr-4 py-2 rounded-lg border border-gray-200 text-sm w-64 bg-white shadow-sm
                    focus:border-[#F37321] focus:ring-1 focus:ring-[#F37321] outline-none transition-colors" />
         </div>
         <div class="flex gap-1.5 flex-wrap">
@@ -46,6 +35,7 @@
             <tr class="border-b border-gray-200 bg-gray-50">
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">제품코드</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">제품명</th>
+              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">입점 매장</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">카테고리</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">단위</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">최대재고</th>
@@ -56,9 +46,14 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
-            <tr v-for="p in filteredProducts" :key="p.code" class="hover:bg-gray-50/50 transition-colors">
+            <tr v-for="p in filteredProducts" :key="p.code + '_' + p.storeId" class="hover:bg-gray-50/50 transition-colors">
               <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ p.code }}</td>
               <td class="px-5 py-3.5 font-semibold text-gray-900">{{ p.name }}</td>
+              <td class="px-5 py-3.5">
+                <span class="text-xs font-semibold px-2 py-0.5 rounded bg-blue-50 text-blue-500 border border-blue-100">
+                  {{ p.storeName }}
+                </span>
+              </td>
               <td class="px-5 py-3.5">
                 <span class="text-xs font-semibold px-2 py-0.5 bg-gray-100 text-gray-600 border border-gray-200 rounded">{{ p.category }}</span>
               </td>
@@ -78,59 +73,7 @@
               </td>
             </tr>
             <tr v-if="filteredProducts.length === 0">
-              <td colspan="9" class="px-5 py-12 text-center text-gray-400 text-sm">검색 결과가 없습니다.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- ── 매장별 제품 목록 탭 ── -->
-    <div v-if="activeTab === 'store'">
-      <div class="flex gap-3 items-center mb-4">
-        <div class="relative w-64">
-          <select v-model="selectedStoreId"
-            class="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none
-                   focus:border-[#F37321] focus:ring-1 focus:ring-[#F37321] transition-colors shadow-sm cursor-pointer text-gray-700">
-            <option value="">매장을 선택하세요</option>
-            <option v-for="s in stores" :key="s.id" :value="s.id">{{ s.name }}</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
-        <div v-if="!selectedStoreId" class="py-16 text-center text-gray-400 text-sm">
-          <p>조회할 매장을 선택해주세요.</p>
-        </div>
-        <table v-else class="w-full text-sm text-left">
-          <thead>
-            <tr class="border-b border-gray-200 bg-gray-50">
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">제품코드</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">제품명</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">카테고리</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">단위</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">단가</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">관리</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-100">
-            <tr v-for="p in storeProducts" :key="p.code" class="hover:bg-gray-50/50 transition-colors">
-              <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ p.code }}</td>
-              <td class="px-5 py-3.5 font-semibold text-gray-900">{{ p.name }}</td>
-              <td class="px-5 py-3.5">
-                <span class="text-xs font-semibold px-2 py-0.5 bg-gray-100 text-gray-600 border border-gray-200 rounded">{{ p.category }}</span>
-              </td>
-              <td class="px-5 py-3.5 text-gray-600">{{ p.unit }}</td>
-              <td class="px-5 py-3.5 font-medium text-gray-900">₩ {{ p.price.toLocaleString() }}</td>
-              <td class="px-5 py-3.5">
-                <div class="flex justify-center gap-2">
-                  <button @click="openModal(p)" class="px-3 py-1.5 text-xs font-semibold text-[#F37321] border border-[#F37321] rounded hover:bg-orange-50 transition-colors cursor-pointer">수정</button>
-                  <button @click="deleteProduct(p.code)" class="px-3 py-1.5 text-xs font-semibold text-red-500 border border-red-400 rounded hover:bg-red-50 transition-colors cursor-pointer">삭제</button>
-                </div>
-              </td>
-            </tr>
-            <tr v-if="storeProducts.length === 0">
-              <td colspan="6" class="px-5 py-12 text-center text-gray-400 text-sm">해당 매장에 등록된 제품이 없습니다.</td>
+              <td colspan="10" class="px-5 py-12 text-center text-gray-400 text-sm">검색 결과가 없습니다.</td>
             </tr>
           </tbody>
         </table>
@@ -244,12 +187,6 @@
 import { ref, computed } from 'vue'
 import { Trash2, Search, Tag } from 'lucide-vue-next'
 
-const tabs = [
-  { id: 'all',   label: '전체 제품 목록' },
-  { id: 'store', label: '매장별 제품 목록' },
-]
-const activeTab = ref('all')
-
 const categories = ref(['육류', '어류', '채소', '소스류', '오일/유제품', '음료', '기타'])
 const selectedCategory = ref('전체')
 const searchQuery = ref('')
@@ -295,20 +232,25 @@ const storeProductMap = {
   S005: ['P101', 'P103', 'P300', 'P303', 'P500', 'P501', 'P502', 'P601'],
 }
 
-const selectedStoreId = ref('')
-
-const filteredProducts = computed(() => {
-  return products.value.filter(p => {
-    const matchCat = selectedCategory.value === '전체' || p.category === selectedCategory.value
-    const matchSearch = !searchQuery.value || p.name.includes(searchQuery.value) || p.code.includes(searchQuery.value)
-    return matchCat && matchSearch
-  })
+const expandedProducts = computed(() => {
+  const result = []
+  for (const [storeId, codes] of Object.entries(storeProductMap)) {
+    const store = stores.value.find(s => s.id === storeId)
+    for (const code of codes) {
+      const product = products.value.find(p => p.code === code)
+      if (product) result.push({ ...product, storeId, storeName: store?.name ?? storeId })
+    }
+  }
+  return result
 })
 
-const storeProducts = computed(() => {
-  if (!selectedStoreId.value) return []
-  const codes = storeProductMap[selectedStoreId.value] ?? []
-  return products.value.filter(p => codes.includes(p.code))
+const filteredProducts = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase()
+  return expandedProducts.value.filter(p => {
+    const matchCat = selectedCategory.value === '전체' || p.category === selectedCategory.value
+    const matchSearch = !q || p.name.toLowerCase().includes(q) || p.storeName.toLowerCase().includes(q)
+    return matchCat && matchSearch
+  })
 })
 
 // 카테고리 CRUD

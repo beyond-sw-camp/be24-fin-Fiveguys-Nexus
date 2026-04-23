@@ -161,32 +161,32 @@ const filterOptions = ['전체', '출고대기', '배송중', '지연', '배송 
 const deliveries = ref([
   {
     id: 'DLV-20260413-001', date: '2026-04-13', status: '배송중',
-    items: ['염지닭(10호) 100수', '치킨 파우더 40kg'],
+    items: ['한우 등심 20kg', '버터 5kg'],
     timeline: [
-      { label: '발주 확정',    time: '08:00', done: true },
-      { label: '출고 완료',    time: '08:30', done: true },
-      { label: '배송 중',      time: '10:15', done: false, current: true },
-      { label: '배송 완료',    time: '예정 14:30', done: false },
+      { label: '발주 확정', time: '08:00', done: true },
+      { label: '출고 완료', time: '08:30', done: true },
+      { label: '배송 중',   time: '10:15', done: false, current: true },
+      { label: '배송 완료', time: '예정 14:30', done: false },
     ],
   },
   {
     id: 'DLV-20260413-003', date: '2026-04-13', status: '지연',
-    items: ['치킨 상자(L) 1000개', '콜라(1.5L) 10박스'],
-    delayReason: '강우로 인한 고속도로 정체로 배송이 약 2시간 지연되고 있습니다.',
+    items: ['연어 15kg', '올리브오일 5L'],
+    delayReason: '교통 정체로 인한 배송 지연',
     timeline: [
-      { label: '발주 확정',    time: '06:00', done: true },
-      { label: '출고 완료',    time: '07:00', done: true },
-      { label: '배송 지연',    time: '10:00', done: false, current: true },
-      { label: '배송 완료',    time: '미정', done: false },
+      { label: '발주 확정', time: '06:00', done: true },
+      { label: '출고 완료', time: '07:00', done: true },
+      { label: '배송 지연', time: '10:00', done: false, current: true },
+      { label: '배송 완료', time: '미정', done: false },
     ],
   },
   {
     id: 'DLV-20260412-099', date: '2026-04-12', status: '배송 완료',
-    items: ['치킨무 500팩', '포장 비닐 2000매'],
+    items: ['양파 30kg', '생수 10박스'],
     timeline: [
-      { label: '발주 확정',    time: '07:00', done: true },
-      { label: '출고 완료',    time: '07:45', done: true },
-      { label: '배송 완료',    time: '11:20', done: true },
+      { label: '발주 확정', time: '07:00', done: true },
+      { label: '출고 완료', time: '07:45', done: true },
+      { label: '배송 완료', time: '11:20', done: true },
     ],
   }
 ])

@@ -302,42 +302,36 @@ import { ref, computed } from 'vue'
 import { ClipboardList, CreditCard } from 'lucide-vue-next'
 
 const PRODUCT_UNIT = {
-  '생닭(1kg)':      'kg',
-  '튀김유(18L)':    '통',
-  '치킨파우더':     'kg',
-  '황금올리브소스': '병',
-  '양념소스':       '병',
-  '간장소스':       '병',
-  '치킨박스(중)':   '개',
-  '치킨박스(대)':   '개',
-  '비닐장갑':       '개',
-  '냅킨':           '개',
+  '한우 등심':  'kg',
+  '연어':       'kg',
+  '올리브오일': 'L',
+  '버터':       'kg',
+  '생크림':     'L',
+  '간장':       'L',
+  '양파':       'kg',
+  '생수':       '박스',
 }
 
 const PRODUCT_STOCK = {
-  '생닭(1kg)':      { current: 30,  min: 50   },
-  '튀김유(18L)':    { current: 3,   min: 5    },
-  '치킨파우더':     { current: 8,   min: 20   },
-  '황금올리브소스': { current: 12,  min: 20   },
-  '양념소스':       { current: 8,   min: 20   },
-  '간장소스':       { current: 15,  min: 20   },
-  '치킨박스(중)':   { current: 200, min: 500  },
-  '치킨박스(대)':   { current: 120, min: 300  },
-  '비닐장갑':       { current: 500, min: 1000 },
-  '냅킨':           { current: 800, min: 2000 },
+  '한우 등심':  { current: 5, min: 10 },
+  '연어':       { current: 3, min: 8  },
+  '올리브오일': { current: 2, min: 5  },
+  '버터':       { current: 2, min: 5  },
+  '생크림':     { current: 1, min: 4  },
+  '간장':       { current: 3, min: 8  },
+  '양파':       { current: 8, min: 20 },
+  '생수':       { current: 5, min: 15 },
 }
 
 const PRODUCT_PRICES = {
-  '생닭(1kg)':      5000,
-  '튀김유(18L)':    35000,
-  '치킨파우더':     8000,
-  '황금올리브소스': 12000,
-  '양념소스':       10000,
-  '간장소스':       10000,
-  '치킨박스(중)':   150,
-  '치킨박스(대)':   200,
-  '비닐장갑':       20,
-  '냅킨':           10,
+  '한우 등심':  85000,
+  '연어':       32000,
+  '올리브오일': 12000,
+  '버터':       9000,
+  '생크림':     7000,
+  '간장':       4000,
+  '양파':       1500,
+  '생수':       8000,
 }
 
 const activeTab = ref('pending')
@@ -349,30 +343,26 @@ const pendingOrders = ref([
   {
     id: 'AUTO-20260413-001', createdAt: '2026-04-13 08:00',
     items: [
-      { product: '생닭(1kg)',   current: 30, min: 50, suggested: 100, adjusted: 100 },
-      { product: '튀김유(18L)', current: 3,  min: 5,  suggested: 10,  adjusted: 10  },
+      { product: '한우 등심', current: 5, min: 10, suggested: 20, adjusted: 20 },
+      { product: '버터',      current: 2, min: 5,  suggested: 10, adjusted: 10 },
     ],
   },
   {
     id: 'AUTO-20260413-002', createdAt: '2026-04-13 08:00',
     items: [
-      { product: '황금올리브소스', current: 12, min: 20, suggested: 30, adjusted: 30 },
-      { product: '양념소스',      current: 8,  min: 20, suggested: 30, adjusted: 30 },
+      { product: '올리브오일', current: 2, min: 5, suggested: 15, adjusted: 15 },
+      { product: '생크림',     current: 1, min: 4, suggested: 12, adjusted: 12 },
     ],
   },
 ])
 
 const orderHistory = ref([
   { id: 'ORD-20260413-001', type: '자동', date: '2026-04-13 22:00', status: '배송중',
-    items: [{ product: '생닭(1kg)', qty: 100 }, { product: '튀김유(18L)', qty: 10 }] },
+    items: [{ product: '한우 등심', qty: 20 }, { product: '버터', qty: 5 }] },
   { id: 'ORD-20260412-002', type: '자동', date: '2026-04-12 22:00', status: '배송중',
-    items: [{ product: '치킨박스(중)', qty: 500 }, { product: '치킨박스(대)', qty: 200 }] },
+    items: [{ product: '연어', qty: 15 }, { product: '간장', qty: 10 }] },
   { id: 'ORD-20260411-003', type: '수동', date: '2026-04-11 10:30', status: '입고완료',
-    items: [{ product: '황금올리브소스', qty: 30 }, { product: '간장소스', qty: 30 }] },
-  { id: 'ORD-20260410-004', type: '자동', date: '2026-04-10 22:00', status: '입고완료',
-    items: [{ product: '치킨파우더', qty: 20 }, { product: '양념소스', qty: 30 }] },
-  { id: 'ORD-20260409-005', type: '수동', date: '2026-04-09 14:20', status: '입고완료',
-    items: [{ product: '비닐장갑', qty: 1000 }, { product: '냅킨', qty: 2000 }, { product: '치킨박스(중)', qty: 300 }] },
+    items: [{ product: '양파', qty: 30 }, { product: '올리브오일', qty: 8 }] },
 ])
 
 const showHistoryDetail = ref(false)

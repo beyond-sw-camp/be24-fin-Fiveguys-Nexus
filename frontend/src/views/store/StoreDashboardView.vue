@@ -175,21 +175,21 @@ const yMax = computed(() => allValues.value.length ? Math.ceil(Math.max(...allVa
 const weekLabels = ['일', '월', '화', '수', '목', '금', '토']
 
 const ongoingDeliveries = ref([
-  { id: 'ORD-2604-008', items: '생닭(1kg) 외 1건',      status: '배송중'   },
-  { id: 'ORD-2604-011', items: '튀김유(18L) 외 1건',    status: '출고대기' },
-  { id: 'ORD-2604-015', items: '황금올리브소스 외 2건', status: '배송지연' },
-  { id: 'ORD-2604-003', items: '치킨박스(중) 외 1건',   status: '출고완료' },
+  { id: 'ORD-2604-008', items: '한우 등심(kg) 외 1건',  status: '배송중'   },
+  { id: 'ORD-2604-011', items: '올리브오일(L) 외 1건',  status: '출고대기' },
+  { id: 'ORD-2604-015', items: '버터 외 2건',           status: '배송지연' },
+  { id: 'ORD-2604-003', items: '생수 외 1건',           status: '출고완료' },
 ])
 
 const pendingOrders = ref([
-  { id: 1, product: '생닭(1kg)',      qty: 100, unitPrice: 5000  },
-  { id: 2, product: '황금올리브소스', qty: 30,  unitPrice: 12000 },
-  { id: 3, product: '치킨박스(중)',   qty: 500, unitPrice: 150   },
+  { id: 1, product: '한우 등심',  qty: 20, unitPrice: 85000 },
+  { id: 2, product: '올리브오일', qty: 5,  unitPrice: 12000 },
+  { id: 3, product: '생크림',     qty: 8,  unitPrice: 7000  },
 ])
 
 const warnings = ref([
-  { product: '튀김유(18L)', current: '3통', min: '5통',  danger: true  },
-  { product: '치킨파우더',  current: '8kg', min: '20kg', danger: false },
+  { product: '한우 등심', current: '5kg', min: '10kg', danger: true  },
+  { product: '버터',      current: '2kg', min: '5kg',  danger: false },
 ])
 
 const DELIVERY_STATUS_CLS = {

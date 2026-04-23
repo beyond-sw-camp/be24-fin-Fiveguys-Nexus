@@ -91,21 +91,21 @@ const activeTab = ref('waiting')
 
 const waitingShipments = ref([
   {
-    id: 'ORD-20260413-001', destination: '여의도역점',
+    id: 'ORD-20260413-001', destination: '이탈리안 키친',
     confirmedAt: '2026-04-13 08:30',
-    items: ['우유(1L) 200팩', '두유(1L) 80팩'],
+    items: ['올리브오일 10L', '생크림 8L'],
   },
   {
-    id: 'ORD-20260413-002', destination: '부산센텀점',
+    id: 'ORD-20260413-002', destination: '프렌치 비스트로',
     confirmedAt: '2026-04-13 09:00',
-    items: ['우유(1L) 150팩'],
+    items: ['버터 5kg', '생크림 4L'],
   },
 ])
 
 const shipHistory = ref([
-  { id: 'ORD-20260412-003', destination: '한화빌딩점',      items: ['두유(1L) 100팩'],  shippedAt: '2026-04-12 15:30', deliveryStatus: '입고완료' },
-  { id: 'ORD-20260411-004', destination: '여의도역점',      items: ['우유(1L) 200팩'],  shippedAt: '2026-04-11 14:00', deliveryStatus: '입고완료' },
-  { id: 'ORD-20260410-005', destination: '판교테크노밸리점', items: ['두유(1L) 80팩'],   shippedAt: '2026-04-10 09:30', deliveryStatus: '입고완료' },
+  { id: 'ORD-20260412-003', destination: '한우 오마카세',   items: ['한우 등심 20kg'],       shippedAt: '2026-04-12 15:30', deliveryStatus: '입고완료' },
+  { id: 'ORD-20260411-004', destination: '일식 스시바',     items: ['연어 15kg', '참치 10kg'], shippedAt: '2026-04-11 14:00', deliveryStatus: '입고완료' },
+  { id: 'ORD-20260410-005', destination: '차이나 가든',     items: ['새우 12kg', '간장 8L'],   shippedAt: '2026-04-10 09:30', deliveryStatus: '입고완료' },
 ])
 
 const tabs = computed(() => [

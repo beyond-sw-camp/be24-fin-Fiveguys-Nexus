@@ -302,14 +302,18 @@ import { Plus, Trash2, Search, Image as ImageIcon, ChevronDown } from 'lucide-vu
 const products = ref([
   { id: 'P100', name: '한우 등심' },
   { id: 'P101', name: '한우 안심' },
-  { id: 'P102', name: '연어' },
-  { id: 'P200', name: '간장' },
-  { id: 'P201', name: '고추장' },
-  { id: 'P202', name: '올리브오일' },
+  { id: 'P102', name: '한우 채끝' },
+  { id: 'P200', name: '연어 필렛' },
+  { id: 'P201', name: '참치 블록' },
+  { id: 'P202', name: '새우' },
   { id: 'P300', name: '양파' },
   { id: 'P301', name: '마늘' },
-  { id: 'P400', name: '버터' },
-  { id: 'P401', name: '생크림' },
+  { id: 'P302', name: '대파' },
+  { id: 'P400', name: '간장' },
+  { id: 'P401', name: '고추장' },
+  { id: 'P500', name: '올리브오일' },
+  { id: 'P501', name: '버터' },
+  { id: 'P502', name: '생크림' },
 ])
 
 // ─────────────────────────────────────────────
@@ -319,26 +323,26 @@ const menus = ref([
   {
     id: 'M-001', name: '한우 등심 오마카세 코스', price: 180000, imageName: '', category: '한우',
     ingredients: [
-      { productId: 'P100', amount: 0.3, unit: 'kg' },
-      { productId: 'P301', amount: 20, unit: 'g' },
-      { productId: 'P200', amount: 50, unit: 'ml' },
-      { productId: 'P202', amount: 30, unit: 'ml' },
+      { productId: 'P100', amount: 0.3,  unit: 'kg' },
+      { productId: 'P301', amount: 20,   unit: 'g'  },
+      { productId: 'P400', amount: 50,   unit: 'ml' },
+      { productId: 'P500', amount: 30,   unit: 'ml' },
     ]
   },
   {
     id: 'M-002', name: '한우 안심 스테이크', price: 120000, imageName: '', category: '한우',
     ingredients: [
       { productId: 'P101', amount: 0.25, unit: 'kg' },
-      { productId: 'P400', amount: 30, unit: 'g' },
-      { productId: 'P300', amount: 50, unit: 'g' },
+      { productId: 'P501', amount: 30,   unit: 'g'  },
+      { productId: 'P300', amount: 50,   unit: 'g'  },
     ]
   },
   {
     id: 'M-003', name: '연어 스시 플래터', price: 65000, imageName: '', category: '해산물',
     ingredients: [
-      { productId: 'P102', amount: 0.2, unit: 'kg' },
-      { productId: 'P200', amount: 30, unit: 'ml' },
-      { productId: 'P301', amount: 5, unit: 'g' },
+      { productId: 'P200', amount: 0.2,  unit: 'kg' },
+      { productId: 'P400', amount: 30,   unit: 'ml' },
+      { productId: 'P301', amount: 5,    unit: 'g'  },
     ]
   },
 ])

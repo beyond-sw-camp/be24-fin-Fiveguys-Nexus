@@ -154,7 +154,7 @@ const collapsedGroups = ref([])
 // ── 역할별 메뉴 (children → 드롭다운 그룹) ───────────────
 const adminMenus = [
   { path: '/dashboard', name: '대시보드',  icon: LayoutDashboard },
-  { path: '/store',     name: '가맹점 관리', icon: Store },
+  { path: '/store',     name: '입점 매장 관리', icon: Store },
   {
     path: '/product', name: '제품 관리', icon: PackageSearch,
     children: [

@@ -160,24 +160,32 @@
 import { ref, computed } from 'vue'
 import { Plus, Search } from 'lucide-vue-next'
 
-const categories = ref(['육류', '소스', '채소', '가공식품', '음료'])
+const categories = ref(['한우·정육', '수산물', '채소·신선', '양념·소스', '유제품', '음료·기타'])
 const selectedCategory = ref('전체')
 const searchQuery = ref('')
 
 const products = ref([
-  { code: 'P100', name: '닭(10호)', category: '육류', unit: '마리', baseStock: 120, minStock: 30, price: 7000, expiryDays: 3 },
-  { code: 'P101', name: '닭(부분육-윙)', category: '육류', unit: 'kg', baseStock: 80, minStock: 20, price: 9000, expiryDays: 3 },
-  { code: 'P102', name: '닭(부분육-다리)', category: '육류', unit: 'kg', baseStock: 80, minStock: 20, price: 9500, expiryDays: 3 },
+  { code: 'P101', name: '한우 등심',   category: '한우·정육', unit: 'kg',  baseStock: 50,  minStock: 10, price: 85000, expiryDays: 3 },
+  { code: 'P102', name: '한우 안심',   category: '한우·정육', unit: 'kg',  baseStock: 30,  minStock: 8,  price: 95000, expiryDays: 3 },
+  { code: 'P103', name: '한우 채끝',   category: '한우·정육', unit: 'kg',  baseStock: 20,  minStock: 5,  price: 78000, expiryDays: 3 },
 
-  { code: 'P200', name: '양념소스', category: '소스', unit: 'kg', baseStock: 50, minStock: 10, price: 4000, expiryDays: 30 },
-  { code: 'P201', name: '매운양념소스', category: '소스', unit: 'kg', baseStock: 50, minStock: 10, price: 4500, expiryDays: 30 },
-  { code: 'P202', name: '파우더(튀김가루)', category: '소스', unit: 'kg', baseStock: 100, minStock: 20, price: 2000, expiryDays: 60 },
+  { code: 'P201', name: '연어 필렛',   category: '수산물',    unit: 'kg',  baseStock: 30,  minStock: 8,  price: 32000, expiryDays: 2 },
+  { code: 'P202', name: '참치 블록',   category: '수산물',    unit: 'kg',  baseStock: 20,  minStock: 5,  price: 45000, expiryDays: 2 },
+  { code: 'P203', name: '새우',        category: '수산물',    unit: 'kg',  baseStock: 20,  minStock: 5,  price: 28000, expiryDays: 3 },
 
-  { code: 'P300', name: '감자', category: '채소', unit: 'kg', baseStock: 150, minStock: 40, price: 1500, expiryDays: 14 },
-  { code: 'P301', name: '치즈볼 원재료', category: '가공식품', unit: '팩', baseStock: 100, minStock: 30, price: 3000, expiryDays: 10 },
+  { code: 'P301', name: '양파',        category: '채소·신선', unit: 'kg',  baseStock: 100, minStock: 20, price: 1500,  expiryDays: 14 },
+  { code: 'P302', name: '마늘',        category: '채소·신선', unit: 'kg',  baseStock: 50,  minStock: 10, price: 8000,  expiryDays: 14 },
+  { code: 'P303', name: '대파',        category: '채소·신선', unit: 'kg',  baseStock: 30,  minStock: 8,  price: 3000,  expiryDays: 7  },
 
-  { code: 'P400', name: '콜라', category: '음료', unit: '박스', baseStock: 200, minStock: 50, price: 1200, expiryDays: 60 },
-  { code: 'P401', name: '사이다', category: '음료', unit: '박스', baseStock: 180, minStock: 40, price: 1200, expiryDays: 60 },
+  { code: 'P401', name: '간장',        category: '양념·소스', unit: 'L',   baseStock: 30,  minStock: 8,  price: 4000,  expiryDays: null },
+  { code: 'P402', name: '올리브오일',  category: '양념·소스', unit: 'L',   baseStock: 20,  minStock: 5,  price: 12000, expiryDays: null },
+  { code: 'P403', name: '고추장',      category: '양념·소스', unit: 'kg',  baseStock: 20,  minStock: 5,  price: 6000,  expiryDays: 60  },
+
+  { code: 'P501', name: '버터',        category: '유제품',    unit: 'kg',  baseStock: 20,  minStock: 5,  price: 9000,  expiryDays: 14 },
+  { code: 'P502', name: '생크림',      category: '유제품',    unit: 'L',   baseStock: 20,  minStock: 5,  price: 7000,  expiryDays: 7  },
+
+  { code: 'P601', name: '콜라',        category: '음료·기타', unit: '박스', baseStock: 100, minStock: 20, price: 1200,  expiryDays: null },
+  { code: 'P602', name: '생수',        category: '음료·기타', unit: '박스', baseStock: 80,  minStock: 20, price: 800,   expiryDays: null },
 ])
 
 const filteredProducts = computed(() => {

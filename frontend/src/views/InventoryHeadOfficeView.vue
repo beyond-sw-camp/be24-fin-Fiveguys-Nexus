@@ -147,7 +147,7 @@ const statusFilters = [
 
 const items = ref([
   {
-    code: 'C100', name: '닭고기(생닭)', warehouse: '본사 창고', safe: 9000,
+    code: 'C100', name: '한우 등심', warehouse: '본사 창고', safe: 9000,
     lots: [
       { expiry: '2026-04-18', qty: 2700 },
       { expiry: '2026-04-21', qty: 5000 },
@@ -155,37 +155,37 @@ const items = ref([
     ],
   },
   {
-    code: 'C110', name: '순살 정육', warehouse: '본사 창고', safe: 3500,
+    code: 'C110', name: '한우 안심', warehouse: '본사 창고', safe: 3500,
     lots: [
       { expiry: '2026-04-24', qty: 2100 },
       { expiry: '2026-05-01', qty: 1500 },
     ],
   },
   {
-    code: 'C200', name: '튀김가루', warehouse: '본사 창고', safe: 900,
+    code: 'C200', name: '버터', warehouse: '본사 창고', safe: 900,
     lots: [{ expiry: '2026-07-15', qty: 1250 }],
   },
   {
-    code: 'C210', name: '양념소스', warehouse: '본사 창고', safe: 600,
+    code: 'C210', name: '간장', warehouse: '본사 창고', safe: 600,
     lots: [{ expiry: '2026-05-02', qty: 540 }],
   },
   {
-    code: 'C220', name: '핫양념소스', warehouse: '본사 창고', safe: 180,
+    code: 'C220', name: '올리브오일', warehouse: '본사 창고', safe: 180,
     lots: [{ expiry: '2026-05-08', qty: 210 }],
   },
   {
-    code: 'C300', name: '치즈볼(냉동)', warehouse: '본사 창고', safe: 2500,
+    code: 'C300', name: '연어', warehouse: '본사 창고', safe: 2500,
     lots: [
       { expiry: '2026-06-01', qty: 1200 },
       { expiry: '2026-06-10', qty: 3000 },
     ],
   },
   {
-    code: 'C310', name: '감자튀김(냉동)', warehouse: '본사 창고', safe: 1700,
+    code: 'C310', name: '새우', warehouse: '본사 창고', safe: 1700,
     lots: [{ expiry: '2026-06-18', qty: 1800 }],
   },
   {
-    code: 'C500', name: '치킨 박스(대)', warehouse: '본사 창고', safe: 50000,
+    code: 'C500', name: '생수(박스)', warehouse: '본사 창고', safe: 50000,
     lots: [
       { expiry: null, qty: 40000 },
       { expiry: null, qty: 28000 },

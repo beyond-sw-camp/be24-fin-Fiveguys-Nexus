@@ -300,16 +300,16 @@ import { Plus, Trash2, Search, Image as ImageIcon, ChevronDown } from 'lucide-vu
 //  상품 목록 (매장 제품 관리의 제품코드와 동일하게 맞춤)
 // ─────────────────────────────────────────────
 const products = ref([
-  { id: 'P100', name: '닭(10호)' },
-  { id: 'P101', name: '닭(부분육-윙)' },
-  { id: 'P102', name: '닭(부분육-다리)' },
-  { id: 'P200', name: '양념소스' },
-  { id: 'P201', name: '매운양념소스' },
-  { id: 'P202', name: '파우더(튀김가루)' },
-  { id: 'P300', name: '감자' },
-  { id: 'P301', name: '치즈볼 원재료' },
-  { id: 'P400', name: '콜라' },
-  { id: 'P401', name: '사이다' },
+  { id: 'P100', name: '한우 등심' },
+  { id: 'P101', name: '한우 안심' },
+  { id: 'P102', name: '연어' },
+  { id: 'P200', name: '간장' },
+  { id: 'P201', name: '고추장' },
+  { id: 'P202', name: '올리브오일' },
+  { id: 'P300', name: '양파' },
+  { id: 'P301', name: '마늘' },
+  { id: 'P400', name: '버터' },
+  { id: 'P401', name: '생크림' },
 ])
 
 // ─────────────────────────────────────────────
@@ -317,27 +317,28 @@ const products = ref([
 // ─────────────────────────────────────────────
 const menus = ref([
   {
-    id: 'M-001', name: '황금올리브치킨', price: 20000, imageName: '', category: '육류',
+    id: 'M-001', name: '한우 등심 오마카세 코스', price: 180000, imageName: '', category: '한우',
     ingredients: [
-      { productId: 'P100', amount: 1, unit: '개' },
-      { productId: 'P202', amount: 150, unit: 'g' },
-      { productId: 'P200', amount: 80, unit: 'g' },
+      { productId: 'P100', amount: 0.3, unit: 'kg' },
+      { productId: 'P301', amount: 20, unit: 'g' },
+      { productId: 'P200', amount: 50, unit: 'ml' },
+      { productId: 'P202', amount: 30, unit: 'ml' },
     ]
   },
   {
-    id: 'M-002', name: '황금올리브 양념치킨', price: 21500, imageName: '', category: '육류',
+    id: 'M-002', name: '한우 안심 스테이크', price: 120000, imageName: '', category: '한우',
     ingredients: [
-      { productId: 'P100', amount: 1, unit: '개' },
-      { productId: 'P202', amount: 150, unit: 'g' },
-      { productId: 'P200', amount: 60, unit: 'g' },
-      { productId: 'P201', amount: 120, unit: 'g' },
+      { productId: 'P101', amount: 0.25, unit: 'kg' },
+      { productId: 'P400', amount: 30, unit: 'g' },
+      { productId: 'P300', amount: 50, unit: 'g' },
     ]
   },
   {
-    id: 'M-003', name: '자메이카 통다리구이', price: 21500, imageName: '', category: '육류',
+    id: 'M-003', name: '연어 스시 플래터', price: 65000, imageName: '', category: '해산물',
     ingredients: [
-      { productId: 'P102', amount: 0.8, unit: 'kg' },
-      { productId: 'P201', amount: 200, unit: 'g' },
+      { productId: 'P102', amount: 0.2, unit: 'kg' },
+      { productId: 'P200', amount: 30, unit: 'ml' },
+      { productId: 'P301', amount: 5, unit: 'g' },
     ]
   },
 ])

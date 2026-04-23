@@ -15,7 +15,7 @@
           type="text"
           v-model="searchQuery"
           class="bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-[#F37321] focus:border-[#F37321] outline-none block w-full pl-10 p-2.5 transition-colors shadow-sm"
-          placeholder="가맹점 이름 검색..."
+          placeholder="매장명 검색..."
         >
       </div>
 
@@ -135,7 +135,7 @@
               <span class="font-mono text-gray-900">{{ selectedDelivery?.id }}</span>
             </div>
             <div class="flex justify-between">
-              <span class="font-medium text-gray-500">가맹점</span>
+              <span class="font-medium text-gray-500">입점 매장</span>
               <span class="font-bold text-gray-900">{{ selectedDelivery?.destination }}</span>
             </div>
           </div>
@@ -190,8 +190,8 @@ const statusFilters = [
 const deliveries = ref([
   {
     id: 'DLV-20260413-001', status: '배송중',
-    destination: '여의도역점',
-    items: ['닭(10호) 200마리'],
+    destination: '이탈리안 키친',
+    items: ['한우 등심 10kg'],
     timeline: [
       { label: '출고 완료 (용인 중앙물류센터)', time: '2026-04-13 08:30', done: true },
       { label: '배송 중',                       time: '2026-04-13 10:15', done: false, current: true },
@@ -200,8 +200,8 @@ const deliveries = ref([
   },
   {
     id: 'DLV-20260413-002', status: '배송중',
-    destination: '판교테크노밸리점',
-    items: ['엑스트라 버진 올리브오일 15통'],
+    destination: '일식 스시바',
+    items: ['올리브오일 10L'],
     timeline: [
       { label: '출고 완료 (성남 물류센터)', time: '2026-04-13 09:00', done: true },
       { label: '배송 중',                  time: '2026-04-13 11:00', done: false, current: true },
@@ -210,8 +210,8 @@ const deliveries = ref([
   },
   {
     id: 'DLV-20260413-004', status: '입고완료',
-    destination: '한화빌딩점',
-    items: ['시크릿 양념소스 50팩'],
+    destination: '한우 오마카세',
+    items: ['버터 5kg'],
     timeline: [
       { label: '출고 완료', time: '2026-04-12 16:00', done: true },
       { label: '배송 중',   time: '2026-04-12 17:30', done: true },
@@ -220,8 +220,8 @@ const deliveries = ref([
   },
   {
     id: 'DLV-20260413-005', status: '지연',
-    destination: '부산센텀점',
-    items: ['포장용 치킨박스 1000개'],
+    destination: '차이나 가든',
+    items: ['생수 20박스'],
     delayReason: '강우로 인한 고속도로 정체로 배송 지연 발생',
     timeline: [
       { label: '출고 완료 (부산 물류센터)', time: '2026-04-12 20:00', done: true },

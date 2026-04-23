@@ -66,7 +66,7 @@
         <input
           v-model="settlementSearch"
           type="search"
-          placeholder="가맹점 이름 검색…"
+          placeholder="매장명 검색…"
           class="w-full pl-10 px-3 py-2 rounded-lg border border-gray-200 text-sm
                  bg-white shadow-sm
                  focus:border-[#F37321] focus:ring-1 focus:ring-[#F37321]
@@ -78,7 +78,7 @@
     <div class="grid grid-cols-2 gap-4">
       <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
         <div class="p-5">
-          <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">가맹점 청구 합계</p>
+          <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">매장 청구 합계</p>
           <p class="text-2xl font-black text-gray-900 mt-2">₩ {{ totalStore.toLocaleString() }}</p>
           <p class="text-xs text-gray-400 mt-2 pt-2 border-t border-gray-100">{{ selectedMonth }}</p>
         </div>
@@ -94,7 +94,7 @@
 
     <div class="flex border-b border-gray-200">
       <button
-        v-for="tab in ['가맹점 정산']"
+        v-for="tab in ['입점 매장 정산']"
         :key="tab"
         @click="activeTab = tab"
         class="px-5 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors cursor-pointer"
@@ -193,7 +193,7 @@ import { ref, computed } from 'vue'
 import { Download } from 'lucide-vue-next'
 
 const selectedMonth = ref('2026-04')
-const activeTab = ref('가맹점 정산')
+const activeTab = ref('입점 매장 정산')
 const settlementSearch = ref('')
 const periodGranularity = ref('월간')
 const periodGranularityOptions = ['주간', '월간', '년간']
@@ -202,10 +202,10 @@ const periodGranularityOptions = ['주간', '월간', '년간']
 const isModalOpen = ref(false)
 
 const storeSettlements = ref([
-  { name: '한화빌딩점', period: '2026-04-01 ~ 04-30', count: 28, amount: 12500000, status: '정산완료' },
-  { name: '여의도역점', period: '2026-04-01 ~ 04-30', count: 31, amount: 15800000, status: '정산완료' },
-  { name: '판교테크노밸리점', period: '2026-04-01 ~ 04-30', count: 19, amount: 9200000, status: '대기' },
-  { name: '부산센텀점', period: '2026-04-01 ~ 04-30', count: 22, amount: 11300000, status: '대기' },
+  { name: '한우 오마카세',  period: '2026-04-01 ~ 04-30', count: 28, amount: 12500000, status: '정산완료' },
+  { name: '이탈리안 키친',  period: '2026-04-01 ~ 04-30', count: 31, amount: 15800000, status: '정산완료' },
+  { name: '일식 스시바',    period: '2026-04-01 ~ 04-30', count: 19, amount: 9200000,  status: '대기' },
+  { name: '차이나 가든',    period: '2026-04-01 ~ 04-30', count: 22, amount: 11300000, status: '대기' },
 ])
 
 const supplierSettlements = ref([
@@ -216,7 +216,7 @@ const supplierSettlements = ref([
 ])
 
 const currentSettlements = computed(() =>
-  activeTab.value === '가맹점 정산' ? storeSettlements.value : supplierSettlements.value,
+  activeTab.value === '입점 매장 정산' ? storeSettlements.value : supplierSettlements.value,
 )
 
 const filteredSettlements = computed(() => {

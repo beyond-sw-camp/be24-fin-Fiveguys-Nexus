@@ -82,8 +82,8 @@ const kpis = ref([
 ])
 
 const pendingOrders = ref([
-  { id: 1, destination: '여의도역점',       items: '우유(1L) 200팩, 두유(1L) 80팩' },
-  { id: 2, destination: '부산센텀점',       items: '우유(1L) 150팩' },
+  { id: 1, destination: '이탈리안 키친',   items: '올리브오일 10L, 생크림 8L' },
+  { id: 2, destination: '프렌치 비스트로', items: '버터 5kg, 생크림 4L' },
 ])
 
 const shipStats = ref([

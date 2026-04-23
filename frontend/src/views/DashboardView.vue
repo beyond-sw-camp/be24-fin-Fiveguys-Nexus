@@ -375,23 +375,23 @@ onMounted(() => {
 
 const kpis = ref([
   { title: '총 매출', value: '89.2', unit: '백만', sub: '전일 대비', delta: 12.4, to: '/settlement' },
-  { title: '운영 가맹점', value: '142', unit: '개', sub: '활성 매장 비율 96%', delta: 2.1, to: '/store' },
+  { title: '입점 매장', value: '142', unit: '개', sub: '활성 매장 비율 96%', delta: 2.1, to: '/store' },
   { title: '금일 자동 발주', value: '85', unit: '건', sub: '확정 62건', delta: 8.7, to: '/order' },
   { title: '배송 지연', value: '4', unit: '건', sub: '즉시 확인 필요', delta: -1.8, to: '/delivery' },
 ])
 
 const warnings = ref([
-  { store: '여의도역점',       product: '생닭(1kg)',      current: 30,  min: 50   },
-  { store: '판교테크노밸리점', product: '튀김유(18L)',    current: 2,   min: 5    },
-  { store: '한화빌딩점',       product: '황금올리브소스', current: 8,   min: 20   },
-  { store: '부산센텀점',       product: '치킨박스(중)',   current: 200, min: 500  },
+  { store: '이탈리안 키친',  product: '한우 등심',  current: 30,  min: 50   },
+  { store: '일식 스시바',    product: '올리브오일', current: 2,   min: 5    },
+  { store: '한우 오마카세',  product: '버터',       current: 8,   min: 20   },
+  { store: '차이나 가든',    product: '생수',       current: 200, min: 500  },
 ])
 
 const ongoingDeliveries = [
-  { num: 1, id: 'ORD-2604-001', from: '본사 창고', to: '신도방이거리점', status: '배송중' },
-  { num: 2, id: 'ORD-2604-002', from: '본사 창고', to: '강남역점', status: '출고대기' },
-  { num: 3, id: 'ORD-2604-004', from: '본사 창고', to: '종로3가점', status: '배송지연' },
-  { num: 4, id: 'ORD-2604-005', from: '본사 창고', to: '부산서면점', status: '출고완료' },
+  { num: 1, id: 'ORD-2604-001', from: '본사 창고', to: '이탈리안 키친',  status: '배송중' },
+  { num: 2, id: 'ORD-2604-002', from: '본사 창고', to: '한우 오마카세',  status: '출고대기' },
+  { num: 3, id: 'ORD-2604-004', from: '본사 창고', to: '프렌치 비스트로', status: '배송지연' },
+  { num: 4, id: 'ORD-2604-005', from: '본사 창고', to: '일식 스시바',    status: '출고완료' },
 ]
 
 const deliveryCls = s => ({

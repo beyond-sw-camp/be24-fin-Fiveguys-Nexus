@@ -184,7 +184,7 @@ const showFullList = ref(false)
 const yearOptions = [2026, 2025]
 
 const analysisModes = [
-  { value: 'store',    label: '가맹점별' },
+  { value: 'store',    label: '매장별' },
   { value: 'product',  label: '제품별' },
   { value: 'category', label: '카테고리별' },
 ]
@@ -250,10 +250,10 @@ const summaryCards = computed(() => {
       sub: '선택 기간 전체 매출 합계',
     },
     {
-      title: '가맹점 평균',
+      title: '매장 평균',
       value: `₩${Math.round(avg).toLocaleString()}`,
       unit: '',
-      sub: `활성 가맹점 ${storeCount}개 기준 평균`,
+      sub: `활성 매장 ${storeCount}개 기준 평균`,
     },
     {
       title: '매출 1위',

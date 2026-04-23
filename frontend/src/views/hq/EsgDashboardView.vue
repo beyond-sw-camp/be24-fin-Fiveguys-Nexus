@@ -130,10 +130,10 @@
 
       <!-- 차트 영역 -->
       <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
-        <!-- 가맹점별 재고 회전율 -->
+        <!-- 매장별 재고 회전율 -->
         <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col" style="min-height: 300px">
           <div class="mb-4 shrink-0">
-            <h2 class="font-bold text-gray-900">가맹점별 재고 회전율</h2>
+            <h2 class="font-bold text-gray-900">매장별 재고 회전율</h2>
             <p class="text-xs text-gray-400 mt-0.5">이번달 기준 (회/월)</p>
           </div>
           <div class="flex-1 min-h-0 relative" style="height: 220px">
@@ -145,7 +145,7 @@
         <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col" style="min-height: 300px">
           <div class="mb-4 shrink-0">
             <h2 class="font-bold text-gray-900">과잉 재고 발생 횟수</h2>
-            <p class="text-xs text-gray-400 mt-0.5">최근 6개월 가맹점별 과잉 재고 발생 건수</p>
+            <p class="text-xs text-gray-400 mt-0.5">최근 6개월 매장별 과잉 재고 발생 건수</p>
           </div>
           <div class="flex-1 min-h-0 relative" style="height: 220px">
             <canvas ref="overStockCanvas" class="block w-full h-full"></canvas>
@@ -153,10 +153,10 @@
         </div>
       </div>
 
-      <!-- 가맹점별 적정 재고 유지 현황 -->
+      <!-- 매장별 적정 재고 유지 현황 -->
       <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
         <div class="mb-4">
-          <h2 class="font-bold text-gray-900">가맹점별 적정 재고 유지 현황</h2>
+          <h2 class="font-bold text-gray-900">매장별 적정 재고 유지 현황</h2>
           <p class="text-xs text-gray-400 mt-0.5">이번달 기준 적정 재고 유지율 및 자동발주 정확도</p>
         </div>
         <div class="overflow-x-auto">
@@ -256,14 +256,14 @@ const wasteCategoryData = {
 }
 
 const expiryRows = [
-  { store: 'BBQ 강남역점',         warned: 12, success: 10, fail: 2, rate: 83 },
-  { store: 'BBQ 홍대입구점',       warned: 9,  success: 7,  fail: 2, rate: 78 },
-  { store: 'BBQ 여의도역점',       warned: 7,  success: 6,  fail: 1, rate: 86 },
-  { store: 'BBQ 판교테크노밸리점', warned: 11, success: 8,  fail: 3, rate: 73 },
-  { store: 'BBQ 잠실새내점',       warned: 6,  success: 3,  fail: 3, rate: 50 },
-  { store: 'BBQ 부산서면점',       warned: 8,  success: 6,  fail: 2, rate: 75 },
-  { store: 'BBQ 대전둔산점',       warned: 5,  success: 4,  fail: 1, rate: 80 },
-  { store: 'BBQ 수원광교점',       warned: 10, success: 9,  fail: 1, rate: 90 },
+  { store: '한우 오마카세',       warned: 12, success: 10, fail: 2, rate: 83 },
+  { store: '이탈리안 키친',       warned: 9,  success: 7,  fail: 2, rate: 78 },
+  { store: '일식 스시바',         warned: 7,  success: 6,  fail: 1, rate: 86 },
+  { store: '차이나 가든',         warned: 11, success: 8,  fail: 3, rate: 73 },
+  { store: '프렌치 비스트로',     warned: 6,  success: 3,  fail: 3, rate: 50 },
+  { store: '한우 오마카세 부산점', warned: 8,  success: 6,  fail: 2, rate: 75 },
+  { store: '이탈리안 키친 대전점', warned: 5,  success: 4,  fail: 1, rate: 80 },
+  { store: '일식 스시바 수원점',  warned: 10, success: 9,  fail: 1, rate: 90 },
 ]
 
 // ── 재고 효율 ────────────────────────────────────────────
@@ -273,7 +273,7 @@ const inventoryCards = [
     title: '평균 재고 회전율',
     value: '4.2',
     unit: '회/월',
-    sub: '전체 가맹점 평균',
+    sub: '전체 매장 평균',
   },
   {
     title: '적정 재고 유지율',
@@ -311,14 +311,14 @@ const overStockMonthlyData = {
 }
 
 const inventoryRows = [
-  { store: 'BBQ 강남역점',         stockRate: 85, turnover: 5.1, overStock: 4,  autoOrderAcc: 92 },
-  { store: 'BBQ 홍대입구점',       stockRate: 80, turnover: 4.8, overStock: 3,  autoOrderAcc: 89 },
-  { store: 'BBQ 여의도역점',       stockRate: 78, turnover: 4.3, overStock: 5,  autoOrderAcc: 88 },
-  { store: 'BBQ 판교테크노밸리점', stockRate: 65, turnover: 3.9, overStock: 6,  autoOrderAcc: 82 },
-  { store: 'BBQ 잠실새내점',       stockRate: 82, turnover: 4.6, overStock: 3,  autoOrderAcc: 91 },
-  { store: 'BBQ 부산서면점',       stockRate: 60, turnover: 3.7, overStock: 8,  autoOrderAcc: 75 },
-  { store: 'BBQ 대전둔산점',       stockRate: 74, turnover: 4.1, overStock: 5,  autoOrderAcc: 86 },
-  { store: 'BBQ 수원광교점',       stockRate: 88, turnover: 4.5, overStock: 3,  autoOrderAcc: 93 },
+  { store: '한우 오마카세',        stockRate: 85, turnover: 5.1, overStock: 4,  autoOrderAcc: 92 },
+  { store: '이탈리안 키친',        stockRate: 80, turnover: 4.8, overStock: 3,  autoOrderAcc: 89 },
+  { store: '일식 스시바',          stockRate: 78, turnover: 4.3, overStock: 5,  autoOrderAcc: 88 },
+  { store: '차이나 가든',          stockRate: 65, turnover: 3.9, overStock: 6,  autoOrderAcc: 82 },
+  { store: '프렌치 비스트로',      stockRate: 82, turnover: 4.6, overStock: 3,  autoOrderAcc: 91 },
+  { store: '한우 오마카세 부산점', stockRate: 60, turnover: 3.7, overStock: 8,  autoOrderAcc: 75 },
+  { store: '이탈리안 키친 대전점', stockRate: 74, turnover: 4.1, overStock: 5,  autoOrderAcc: 86 },
+  { store: '일식 스시바 수원점',   stockRate: 88, turnover: 4.5, overStock: 3,  autoOrderAcc: 93 },
 ]
 
 // ── 차트 ─────────────────────────────────────────────────

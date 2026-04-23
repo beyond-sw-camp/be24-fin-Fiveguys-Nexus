@@ -133,67 +133,70 @@ const draftLots = ref([])
 
 const inventory = ref([
   {
-    code: 'C100', name: '닭고기(생닭)', min: 60,
+    code: 'C100', name: '한우 등심', min: 10,
     lots: [
-      { id: 'c100-1', expiry: '2026-04-20', qty: 38 },
-      { id: 'c100-2', expiry: '2026-04-22', qty: 50 },
+      { id: 'c100-1', expiry: '2026-04-18', qty: 3 },
+      { id: 'c100-2', expiry: '2026-04-22', qty: 2 },
     ],
   },
   {
-    code: 'C110', name: '순살 정육', min: 40,
+    code: 'C101', name: '한우 안심', min: 8,
     lots: [
-      { id: 'c110-1', expiry: '2026-04-18', qty: 12 },
-      { id: 'c110-2', expiry: '2026-04-20', qty: 22 },
+      { id: 'c101-1', expiry: '2026-04-19', qty: 4 },
+      { id: 'c101-2', expiry: '2026-04-23', qty: 5 },
     ],
   },
   {
-    code: 'C200', name: '튀김가루', min: 30,
-    lots: [{ id: 'c200-1', expiry: '2026-07-15', qty: 52 }],
-  },
-  {
-    code: 'C210', name: '양념소스', min: 20,
-    lots: [{ id: 'c210-1', expiry: '2026-05-02', qty: 17 }],
-  },
-  {
-    code: 'C220', name: '핫양념소스', min: 12,
+    code: 'C200', name: '연어', min: 8,
     lots: [
-      { id: 'c220-1', expiry: '2026-05-01', qty: 6 },
-      { id: 'c220-2', expiry: '2026-05-08', qty: 8 },
+      { id: 'c200-1', expiry: '2026-04-16', qty: 2 },
+      { id: 'c200-2', expiry: '2026-04-20', qty: 1 },
     ],
   },
   {
-    code: 'C300', name: '치즈볼(냉동)', min: 70,
+    code: 'C201', name: '참치', min: 6,
+    lots: [{ id: 'c201-1', expiry: '2026-04-17', qty: 4 }],
+  },
+  {
+    code: 'C300', name: '양파', min: 20,
     lots: [
-      { id: 'c300-1', expiry: '2026-06-05', qty: 40 },
-      { id: 'c300-2', expiry: '2026-06-10', qty: 56 },
+      { id: 'c300-1', expiry: '2026-05-10', qty: 5 },
+      { id: 'c300-2', expiry: '2026-05-20', qty: 3 },
     ],
   },
   {
-    code: 'C310', name: '감자튀김(냉동)', min: 50,
-    lots: [{ id: 'c310-1', expiry: '2026-06-18', qty: 74 }],
+    code: 'C301', name: '마늘', min: 15,
+    lots: [{ id: 'c301-1', expiry: '2026-05-15', qty: 12 }],
   },
   {
-    code: 'C400', name: '콜라 1.25L', min: 30,
-    lots: [{ id: 'c400-1', expiry: '2026-09-01', qty: 41 }],
+    code: 'C302', name: '대파', min: 10,
+    lots: [{ id: 'c302-1', expiry: '2026-04-25', qty: 8 }],
   },
   {
-    code: 'C410', name: '사이다 1.25L', min: 30,
-    lots: [{ id: 'c410-1', expiry: '2026-08-24', qty: 28 }],
+    code: 'C400', name: '간장', min: 8,
+    lots: [{ id: 'c400-1', expiry: '2027-01-01', qty: 3 }],
   },
   {
-    code: 'C500', name: '치킨 박스(대)', min: 300,
-    lots: [{ id: 'c500-1', expiry: null, qty: 420 }],
+    code: 'C401', name: '올리브오일', min: 5,
+    lots: [{ id: 'c401-1', expiry: '2026-12-01', qty: 2 }],
   },
   {
-    code: 'C510', name: '소스컵/뚜껑 세트', min: 400,
+    code: 'C500', name: '버터', min: 5,
+    lots: [{ id: 'c500-1', expiry: '2026-06-30', qty: 2 }],
+  },
+  {
+    code: 'C501', name: '생크림', min: 4,
     lots: [
-      { id: 'c510-1', expiry: null, qty: 200 },
-      { id: 'c510-2', expiry: null, qty: 310 },
+      { id: 'c501-1', expiry: '2026-04-20', qty: 1 },
     ],
   },
   {
-    code: 'C520', name: '비닐봉투(중)', min: 300,
-    lots: [{ id: 'c520-1', expiry: null, qty: 390 }],
+    code: 'C600', name: '콜라(박스)', min: 15,
+    lots: [{ id: 'c600-1', expiry: '2026-12-31', qty: 18 }],
+  },
+  {
+    code: 'C601', name: '생수(박스)', min: 20,
+    lots: [{ id: 'c601-1', expiry: null, qty: 25 }],
   },
 ])
 

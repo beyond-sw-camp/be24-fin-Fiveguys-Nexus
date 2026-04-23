@@ -232,7 +232,7 @@ const wasteCards = [
   },
   {
     title: '폐기 절감 금액',
-    value: '₩324,000',
+    value: '₩ 324,000',
     unit: '',
     sub: '전월 대비 절감 추정액',
     valueClass: 'text-[#F37321]',

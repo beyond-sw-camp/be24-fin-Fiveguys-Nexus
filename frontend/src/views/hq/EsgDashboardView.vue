@@ -70,13 +70,13 @@
       <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
         <div class="mb-4">
           <h2 class="font-bold text-gray-900">유통기한 경고 후 소진 현황</h2>
-          <p class="text-xs text-gray-400 mt-0.5">경고 발생 후 소진 성공 / 실패 가맹점 현황</p>
+          <p class="text-xs text-gray-400 mt-0.5">경고 발생 후 소진 성공 / 실패 입점 매장 현황</p>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
             <thead>
               <tr class="border-b border-gray-100 bg-gray-50/70">
-                <th class="text-left px-4 py-3 font-semibold text-gray-600">가맹점</th>
+                <th class="text-left px-4 py-3 font-semibold text-gray-600">매장명</th>
                 <th class="text-center px-4 py-3 font-semibold text-gray-600">경고 횟수</th>
                 <th class="text-center px-4 py-3 font-semibold text-gray-600">소진 성공</th>
                 <th class="text-center px-4 py-3 font-semibold text-gray-600">소진 실패</th>
@@ -163,7 +163,7 @@
           <table class="w-full text-sm">
             <thead>
               <tr class="border-b border-gray-100 bg-gray-50/70">
-                <th class="text-left px-4 py-3 font-semibold text-gray-600">가맹점</th>
+                <th class="text-left px-4 py-3 font-semibold text-gray-600">매장명</th>
                 <th class="text-center px-4 py-3 font-semibold text-gray-600">적정 재고 유지율</th>
                 <th class="text-center px-4 py-3 font-semibold text-gray-600">재고 회전율</th>
                 <th class="text-center px-4 py-3 font-semibold text-gray-600">과잉 재고 건수</th>
@@ -251,19 +251,16 @@ const wasteMonthlyData = {
 }
 
 const wasteCategoryData = {
-  labels: ['신선육', '사이드·토핑', '양념·소스', '음료', '기타'],
-  data: [52, 34, 28, 16, 12],
+  labels: ['한우·정육', '수산물', '채소·신선', '양념·소스', '유제품'],
+  data: [52, 34, 28, 20, 16],
 }
 
 const expiryRows = [
-  { store: '한우 오마카세',       warned: 12, success: 10, fail: 2, rate: 83 },
-  { store: '이탈리안 키친',       warned: 9,  success: 7,  fail: 2, rate: 78 },
-  { store: '일식 스시바',         warned: 7,  success: 6,  fail: 1, rate: 86 },
-  { store: '차이나 가든',         warned: 11, success: 8,  fail: 3, rate: 73 },
-  { store: '프렌치 비스트로',     warned: 6,  success: 3,  fail: 3, rate: 50 },
-  { store: '한우 오마카세 부산점', warned: 8,  success: 6,  fail: 2, rate: 75 },
-  { store: '이탈리안 키친 대전점', warned: 5,  success: 4,  fail: 1, rate: 80 },
-  { store: '일식 스시바 수원점',  warned: 10, success: 9,  fail: 1, rate: 90 },
+  { store: '한우 오마카세',   warned: 12, success: 10, fail: 2, rate: 83 },
+  { store: '이탈리안 키친',   warned: 9,  success: 7,  fail: 2, rate: 78 },
+  { store: '일식 스시바',     warned: 7,  success: 6,  fail: 1, rate: 86 },
+  { store: '차이나 가든',     warned: 11, success: 8,  fail: 3, rate: 73 },
+  { store: '프렌치 비스트로', warned: 6,  success: 3,  fail: 3, rate: 50 },
 ]
 
 // ── 재고 효율 ────────────────────────────────────────────
@@ -285,7 +282,7 @@ const inventoryCards = [
     title: '과잉 재고 발생',
     value: '37',
     unit: '건',
-    sub: '이번달 전체 가맹점 합계',
+    sub: '이번달 전체 입점 매장 합계',
     valueClass: 'text-amber-500',
   },
   {
@@ -311,14 +308,11 @@ const overStockMonthlyData = {
 }
 
 const inventoryRows = [
-  { store: '한우 오마카세',        stockRate: 85, turnover: 5.1, overStock: 4,  autoOrderAcc: 92 },
-  { store: '이탈리안 키친',        stockRate: 80, turnover: 4.8, overStock: 3,  autoOrderAcc: 89 },
-  { store: '일식 스시바',          stockRate: 78, turnover: 4.3, overStock: 5,  autoOrderAcc: 88 },
-  { store: '차이나 가든',          stockRate: 65, turnover: 3.9, overStock: 6,  autoOrderAcc: 82 },
-  { store: '프렌치 비스트로',      stockRate: 82, turnover: 4.6, overStock: 3,  autoOrderAcc: 91 },
-  { store: '한우 오마카세 부산점', stockRate: 60, turnover: 3.7, overStock: 8,  autoOrderAcc: 75 },
-  { store: '이탈리안 키친 대전점', stockRate: 74, turnover: 4.1, overStock: 5,  autoOrderAcc: 86 },
-  { store: '일식 스시바 수원점',   stockRate: 88, turnover: 4.5, overStock: 3,  autoOrderAcc: 93 },
+  { store: '한우 오마카세',   stockRate: 85, turnover: 5.1, overStock: 4, autoOrderAcc: 92 },
+  { store: '이탈리안 키친',   stockRate: 80, turnover: 4.8, overStock: 3, autoOrderAcc: 89 },
+  { store: '일식 스시바',     stockRate: 78, turnover: 4.3, overStock: 5, autoOrderAcc: 88 },
+  { store: '차이나 가든',     stockRate: 65, turnover: 3.9, overStock: 6, autoOrderAcc: 82 },
+  { store: '프렌치 비스트로', stockRate: 82, turnover: 4.6, overStock: 3, autoOrderAcc: 91 },
 ]
 
 // ── 차트 ─────────────────────────────────────────────────

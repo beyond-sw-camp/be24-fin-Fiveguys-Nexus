@@ -73,7 +73,7 @@
       <table class="w-full text-sm text-left">
         <thead>
         <tr class="border-b border-gray-200 bg-gray-50">
-          <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">IDX</th>
+          <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">매장 코드</th>
           <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">매장명</th>
           <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">담당자명</th>
           <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">이메일</th>
@@ -90,10 +90,7 @@
             :class="{ 'bg-gray-50/40 opacity-70': store.closeDate }">
           <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ store.id }}</td>
           <td class="px-5 py-3.5 font-bold text-gray-900 group-hover:text-[#F37321] transition-colors">
-            <div class="flex items-center gap-2">
-              {{ store.name }}
-              <span v-if="store.closeDate" class="text-[9px] font-normal text-red-400 border border-red-200 px-1 rounded-lg italic">CLOSED</span>
-            </div>
+            {{ store.name }}
           </td>
           <td class="px-5 py-3.5 text-gray-600">{{ store.owner }}</td>
           <td class="px-5 py-3.5 text-gray-500 text-xs truncate max-w-[150px]">{{ store.email }}</td>
@@ -132,7 +129,7 @@
         <div class="p-6 space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-1.5">
-              <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">IDX</label>
+              <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">매장 코드</label>
               <div class="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm font-mono text-gray-500">
                 {{ detailTarget?.id }}
               </div>
@@ -237,7 +234,7 @@
 
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">상세 정보</label>
-            <input v-model="form.details" type="text" placeholder="예: 갤러리아 백화점 B1F 101호"
+            <input v-model="form.details" required type="text" placeholder="예: 갤러리아 백화점 B1F 101호"
                    class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
           </div>
 

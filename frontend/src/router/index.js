@@ -122,6 +122,18 @@ const router = createRouter({
       meta: { role: 'STORE_OWNER' },
     },
     {
+      path: '/store-product',
+      name: 'storeProduct',
+      component: () => import('@/views/store/StoreProductView.vue'),
+      meta: { role: 'STORE_OWNER' },
+    },
+    {
+      path: '/store-recipe',
+      name: 'storeRecipe',
+      component: () => import('@/views/store/StoreRecipeView.vue'),
+      meta: { role: 'STORE_OWNER' },
+    },
+    {
       path: '/store-inventory',
       name: 'storeInventory',
       component: () => import('@/views/store/StoreInventoryView.vue'),

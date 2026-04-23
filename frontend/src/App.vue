@@ -189,6 +189,15 @@ const storeMenus = [
   { path: '/store-dashboard', name: '대시보드',  icon: LayoutDashboard },
   { path: '/store-pos',       name: 'POS',        icon: Tablet },
   { path: '/store-order',     name: '발주서',     icon: ClipboardList },
+  {
+    path: '/store-product',
+    name: '제품·메뉴',
+    icon: PackageSearch,
+    children: [
+      { path: '/store-product', name: '제품 관리' },
+      { path: '/store-recipe',  name: '메뉴 관리' },
+    ],
+  },
   { path: '/store-inventory', name: '매장 재고',  icon: Warehouse },
   { path: '/store-delivery',  name: '배송 현황',  icon: Truck },
   { path: '/store-settlement',name: '정산 내역',  icon: Receipt },

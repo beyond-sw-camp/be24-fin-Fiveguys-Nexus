@@ -291,11 +291,6 @@ const activeMenuClass = computed(() => {
   return 'text-gray-900 bg-gray-100 font-semibold'
 })
 
-const activeBorderClass = computed(() => {
-  if (auth.isAdmin)      return 'bg-[#F37321]'
-  if (auth.isStoreOwner) return 'bg-blue-500'
-  return 'bg-gray-700'
-})
 
 const activeIconClass = computed(() => {
   if (auth.isAdmin)      return 'text-[#F37321]'

@@ -18,11 +18,11 @@
         <p class="text-3xl font-black text-gray-900 mt-2">{{ stores.length }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
       </div>
       <div class="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
-        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">정상</p>
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">입점</p>
         <p class="text-3xl font-black text-green-600 mt-2">{{ stores.filter(s => !s.closeDate).length }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
       </div>
       <div class="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
-        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">폐업 매장</p>
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">폐점 매장</p>
         <p class="text-3xl font-black text-red-500 mt-2">{{ stores.filter(s => s.closeDate).length }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
       </div>
     </div>
@@ -74,8 +74,8 @@
         <thead>
         <tr class="border-b border-gray-200 bg-gray-50">
           <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">IDX</th>
-          <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">지점명</th>
-          <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">점주명</th>
+          <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">매장명</th>
+          <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">담당자명</th>
           <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">이메일</th>
           <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">상세 정보</th>
           <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">사업자번호</th>
@@ -104,7 +104,7 @@
                     :class="!store.closeDate
                   ? 'bg-green-100 text-green-700'
                   : 'bg-red-50 text-red-600'">
-                {{ store.closeDate ? '폐업' : '정상' }}
+                {{ store.closeDate ? '폐점' : '입점' }}
               </span>
           </td>
           <td class="px-5 py-3.5">
@@ -138,7 +138,7 @@
               </div>
             </div>
             <div class="space-y-1.5">
-              <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">지점명</label>
+              <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">매장명</label>
               <div class="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm font-bold text-gray-900">
                 {{ detailTarget?.name }}
               </div>
@@ -147,7 +147,7 @@
 
           <div class="grid grid-cols-2 gap-5">
             <div class="space-y-1.5">
-              <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">점주명</label>
+              <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">담당자명</label>
               <div class="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm text-gray-700">
                 {{ detailTarget?.owner }}
               </div>
@@ -217,14 +217,14 @@
 
         <form @submit.prevent="saveStore" class="p-8 space-y-5">
           <div class="space-y-1.5">
-            <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">지점명</label>
+            <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">매장명</label>
             <input v-model="form.name" required type="text" placeholder="예: 한우 오마카세"
                    class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
           </div>
 
           <div class="grid grid-cols-2 gap-5">
             <div class="space-y-1.5">
-              <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">점주명</label>
+              <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">담당자명</label>
               <input v-model="form.owner" required type="text" placeholder="성함 입력"
                      class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
             </div>
@@ -292,7 +292,7 @@ const searchQuery = ref('')
 const filterStatus = ref('전체')
 const activeDropdown = ref(null)
 
-const statusOptions = ['전체', '정상', '폐업']
+const statusOptions = ['전체', '입점', '폐점']
 
 const stores = ref([
   { id: 'GAL-F-001', name: '한우 오마카세',   owner: '김동현', details: '갤러리아 백화점 B1F 101호', bizNumber: '101-12-34567', email: 'hanwoo@galleria.com',  openDate: '2022-03-15', closeDate: '' },
@@ -306,8 +306,8 @@ const filteredStores = computed(() => {
   let list = [...stores.value]
 
   if (filterStatus.value !== '전체') {
-    if (filterStatus.value === '폐업') list = list.filter(s => !!s.closeDate)
-    if (filterStatus.value === '정상') list = list.filter(s => !s.closeDate)
+    if (filterStatus.value === '폐점') list = list.filter(s => !!s.closeDate)
+    if (filterStatus.value === '입점') list = list.filter(s => !s.closeDate)
   }
 
   if (searchQuery.value.trim()) {

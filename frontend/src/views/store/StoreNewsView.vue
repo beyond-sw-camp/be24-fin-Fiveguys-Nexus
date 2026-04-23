@@ -7,7 +7,7 @@
       </div>
     </div>
 
-    <p class="text-xs text-gray-400 mb-3">매일 오전 9시 AI가 가맹점 지역 관련 정보를 수집·요약합니다.</p>
+    <p class="text-xs text-gray-400 mb-3">매일 오전 9시 AI가 푸드코트 및 외식 업계 관련 정보를 수집·요약합니다.</p>
 
     <div v-if="newsList.length === 0" class="bg-white rounded-lg border border-gray-200 px-5 py-16 text-center text-gray-400 text-sm">
       수집된 뉴스가 없습니다.
@@ -162,10 +162,10 @@ const newsList = ref([
   {
     idx: 1,
     category: 'TREND',
-    summary_title: '2026-04-19 강남구 상권 동향',
+    summary_title: '2026-04-19 갤러리아 백화점 상권 동향',
     summary_date: '2026-04-19 09:00',
-    summary_content: '1. 강남구 역삼동 일대 신규 치킨 프랜차이즈 2곳이 이달 중 오픈 예정입니다.\n2. 최근 강남 상권에서 혼밥·소량 포장 주문 비율이 전월 대비 15% 증가한 것으로 나타났습니다.\n3. 점심 시간대(11:30~13:00) 직장인 대상 빠른 배달 수요가 꾸준히 증가하고 있습니다.',
-    advice: '1인 포장 메뉴나 소용량 세트 구성을 검토하고, 점심 시간대 배달 응대 인력을 강화해 경쟁 우위를 확보하세요.',
+    summary_content: '1. 갤러리아 백화점 인근 고급 레스토랑 2곳이 이달 중 오픈 예정으로 푸드코트 방문객 증가가 기대됩니다.\n2. 최근 백화점 푸드코트에서 프리미엄 식사 수요가 전월 대비 18% 증가한 것으로 나타났습니다.\n3. 주말 점심 시간대(12:00~14:00) 대기 고객이 늘며 회전율 관리가 중요해지고 있습니다.',
+    advice: '주말 피크 시간대 회전율을 높이기 위한 운영 인력 배치를 점검하고, 프리미엄 메뉴 구성 강화로 객단가 향상을 검토하세요.',
     urls: ['https://example.com/trend/1'],
   },
 ])

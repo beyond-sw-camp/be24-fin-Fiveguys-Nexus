@@ -1,28 +1,27 @@
 const categories = [
-  '신선육', '튀김·배합', '양념·소스', '사이드·토핑', '포장·소모품', '음료', '장비·세척',
+  '한우·정육', '수산물', '채소·신선', '양념·소스', '유제품', '음료·기타', '소모품',
 ]
 
 const productsByCategory = {
-  신선육: ['닭다리살 20kg', '닭봉 10kg', '순살 다짐육 5kg', '가슴살 필렛 2kg'],
-  '튀김·배합': ['후라이드 믹스 10kg', '순살 전용믹스 8kg', '양념치킨 코팅가루', '패티믹스 5kg'],
-  '양념·소스': ['간장 양념소스 2kg', '양념치킨 소스 2kg', '마늘간장 베이스', '핫스파이시 소스'],
-  '사이드·토핑': ['감자튀김 2kg', '치즈볼 1kg', '콜팝 닭껍질', '떡사리 500g'],
-  '포장·소모품': ['치킨박스 L', '치킨봉투 대', '장갑 100매', '키친타월 4롤'],
-  음료: ['콜라 500ml(24)', '사이다 500ml(24)', '생수 500ml(20)', '에이드 베이스 1L'],
-  '장비·세척': ['튀김기름 18L', '그릴 클리너', '필터지', '살균세제 4L'],
+  '한우·정육': ['한우 등심 1kg', '한우 안심 1kg', '한우 채끝 1kg', '한우 갈비 1kg'],
+  '수산물': ['연어 필렛 1kg', '참치 블록 1kg', '새우 500g', '광어 1kg'],
+  '채소·신선': ['양파 1kg', '마늘 500g', '대파 1kg', '버섯 모둠 500g'],
+  '양념·소스': ['간장 1.8L', '고추장 500g', '된장 500g', '올리브오일 1L'],
+  '유제품': ['버터 500g', '생크림 1L', '치즈 슬라이스 200g', '우유 1L'],
+  '음료·기타': ['콜라 500ml(24)', '생수 500ml(20)', '녹차 티백 50개', '에스프레소 원두 1kg'],
+  '소모품': ['위생장갑 100매', '랩 500m', '키친타월 4롤', '포장용기 50개'],
 }
 
 const categoryWeights = [
-  ['신선육', 26], ['튀김·배합', 20], ['양념·소스', 16],
-  ['사이드·토핑', 12], ['포장·소모품', 10], ['음료', 8], ['장비·세척', 8],
+  ['한우·정육', 28], ['수산물', 22], ['채소·신선', 16],
+  ['양념·소스', 12], ['유제품', 10], ['음료·기타', 7], ['소모품', 5],
 ]
 const weightTotal = categoryWeights.reduce((s, [, w]) => s + w, 0)
 
-const storeWeights = [17, 16, 14, 13, 12, 11, 9, 8]
+const storeWeights = [24, 22, 20, 18, 16]
 const storeWeightTotal = storeWeights.reduce((s, w) => s + w, 0)
 const stores = [
-  'BBQ 강남역점', 'BBQ 홍대입구점', 'BBQ 여의도역점', 'BBQ 판교테크노밸리점',
-  'BBQ 잠실새내점', 'BBQ 부산서면점', 'BBQ 대전둔산점', 'BBQ 수원광교점',
+  '한우 오마카세', '이탈리안 키친', '일식 스시바', '차이나 가든', '프렌치 비스트로',
 ]
 
 function mulberry32(seed) {
@@ -53,23 +52,23 @@ function pickStore(rand) {
 }
 
 function qtyForCategory(cat, rand) {
-  if (cat === '포장·소모품') return 120 + Math.floor(rand() * 900)
-  if (cat === '음료') return 12 + Math.floor(rand() * 96)
-  if (cat === '신선육') return 10 + Math.floor(rand() * 55)
-  if (cat === '튀김·배합') return 4 + Math.floor(rand() * 22)
-  if (cat === '양념·소스') return 6 + Math.floor(rand() * 36)
-  if (cat === '사이드·토핑') return 8 + Math.floor(rand() * 40)
-  return 2 + Math.floor(rand() * 14)
+  if (cat === '소모품') return 50 + Math.floor(rand() * 200)
+  if (cat === '음료·기타') return 10 + Math.floor(rand() * 50)
+  if (cat === '한우·정육') return 5 + Math.floor(rand() * 30)
+  if (cat === '수산물') return 5 + Math.floor(rand() * 25)
+  if (cat === '채소·신선') return 5 + Math.floor(rand() * 40)
+  if (cat === '양념·소스') return 3 + Math.floor(rand() * 20)
+  return 2 + Math.floor(rand() * 12)
 }
 
 function unitPriceFor(cat, rand) {
-  if (cat === '신선육') return 5200 + Math.floor(rand() * 3800)
-  if (cat === '튀김·배합') return 11000 + Math.floor(rand() * 9500)
-  if (cat === '양념·소스') return 6500 + Math.floor(rand() * 4500)
-  if (cat === '사이드·토핑') return 4800 + Math.floor(rand() * 5200)
-  if (cat === '포장·소모품') return 35 + Math.floor(rand() * 120)
-  if (cat === '음료') return 780 + Math.floor(rand() * 420)
-  return 8000 + Math.floor(rand() * 12000)
+  if (cat === '한우·정육') return 45000 + Math.floor(rand() * 35000)
+  if (cat === '수산물') return 18000 + Math.floor(rand() * 22000)
+  if (cat === '채소·신선') return 2000 + Math.floor(rand() * 3000)
+  if (cat === '양념·소스') return 4000 + Math.floor(rand() * 6000)
+  if (cat === '유제품') return 3500 + Math.floor(rand() * 4500)
+  if (cat === '음료·기타') return 800 + Math.floor(rand() * 1200)
+  return 500 + Math.floor(rand() * 1500)
 }
 
 function buildRawOrders() {
@@ -93,13 +92,13 @@ function buildRawOrders() {
       const product = names[Math.floor(rand() * names.length)]
       const store = pickStore(rand)
       let qty = qtyForCategory(cat, rand)
-      if (isPeak && (cat === '신선육' || cat === '튀김·배합')) qty += Math.floor(rand() * 18)
+      if (isPeak && (cat === '한우·정육' || cat === '수산물')) qty += Math.floor(rand() * 10)
       const unitPrice = unitPriceFor(cat, rand)
       const amount = qty * unitPrice
       let abnormalProb = 0.048
-      if (cat === '신선육') abnormalProb += 0.055
-      if (cat === '튀김·배합' && qty > 18) abnormalProb += 0.028
-      if (qty > 200) abnormalProb += 0.035
+      if (cat === '한우·정육') abnormalProb += 0.055
+      if (cat === '수산물' && qty > 15) abnormalProb += 0.028
+      if (qty > 100) abnormalProb += 0.035
       if (isHolidayLike && rand() < 0.15) abnormalProb += 0.04
       const abnormal = rand() < abnormalProb ? 1 : 0
       list.push({ date: dateStr, category: cat, product, store, amount, qty, abnormal })

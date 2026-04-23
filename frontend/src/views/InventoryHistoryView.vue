@@ -27,14 +27,15 @@
         </select>
       </div>
       <div class="space-y-1.5">
-        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">가맹점</label>
+        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">입점 매장</label>
         <select v-model="filterStore"
           class="px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none">
           <option value="">전체</option>
-          <option>한화빌딩점</option>
-          <option>여의도역점</option>
-          <option>판교테크노밸리점</option>
-          <option>부산센텀점</option>
+          <option>한우 오마카세</option>
+          <option>이탈리안 키친</option>
+          <option>일식 스시바</option>
+          <option>차이나 가든</option>
+          <option>프렌치 비스트로</option>
         </select>
       </div>
       <div class="space-y-1.5">
@@ -112,18 +113,18 @@ const filterFrom  = ref('')
 const filterTo    = ref('')
 
 const history = ref([
-  { id: 1,  datetime: '2026-04-13 14:23', type: '입고', product: '우유(1L)',        store: '여의도역점',      qty: 200,  handler: '시스템(자동)', note: '자동발주 ORD-001' },
-  { id: 2,  datetime: '2026-04-13 13:10', type: '출고', product: '에스프레소 원두', store: '판교테크노밸리점', qty: 18,   handler: '시스템(POS)',  note: 'POS 마감 차감'  },
-  { id: 3,  datetime: '2026-04-13 12:45', type: '출고', product: '우유(1L)',        store: '한화빌딩점',      qty: 46,   handler: '시스템(POS)',  note: 'POS 마감 차감'  },
-  { id: 4,  datetime: '2026-04-13 11:00', type: '입고', product: '바닐라 시럽',     store: '한화빌딩점',      qty: 60,   handler: '이재혁(운영자)', note: '수동발주 입고'  },
-  { id: 5,  datetime: '2026-04-13 09:30', type: '보정', product: '종이컵(M)',       store: '부산센텀점',      qty: 50,   handler: '김동현(점주)', note: '실재고 보정'    },
-  { id: 6,  datetime: '2026-04-12 22:05', type: '출고', product: '우유(1L)',        store: '여의도역점',      qty: 38,   handler: '시스템(POS)',  note: 'POS 마감 차감'  },
-  { id: 7,  datetime: '2026-04-12 22:05', type: '출고', product: '에스프레소 원두', store: '여의도역점',      qty: 12,   handler: '시스템(POS)',  note: 'POS 마감 차감'  },
-  { id: 8,  datetime: '2026-04-12 17:00', type: '입고', product: '프리미엄 원두',   store: '한화빌딩점',      qty: 50,   handler: '시스템(자동)', note: '자동발주 입고'  },
-  { id: 9,  datetime: '2026-04-12 10:20', type: '출고', product: '종이컵(L)',       store: '부산센텀점',      qty: 120,  handler: '시스템(POS)',  note: 'POS 마감 차감'  },
-  { id: 10, datetime: '2026-04-11 22:00', type: '출고', product: '카라멜 시럽',     store: '판교테크노밸리점', qty: 8,    handler: '시스템(POS)',  note: 'POS 마감 차감'  },
-  { id: 11, datetime: '2026-04-11 16:30', type: '입고', product: '두유(1L)',        store: '여의도역점',      qty: 100,  handler: '이재혁(운영자)', note: '수동발주 입고'  },
-  { id: 12, datetime: '2026-04-11 14:00', type: '보정', product: '바닐라 시럽',     store: '여의도역점',      qty: 3,    handler: '이재혁(운영자)', note: '유통기한 폐기'  },
+  { id: 1,  datetime: '2026-04-13 14:23', type: '입고', product: '한우 등심',   store: '한우 오마카세',   qty: 20,  handler: '시스템(자동)', note: '자동발주 ORD-001' },
+  { id: 2,  datetime: '2026-04-13 13:10', type: '출고', product: '올리브오일', store: '이탈리안 키친',   qty: 5,   handler: '시스템(POS)',  note: 'POS 마감 차감'   },
+  { id: 3,  datetime: '2026-04-13 12:45', type: '출고', product: '연어',       store: '일식 스시바',     qty: 10,  handler: '시스템(POS)',  note: 'POS 마감 차감'   },
+  { id: 4,  datetime: '2026-04-13 11:00', type: '입고', product: '버터',       store: '프렌치 비스트로', qty: 15,  handler: '이재혁(운영자)', note: '수동발주 입고'  },
+  { id: 5,  datetime: '2026-04-13 09:30', type: '보정', product: '간장',       store: '차이나 가든',     qty: 8,   handler: '김동현(담당자)', note: '실재고 보정'    },
+  { id: 6,  datetime: '2026-04-12 22:05', type: '출고', product: '한우 안심',  store: '한우 오마카세',   qty: 12,  handler: '시스템(POS)',  note: 'POS 마감 차감'   },
+  { id: 7,  datetime: '2026-04-12 22:05', type: '출고', product: '생크림',     store: '이탈리안 키친',   qty: 8,   handler: '시스템(POS)',  note: 'POS 마감 차감'   },
+  { id: 8,  datetime: '2026-04-12 17:00', type: '입고', product: '참치',       store: '일식 스시바',     qty: 15,  handler: '시스템(자동)', note: '자동발주 입고'   },
+  { id: 9,  datetime: '2026-04-12 10:20', type: '출고', product: '새우',       store: '차이나 가든',     qty: 20,  handler: '시스템(POS)',  note: 'POS 마감 차감'   },
+  { id: 10, datetime: '2026-04-11 22:00', type: '출고', product: '버터',       store: '프렌치 비스트로', qty: 6,   handler: '시스템(POS)',  note: 'POS 마감 차감'   },
+  { id: 11, datetime: '2026-04-11 16:30', type: '입고', product: '양파',       store: '한우 오마카세',   qty: 30,  handler: '이재혁(운영자)', note: '수동발주 입고'  },
+  { id: 12, datetime: '2026-04-11 14:00', type: '보정', product: '마늘',       store: '이탈리안 키친',   qty: 5,   handler: '이재혁(운영자)', note: '유통기한 폐기'  },
 ])
 
 function parseHistoryDate(s) {

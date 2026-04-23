@@ -391,22 +391,22 @@ let timer = null
 let toastTimer = null
 
 // ── 카테고리 ──────────────────────────────────────────
-const categories = ['전체', '치킨', '사이드', '음료', '세트']
+const categories = ['전체', '한우', '코스요리', '음료', '세트']
 
 // ── 상품 데이터 ───────────────────────────────────────
 const allProducts = ref([
-  { id: 1,  name: '황금올리브치킨',      price: 23000, category: '치킨', image: 'https://images.unsplash.com/photo-1562967916-eb82221dfb92?auto=format&fit=crop&w=500&q=80' },
-  { id: 2,  name: '황금올리브순살',      price: 24000, category: '치킨', image: 'https://images.unsplash.com/photo-1527477396000-e27163b481c2?auto=format&fit=crop&w=500&q=80' },
-  { id: 3,  name: '핫황금올리브치킨',    price: 24000, category: '치킨', image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=500&q=80' },
-  { id: 4,  name: '양념치킨',            price: 24500, category: '치킨', image: 'https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=500&q=80' },
-  { id: 5,  name: '반반치킨',            price: 25000, category: '치킨', image: 'https://images.unsplash.com/photo-1626645738196-c2a7c87d8f5b?auto=format&fit=crop&w=500&q=80' },
-  { id: 6,  name: '자메이카 통다리',     price: 25500, category: '치킨', image: 'https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?auto=format&fit=crop&w=500&q=80' },
-  { id: 7,  name: '치즈볼(5개)',         price: 5500,  category: '사이드', image: 'https://images.unsplash.com/photo-1625944230945-1b7dd3b949ab?auto=format&fit=crop&w=500&q=80' },
-  { id: 8,  name: '케이준 감자튀김',     price: 4500,  category: '사이드', image: 'https://images.unsplash.com/photo-1576107232684-1279f390859f?auto=format&fit=crop&w=500&q=80' },
-  { id: 9,  name: '콜라 1.25L',          price: 3000,  category: '음료', image: 'https://images.unsplash.com/photo-1581636625402-29b2a704ef13?auto=format&fit=crop&w=500&q=80' },
-  { id: 10, name: '사이다 1.25L',        price: 3000,  category: '음료', image: 'https://images.unsplash.com/photo-1581006852262-e4307cf6283a?auto=format&fit=crop&w=500&q=80' },
-  { id: 11, name: '황금올리브+콜라세트', price: 26000, category: '세트', image: 'https://images.unsplash.com/photo-1512152272829-e3139592d56f?auto=format&fit=crop&w=500&q=80' },
-  { id: 12, name: '반반+치즈볼세트',     price: 29900, category: '세트', image: 'https://images.unsplash.com/photo-1548340748-6d98d2fe7806?auto=format&fit=crop&w=500&q=80' },
+  { id: 1,  name: '한우 등심 오마카세',  price: 180000, category: '한우',    image: 'https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=500&q=80' },
+  { id: 2,  name: '한우 안심 스테이크', price: 120000, category: '한우',    image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=500&q=80' },
+  { id: 3,  name: '한우 육회',          price: 45000,  category: '한우',    image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=500&q=80' },
+  { id: 4,  name: '계절 채소 샐러드',   price: 18000,  category: '코스요리', image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=500&q=80' },
+  { id: 5,  name: '된장국',             price: 12000,  category: '코스요리', image: 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=500&q=80' },
+  { id: 6,  name: '공기밥',             price: 3000,   category: '코스요리', image: 'https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?auto=format&fit=crop&w=500&q=80' },
+  { id: 7,  name: '생수(2L)',           price: 4000,   category: '음료',    image: 'https://images.unsplash.com/photo-1548839140-29a749e1cf4d?auto=format&fit=crop&w=500&q=80' },
+  { id: 8,  name: '콜라',               price: 5000,   category: '음료',    image: 'https://images.unsplash.com/photo-1581636625402-29b2a704ef13?auto=format&fit=crop&w=500&q=80' },
+  { id: 9,  name: '유자차',             price: 6000,   category: '음료',    image: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&w=500&q=80' },
+  { id: 10, name: '오마카세 런치 세트', price: 150000, category: '세트',    image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=500&q=80' },
+  { id: 11, name: '한우 2인 코스',      price: 220000, category: '세트',    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=500&q=80' },
+  { id: 12, name: '비즈니스 런치',      price: 85000,  category: '세트',    image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=500&q=80' },
 ])
 
 // ── 장바구니 ──────────────────────────────────────────
@@ -418,11 +418,11 @@ const salesData = ref({
 })
 
 const paymentHistory = ref([
-  { id: 5, time: '20:42:17', method: '신용카드', items: '황금올리브치킨 외 1건',      amount: 29000 },
-  { id: 4, time: '19:58:03', method: '현금',     items: '양념치킨 1마리',             amount: 24500 },
-  { id: 3, time: '18:26:44', method: '신용카드', items: '반반치킨 외 2건',            amount: 36500 },
-  { id: 2, time: '17:11:20', method: '신용카드', items: '자메이카 통다리 1마리',       amount: 25500 },
-  { id: 1, time: '16:40:09', method: '현금',     items: '황금올리브순살 1마리',        amount: 24000 },
+  { id: 5, time: '20:42:17', method: '신용카드', items: '한우 등심 오마카세 외 1건',  amount: 200000 },
+  { id: 4, time: '19:58:03', method: '현금',     items: '한우 안심 스테이크 1인',     amount: 120000 },
+  { id: 3, time: '18:26:44', method: '신용카드', items: '오마카세 런치 세트 외 1건',  amount: 156000 },
+  { id: 2, time: '17:11:20', method: '신용카드', items: '한우 2인 코스',              amount: 220000 },
+  { id: 1, time: '16:40:09', method: '현금',     items: '계절 채소 샐러드 외 2건',   amount: 36000  },
 ])
 
 // ── Computed ──────────────────────────────────────────

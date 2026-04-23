@@ -76,22 +76,23 @@ const filterStatus  = ref('전체')
 
 const orders = ref([
   {
-    id: 'ORD-20260413-001', destination: '여의도역점', confirmedAt: '2026-04-13 08:30', status: '출고대기',
+    id: 'ORD-20260413-001', destination: '이탈리안 키친', confirmedAt: '2026-04-13 08:30', status: '출고대기',
     items: [
-      { product: '우유(1L)',  qty: 200, unit: '팩', note: '냉장 보관 필수' },
-      { product: '두유(1L)',  qty: 80,  unit: '팩', note: '' },
+      { product: '올리브오일', qty: 10, unit: 'L',  note: '냉암소 보관' },
+      { product: '생크림',     qty: 8,  unit: 'L',  note: '냉장 보관 필수' },
     ],
   },
   {
-    id: 'ORD-20260413-002', destination: '부산센텀점', confirmedAt: '2026-04-13 09:00', status: '출고대기',
+    id: 'ORD-20260413-002', destination: '프렌치 비스트로', confirmedAt: '2026-04-13 09:00', status: '출고대기',
     items: [
-      { product: '우유(1L)',  qty: 150, unit: '팩', note: '냉장 보관 필수' },
+      { product: '버터',   qty: 5, unit: 'kg', note: '냉장 보관 필수' },
+      { product: '생크림', qty: 4, unit: 'L',  note: '냉장 보관 필수' },
     ],
   },
   {
-    id: 'ORD-20260412-003', destination: '한화빌딩점', confirmedAt: '2026-04-12 14:00', status: '출고완료',
+    id: 'ORD-20260412-003', destination: '한우 오마카세', confirmedAt: '2026-04-12 14:00', status: '출고완료',
     items: [
-      { product: '두유(1L)',  qty: 100, unit: '팩', note: '' },
+      { product: '한우 등심', qty: 20, unit: 'kg', note: '냉장 보관 필수' },
     ],
   },
 ])

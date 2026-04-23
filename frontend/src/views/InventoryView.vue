@@ -2,7 +2,7 @@
   <div class="p-5 space-y-4">
     <div class="flex justify-between items-center">
       <div>
-        <h1 class="text-xl font-bold text-gray-900 tracking-tight">가맹점 재고 현황</h1>
+        <h1 class="text-xl font-bold text-gray-900 tracking-tight">입점 매장 재고 현황</h1>
       </div>
       <div class="flex gap-2">
         <RouterLink to="/inventory/history"
@@ -23,11 +23,11 @@
       </select>
       <select v-model="filterStore"
         class="px-3 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none bg-white">
-        <option value="">전체 가맹점</option>
-        <option>한화빌딩점</option>
-        <option>여의도역점</option>
-        <option>판교테크노밸리점</option>
-        <option>부산센텀점</option>
+        <option value="">전체 매장</option>
+        <option>한우 오마카세</option>
+        <option>이탈리안 키친</option>
+        <option>일식 스시바</option>
+        <option>차이나 가든</option>
       </select>
       <div class="flex gap-1.5">
         <button v-for="f in statusFilters" :key="f.value"
@@ -48,7 +48,7 @@
           <tr class="border-b border-gray-200 bg-gray-50">
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">상품코드</th>
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">품목명</th>
-            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">가맹점</th>
+            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">입점 매장</th>
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">현재재고</th>
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">평균재고</th>
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">최소재고</th>
@@ -152,10 +152,10 @@ const detailItem = ref(null)
 const detailTitleId = 'inv-store-detail-title'
 
 const storeRegion = {
-  한화빌딩점: '서울',
-  여의도역점: '서울',
-  판교테크노밸리점: '경기',
-  부산센텀점: '부산',
+  '한우 오마카세': '서울',
+  '이탈리안 키친': '서울',
+  '일식 스시바':   '경기',
+  '차이나 가든':   '부산',
 }
 
 watch(filterRegion, (region) => {
@@ -174,7 +174,7 @@ const statusFilters = [
 
 const items = ref([
   {
-    code: 'C100', name: '닭고기(생닭)', store: '한화빌딩점', safe: 60,
+    code: 'C100', name: '한우 등심', store: '한우 오마카세', safe: 60,
     avgStock: 82,
     lots: [
       { expiry: '2026-04-22', qty: 38 },
@@ -182,7 +182,7 @@ const items = ref([
     ],
   },
   {
-    code: 'C110', name: '순살 정육', store: '한화빌딩점', safe: 40,
+    code: 'C110', name: '한우 안심', store: '한우 오마카세', safe: 40,
     avgStock: 36,
     lots: [
       { expiry: '2026-04-18', qty: 12 },
@@ -190,7 +190,7 @@ const items = ref([
     ],
   },
   {
-    code: 'C100', name: '닭고기(생닭)', store: '여의도역점', safe: 65,
+    code: 'C100', name: '한우 등심', store: '이탈리안 키친', safe: 65,
     avgStock: 59,
     lots: [
       { expiry: '2026-04-19', qty: 20 },
@@ -198,17 +198,17 @@ const items = ref([
     ],
   },
   {
-    code: 'C200', name: '튀김가루', store: '판교테크노밸리점', safe: 25,
+    code: 'C200', name: '버터', store: '일식 스시바', safe: 25,
     avgStock: 24,
     lots: [{ expiry: '2026-07-10', qty: 26 }],
   },
   {
-    code: 'C210', name: '양념소스', store: '한화빌딩점', safe: 20,
+    code: 'C210', name: '간장', store: '한우 오마카세', safe: 20,
     avgStock: 19,
     lots: [{ expiry: '2026-05-02', qty: 17 }],
   },
   {
-    code: 'C220', name: '핫양념소스', store: '여의도역점', safe: 12,
+    code: 'C220', name: '올리브오일', store: '이탈리안 키친', safe: 12,
     avgStock: 9,
     lots: [
       { expiry: '2026-04-19', qty: 5 },
@@ -216,7 +216,7 @@ const items = ref([
     ],
   },
   {
-    code: 'C300', name: '치즈볼(냉동)', store: '부산센텀점', safe: 70,
+    code: 'C300', name: '연어', store: '차이나 가든', safe: 70,
     avgStock: 88,
     lots: [
       { expiry: '2026-06-05', qty: 40 },
@@ -224,17 +224,17 @@ const items = ref([
     ],
   },
   {
-    code: 'C310', name: '감자튀김(냉동)', store: '판교테크노밸리점', safe: 50,
+    code: 'C310', name: '새우', store: '일식 스시바', safe: 50,
     avgStock: 47,
     lots: [{ expiry: '2026-06-18', qty: 41 }],
   },
   {
-    code: 'C500', name: '치킨 박스(대)', store: '한화빌딩점', safe: 300,
+    code: 'C500', name: '생수(박스)', store: '한우 오마카세', safe: 300,
     avgStock: 410,
     lots: [{ expiry: null, qty: 420 }],
   },
   {
-    code: 'C510', name: '소스컵/뚜껑 세트', store: '부산센텀점', safe: 400,
+    code: 'C510', name: '생크림', store: '차이나 가든', safe: 400,
     avgStock: null,
     lots: [
       { expiry: null, qty: 200 },

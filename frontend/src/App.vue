@@ -154,7 +154,7 @@ const collapsedGroups = ref([])
 // ── 역할별 메뉴 (children → 드롭다운 그룹) ───────────────
 const adminMenus = [
   { path: '/dashboard', name: '대시보드',  icon: LayoutDashboard },
-  { path: '/store',     name: '가맹점 관리', icon: Store },
+  { path: '/store',     name: '입점 매장 관리', icon: Store },
   {
     path: '/product', name: '제품 관리', icon: PackageSearch,
     children: [
@@ -189,6 +189,15 @@ const storeMenus = [
   { path: '/store-dashboard', name: '대시보드',  icon: LayoutDashboard },
   { path: '/store-pos',       name: 'POS',        icon: Tablet },
   { path: '/store-order',     name: '발주서',     icon: ClipboardList },
+  {
+    path: '/store-product',
+    name: '제품·메뉴',
+    icon: PackageSearch,
+    children: [
+      { path: '/store-product', name: '제품 관리' },
+      { path: '/store-recipe',  name: '메뉴 관리' },
+    ],
+  },
   { path: '/store-inventory', name: '매장 재고',  icon: Warehouse },
   { path: '/store-delivery',  name: '배송 현황',  icon: Truck },
   { path: '/store-settlement',name: '정산 내역',  icon: Receipt },
@@ -282,11 +291,6 @@ const activeMenuClass = computed(() => {
   return 'text-gray-900 bg-gray-100 font-semibold'
 })
 
-const activeBorderClass = computed(() => {
-  if (auth.isAdmin)      return 'bg-[#F37321]'
-  if (auth.isStoreOwner) return 'bg-blue-500'
-  return 'bg-gray-700'
-})
 
 const activeIconClass = computed(() => {
   if (auth.isAdmin)      return 'text-[#F37321]'

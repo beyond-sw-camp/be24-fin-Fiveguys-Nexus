@@ -30,7 +30,7 @@
       >
         <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.12em]">{{ card.title }}</p>
         <div class="flex items-end gap-1 mt-2.5">
-          <p class="text-[22px] leading-none font-extrabold text-gray-900 tracking-tight">{{ card.value }}</p>
+          <p class="text-[22px] leading-none font-extrabold tracking-tight" :class="card.valueClass ?? 'text-gray-900'">{{ card.value }}</p>
           <span v-if="card.unit" class="text-sm text-gray-400 mb-0.5">{{ card.unit }}</span>
         </div>
         <p class="text-xs text-gray-500 mt-3">{{ card.sub }}</p>
@@ -82,7 +82,7 @@
                 <div class="h-full rounded-full bg-[#F37321] transition-all duration-500" :style="{ width: `${item.pct}%` }"></div>
               </div>
             </div>
-            <span class="text-sm font-bold text-gray-900 shrink-0">₩{{ item.amount.toLocaleString() }}</span>
+            <span class="text-sm font-bold text-gray-900 shrink-0">₩ {{ item.amount.toLocaleString() }}</span>
           </div>
           <p v-if="top5.length === 0" class="text-sm text-gray-400 py-4 text-center">데이터 없음</p>
         </div>
@@ -107,7 +107,7 @@
                 <div class="h-full rounded-full bg-gray-400 transition-all duration-500" :style="{ width: `${item.pct}%` }"></div>
               </div>
             </div>
-            <span class="text-sm font-bold text-gray-900 shrink-0">₩{{ item.amount.toLocaleString() }}</span>
+            <span class="text-sm font-bold text-gray-900 shrink-0">₩ {{ item.amount.toLocaleString() }}</span>
           </div>
           <p v-if="bottom5.length === 0" class="text-sm text-gray-400 py-4 text-center">항목이 부족합니다</p>
         </div>
@@ -184,7 +184,7 @@ const showFullList = ref(false)
 const yearOptions = [2026, 2025]
 
 const analysisModes = [
-  { value: 'store',    label: '가맹점별' },
+  { value: 'store',    label: '매장별' },
   { value: 'product',  label: '제품별' },
   { value: 'category', label: '카테고리별' },
 ]
@@ -245,15 +245,15 @@ const summaryCards = computed(() => {
   return [
     {
       title: '총 매출',
-      value: `₩${Math.round(total).toLocaleString()}`,
+      value: `₩ ${Math.round(total).toLocaleString()}`,
       unit: '',
       sub: '선택 기간 전체 매출 합계',
     },
     {
-      title: '가맹점 평균',
-      value: `₩${Math.round(avg).toLocaleString()}`,
+      title: '매장 평균',
+      value: `₩ ${Math.round(avg).toLocaleString()}`,
       unit: '',
-      sub: `활성 가맹점 ${storeCount}개 기준 평균`,
+      sub: `활성 매장 ${storeCount}개 기준 평균`,
     },
     {
       title: '매출 1위',
@@ -266,6 +266,7 @@ const summaryCards = computed(() => {
       value: growth !== null ? `${growth >= 0 ? '+' : ''}${growth.toFixed(1)}` : 'N/A',
       unit: growth !== null ? '%' : '',
       sub: '직전 연도 동일 기간 대비 변동률',
+      valueClass: growth !== null ? (growth >= 0 ? 'text-green-600' : 'text-red-500') : 'text-gray-900',
     },
   ]
 })

@@ -99,7 +99,7 @@
         </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
-        <tr v-for="(store, index) in filteredStores" :key="store.id"
+        <tr v-for="store in filteredStores" :key="store.id"
             @click="openDetail(store)"
             class="hover:bg-gray-50/50 transition-colors cursor-pointer group"
             :class="{ 'bg-gray-50/40 opacity-70': store.closeDate }">

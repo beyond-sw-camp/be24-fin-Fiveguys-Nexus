@@ -233,12 +233,14 @@ const storeProductMap = {
 }
 
 const expandedProducts = computed(() => {
+  const productMap = new Map(products.value.map(p => [p.code, p]))
+  const storeMap = new Map(stores.value.map(s => [s.id, s.name]))
   const result = []
   for (const [storeId, codes] of Object.entries(storeProductMap)) {
-    const store = stores.value.find(s => s.id === storeId)
+    const storeName = storeMap.get(storeId) ?? storeId
     for (const code of codes) {
-      const product = products.value.find(p => p.code === code)
-      if (product) result.push({ ...product, storeId, storeName: store?.name ?? storeId })
+      const product = productMap.get(code)
+      if (product) result.push({ ...product, storeId, storeName })
     }
   }
   return result
@@ -273,19 +275,17 @@ function deleteCategory(cat) {
 
 // 제품 수정
 const showModal = ref(false)
-const editTarget = ref(null)
 const form = ref({ name: '', category: '', unit: '', baseStock: 0, minStock: 0, price: 0, expiryDays: null })
 
 function openModal(product) {
-  editTarget.value = product
-  form.value = { ...product }
+  const { storeId, storeName, ...fields } = product
+  form.value = { ...fields }
   showModal.value = true
 }
 
 function saveProduct() {
-  if (editTarget.value) {
-    Object.assign(editTarget.value, form.value)
-  }
+  const original = products.value.find(p => p.code === form.value.code)
+  if (original) Object.assign(original, form.value)
   showModal.value = false
 }
 

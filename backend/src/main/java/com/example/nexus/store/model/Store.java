@@ -27,7 +27,7 @@ public class Store {
     private String filePath;  // 사업장 등록증 경로
 
     @Column(nullable = false,  unique = true)
-    private Integer business; // 사업자 번호
+    private String business; // 사업자 번호
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;  // 개업

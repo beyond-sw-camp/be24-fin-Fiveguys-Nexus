@@ -13,7 +13,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "pos_pay")
@@ -32,7 +32,7 @@ public class PosPay {
     private PosPayMethod method;
 
     @Column(name = "paid_at", nullable = false)
-    private LocalDate paidAt;
+    private LocalDateTime paidAt;
 
     @Column(name = "pay_amount", nullable = false)
     private Integer payAmount;

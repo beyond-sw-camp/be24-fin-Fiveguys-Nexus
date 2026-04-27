@@ -1,15 +1,3 @@
 spring:
-  application:
-    name: Nexus
-  datasource:
-    url: jdbc:mariadb://db-service:3306/nexus
-    username: root
-    password: qwer1234
-    driver-class-name: org.mariadb.jdbc.Driver
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: false
-
-server:
-  port: 8080
+  profiles:
+    active: dev

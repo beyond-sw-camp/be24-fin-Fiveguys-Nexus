@@ -13,8 +13,8 @@ import lombok.NoArgsConstructor;
 public class Menu {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "menu_idx", nullable = false, unique = true)
-    private Long idx; // 메뉴 번호
+    @Column(name = "menu_idx")
+    private Long idx;
 
     @Column(name = "menu_name", nullable = false, unique = true)
     private String menuName;

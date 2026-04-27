@@ -1,5 +1,6 @@
 package com.example.nexus.headnotification.model;
 
+import com.example.nexus.common.enums.NotificationType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,11 +18,12 @@ import java.time.LocalDateTime;
 public class HeadNotification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "head_notification", nullable = false)
+    @Column(name = "head_notification")
     private Long idx;
 
-    @Column(nullable = false)
-    private Type type;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false)
+    private NotificationType type;
 
     @Column(name = "is_read", nullable = false)
     private boolean isRead;

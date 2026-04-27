@@ -1,5 +1,7 @@
 package com.example.nexus.newscollect.model;
 
+import com.example.nexus.common.enums.NewsCollectStatus;
+import com.example.nexus.common.enums.NewsCollectTarget;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,7 +20,7 @@ public class NewsCollect {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "news_collect_idx", nullable = false)
+    @Column(name = "news_collect_idx")
     private Long idx;
 
     @Column(name = "title", nullable = false)

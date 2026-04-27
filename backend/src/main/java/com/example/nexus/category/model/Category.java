@@ -16,7 +16,7 @@ public class Category {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "category_idx", nullable = false)
+    @Column(name = "category_idx")
     private Long idx;
 
     @Column(name = "category_name", nullable = false)

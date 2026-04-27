@@ -1,7 +1,7 @@
 package com.example.nexus.wastelog;
 
-import com.example.nexus.wastelog.model.wasteLog;
+import com.example.nexus.wastelog.model.WasteLog;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface WasteLogRepository extends JpaRepository<wasteLog, Long> {
+public interface WasteLogRepository extends JpaRepository<WasteLog, Long> {
 }

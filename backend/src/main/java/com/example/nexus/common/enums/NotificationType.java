@@ -1,6 +1,6 @@
-package com.example.nexus.storenotification.model;
+package com.example.nexus.common.enums;
 
-public enum Type {
+public enum NotificationType {
     LOW,
     CRITICAL,
     ABNORMAL,

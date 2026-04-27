@@ -1,4 +1,4 @@
-package com.example.nexus.pospay.model;
+package com.example.nexus.common.enums;
 
 public enum PosPayMethod {
     CARD,

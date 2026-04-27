@@ -1,5 +1,6 @@
 package com.example.nexus.delivery.model;
 
+import com.example.nexus.common.enums.DeliveryStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,7 +20,7 @@ public class Delivery {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "delivery_idx", nullable = false)
+    @Column(name = "delivery_idx")
     private Long idx;
 
     @Enumerated(EnumType.STRING)

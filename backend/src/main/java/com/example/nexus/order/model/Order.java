@@ -1,5 +1,7 @@
 package com.example.nexus.order.model;
 
+import com.example.nexus.common.enums.OrderStatus;
+import com.example.nexus.common.enums.OrderType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,7 +20,7 @@ public class Order {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "order_idx", nullable = false)
+    @Column(name = "order_idx")
     private Long idx;
 
     @Column(name = "price", nullable = false)

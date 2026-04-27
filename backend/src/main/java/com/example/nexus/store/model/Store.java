@@ -12,33 +12,34 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Store {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "store_idx", nullable = false, unique = true)
-    private Long idx;  // 가맹점 번호
+    @Column(name = "store_idx")
+    private Long idx;
 
     @Column(name = "store_name", nullable = false, unique = true)
-    private String storeName; // 가맹점명
+    private String storeName;
 
     @Column(nullable = false)
-    private String address;  // 가맹점 도로명 주소
+    private String address;
 
     @Column(name = "address_detail", nullable = false)
-    private String addresDetail;  // 가맹점 상세 주소
+    private String addressDetail;
 
     @Column(name = "file_path", nullable = false)
-    private String filePath;  // 사업장 등록증 경로
+    private String filePath;
 
     @Column(nullable = false,  unique = true)
-    private String business; // 사업자 번호
+    private String business;
 
     @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;  // 개업
+    private LocalDateTime createdAt;
 
     @Column(name = "closed_at")
-    private LocalDateTime closedAt;  // 폐업
+    private LocalDateTime closedAt;
 
     @Column(name = "is_deleted", nullable = false)
-    private Boolean isDeleted = false;  // 삭제 여부
+    private Boolean isDeleted = false;
 
 }

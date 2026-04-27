@@ -1,4 +1,4 @@
-package com.example.nexus.newscollect.model;
+package com.example.nexus.common.enums;
 
 public enum NewsCollectTarget {
     HQ,

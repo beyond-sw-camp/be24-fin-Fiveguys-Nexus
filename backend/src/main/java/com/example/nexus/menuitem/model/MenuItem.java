@@ -19,7 +19,7 @@ public class MenuItem {
     @Column(nullable = false)
     private Integer quantity;
 
-    @Column(nullable = false)
-    private String menu_unit;
+    @Column(name = "menu_unit", nullable = false)
+    private String menuUnit;
 
 }

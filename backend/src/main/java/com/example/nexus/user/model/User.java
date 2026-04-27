@@ -1,5 +1,6 @@
 package com.example.nexus.user.model;
 
+import com.example.nexus.order.model.OrderStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -25,6 +26,10 @@ public class User {
     private String userName;
     @Column(nullable = false)
     private String tell;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
 
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted;

@@ -12,7 +12,7 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class headIncome {
+public class HeadIncome {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

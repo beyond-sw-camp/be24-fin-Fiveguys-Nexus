@@ -20,8 +20,11 @@ public class Store {
     @Column(name = "store_name", nullable = false, unique = true)
     private String storeName; // 가맹점명
 
-    @Column(nullable = false, unique = true)
-    private String address;  // 가맹점 위치
+    @Column(nullable = false)
+    private String address;  // 가맹점 도로명 주소
+
+    @Column(name = "address_detail", nullable = false)
+    private String addresDetail;  // 가맹점 상세 주소
 
     @Column(name = "file_path", nullable = false)
     private String filePath;  // 사업장 등록증 경로
@@ -36,6 +39,6 @@ public class Store {
     private LocalDateTime closedAt;  // 폐업
 
     @Column(name = "is_deleted", nullable = false)
-    private Boolean isDeleted;  // 삭제 여부
+    private Boolean isDeleted = false;  // 삭제 여부
 
 }

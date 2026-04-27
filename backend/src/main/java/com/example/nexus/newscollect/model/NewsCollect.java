@@ -24,10 +24,10 @@ public class NewsCollect {
     @Column(name = "title", nullable = false)
     private String title;
 
-    @Column(name = "url", nullable = false)
+    @Column(name = "url", nullable = false, length = 1000)
     private String url;
 
-    @Column(name = "snippet", nullable = false)
+    @Column(name = "snippet", nullable = false, columnDefinition = "TEXT")
     private String snippet;
 
     @Column(name = "published_at", nullable = false)

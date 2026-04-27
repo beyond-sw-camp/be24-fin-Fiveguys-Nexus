@@ -1,6 +1,6 @@
 package com.example.nexus.common.enums;
 
-public enum OrderStatus {
+public enum OrdersStatus {
     REJECT,
     WAITING,
     APPROVE

@@ -1,6 +1,6 @@
 package com.example.nexus.common.enums;
 
-public enum OrderType {
+public enum OrdersType {
     AUTO,
     MANUAL
 }

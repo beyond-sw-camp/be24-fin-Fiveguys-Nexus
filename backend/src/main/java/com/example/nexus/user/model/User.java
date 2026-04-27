@@ -26,6 +26,10 @@ public class User {
     @Column(nullable = false)
     private String tell;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
+
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted;
 }

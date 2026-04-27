@@ -19,10 +19,13 @@ public class HeadNotification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "head_notification", nullable = false)
     private Long idx;
+
     @Column(nullable = false)
     private Type type;
+
     @Column(name = "is_read", nullable = false)
     private boolean isRead;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 }

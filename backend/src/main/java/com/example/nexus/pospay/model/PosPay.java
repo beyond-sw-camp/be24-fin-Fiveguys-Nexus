@@ -1,7 +1,9 @@
-package com.example.nexus.wastelog.model;
+package com.example.nexus.pospay.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -14,32 +16,27 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "waste_log")
+@Table(name = "pos_pay")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class wasteLog {
+public class PosPay {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "waste_log_idx", nullable = false)
+    @Column(name = "pos_pay_idx", nullable = false)
     private Long idx;
 
-    @Column(name = "quantity", nullable = false)
-    private Integer quantity;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "method", nullable = false)
+    private PosPayMethod method;
 
-    @Column(name = "amount_loss", nullable = false)
-    private Integer amountLoss;
+    @Column(name = "paid_at", nullable = false)
+    private LocalDateTime paidAt;
 
-    @Column(name = "waste_date", nullable = false)
-    private LocalDateTime wasteDate;
-
-    @Column(name = "waste_reason", nullable = false)
-    private String wasteReason;
+    @Column(name = "pay_amount", nullable = false)
+    private Integer payAmount;
 
     @Column(name = "store_idx", nullable = false)
     private Long storeIdx;
-
-    @Column(name = "product_idx", nullable = false)
-    private Long productIdx;
 }

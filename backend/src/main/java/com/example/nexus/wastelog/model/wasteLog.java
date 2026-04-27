@@ -11,7 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "waste_log")
@@ -32,7 +32,7 @@ public class wasteLog {
     private Integer amountLoss;
 
     @Column(name = "waste_date", nullable = false)
-    private LocalDate wasteDate;
+    private LocalDateTime wasteDate;
 
     @Column(name = "waste_reason", nullable = false)
     private String wasteReason;

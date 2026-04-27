@@ -13,7 +13,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "head_inventory")
@@ -35,7 +35,7 @@ public class HeadInventory {
     private HeadInventoryStatus status = HeadInventoryStatus.NORMAL;
 
     @Column(name = "manufactured_date", nullable = false)
-    private LocalDate manufacturedDate;
+    private LocalDateTime manufacturedDate;
 
     @Column(name = "product_idx", nullable = false)
     private Long productIdx;

@@ -35,10 +35,11 @@ public class GlobalExceptionHandler {
     }
 
     private int statusCodeMapper(int errorCode){
-        if(errorCode > 3000){
-            return 400;
-        } else if(errorCode >= 5000){
+        if(errorCode >= 5000){
             return 500;
-        }return 400;
+        } else if(errorCode >= 3000){
+            return 400;
+        }
+        return 400;
     }
 }

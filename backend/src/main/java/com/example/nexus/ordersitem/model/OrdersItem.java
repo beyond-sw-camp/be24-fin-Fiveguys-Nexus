@@ -1,4 +1,4 @@
-package com.example.nexus.orderitem.model;
+package com.example.nexus.ordersitem.model;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -9,11 +9,11 @@ import lombok.*;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderItem {
+public class OrdersItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "order_item_idx")
+    @Column(name = "orders_item_idx")
     private Long idx;
 
     @Column(name = "count", nullable = false)

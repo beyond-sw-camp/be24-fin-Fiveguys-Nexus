@@ -1,4 +1,4 @@
-package com.example.nexus.posorderitem.model;
+package com.example.nexus.posordersitem.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -17,10 +17,10 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PosOrderItem {
+public class PosOrdersItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "pos_order_item_idx", nullable = false)
+    @Column(name = "pos_orders_item_idx", nullable = false)
     private Long idx;
 
     @Column(name = "quantity", nullable = false)

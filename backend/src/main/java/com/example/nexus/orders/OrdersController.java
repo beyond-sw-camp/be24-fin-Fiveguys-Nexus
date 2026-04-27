@@ -1,12 +1,13 @@
-package com.example.nexus.orderitem;
+package com.example.nexus.orders;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@RequestMapping("/orderitem")
+@RequestMapping("/order")
 @RestController
 @RequiredArgsConstructor
-public class OrderItemController {
-    private final OrderItemService orderItemService;
+public class OrdersController {
+    private final OrdersService orderService;
+
 }

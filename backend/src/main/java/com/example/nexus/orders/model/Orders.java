@@ -1,7 +1,7 @@
-package com.example.nexus.order.model;
+package com.example.nexus.orders.model;
 
-import com.example.nexus.common.enums.OrderStatus;
-import com.example.nexus.common.enums.OrderType;
+import com.example.nexus.common.enums.OrdersStatus;
+import com.example.nexus.common.enums.OrdersType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,16 +11,16 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "order")
+@Table(name = "orders")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Order {
+public class Orders {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "order_idx")
+    @Column(name = "orders_idx")
     private Long idx;
 
     @Column(name = "price", nullable = false)
@@ -28,11 +28,11 @@ public class Order {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "order_type", nullable = false)
-    private OrderType orderType;
+    private OrdersType ordersType;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "order_status", nullable = false)
-    private OrderStatus orderStatus;
+    private OrdersStatus ordersStatus;
 
     @Column(name = "is_danger", nullable = false)
     private Boolean isDanger;

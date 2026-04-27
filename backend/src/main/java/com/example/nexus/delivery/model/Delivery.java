@@ -1,5 +1,6 @@
 package com.example.nexus.delivery.model;
 
+import com.example.nexus.common.enums.DeliveryStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -1,5 +1,6 @@
 package com.example.nexus.headnotification.model;
 
+import com.example.nexus.common.enums.NotificationType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,7 +23,7 @@ public class HeadNotification {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
-    private Type type;
+    private NotificationType type;
 
     @Column(name = "is_read", nullable = false)
     private boolean isRead;

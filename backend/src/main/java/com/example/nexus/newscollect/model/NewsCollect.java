@@ -1,5 +1,7 @@
 package com.example.nexus.newscollect.model;
 
+import com.example.nexus.common.enums.NewsCollectStatus;
+import com.example.nexus.common.enums.NewsCollectTarget;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

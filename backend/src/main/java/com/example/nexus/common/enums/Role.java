@@ -1,4 +1,4 @@
-package com.example.nexus.user.model;
+package com.example.nexus.common.enums;
 
 public enum Role {
     ADMIN,

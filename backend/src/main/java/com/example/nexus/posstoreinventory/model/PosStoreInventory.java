@@ -1,5 +1,6 @@
 package com.example.nexus.posstoreinventory.model;
 
+import com.example.nexus.common.enums.InventoryStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -32,7 +33,7 @@ public class PosStoreInventory {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private PosStoreInventoryStatus status = PosStoreInventoryStatus.NORMAL;
+    private InventoryStatus status = InventoryStatus.NORMAL;
 
     @Column(name = "manufactured_date", nullable = false)
     private LocalDateTime manufacturedDate;

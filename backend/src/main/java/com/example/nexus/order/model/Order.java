@@ -1,5 +1,7 @@
 package com.example.nexus.order.model;
 
+import com.example.nexus.common.enums.OrderStatus;
+import com.example.nexus.common.enums.OrderType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

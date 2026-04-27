@@ -1,5 +1,6 @@
 package com.example.nexus.pospay.model;
 
+import com.example.nexus.common.enums.PosPayMethod;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

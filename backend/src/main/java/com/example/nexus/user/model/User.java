@@ -1,5 +1,6 @@
 package com.example.nexus.user.model;
 
+import com.example.nexus.common.enums.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

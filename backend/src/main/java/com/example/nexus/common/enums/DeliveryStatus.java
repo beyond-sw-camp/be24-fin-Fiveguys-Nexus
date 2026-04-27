@@ -1,4 +1,4 @@
-package com.example.nexus.delivery.model;
+package com.example.nexus.common.enums;
 
 public enum DeliveryStatus {
     READY,

@@ -1,4 +1,4 @@
-package com.example.nexus.order.model;
+package com.example.nexus.common.enums;
 
 public enum OrderType {
     AUTO,

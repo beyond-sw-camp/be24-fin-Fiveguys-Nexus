@@ -20,12 +20,12 @@ public class Menu {
     private String menuName;
 
     @Column(name = "price", nullable = false)
-    private String price;
+    private Integer price;
 
     @Column(name = "img_path", nullable = false)
     private String imgPath;
 
     @Column(name = "is_deleted", nullable = false)
-    private Boolean isDeleted = false;
+    private boolean isDeleted = false;
 
 }

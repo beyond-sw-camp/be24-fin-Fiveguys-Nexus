@@ -19,17 +19,17 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class wasteLog {
+public class WasteLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "waste_log_idx", nullable = false)
+    @Column(name = "waste_log_idx")
     private Long idx;
 
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
     @Column(name = "amount_loss", nullable = false)
-    private Integer amountLoss;
+    private Long amountLoss;
 
     @Column(name = "waste_date", nullable = false)
     private LocalDateTime wasteDate;

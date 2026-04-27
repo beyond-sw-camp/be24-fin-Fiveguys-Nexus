@@ -13,10 +13,10 @@ import lombok.NoArgsConstructor;
 public class MenuItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "menu_item_idx", nullable = false, unique = true)
+    @Column(name = "menu_item_idx")
     private Long idx;
 
-    @Column(nullable = false)
+    @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
     @Column(name = "menu_unit", nullable = false)

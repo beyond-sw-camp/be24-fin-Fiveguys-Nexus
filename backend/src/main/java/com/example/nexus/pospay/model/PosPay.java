@@ -24,7 +24,7 @@ import java.time.LocalDateTime;
 public class PosPay {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "pos_pay_idx", nullable = false)
+    @Column(name = "pos_pay_idx")
     private Long idx;
 
     @Enumerated(EnumType.STRING)
@@ -35,7 +35,7 @@ public class PosPay {
     private LocalDateTime paidAt;
 
     @Column(name = "pay_amount", nullable = false)
-    private Integer payAmount;
+    private Long payAmount;
 
     @Column(name = "store_idx", nullable = false)
     private Long storeIdx;

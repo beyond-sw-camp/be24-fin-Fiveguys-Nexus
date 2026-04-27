@@ -22,9 +22,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class StoreInventory {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "store_inventory_idx", nullable = false)
+    @Column(name = "store_inventory_idx")
     private Long idx;
 
     @Column(name = "count", nullable = false)

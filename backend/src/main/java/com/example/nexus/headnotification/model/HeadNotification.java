@@ -17,10 +17,11 @@ import java.time.LocalDateTime;
 public class HeadNotification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "head_notification", nullable = false)
+    @Column(name = "head_notification")
     private Long idx;
 
-    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false)
     private Type type;
 
     @Column(name = "is_read", nullable = false)

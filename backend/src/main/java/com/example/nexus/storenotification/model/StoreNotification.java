@@ -17,21 +17,19 @@ import java.time.LocalDateTime;
 public class StoreNotification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "store_notification_idx", nullable = false)
+    @Column(name = "store_notification_idx")
     private Long idx;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false)
     private Type type;
 
     @Column(name = "is_read", nullable = false)
     private boolean isRead;
 
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "store_idx", nullable = false)
     private Long storeIdx;
-
-
-    private String userName;
-    @Column(nullable = false)
-    private String tell;
 }

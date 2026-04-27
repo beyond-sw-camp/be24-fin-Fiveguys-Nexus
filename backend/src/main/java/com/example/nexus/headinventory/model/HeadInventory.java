@@ -24,7 +24,7 @@ import java.time.LocalDateTime;
 public class HeadInventory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "head_inventory_idx", nullable = false)
+    @Column(name = "head_inventory_idx")
     private Long idx;
 
     @Column(name = "count", nullable = false)

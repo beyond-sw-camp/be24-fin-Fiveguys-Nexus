@@ -19,7 +19,7 @@ public class Delivery {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "delivery_idx", nullable = false)
+    @Column(name = "delivery_idx")
     private Long idx;
 
     @Enumerated(EnumType.STRING)

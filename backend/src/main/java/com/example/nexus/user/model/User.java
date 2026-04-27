@@ -1,6 +1,5 @@
 package com.example.nexus.user.model;
 
-import com.example.nexus.order.model.OrderStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -9,7 +9,7 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "Head_Notification")
+@Table(name = "head_notification")
 @Setter
 @Getter
 @AllArgsConstructor

@@ -16,6 +16,6 @@ public class OrderItem {
     @Column(name = "order_item_idx")
     private Long idx;
 
-    @Column(name = "count")
+    @Column(name = "count", nullable = false)
     private Integer count;
 }

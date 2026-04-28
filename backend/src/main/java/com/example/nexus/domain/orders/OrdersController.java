@@ -16,6 +16,12 @@ import java.util.List;
 public class OrdersController {
     private final OrdersService orderService;
 
+    @GetMapping("/list/auto")
+    public ResponseEntity autoList() {
+        List<OrdersDto.OrdersRes> result = orderService.findAllAuto();
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
+
     @GetMapping("/list/manual")
     public ResponseEntity manualList() {
         List<OrdersDto.OrdersRes> result = orderService.findAllManual();

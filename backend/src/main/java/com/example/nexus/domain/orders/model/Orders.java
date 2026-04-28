@@ -5,10 +5,7 @@ import com.example.nexus.common.enums.OrdersType;
 import com.example.nexus.domain.delivery.model.Delivery;
 import com.example.nexus.domain.store.model.Store;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,7 +13,7 @@ import java.util.List;
 @Entity
 @Table(name = "orders")
 @Getter
-@Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Orders {

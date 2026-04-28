@@ -16,6 +16,12 @@ import java.util.List;
 public class OrdersController {
     private final OrdersService orderService;
 
+    @PostMapping
+    public ResponseEntity create(@RequestBody OrdersDto.OrdersReq req) {
+        orderService.create(req);
+        return ResponseEntity.ok(BaseResponse.success("create success"));
+    }
+
     @GetMapping("/list")
     public ResponseEntity list() {
         List<OrdersDto.OrdersRes> result = orderService.findAll();

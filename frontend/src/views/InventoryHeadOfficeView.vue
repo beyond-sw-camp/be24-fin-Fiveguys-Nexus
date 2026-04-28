@@ -45,7 +45,7 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
-          <tr v-for="item in filteredItems" :key="item.code + item.warehouse"
+          <tr v-for="item in filteredItems" :key="item.idx"
             role="button"
             tabindex="0"
             class="hover:bg-gray-50/50 transition-colors cursor-pointer"
@@ -56,10 +56,10 @@
             <td class="px-5 py-3.5 font-semibold text-gray-900">{{ item.name }}</td>
             <td class="px-5 py-3.5 text-gray-600">{{ item.warehouse }}</td>
             <td class="px-5 py-3.5 font-bold"
-              :class="totalStock(item) < item.safe ? 'text-red-600' : 'text-gray-900'">
+              :class="item.status === 'CRITICAL' ? 'text-red-600' : 'text-gray-900'">
               {{ totalStock(item).toLocaleString() }}
             </td>
-            <td class="px-5 py-3.5 text-gray-500">{{ item.safe.toLocaleString() }}</td>
+            <td class="px-5 py-3.5 text-gray-500">-</td>
             <td class="px-5 py-3.5">
               <span class="text-xs font-bold px-2 py-0.5 rounded"
                 :class="getStatusClass(item)">
@@ -129,9 +129,10 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { History } from 'lucide-vue-next'
+import api from '@/api/headinventory'
 
 const filterWarehouse = ref('')
 const filterStatus = ref('all')
@@ -145,60 +146,50 @@ const statusFilters = [
   { value: 'normal',   label: '정상' },
 ]
 
-const items = ref([
-  {
-    code: 'C100', name: '한우 등심', warehouse: '본사 창고', safe: 9000,
+const items = ref([])
+
+function toItem(row) {
+  return {
+    idx: row.idx,
+    code: `P${row.productIdx}`,
+    name: row.productName,
+    warehouse: '본사 창고',
+    count: row.count ?? 0,
+    status: row.status,
+    manufacturedDate: row.manufacturedDate,
     lots: [
-      { expiry: '2026-04-18', qty: 2700 },
-      { expiry: '2026-04-21', qty: 5000 },
-      { expiry: '2026-04-28', qty: 3000 },
+      {
+        expiry: formatDate(row.manufacturedDate),
+        qty: row.count ?? 0,
+      },
     ],
-  },
-  {
-    code: 'C110', name: '한우 안심', warehouse: '본사 창고', safe: 3500,
-    lots: [
-      { expiry: '2026-04-24', qty: 2100 },
-      { expiry: '2026-05-01', qty: 1500 },
-    ],
-  },
-  {
-    code: 'C200', name: '버터', warehouse: '본사 창고', safe: 900,
-    lots: [{ expiry: '2026-07-15', qty: 1250 }],
-  },
-  {
-    code: 'C210', name: '간장', warehouse: '본사 창고', safe: 600,
-    lots: [{ expiry: '2026-05-02', qty: 540 }],
-  },
-  {
-    code: 'C220', name: '올리브오일', warehouse: '본사 창고', safe: 180,
-    lots: [{ expiry: '2026-05-08', qty: 210 }],
-  },
-  {
-    code: 'C300', name: '연어', warehouse: '본사 창고', safe: 2500,
-    lots: [
-      { expiry: '2026-06-01', qty: 1200 },
-      { expiry: '2026-06-10', qty: 3000 },
-    ],
-  },
-  {
-    code: 'C310', name: '새우', warehouse: '본사 창고', safe: 1700,
-    lots: [{ expiry: '2026-06-18', qty: 1800 }],
-  },
-  {
-    code: 'C500', name: '생수(박스)', warehouse: '본사 창고', safe: 50000,
-    lots: [
-      { expiry: null, qty: 40000 },
-      { expiry: null, qty: 28000 },
-    ],
-  },
-  {
-    code: 'C510', name: '소스컵/뚜껑 세트', warehouse: '본사 창고', safe: 70000,
-    lots: [{ expiry: null, qty: 97000 }],
-  },
-])
+  }
+}
+
+function formatDate(value) {
+  if (!value) return null
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return null
+  return date.toISOString().slice(0, 10)
+}
+
+async function fetchInventoryList() {
+  try {
+    const response = await api.getHeadInventoryList()
+    const inventoryList = response?.data
+    items.value = Array.isArray(inventoryList) ? inventoryList.map(toItem) : []
+  } catch (error) {
+    console.error('Failed to fetch inventory list:', error)
+    items.value = []
+  }
+}
+
+onMounted(() => {
+  fetchInventoryList()
+})
 
 function totalStock(item) {
-  return (item.lots ?? []).reduce((s, l) => s + l.qty, 0)
+  return item.count ?? (item.lots ?? []).reduce((s, l) => s + l.qty, 0)
 }
 
 function fifoLots(item) {
@@ -221,10 +212,9 @@ function sortByCodeAsc(list) {
 
 const filteredItems = computed(() => {
   const rows = items.value.filter((item) => {
-    const stock = totalStock(item)
     if (filterWarehouse.value && item.warehouse !== filterWarehouse.value) return false
-    if (filterStatus.value === 'danger' && stock >= item.safe) return false
-    if (filterStatus.value === 'normal' && (stock < item.safe || hasExpiringSoonLot(item))) return false
+    if (filterStatus.value === 'danger' && !['LOW', 'CRITICAL'].includes(item.status)) return false
+    if (filterStatus.value === 'normal' && item.status !== 'NORMAL') return false
     if (filterStatus.value === 'expiring' && !hasExpiringSoonLot(item)) return false
     return true
   })
@@ -238,15 +228,15 @@ function isExpiringSoon(expiry) {
 }
 
 function getStatus(item) {
-  const stock = totalStock(item)
-  if (stock < item.safe) return '재고부족'
+  if (item.status === 'CRITICAL') return '재고위험'
+  if (item.status === 'LOW') return '재고부족'
   if (hasExpiringSoonLot(item)) return '유통기한 임박'
   return '정상'
 }
 
 function getStatusClass(item) {
-  const stock = totalStock(item)
-  if (stock < item.safe) return 'bg-red-50 text-red-600 border border-red-200'
+  if (item.status === 'CRITICAL') return 'bg-red-50 text-red-600 border border-red-200'
+  if (item.status === 'LOW') return 'bg-orange-50 text-orange-500 border border-orange-200'
   if (hasExpiringSoonLot(item)) return 'bg-orange-50 text-orange-500 border border-orange-200'
   return 'bg-blue-50 text-blue-600 border border-blue-200'
 }

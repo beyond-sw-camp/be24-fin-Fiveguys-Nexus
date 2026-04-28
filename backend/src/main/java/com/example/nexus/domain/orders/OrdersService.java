@@ -26,6 +26,13 @@ public class OrdersService {
     private final StoreRepository storeRepository;
     private final ProductRepository productRepository;
 
+
+    public List<OrdersDto.OrdersRes> findAllManual() {
+        return ordersRepository.findAllByOrdersType(OrdersType.MANUAL).stream()
+                .map(OrdersDto.OrdersRes::from)
+                .toList();
+    }
+
     @Transactional
     public void create(OrdersDto.OrdersReq req) {
         // 0. 주문 아이템 리스트 검증

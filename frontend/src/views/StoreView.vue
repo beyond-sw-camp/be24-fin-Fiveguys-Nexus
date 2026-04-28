@@ -1,3 +1,121 @@
+<script setup>
+import { ref, reactive, onMounted, computed } from 'vue'
+import { Plus, Search, FileText, ChevronDown } from 'lucide-vue-next'
+import api from '@/api/store/index.js'
+
+const searchQuery = ref('')
+const filterStatus = ref('전체')
+const activeDropdown = ref(null)
+
+const statusOptions = ['전체', '입점', '폐점']
+
+// const stores = ref([
+//   { id: 'GAL-F-001', name: '한우 오마카세',   owner: '김동현', details: '갤러리아 백화점 B1F 101호', bizNumber: '101-12-34567', email: 'hanwoo@galleria.com',  openDate: '2022-03-15', closeDate: '' },
+//   { id: 'GAL-F-002', name: '이탈리안 키친',   owner: '이재혁', details: '갤러리아 백화점 B1F 102호', bizNumber: '201-45-67890', email: 'italian@galleria.com', openDate: '2022-07-20', closeDate: '' },
+//   { id: 'GAL-F-003', name: '일식 스시바',     owner: '박민수', details: '갤러리아 백화점 B1F 103호', bizNumber: '301-78-90123', email: 'sushi@galleria.com',   openDate: '2023-01-10', closeDate: '' },
+//   { id: 'GAL-F-004', name: '차이나 가든',     owner: '정수진', details: '갤러리아 백화점 B1F 104호', bizNumber: '401-23-45678', email: 'china@galleria.com',   openDate: '2023-05-30', closeDate: '2024-01-15' },
+//   { id: 'GAL-F-005', name: '프렌치 비스트로', owner: '한소희', details: '갤러리아 백화점 B1F 105호', bizNumber: '107-82-99887', email: 'french@galleria.com',  openDate: '2023-12-20', closeDate: '' },
+// ])
+
+const storesList = reactive([])
+
+const storeListRes = async ()=>{
+  const res = await api.getStoreList()
+  console.log(res.result)
+  storesList.push(...res.result)
+
+}
+
+const filteredStores = computed(() => {
+  let list = [...storesList];
+
+  list = list.filter(s => {
+    // 1. 폐점 여부를 명확하게 판단 (null이나 undefined가 아니면 폐점)
+    const isClosed = s.closedAt !== null ;
+
+    if (filterStatus.value === '폐점') {
+      return isClosed; // '폐점' 필터일 때는 폐점인 것만 반환
+    } else if (filterStatus.value === '입점') {
+      return !isClosed; // '입점' 필터일 때는 폐점이 아닌 것(운영중)만 반환
+    }
+
+    return true; // '전체'일 때는 모두 반환
+  })
+  console.log(list)
+
+// 2. 검색어 필터링 (storeName, ownerName, address 기준)
+  const q = searchQuery.value.trim().toLowerCase()
+  if (q) {
+    list = list.filter(s =>
+      (s.storeName?.toLowerCase().includes(q)) ||
+      (s.ownerName?.toLowerCase().includes(q)) ||
+      (s.address?.toLowerCase().includes(q))
+    )
+  }
+
+  // 3. 정렬 (입점 중인 매장 우선)
+  return list.sort((a, b) => {
+    if (!!a.closedAt && !b.closedAt) return 1
+    if (!a.closedAt && !!b.closedAt) return -1
+    return 0
+  })
+})
+
+const showModal = ref(false)
+const showDetailModal = ref(false)
+const editTarget = ref(null)
+const detailTarget = ref(null)
+const form = ref({ name: '', owner: '', details: '', bizNumber: '', email: '', openDate: '', closeDate: '', bizPdfName: '' })
+
+function toggleDropdown(type) {
+  activeDropdown.value = activeDropdown.value === type ? null : type
+}
+
+function selectFilter(type, value) {
+  if (type === 'status') filterStatus.value = value
+  activeDropdown.value = null
+}
+
+function handleSearch() {}
+
+function openDetail(store) {
+  detailTarget.value = store
+  showDetailModal.value = true
+}
+
+function openModal(store) {
+  editTarget.value = store
+  form.value = store
+    ? { ...store, bizPdfName: '' }
+    : { name: '', owner: '', details: '', bizNumber: '', email: '', openDate: '', closeDate: '', bizPdfName: '' }
+  showModal.value = true
+}
+
+function handleFileChange(e) {
+  const file = e.target.files[0]
+  if (file) form.value.bizPdfName = file.name
+}
+
+// 저장 로직 (백엔드 연동 전 임시 처리)
+function saveStore() {
+  if (editTarget.value) {
+    Object.assign(editTarget.value, form.value)
+  } else {
+    storesList.push({ idx: Date.now(), ...form.value })
+  }
+  showModal.value = false
+}
+
+function downloadPdf() {
+  alert('사업자 등록증 PDF를 다운로드합니다.')
+}
+
+onMounted(() => {
+  storeListRes()
+})
+</script>
+
+
 <template>
   <div class="p-5 space-y-4">
     <!-- Header -->
@@ -19,11 +137,11 @@
       </div>
       <div class="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
         <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">입점</p>
-        <p class="text-3xl font-black text-green-600 mt-2">{{ stores.filter(s => !s.createdAt).length }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
+        <p class="text-3xl font-black text-green-600 mt-2">{{storesList.filter(s => !s.closedAt).length }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
       </div>
       <div class="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
         <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">폐점 가맹점</p>
-        <p class="text-3xl font-black text-red-500 mt-2">{{ stores.filter(s => s.closedAt).length }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
+        <p class="text-3xl font-black text-red-500 mt-2">{{ storesList.filter(s => s.closedAt).length }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
       </div>
     </div>
 
@@ -106,8 +224,14 @@
           </td>
           <td class="px-5 py-3.5">
             <div class="flex justify-center">
-              <button @click.stop="openModal(store)"
-                      class="px-3 py-1.5 text-xs font-semibold text-[#F37321] border border-[#F37321] rounded hover:bg-orange-50 transition-colors cursor-pointer">
+              <button
+                @click.stop="openModal(store)"
+                :disabled="!!store.closedAt"
+                class="px-3 py-1.5 text-xs font-semibold rounded transition-colors shadow-sm"
+                :class="!store.closedAt
+                 ? 'text-[#F37321] border border-[#F37321] hover:bg-orange-50 cursor-pointer'
+                  : 'text-gray-400 border border-gray-200 bg-gray-50 cursor-not-allowed'"
+              >
                 수정
               </button>
             </div>
@@ -281,99 +405,3 @@
   </div>
 </template>
 
-<script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
-import { Plus, Search, FileText, ChevronDown } from 'lucide-vue-next'
-import api from '@/api/store/index.js'
-
-
-const searchQuery = ref('')
-const filterStatus = ref('전체')
-const activeDropdown = ref(null)
-
-const statusOptions = ['전체', '입점', '폐점']
-
-const storesList = reactive([])
-
-const storeList = async ()=>{
-  const res = await  api.getStoreList()
-  storesList.push(...res.result)
-
-}
-
-const filteredStores = computed(() => {
-  let list = [...storesList.value]
-
-  if (filterStatus.value !== '전체') {
-    if (filterStatus.value === '폐점') list = list.filter(s => !!s.closeDate)
-    if (filterStatus.value === '입점') list = list.filter(s => !s.closeDate)
-  }
-
-  if (searchQuery.value.trim()) {
-    const q = searchQuery.value.trim().toLowerCase()
-    list = list.filter(s =>
-      s.name.toLowerCase().includes(q) ||
-      s.owner.toLowerCase().includes(q) ||
-      s.details.toLowerCase().includes(q)
-    )
-  }
-
-  return list.sort((a, b) => {
-    if (!!a.closeDate && !b.closeDate) return 1
-    if (!a.closeDate && !!b.closeDate) return -1
-    return 0
-  })
-})
-
-const showModal = ref(false)
-const showDetailModal = ref(false)
-const editTarget = ref(null)
-const detailTarget = ref(null)
-const form = ref({ name: '', owner: '', details: '', bizNumber: '', email: '', openDate: '', closeDate: '', bizPdfName: '' })
-
-function toggleDropdown(type) {
-  activeDropdown.value = activeDropdown.value === type ? null : type
-}
-
-function selectFilter(type, value) {
-  if (type === 'status') filterStatus.value = value
-  activeDropdown.value = null
-}
-
-function handleSearch() {}
-
-function openDetail(store) {
-  detailTarget.value = store
-  showDetailModal.value = true
-}
-
-function openModal(store) {
-  editTarget.value = store
-  form.value = store
-    ? { ...store, bizPdfName: '' }
-    : { name: '', owner: '', details: '', bizNumber: '', email: '', openDate: '', closeDate: '', bizPdfName: '' }
-  showModal.value = true
-}
-
-function handleFileChange(e) {
-  const file = e.target.files[0]
-  if (file) form.value.bizPdfName = file.name
-}
-
-function saveStore() {
-  if (editTarget.value) {
-    Object.assign(editTarget.value, form.value)
-  } else {
-    const newId = 'GAL-F-' + String(storesList.value.length + 1).padStart(3, '0')
-    storesList.value.push({ id: newId, ...form.value })
-  }
-  showModal.value = false
-}
-
-function downloadPdf() {
-  alert('사업자 등록증 PDF를 다운로드합니다.')
-}
-onMounted(() => {
-  storeList
-})
-</script>

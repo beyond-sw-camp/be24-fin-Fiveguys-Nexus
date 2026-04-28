@@ -27,12 +27,14 @@ public class StoreController {
 
     // 가맹점 재고 조회
     @GetMapping("/inventory/list")
-    public ResponseEntity<List<StoreInventoryDto.ListRes>> list(@AuthenticationPrincipal AuthUserDetails userDetails){
+    public ResponseEntity<List<StoreInventoryDto.ListRes>> list(@AuthenticationPrincipal AuthUserDetails userDetails) {
         if (userDetails == null) {
             throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
         }
         List<StoreInventoryDto.ListRes> result = storeService.listByUserIdx(userDetails.getIdx());
         return ResponseEntity.ok(result);
+    }
+
     @GetMapping("/list")
     public ResponseEntity list(){
         List<StoreDto.StoreListRes> result = storeService.list();

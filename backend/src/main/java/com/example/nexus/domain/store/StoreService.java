@@ -26,6 +26,7 @@ public class StoreService {
 
         List<StoreInventory> inventoryList = storeInventoryRepository.findByStoreIdx(storeIdx);
         return inventoryList.stream().map(StoreInventoryDto.ListRes::from).toList();
+    }
 
     public List<StoreDto.StoreListRes> list() {
         List<Store> res = storeRepository.findAll();

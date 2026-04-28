@@ -1,5 +1,7 @@
 <script setup>
-defineProps({
+import { computed } from 'vue'
+
+const props = defineProps({
   item: {
     type: Object,
     default: null,
@@ -27,6 +29,11 @@ defineProps({
 })
 
 defineEmits(['close'])
+
+const sortedLots = computed(() => {
+  if (!props.item) return []
+  return props.fifoLots(props.item)
+})
 </script>
 
 <template>
@@ -67,7 +74,7 @@ defineEmits(['close'])
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
-              <tr v-for="(row, idx) in fifoLots(item)" :key="row.id ?? `${row.expiry ?? 'none'}-${row.qty}-${idx}`">
+              <tr v-for="(row, idx) in sortedLots" :key="row.id ?? `${row.expiry ?? 'none'}-${row.qty}-${idx}`">
                 <td class="px-5 py-3 text-gray-500">{{ idx + 1 }}</td>
                 <td class="px-5 py-3 text-xs font-mono" :class="isExpiringSoon(row.expiry) ? 'text-orange-600 font-semibold' : 'text-gray-700'">
                   {{ row.expiry ?? '—' }}

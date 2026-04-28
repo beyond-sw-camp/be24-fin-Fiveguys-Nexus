@@ -2,10 +2,7 @@ package com.example.nexus.domain.category.model;
 
 import com.example.nexus.domain.product.model.Product;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +10,7 @@ import java.util.List;
 @Entity
 @Table(name = "category")
 @Getter
-@Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Category {
@@ -24,8 +21,8 @@ public class Category {
     private Long idx;
 
     @Column(name = "category_name", nullable = false)
-    private Long categoryName;
+    private String categoryName;
 
     @Column(name = "is_deleted", nullable = false)
-    private Boolean isDeleted;
+    private boolean isDeleted;
 }

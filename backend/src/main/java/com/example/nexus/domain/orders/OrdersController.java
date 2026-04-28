@@ -3,11 +3,16 @@ package com.example.nexus.domain.orders;
 import com.example.nexus.common.model.BaseResponse;
 import com.example.nexus.domain.orders.model.DangerDto;
 import com.example.nexus.domain.orders.model.OrdersDto;
+import com.example.nexus.domain.user.model.AuthUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 
 @RequestMapping("/orders")
@@ -56,6 +61,15 @@ public class OrdersController {
     public ResponseEntity save(@RequestBody DangerDto.DangerReq req) {
         orderService.save(req);
         return ResponseEntity.ok(BaseResponse.success("update success"));
+    }
+
+    @GetMapping("/store/list")
+    public ResponseEntity storeList(@AuthenticationPrincipal AuthUserDetails userDetails) {
+        if (userDetails == null) {
+            throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+        List<OrdersDto.OrdersRes> result = orderService.findByUserIdx(userDetails.getIdx());
+        return ResponseEntity.ok(BaseResponse.success(result));
     }
 
 }

@@ -1,7 +1,7 @@
 package com.example.nexus.domain.user;
 
 import com.example.nexus.domain.user.model.AuthUserDetails;
-import com.example.nexus.user.model.UserDto;
+import com.example.nexus.domain.user.model.UserDto;
 import com.example.nexus.utils.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

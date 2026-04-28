@@ -1,6 +1,6 @@
 package com.example.nexus.config;
 
-import com.example.nexus.user.model.UserDto;
+import com.example.nexus.domain.user.model.UserDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

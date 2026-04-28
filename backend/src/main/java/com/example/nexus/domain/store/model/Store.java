@@ -1,10 +1,12 @@
 package com.example.nexus.domain.store.model;
 
+import com.example.nexus.domain.menu.model.Menu;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "store")
@@ -42,4 +44,6 @@ public class Store {
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
 
+    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
+    List<Menu> menuList;
 }

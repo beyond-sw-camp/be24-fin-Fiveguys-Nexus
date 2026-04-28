@@ -15,15 +15,15 @@
     <div class="grid grid-cols-3 gap-4">
       <div class="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
         <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">전체 입점 가맹점</p>
-        <p class="text-3xl font-black text-gray-900 mt-2">{{ stores.length }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
+        <p class="text-3xl font-black text-gray-900 mt-2">{{ storesList.length }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
       </div>
       <div class="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
         <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">입점</p>
-        <p class="text-3xl font-black text-green-600 mt-2">{{ stores.filter(s => !s.closeDate).length }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
+        <p class="text-3xl font-black text-green-600 mt-2">{{ stores.filter(s => !s.createdAt).length }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
       </div>
       <div class="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
         <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">폐점 가맹점</p>
-        <p class="text-3xl font-black text-red-500 mt-2">{{ stores.filter(s => s.closeDate).length }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
+        <p class="text-3xl font-black text-red-500 mt-2">{{ stores.filter(s => s.closedAt).length }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
       </div>
     </div>
 
@@ -84,24 +84,24 @@
         </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
-        <tr v-for="store in filteredStores" :key="store.id"
+        <tr v-for="store in filteredStores" :key="store.idx"
             @click="openDetail(store)"
             class="hover:bg-gray-50/50 transition-colors cursor-pointer group"
-            :class="{ 'bg-gray-50/40 opacity-70': store.closeDate }">
-          <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ store.id }}</td>
+            :class="{ 'bg-gray-50/40 opacity-70': store.closedAt }">
+          <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ store.idx }}</td>
           <td class="px-5 py-3.5 font-bold text-gray-900 group-hover:text-[#F37321] transition-colors">
-            {{ store.name }}
+            {{ store.storeName }}
           </td>
-          <td class="px-5 py-3.5 text-gray-600">{{ store.owner }}</td>
-          <td class="px-5 py-3.5 text-gray-500 text-xs truncate max-w-[150px]">{{ store.email }}</td>
-          <td class="px-5 py-3.5 text-gray-500 text-xs">{{ store.details }}</td>
-          <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ store.bizNumber }}</td>
+          <td class="px-5 py-3.5 text-gray-600">{{ store.ownerName }}</td>
+          <td class="px-5 py-3.5 text-gray-500 text-xs truncate max-w-[150px]">{{ store.ownerEmail }}</td>
+          <td class="px-5 py-3.5 text-gray-500 text-xs">{{ store.address }}</td>
+          <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ store.business }}</td>
           <td class="px-5 py-3.5 text-center">
               <span class="text-[11px] font-bold px-2 py-0.5 rounded-lg"
-                    :class="!store.closeDate
+                    :class="!store.closedAt
                   ? 'bg-green-100 text-green-700'
                   : 'bg-red-50 text-red-600'">
-                {{ store.closeDate ? '폐점' : '입점' }}
+                {{ store.closedAt ? '폐점' : '입점' }}
               </span>
           </td>
           <td class="px-5 py-3.5">
@@ -282,8 +282,10 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { Plus, Search, FileText, ChevronDown } from 'lucide-vue-next'
+import api from '@/api/store/index.js'
+
 
 const searchQuery = ref('')
 const filterStatus = ref('전체')
@@ -291,16 +293,16 @@ const activeDropdown = ref(null)
 
 const statusOptions = ['전체', '입점', '폐점']
 
-const stores = ref([
-  { id: 'GAL-F-001', name: '한우 오마카세',   owner: '김동현', details: '갤러리아 백화점 B1F 101호', bizNumber: '101-12-34567', email: 'hanwoo@galleria.com',  openDate: '2022-03-15', closeDate: '' },
-  { id: 'GAL-F-002', name: '이탈리안 키친',   owner: '이재혁', details: '갤러리아 백화점 B1F 102호', bizNumber: '201-45-67890', email: 'italian@galleria.com', openDate: '2022-07-20', closeDate: '' },
-  { id: 'GAL-F-003', name: '일식 스시바',     owner: '박민수', details: '갤러리아 백화점 B1F 103호', bizNumber: '301-78-90123', email: 'sushi@galleria.com',   openDate: '2023-01-10', closeDate: '' },
-  { id: 'GAL-F-004', name: '차이나 가든',     owner: '정수진', details: '갤러리아 백화점 B1F 104호', bizNumber: '401-23-45678', email: 'china@galleria.com',   openDate: '2023-05-30', closeDate: '2024-01-15' },
-  { id: 'GAL-F-005', name: '프렌치 비스트로', owner: '한소희', details: '갤러리아 백화점 B1F 105호', bizNumber: '107-82-99887', email: 'french@galleria.com',  openDate: '2023-12-20', closeDate: '' },
-])
+const storesList = reactive([])
+
+const storeList = async ()=>{
+  const res = await  api.getStoreList()
+  storesList.push(...res.result)
+
+}
 
 const filteredStores = computed(() => {
-  let list = [...stores.value]
+  let list = [...storesList.value]
 
   if (filterStatus.value !== '전체') {
     if (filterStatus.value === '폐점') list = list.filter(s => !!s.closeDate)
@@ -362,8 +364,8 @@ function saveStore() {
   if (editTarget.value) {
     Object.assign(editTarget.value, form.value)
   } else {
-    const newId = 'GAL-F-' + String(stores.value.length + 1).padStart(3, '0')
-    stores.value.push({ id: newId, ...form.value })
+    const newId = 'GAL-F-' + String(storesList.value.length + 1).padStart(3, '0')
+    storesList.value.push({ id: newId, ...form.value })
   }
   showModal.value = false
 }
@@ -371,4 +373,7 @@ function saveStore() {
 function downloadPdf() {
   alert('사업자 등록증 PDF를 다운로드합니다.')
 }
+onMounted(() => {
+  storeList
+})
 </script>

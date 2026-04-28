@@ -6,5 +6,5 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class NewsService {
-    private final NewsCollectRepository newsCollectRepository;
+    private final NewsRepository newsRepository;
 }

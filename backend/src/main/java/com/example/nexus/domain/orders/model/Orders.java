@@ -42,9 +42,10 @@ public class Orders {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
-    private List<Store> storeList;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_idx")
+    private Store store;
 
-    @OneToMany(mappedBy = "orders_item", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "orders", fetch = FetchType.LAZY)
     private List<OrdersItem> ordersItemList;
 }

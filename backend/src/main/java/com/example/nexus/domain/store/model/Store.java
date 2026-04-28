@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "store")
@@ -44,10 +45,9 @@ public class Store {
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "orders_idx")
-    private Orders orders;
+    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
+    private List<Orders> ordersList;
 
-    @OneToOne(mappedBy = "user_idx",fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
     private User user;
 }

@@ -19,7 +19,7 @@ public class OrdersController {
     @GetMapping("/list")
     public ResponseEntity list() {
         List<OrdersDto.OrdersRes> result = orderService.findAll();
-        return ResponseEntity.ok(BaseResponse.success(result))
+        return ResponseEntity.ok(BaseResponse.success(result));
     }
 
     @GetMapping("/danger")

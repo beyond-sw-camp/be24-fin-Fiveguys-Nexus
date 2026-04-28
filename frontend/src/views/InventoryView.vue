@@ -158,13 +158,6 @@ const storeRegion = {
   '차이나 가든':   '부산',
 }
 
-watch(filterRegion, (region) => {
-  if (!region || !filterStore.value) return
-  if (storeRegion[filterStore.value] !== region) {
-    filterStore.value = ''
-  }
-})
-
 const statusFilters = [
   { value: 'all',      label: '전체' },
   { value: 'danger',   label: '재고부족' },
@@ -287,6 +280,13 @@ const filteredItems = computed(() => {
     return true
   })
   return sortRows(rows)
+})
+
+watch(filterRegion, (region) => {
+  if (!region || !filterStore.value) return
+  if (storeRegion[filterStore.value] !== region) {
+    filterStore.value = ''
+  }
 })
 
 function isExpiringSoon(expiry) {

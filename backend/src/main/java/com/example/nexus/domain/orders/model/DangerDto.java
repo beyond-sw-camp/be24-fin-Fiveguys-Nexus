@@ -12,6 +12,7 @@ public class DangerDto {
         private Integer period;
     }
 
+    @Getter
     @Builder
     public static class DangerRes {
         private Integer ratio;

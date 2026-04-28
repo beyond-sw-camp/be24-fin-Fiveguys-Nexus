@@ -1,5 +1,6 @@
 package com.example.nexus.domain.news.model;
 
+import com.example.nexus.common.enums.NewsCollectCategory;
 import com.example.nexus.common.enums.NewsCollectTarget;
 import com.example.nexus.domain.store.model.Store;
 import jakarta.persistence.*;
@@ -16,7 +17,7 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class NewsSummary {
+public class News {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,8 +37,16 @@ public class NewsSummary {
     @Column(name = "summary_contents", nullable = false, columnDefinition = "TEXT")
     private String summaryContents;
 
+    @Column(name = "url", nullable = false, length = 1000)
+    private String url;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "category", nullable = false)
+    private NewsCollectCategory category;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_idx")
     private Store store;
+
 
 }

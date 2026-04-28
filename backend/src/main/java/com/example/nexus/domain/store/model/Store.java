@@ -1,8 +1,6 @@
 package com.example.nexus.domain.store.model;
 
 
-import com.example.nexus.domain.menu.model.Menu;
-import com.example.nexus.domain.orders.model.Orders;
 import com.example.nexus.domain.user.model.User;
 
 import jakarta.persistence.*;
@@ -10,7 +8,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Table(name = "store")
@@ -48,16 +45,8 @@ public class Store {
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
 
-    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
-    private List<Menu> menuList;
-
-
-    private List<Orders> ordersList;
-
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_idx")
+    @JoinColumn(name = "user_idx", nullable = false)
     private User user;
 
-    @OneToMany(mappedBy = "storeproduct")
-    private List<StoreProduct> storeProductList;
 }

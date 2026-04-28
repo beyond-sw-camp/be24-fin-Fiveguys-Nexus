@@ -2,17 +2,12 @@ package com.example.nexus.domain.product.model;
 
 
 import com.example.nexus.domain.category.model.Category;
-import com.example.nexus.domain.menu.model.MenuItem;
 
-import com.example.nexus.domain.store.model.StoreProduct;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "product")
@@ -49,12 +44,7 @@ public class Product {
     private Boolean isDelete;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_idx")
+    @JoinColumn(name = "category_idx", nullable = false)
     private Category category;
 
-    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
-    private List<MenuItem> menuItemList = new ArrayList<>();
-
-    @OneToMany(mappedBy = "storeproduct", fetch = FetchType.LAZY)
-    private List<StoreProduct> storeProductList = new ArrayList<>();
 }

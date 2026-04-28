@@ -1,5 +1,6 @@
 package com.example.nexus.domain.orders.model;
 
+import com.example.nexus.domain.product.model.Product;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,6 +21,11 @@ public class OrdersItem {
     private Integer count;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "orders_idx")
+    @JoinColumn(name = "orders_idx", nullable = false)
     private Orders orders;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_idx", nullable = false)
+    private Product product;
+
 }

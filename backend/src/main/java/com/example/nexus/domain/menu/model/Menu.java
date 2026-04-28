@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -36,5 +37,5 @@ public class Menu {
     private Store store;
 
     @OneToMany(mappedBy = "menu", fetch = FetchType.LAZY)
-    private List<MenuItem> menuItemList;
+    private List<MenuItem> menuItemList = new ArrayList<>();;
 }

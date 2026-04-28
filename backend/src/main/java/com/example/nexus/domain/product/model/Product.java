@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -43,5 +45,5 @@ public class Product {
     private Boolean isDelete;
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
-    private List<MenuItem> menuItemList;
+    private List<MenuItem> menuItemList = new ArrayList<>();;
 }

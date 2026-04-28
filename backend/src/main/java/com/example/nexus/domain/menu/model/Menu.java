@@ -1,9 +1,13 @@
 package com.example.nexus.domain.menu.model;
 
+import com.example.nexus.domain.store.model.Store;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "menu")
@@ -28,4 +32,10 @@ public class Menu {
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted = false;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_idx")
+    private Store store;
+
+    @OneToMany(mappedBy = "menu", fetch = FetchType.LAZY)
+    private List<MenuItem> menuItemList = new ArrayList<>();;
 }

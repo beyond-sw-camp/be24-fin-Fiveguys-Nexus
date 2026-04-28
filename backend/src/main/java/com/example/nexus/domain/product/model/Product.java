@@ -1,10 +1,14 @@
 package com.example.nexus.domain.product.model;
 
+import com.example.nexus.domain.menu.model.MenuItem;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "product")
@@ -39,4 +43,7 @@ public class Product {
 
     @Column(name = "is_delete", nullable = false)
     private Boolean isDelete;
+
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    private List<MenuItem> menuItemList = new ArrayList<>();;
 }

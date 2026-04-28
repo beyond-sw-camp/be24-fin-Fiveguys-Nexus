@@ -1,7 +1,10 @@
 package com.example.nexus.domain.store.model;
 
+
+import com.example.nexus.domain.menu.model.Menu;
 import com.example.nexus.domain.orders.model.Orders;
 import com.example.nexus.domain.user.model.User;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -46,6 +49,9 @@ public class Store {
     private Boolean isDeleted = false;
 
     @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
+    private List<Menu> menuList;
+
+
     private List<Orders> ordersList;
 
     @OneToOne(fetch = FetchType.LAZY)

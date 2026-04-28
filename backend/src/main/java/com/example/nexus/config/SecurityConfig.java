@@ -23,6 +23,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests(
                 (auth) -> auth
                         .requestMatchers("/login").permitAll()
+                        .requestMatchers("/head/**").permitAll()
         );
 
         http.addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class);

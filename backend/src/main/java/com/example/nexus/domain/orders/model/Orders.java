@@ -2,6 +2,7 @@ package com.example.nexus.domain.orders.model;
 
 import com.example.nexus.common.enums.OrdersStatus;
 import com.example.nexus.common.enums.OrdersType;
+import com.example.nexus.domain.delivery.model.Delivery;
 import com.example.nexus.domain.store.model.Store;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -48,4 +49,8 @@ public class Orders {
 
     @OneToMany(mappedBy = "orders", fetch = FetchType.LAZY)
     private List<OrdersItem> ordersItemList;
+
+    @OneToOne(mappedBy = "delivery", fetch = FetchType.LAZY)
+    @JoinColumn(name = "delivery_idx")
+    private Delivery delivery;
 }

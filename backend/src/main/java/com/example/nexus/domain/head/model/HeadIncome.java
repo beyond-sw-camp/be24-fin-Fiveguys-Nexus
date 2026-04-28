@@ -1,5 +1,7 @@
 package com.example.nexus.domain.head.model;
 
+import com.example.nexus.domain.orders.model.Orders;
+import com.example.nexus.domain.store.model.Store;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -25,4 +27,11 @@ public class HeadIncome {
     @Column(name = "status", nullable = false)
     private Boolean status;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_idx")
+    private Store store;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "orders_idx")
+    private Orders orders;
 }

@@ -16,7 +16,7 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @PostMapping("/reg")
-    public ResponseEntity register(@RequestBody CategoryDto.RegReq dto) {
+    public ResponseEntity<CategoryDto.RegRes> register(@Valid @RequestBody CategoryDto.RegReq dto) {
         CategoryDto.RegRes result = categoryService.register(dto);
         return ResponseEntity.ok(result);
     }

@@ -1,11 +1,13 @@
 package com.example.nexus.domain.category.model;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Getter;
 
 public class CategoryDto {
     @Getter
     public static class RegReq {
+        @NotBlank(message = "Category name must not be blank")
         private String categoryName;
 
         public Category toEntity() {

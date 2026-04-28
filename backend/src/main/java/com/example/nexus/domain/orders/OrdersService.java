@@ -28,7 +28,7 @@ public class OrdersService {
 
 
     public List<OrdersDto.OrdersRes> findAllManual() {
-        return ordersRepository.findAllByOrdersType(OrdersType.MANUAL).stream()
+        return ordersRepository.findAllByOrdersTypeAndOrdersStatus(OrdersType.MANUAL, OrdersStatus.WAITING).stream()
                 .map(OrdersDto.OrdersRes::from)
                 .toList();
     }

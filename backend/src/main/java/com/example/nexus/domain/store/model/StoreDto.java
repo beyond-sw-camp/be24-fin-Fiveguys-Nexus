@@ -1,7 +1,10 @@
 package com.example.nexus.domain.store.model;
 
+import jakarta.persistence.Column;
 import lombok.Builder;
 import lombok.Getter;
+
+import java.time.LocalDateTime;
 
 public class StoreDto {
 
@@ -15,7 +18,8 @@ public class StoreDto {
         private String ownerEmail;
         private String address;
         private String business;
-        private String status;
+        private LocalDateTime createdAt;
+        private LocalDateTime closedAt;
 
 
         public static StoreDto.StoreListRes from(Store entity){
@@ -26,7 +30,8 @@ public class StoreDto {
                     .ownerEmail(entity.getUser().getEmail())
                     .address(entity.getAddress())
                     .business(entity.getBusiness())
-                    .status(entity.getClosedAt() == null ? "입점": "폐점")
+                    .createdAt(entity.getCreatedAt())
+                    .closedAt(entity.getClosedAt())
                     .build();
         }
 

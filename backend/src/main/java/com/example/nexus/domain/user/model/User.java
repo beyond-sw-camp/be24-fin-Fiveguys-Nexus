@@ -2,15 +2,13 @@ package com.example.nexus.domain.user.model;
 
 import com.example.nexus.common.enums.Role;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Table(name = "user")
 @Setter
 @Getter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class User {
@@ -29,8 +27,8 @@ public class User {
     @Column(name = "user_name", nullable = false)
     private String userName;
 
-    @Column(name = "tell", nullable = false)
-    private String tell;
+    @Column(name = "tel", nullable = false)
+    private String tel;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)

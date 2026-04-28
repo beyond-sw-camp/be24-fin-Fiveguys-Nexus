@@ -28,4 +28,7 @@ public class MenuItem {
     @JoinColumn(name = "menu_idx")
     private Menu menu;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_idx")
+    private Product product;
 }

@@ -10,7 +10,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class HeadService {
-    private final HeadIncomeRepository headIncomeRepository;
     private final HeadInventoryRepository headInventoryRepository;
 
     public List<HeadInventoryDto.ListRes> list() {

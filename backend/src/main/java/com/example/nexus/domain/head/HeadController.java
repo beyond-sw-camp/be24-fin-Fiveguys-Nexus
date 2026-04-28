@@ -13,7 +13,6 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 public class HeadController {
-    private final HeadService headIncomeService;
     private final HeadService headService;
 
     // 본사 재고 조회

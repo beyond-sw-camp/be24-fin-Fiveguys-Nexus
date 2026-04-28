@@ -1,14 +1,11 @@
 package com.example.nexus.domain.orders.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Table(name = "danger")
-@Setter
+@Builder
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -25,4 +22,8 @@ public class Danger {
     @Column(name = "period", nullable = false)
     private Integer period;
 
+    public void update(Integer ratio, Integer period) {
+        this.ratio = ratio;
+        this.period = period;
+    }
 }

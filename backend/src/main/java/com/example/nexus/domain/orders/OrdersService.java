@@ -28,6 +28,11 @@ public class OrdersService {
 
     @Transactional
     public void create(OrdersDto.OrdersReq req) {
+        // 0. 주문 아이템 리스트 검증
+        if (req.getOrdersItemList() == null || req.getOrdersItemList().isEmpty()) {
+            throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
+        }
+
         // 1. store 조회
         Store store = storeRepository.findById(req.getStoreIdx())
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));

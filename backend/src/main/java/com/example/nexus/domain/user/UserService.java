@@ -1,7 +1,7 @@
 package com.example.nexus.domain.user;
 
-import com.example.nexus.user.model.AuthUserDetails;
-import com.example.nexus.user.model.User;
+import com.example.nexus.domain.user.model.AuthUserDetails;
+import com.example.nexus.domain.user.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

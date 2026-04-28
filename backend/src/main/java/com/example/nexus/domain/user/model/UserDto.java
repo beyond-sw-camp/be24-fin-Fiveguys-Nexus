@@ -1,5 +1,6 @@
-package com.example.nexus.user.model;
+package com.example.nexus.domain.user.model;
 
+import com.example.nexus.domain.user.model.User;
 import lombok.Builder;
 import lombok.Getter;
 

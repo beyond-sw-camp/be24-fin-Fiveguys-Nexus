@@ -48,6 +48,7 @@ public class Store {
     @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
     private List<Orders> ordersList;
 
-    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_idx")
     private User user;
 }

@@ -57,4 +57,7 @@ public class Store {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_idx")
     private User user;
+
+    @OneToMany(mappedBy = "storeproduct")
+    private List<StoreProduct> storeProductList;
 }

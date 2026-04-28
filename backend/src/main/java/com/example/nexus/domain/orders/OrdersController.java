@@ -22,7 +22,7 @@ public class OrdersController {
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 
-    @GetMapping("/detail/{ordersIdx}")
+    @GetMapping("/{ordersIdx}")
     public ResponseEntity ordersDetail(@PathVariable Long ordersIdx) {
         OrdersDto.OrdersRes result = orderService.findById(ordersIdx);
         return ResponseEntity.ok(BaseResponse.success(result));

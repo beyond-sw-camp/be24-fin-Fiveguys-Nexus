@@ -20,7 +20,7 @@ public class OrdersDto {
         private boolean isDanger;
         private LocalDateTime createdAt;
         private Long storeIdx;
-        private List<OrdersItem> ordersItemList;
+        private List<OrdersItemDto.OrdersItemRes> ordersItemList;
         private Long deliveryIdx;
 
         public static OrdersRes from(Orders entity) {

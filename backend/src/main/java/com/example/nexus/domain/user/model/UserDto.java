@@ -1,10 +1,33 @@
 package com.example.nexus.domain.user.model;
 
+import com.example.nexus.common.enums.Role;
 import com.example.nexus.domain.user.model.User;
 import lombok.Builder;
 import lombok.Getter;
 
 public class UserDto {
+
+    @Getter
+    public static class SignupReq {
+        private String email;
+        private String name;
+        private String password;
+        private Role role;
+        private String tel;
+
+        public User toEntity() {
+            return User.builder()
+                    .email(this.email)
+                    .userName(this.name)
+                    .password(this.password)
+                    .role(this.role)
+                    .tel(this.tel)
+                    .isDeleted(false)
+                    .build();
+        }
+    }
+
+
 
     @Getter
     public static class LoginReq {

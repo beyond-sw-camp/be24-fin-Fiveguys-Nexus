@@ -19,6 +19,12 @@ public class UserController {
     public final UserService userService;
     private final AuthenticationManager authenticationManager;
 
+    @PostMapping("/signup")
+    public ResponseEntity signup(@RequestBody UserDto.SignupReq dto) {
+        userService.signup(dto);
+        return ResponseEntity.ok("성공");
+    }
+
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody UserDto.LoginReq dto) {
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword(), null);

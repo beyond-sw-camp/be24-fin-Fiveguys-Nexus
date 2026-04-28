@@ -9,6 +9,7 @@ import com.example.nexus.domain.product.ProductRepository;
 import com.example.nexus.domain.product.model.Product;
 import com.example.nexus.domain.store.StoreRepository;
 import com.example.nexus.domain.store.model.Store;
+import com.example.nexus.domain.user.model.User;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -92,7 +93,7 @@ public class OrdersService {
     }
 
     public OrdersDto.OrdersRes findById(Long ordersIdx) {
-        Orders orders =  ordersRepository.findById(ordersIdx).orElseThrow(
+        Orders orders = ordersRepository.findById(ordersIdx).orElseThrow(
                 () -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
         return OrdersDto.OrdersRes.from(orders);
     }
@@ -111,5 +112,14 @@ public class OrdersService {
                 .orElse(Danger.builder().build());
         danger.update(req.getRatio(), req.getPeriod());
         dangerRepository.save(danger);
+    }
+
+    public List<OrdersDto.OrdersRes> findByUserIdx(Long userIdx) {
+        Store store = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        return ordersRepository.findAllByStore_IdxAndOrdersStatus(store.getIdx(), OrdersStatus.APPROVE).stream()
+                .map(OrdersDto.OrdersRes::from)
+                .toList();
     }
 }

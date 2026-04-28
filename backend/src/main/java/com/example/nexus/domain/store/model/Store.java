@@ -43,7 +43,7 @@ public class Store {
     private LocalDateTime closedAt;
 
     @Column(name = "is_deleted", nullable = false)
-    private Boolean isDeleted = false;
+    private boolean isDeleted = false;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_idx", nullable = false)

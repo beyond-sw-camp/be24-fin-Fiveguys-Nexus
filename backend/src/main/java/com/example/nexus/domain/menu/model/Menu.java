@@ -1,5 +1,6 @@
 package com.example.nexus.domain.menu.model;
 
+import com.example.nexus.domain.store.model.Store;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -27,5 +28,9 @@ public class Menu {
 
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted = false;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_idx")
+    private Store store;
 
 }

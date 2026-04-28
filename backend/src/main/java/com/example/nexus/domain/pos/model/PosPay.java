@@ -49,6 +49,4 @@ public class PosPay {
     @JoinColumn(name = "store_idx", nullable = false)
     private Store store;
 
-    @OneToMany(mappedBy = "posPay", fetch = FetchType.LAZY)
-    private List<PosOrdersItem> posOrdersItems = new ArrayList<>();
 }

@@ -24,10 +24,10 @@ public class MenuItem {
     private String menuUnit;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "menu_idx")
+    @JoinColumn(name = "menu_idx", nullable = false)
     private Menu menu;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_idx")
+    @JoinColumn(name = "product_idx", nullable = false)
     private Product product;
 }

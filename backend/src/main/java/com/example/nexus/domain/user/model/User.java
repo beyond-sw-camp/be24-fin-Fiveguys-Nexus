@@ -1,7 +1,6 @@
 package com.example.nexus.domain.user.model;
 
 import com.example.nexus.common.enums.Role;
-import com.example.nexus.domain.store.model.Store;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -39,7 +38,5 @@ public class User {
 
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted;
-    
-    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
-    private Store store;
+
 }

@@ -32,10 +32,4 @@ public class Menu {
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted = false;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "store_idx")
-    private Store store;
-
-    @OneToMany(mappedBy = "menu", fetch = FetchType.LAZY)
-    private List<MenuItem> menuItemList = new ArrayList<>();;
 }

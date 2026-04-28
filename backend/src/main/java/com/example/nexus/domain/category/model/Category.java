@@ -28,7 +28,4 @@ public class Category {
 
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted;
-
-    @OneToMany(mappedBy = "product")
-    private List<Product> productList = new ArrayList<>();
 }

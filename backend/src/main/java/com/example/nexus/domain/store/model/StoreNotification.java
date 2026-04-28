@@ -31,6 +31,7 @@ public class StoreNotification {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "store_idx", nullable = false)
-    private Long storeIdx;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_idx", nullable = false)
+    private Store store;
 }

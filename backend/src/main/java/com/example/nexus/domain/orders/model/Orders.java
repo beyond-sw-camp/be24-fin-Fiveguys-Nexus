@@ -44,13 +44,12 @@ public class Orders {
     private LocalDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "store_idx")
+    @JoinColumn(name = "store_idx", nullable = false)
     private Store store;
 
     @OneToMany(mappedBy = "orders", fetch = FetchType.LAZY)
     private List<OrdersItem> ordersItemList;
 
-    @OneToOne(mappedBy = "delivery", fetch = FetchType.LAZY)
-    @JoinColumn(name = "delivery_idx")
+    @OneToOne(mappedBy = "orders", fetch = FetchType.LAZY)
     private Delivery delivery;
 }

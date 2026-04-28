@@ -31,7 +31,7 @@ public class HeadIncome {
     @JoinColumn(name = "store_idx")
     private Store store;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "orders_idx")
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "orders_idx", nullable = false)
     private Orders orders;
 }

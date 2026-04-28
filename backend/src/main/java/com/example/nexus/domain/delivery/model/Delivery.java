@@ -40,7 +40,7 @@ public class Delivery {
     @Column(name = "deliveryed_date", nullable = false)
     private LocalDateTime deliveryedDate;
 
-    @OneToOne(mappedBy = "orders", fetch = FetchType.LAZY)
-    @JoinColumn(name = "orders_idx")
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "orders_idx", nullable = false)
     private Orders orders;
 }

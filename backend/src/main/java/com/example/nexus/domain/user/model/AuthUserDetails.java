@@ -4,6 +4,7 @@ import com.example.nexus.common.enums.Role;
 import lombok.Builder;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
@@ -20,6 +21,7 @@ public class AuthUserDetails implements UserDetails {
 
     public static AuthUserDetails from(User entity) {
         return AuthUserDetails.builder()
+                .idx(entity.getIdx())
                 .username(entity.getEmail())
                 .password(entity.getPassword())
                 .role(entity.getRole())
@@ -28,7 +30,8 @@ public class AuthUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        if (role == null) return List.of();
+        return List.of(new SimpleGrantedAuthority(role.toString()));
     }
 
     @Override

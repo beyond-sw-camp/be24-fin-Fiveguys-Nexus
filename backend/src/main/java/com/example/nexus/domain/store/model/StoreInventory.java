@@ -1,13 +1,17 @@
 package com.example.nexus.domain.store.model;
 
 import com.example.nexus.common.enums.InventoryStatus;
+import com.example.nexus.domain.product.model.Product;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -42,9 +46,11 @@ public class StoreInventory {
     @Column(name = "avg_stock", nullable = false)
     private Integer avgStock;
 
-    @Column(name = "store_idx", nullable = false)
-    private Long storeIdx;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_idx", nullable = false)
+    private Store store;
 
-    @Column(name = "product_idx", nullable = false)
-    private Long productIdx;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_idx", nullable = false)
+    private Product product;
 }

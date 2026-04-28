@@ -33,7 +33,7 @@ public class AuthUserDetails implements UserDetails {
 
     @Override
     public String getPassword() {
-        return "";
+        return password;
     }
 
     @Override

@@ -38,4 +38,7 @@ public class User {
 
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted;
+    
+    @OneToOne(mappedBy = "store", fetch = FetchType.LAZY)
+    private User user;
 }

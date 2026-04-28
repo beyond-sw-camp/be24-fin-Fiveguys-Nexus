@@ -1,7 +1,8 @@
 package com.example.nexus.domain.news.model;
 
-import com.example.nexus.common.enums.NewsCollectStatus;
+import com.example.nexus.common.enums.NewsCollectCategory;
 import com.example.nexus.common.enums.NewsCollectTarget;
+import com.example.nexus.domain.store.model.Store;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -40,9 +41,17 @@ public class NewsCollect {
     private NewsCollectTarget target;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private NewsCollectStatus status;
+    @Column(name = "category", nullable = false)
+    private NewsCollectCategory category;
 
     @Column(name = "collected_at", nullable = false)
     private LocalDateTime collectedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_idx")
+    private Store store;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "news_summary_idx")
+    private NewsSummary newsSummary;
 }

@@ -1,6 +1,7 @@
 package com.example.nexus.domain.news.model;
 
 import com.example.nexus.common.enums.NewsCollectTarget;
+import com.example.nexus.domain.store.model.Store;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -34,5 +35,9 @@ public class NewsSummary {
 
     @Column(name = "summary_contents", nullable = false, columnDefinition = "TEXT")
     private String summaryContents;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_idx")
+    private Store store;
 
 }

@@ -22,6 +22,12 @@ public class OrdersController {
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 
+    @GetMapping("/detail/{ordersIdx}")
+    public ResponseEntity ordersDetail(@PathVariable Long ordersIdx) {
+        OrdersDto.OrdersRes result = orderService.findId(ordersIdx);
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
+
     @GetMapping("/danger")
     public ResponseEntity find() {
         DangerDto.DangerRes result = orderService.find();

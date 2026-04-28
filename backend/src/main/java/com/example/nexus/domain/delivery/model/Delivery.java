@@ -1,6 +1,7 @@
 package com.example.nexus.domain.delivery.model;
 
 import com.example.nexus.common.enums.DeliveryStatus;
+import com.example.nexus.domain.orders.model.Orders;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -38,4 +39,8 @@ public class Delivery {
 
     @Column(name = "deliveryed_date", nullable = false)
     private LocalDateTime deliveryedDate;
+
+    @OneToOne(mappedBy = "orders", fetch = FetchType.LAZY)
+    @JoinColumn(name = "orders_idx")
+    private Orders orders;
 }

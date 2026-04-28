@@ -7,11 +7,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
-@RequestMapping("/order")
+@RequestMapping("/orders")
 @RestController
 @RequiredArgsConstructor
 public class OrdersController {
     private final OrdersService orderService;
+
+    @GetMapping("/list")
+    public ResponseEntity list() {
+
+    }
 
     @GetMapping("/danger")
     public ResponseEntity find() {

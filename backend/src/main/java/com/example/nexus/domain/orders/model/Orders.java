@@ -38,7 +38,7 @@ public class Orders {
     private OrdersStatus ordersStatus;
 
     @Column(name = "is_danger", nullable = false)
-    private Boolean isDanger;
+    private boolean isDanger;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

@@ -1,5 +1,7 @@
 package com.example.nexus.config;
 
+import com.example.nexus.common.enums.Role;
+import com.example.nexus.domain.user.model.AuthUserDetails;
 import com.example.nexus.utils.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -32,11 +34,17 @@ public class JwtFilter extends OncePerRequestFilter {
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
                 if (cookie.getName().equals("CTOKEN")) {
+                    Long idx = JwtUtil.getUserIdx(cookie.getValue());
                     String username = JwtUtil.getUsername(cookie.getValue());
                     String role = JwtUtil.getRole(cookie.getValue());
+                    AuthUserDetails principal = AuthUserDetails.builder()
+                            .idx(idx)
+                            .username(username)
+                            .role(Role.valueOf(role))
+                            .build();
 
                     Authentication authentication = new UsernamePasswordAuthenticationToken(
-                            username,
+                            principal,
                             null,
                             List.of(new SimpleGrantedAuthority(role))
                     );

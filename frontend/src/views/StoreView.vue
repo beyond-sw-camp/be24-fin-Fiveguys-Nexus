@@ -3,18 +3,18 @@
     <!-- Header -->
     <div class="flex justify-between items-center">
       <div>
-        <h1 class="text-xl font-bold text-gray-900 tracking-tight">입점 매장 관리</h1>
+        <h1 class="text-xl font-bold text-gray-900 tracking-tight">입점 가맹점 관리</h1>
       </div>
       <button @click="openModal(null)"
               class="bg-[#F37321] text-white px-4 py-2 text-sm font-semibold rounded-lg hover:bg-[#e0661d] transition-colors flex items-center gap-2 shadow-sm cursor-pointer">
-        <Plus class="w-4 h-4" /> 신규 매장 등록
+        <Plus class="w-4 h-4" /> 신규 가맹점 등록
       </button>
     </div>
 
     <!-- Summary -->
     <div class="grid grid-cols-3 gap-4">
       <div class="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
-        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">전체 입점 매장</p>
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">전체 입점 가맹점</p>
         <p class="text-3xl font-black text-gray-900 mt-2">{{ stores.length }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
       </div>
       <div class="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
@@ -22,7 +22,7 @@
         <p class="text-3xl font-black text-green-600 mt-2">{{ stores.filter(s => !s.closeDate).length }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
       </div>
       <div class="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
-        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">폐점 매장</p>
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">폐점 가맹점</p>
         <p class="text-3xl font-black text-red-500 mt-2">{{ stores.filter(s => s.closeDate).length }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
       </div>
     </div>
@@ -35,7 +35,7 @@
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="매장명 검색"
+            placeholder="가맹점명 검색"
             @keyup.enter="handleSearch"
             class="pl-10 pr-4 py-2 rounded-lg border border-gray-200 text-sm w-52
              bg-white shadow-sm
@@ -73,8 +73,8 @@
       <table class="w-full text-sm text-left">
         <thead>
         <tr class="border-b border-gray-200 bg-gray-50">
-          <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">매장 코드</th>
-          <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">매장명</th>
+          <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">가맹점 코드</th>
+          <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">가맹점명</th>
           <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">담당자명</th>
           <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">이메일</th>
           <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">상세 정보</th>
@@ -117,25 +117,25 @@
       </table>
     </div>
 
-    <!-- 입점 매장 상세 정보 모달 -->
+    <!-- 입점 가맹점 상세 정보 모달 -->
     <div v-if="showDetailModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
       <div class="absolute inset-0 bg-black/40" @click="showDetailModal = false"></div>
       <div class="relative bg-white rounded-xl w-full max-w-lg border border-gray-200 shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
         <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-          <h3 class="font-bold text-gray-900">입점 매장 상세 정보</h3>
+          <h3 class="font-bold text-gray-900">입점 가맹점 상세 정보</h3>
           <button @click="showDetailModal = false" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
         </div>
 
         <div class="p-6 space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-1.5">
-              <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">매장 코드</label>
+              <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">가맹점 코드</label>
               <div class="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm font-mono text-gray-500">
                 {{ detailTarget?.id }}
               </div>
             </div>
             <div class="space-y-1.5">
-              <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">매장명</label>
+              <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">가맹점명</label>
               <div class="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm font-bold text-gray-900">
                 {{ detailTarget?.name }}
               </div>
@@ -203,18 +203,18 @@
       </div>
     </div>
 
-    <!-- 신규 매장 등록 / 수정 모달 -->
+    <!-- 신규 가맹점 등록 / 수정 모달 -->
     <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div class="absolute inset-0 bg-black/40" @click="showModal = false"></div>
       <div class="relative bg-white rounded-lg w-full max-w-lg border border-gray-200 shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
         <div class="px-8 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-          <h3 class="font-bold text-gray-900 text-lg">{{ editTarget ? '입점 매장 정보 수정' : '신규 매장 등록' }}</h3>
+          <h3 class="font-bold text-gray-900 text-lg">{{ editTarget ? '입점 가맹점 정보 수정' : '신규 가맹점 등록' }}</h3>
           <button @click="showModal = false" class="text-gray-400 hover:text-gray-600 font-bold text-xl cursor-pointer">✕</button>
         </div>
 
         <form @submit.prevent="saveStore" class="p-8 space-y-5">
           <div class="space-y-1.5">
-            <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">매장명</label>
+            <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">가맹점명</label>
             <input v-model="form.name" required type="text" placeholder="예: 한우 오마카세"
                    class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
           </div>

@@ -16,6 +16,12 @@ import java.util.List;
 public class OrdersController {
     private final OrdersService orderService;
 
+    @GetMapping("/list/manual")
+    public ResponseEntity manualList() {
+        List<OrdersDto.OrdersRes> result = orderService.findAllManual();
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
+
     @PostMapping
     public ResponseEntity create(@RequestBody OrdersDto.OrdersReq req) {
         orderService.create(req);

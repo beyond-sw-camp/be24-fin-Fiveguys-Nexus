@@ -1,4 +1,4 @@
-package com.example.nexus.user.model;
+package com.example.nexus.domain.user.model;
 
 import com.example.nexus.common.enums.Role;
 import lombok.Builder;

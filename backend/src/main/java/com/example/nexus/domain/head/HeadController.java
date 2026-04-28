@@ -1,7 +1,5 @@
 package com.example.nexus.domain.head;
 
-import com.example.nexus.common.model.BaseEntity;
-import com.example.nexus.common.model.BaseResponse;
 import com.example.nexus.domain.head.model.HeadInventoryDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

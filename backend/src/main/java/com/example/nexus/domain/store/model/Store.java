@@ -1,6 +1,7 @@
 package com.example.nexus.domain.store.model;
 
 import com.example.nexus.domain.orders.model.Orders;
+import com.example.nexus.domain.user.model.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -47,4 +48,6 @@ public class Store {
     @JoinColumn(name = "orders_idx")
     private Orders orders;
 
+    @OneToOne(mappedBy = "user_idx",fetch = FetchType.LAZY)
+    private User user;
 }

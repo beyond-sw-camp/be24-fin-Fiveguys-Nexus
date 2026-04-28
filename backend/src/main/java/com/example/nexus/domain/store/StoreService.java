@@ -6,6 +6,11 @@ import com.example.nexus.domain.store.model.StoreInventoryDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import com.example.nexus.domain.store.model.StoreDto;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -21,5 +26,14 @@ public class StoreService {
 
         List<StoreInventory> inventoryList = storeInventoryRepository.findByStoreIdx(storeIdx);
         return inventoryList.stream().map(StoreInventoryDto.ListRes::from).toList();
+
+    public List<StoreDto.StoreListRes> list() {
+        List<Store> res = storeRepository.findAll();
+        List<StoreDto.StoreListRes> result = new ArrayList<>();
+
+        for(Store data: res){
+            result.add(StoreDto.StoreListRes.from(data));
+        }
+        return result;
     }
 }

@@ -34,7 +34,7 @@ public class OrdersDto {
                     .storeIdx(entity.getStore().getIdx())
                     .ordersItemList(entity.getOrdersItemList().stream()
                             .map(OrdersItemDto.OrdersItemRes::from).toList())
-                    .deliveryIdx(entity.getDelivery().getIdx())
+                    .deliveryIdx(entity.getDelivery() != null ? entity.getDelivery().getIdx() : null)
                     .build();
         }
     }

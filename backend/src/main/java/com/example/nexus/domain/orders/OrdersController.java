@@ -2,9 +2,12 @@ package com.example.nexus.domain.orders;
 
 import com.example.nexus.common.model.BaseResponse;
 import com.example.nexus.domain.orders.model.DangerDto;
+import com.example.nexus.domain.orders.model.OrdersDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @RequestMapping("/orders")
@@ -15,7 +18,8 @@ public class OrdersController {
 
     @GetMapping("/list")
     public ResponseEntity list() {
-
+        List<OrdersDto.OrdersRes> result = orderService.findAll();
+        return ResponseEntity.ok(BaseResponse.success(result))
     }
 
     @GetMapping("/danger")

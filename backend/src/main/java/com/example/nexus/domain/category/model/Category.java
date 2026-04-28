@@ -1,10 +1,13 @@
 package com.example.nexus.domain.category.model;
 
+import com.example.nexus.domain.product.model.Product;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.List;
 
 @Entity
 @Table(name = "category")
@@ -24,4 +27,7 @@ public class Category {
 
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted;
+
+    @OneToMany
+    private List<Product> productList;
 }

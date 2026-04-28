@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Table(name = "menu")
 @Getter
@@ -33,4 +35,6 @@ public class Menu {
     @JoinColumn(name = "store_idx")
     private Store store;
 
+    @OneToMany(mappedBy = "menu", fetch = FetchType.LAZY)
+    List<MenuItem> menuItemList;
 }

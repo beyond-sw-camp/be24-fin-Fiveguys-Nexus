@@ -31,7 +31,7 @@ public class OrdersController {
     @PutMapping("/danger")
     public ResponseEntity save(@RequestBody DangerDto.DangerReq req) {
         orderService.save(req);
-        return ResponseEntity.ok(BaseResponse.success("성공"));
+        return ResponseEntity.ok(BaseResponse.success("update success"));
     }
 
 }

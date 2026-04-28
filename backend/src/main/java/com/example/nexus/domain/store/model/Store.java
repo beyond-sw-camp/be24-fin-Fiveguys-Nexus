@@ -49,9 +49,9 @@ public class Store {
     private Boolean isDeleted = false;
 
     @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
-    List<Menu> menuList;
-  
-  
+    private List<Menu> menuList;
+
+
     private List<Orders> ordersList;
 
     @OneToOne(fetch = FetchType.LAZY)

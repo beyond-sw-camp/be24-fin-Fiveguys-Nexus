@@ -1,7 +1,6 @@
 package com.example.nexus.domain.menu.model;
 
 import com.example.nexus.domain.product.model.Product;
-import com.example.nexus.domain.store.model.Store;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

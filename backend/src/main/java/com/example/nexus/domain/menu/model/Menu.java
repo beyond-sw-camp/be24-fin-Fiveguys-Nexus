@@ -36,5 +36,5 @@ public class Menu {
     private Store store;
 
     @OneToMany(mappedBy = "menu", fetch = FetchType.LAZY)
-    List<MenuItem> menuItemList;
+    private List<MenuItem> menuItemList;
 }

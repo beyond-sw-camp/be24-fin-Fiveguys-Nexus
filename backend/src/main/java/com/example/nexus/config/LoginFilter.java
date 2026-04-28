@@ -28,7 +28,6 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
-        System.out.println("로그인 성공했을 때 실행");
         AuthUserDetails user = (AuthUserDetails) authResult.getPrincipal();
         String token = JwtUtil.createToken(user.getIdx(), user.getUsername(), String.valueOf(user.getRole()));
         response.setHeader("Set-Cookie", "CTOKEN=" + token + "; Path=/");
@@ -39,18 +38,15 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.getWriter().write("login failed");
     }
 
-    // TODO : 1번
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
-        System.out.println("내 필터가 실행됨");
 
         try {
             UserDto.LoginReq dto = new ObjectMapper().readValue(request.getInputStream(), UserDto.LoginReq.class);
 
-            // TODO : 2번
             UsernamePasswordAuthenticationToken token =
                     new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword(), null);
-            // TODO : 3번
+
             return authenticationManager.authenticate(token);
         } catch (IOException e) {
             throw new RuntimeException(e);

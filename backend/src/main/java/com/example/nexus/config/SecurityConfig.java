@@ -22,7 +22,7 @@ public class SecurityConfig {
     public SecurityFilterChain configure(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(
                 (auth) -> auth
-                        .requestMatchers("/login").permitAll()
+                        .requestMatchers("/**").permitAll()
         );
 
         http.addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class);

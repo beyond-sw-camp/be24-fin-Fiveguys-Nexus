@@ -24,7 +24,7 @@ public class OrdersController {
 
     @GetMapping("/detail/{ordersIdx}")
     public ResponseEntity ordersDetail(@PathVariable Long ordersIdx) {
-        OrdersDto.OrdersRes result = orderService.findId(ordersIdx);
+        OrdersDto.OrdersRes result = orderService.findById(ordersIdx);
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 

@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -28,6 +29,6 @@ public class Category {
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted;
 
-    @OneToMany
-    private List<Product> productList;
+    @OneToMany(mappedBy = "product")
+    private List<Product> productList = new ArrayList<>();
 }

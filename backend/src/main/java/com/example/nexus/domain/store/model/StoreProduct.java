@@ -1,5 +1,6 @@
 package com.example.nexus.domain.store.model;
 
+import com.example.nexus.domain.product.model.Product;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,4 +19,12 @@ public class StoreProduct {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "store_product_idx")
     private Long idx;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_idx")
+    private Store store;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_idx")
+    private Product product;
 }

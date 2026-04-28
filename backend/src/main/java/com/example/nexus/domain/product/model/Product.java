@@ -4,6 +4,7 @@ package com.example.nexus.domain.product.model;
 import com.example.nexus.domain.category.model.Category;
 import com.example.nexus.domain.menu.model.MenuItem;
 
+import com.example.nexus.domain.store.model.StoreProduct;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -47,11 +48,13 @@ public class Product {
     @Column(name = "is_delete", nullable = false)
     private Boolean isDelete;
 
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_idx")
     private Category category;
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     private List<MenuItem> menuItemList = new ArrayList<>();
 
+    @OneToMany(mappedBy = "storeproduct", fetch = FetchType.LAZY)
+    private List<StoreProduct> storeProductList = new ArrayList<>();
 }

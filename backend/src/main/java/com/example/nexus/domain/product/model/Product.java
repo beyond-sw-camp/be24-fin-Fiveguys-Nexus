@@ -2,7 +2,6 @@ package com.example.nexus.domain.product.model;
 
 
 import com.example.nexus.domain.category.model.Category;
-
 import com.example.nexus.domain.menu.model.MenuItem;
 
 import jakarta.persistence.*;
@@ -53,6 +52,6 @@ public class Product {
     private Category category;
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
-    private List<MenuItem> menuItemList = new ArrayList<>();;
+    private List<MenuItem> menuItemList = new ArrayList<>();
 
 }

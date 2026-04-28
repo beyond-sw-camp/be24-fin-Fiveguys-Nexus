@@ -14,9 +14,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
-    private final LoginFilter loginFilter;
     private final AuthenticationConfiguration configuration;
     private final JwtFilter jwtFilter;
+    private final LoginFilter loginFilter;
+
 
     @Bean
     public SecurityFilterChain configure(HttpSecurity http) throws Exception {

@@ -7,6 +7,13 @@ public class OrdersItemDto {
 
     @Getter
     @Builder
+    public static class OrdersItemReq {
+        private Integer count;
+        private Long productIdx;
+    }
+
+    @Getter
+    @Builder
     public static class OrdersItemRes {
         private Long idx;
         private Integer count;

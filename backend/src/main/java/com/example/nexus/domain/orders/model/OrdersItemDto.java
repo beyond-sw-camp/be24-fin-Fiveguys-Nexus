@@ -18,14 +18,16 @@ public class OrdersItemDto {
         private Long idx;
         private Integer count;
         private Long orderIdx;
-        private Long productIdx;
+        private String productName;
+        private Integer unitPrice;
 
         public static OrdersItemRes from(OrdersItem entity) {
             return OrdersItemRes.builder()
                     .idx(entity.getIdx())
                     .count(entity.getCount())
                     .orderIdx(entity.getOrders().getIdx())
-                    .productIdx(entity.getProduct().getIdx())
+                    .productName(entity.getProduct().getName())
+                    .unitPrice(entity.getProduct().getUnitPrice())
                     .build();
         }
     }

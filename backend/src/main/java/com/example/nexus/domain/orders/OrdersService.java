@@ -27,9 +27,9 @@ public class OrdersService {
     private final StoreRepository storeRepository;
     private final ProductRepository productRepository;
 
-    public List<OrdersDto.OrdersRes> findAllAuto() {
+    public List<OrdersDto.OrderListRes> findAllAuto() {
         return ordersRepository.findAllByOrdersTypeAndOrdersStatus(OrdersType.AUTO, OrdersStatus.WAITING).stream()
-                .map(OrdersDto.OrdersRes::from)
+                .map(OrdersDto.OrderListRes::from)
                 .toList();
     }
 

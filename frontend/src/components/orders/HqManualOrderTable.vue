@@ -1,3 +1,13 @@
+<script setup>
+import { statusClass, formatPrice } from './orderUtils'
+
+defineProps({
+  orders: { type: Array, required: true },
+})
+
+defineEmits(['open-detail'])
+</script>
+
 <template>
   <div class="space-y-5">
     <div>
@@ -33,13 +43,3 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { statusClass, formatPrice } from './orderUtils'
-
-defineProps({
-  orders: { type: Array, required: true },
-})
-
-defineEmits(['open-detail'])
-</script>

@@ -1,3 +1,31 @@
+<script setup>
+import { ref, computed } from 'vue'
+import { statusClass, formatPrice } from './orderUtils'
+
+const props = defineProps({
+  orders: { type: Array, required: true },
+})
+
+defineEmits(['open-detail'])
+
+const filterType = ref('')
+const dateFrom = ref('')
+const dateTo = ref('')
+const search = ref('')
+
+const filteredHistory = computed(() =>
+  props.orders.filter((h) => {
+    if (filterType.value && h.type !== filterType.value) return false
+    const day = h.date.slice(0, 10)
+    if (dateFrom.value && day < dateFrom.value) return false
+    if (dateTo.value && day > dateTo.value) return false
+    const q = search.value.trim()
+    if (q && !h.id.includes(q) && !h.store.includes(q) && !h.items.some(i => i.product.includes(q))) return false
+    return true
+  }),
+)
+</script>
+
 <template>
   <div class="space-y-3">
     <div class="bg-white border border-gray-200 rounded-lg px-5 py-4 flex flex-wrap gap-5 items-end">
@@ -67,31 +95,3 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref, computed } from 'vue'
-import { statusClass, formatPrice } from './orderUtils'
-
-const props = defineProps({
-  orders: { type: Array, required: true },
-})
-
-defineEmits(['open-detail'])
-
-const filterType = ref('')
-const dateFrom = ref('')
-const dateTo = ref('')
-const search = ref('')
-
-const filteredHistory = computed(() =>
-  props.orders.filter((h) => {
-    if (filterType.value && h.type !== filterType.value) return false
-    const day = h.date.slice(0, 10)
-    if (dateFrom.value && day < dateFrom.value) return false
-    if (dateTo.value && day > dateTo.value) return false
-    const q = search.value.trim()
-    if (q && !h.id.includes(q) && !h.store.includes(q) && !h.items.some(i => i.product.includes(q))) return false
-    return true
-  }),
-)
-</script>

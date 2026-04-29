@@ -1,3 +1,13 @@
+<script setup>
+import { formatPrice } from './orderUtils'
+
+defineProps({
+  orders: { type: Array, required: true },
+})
+
+defineEmits(['open-detail', 'approve', 'reject'])
+</script>
+
 <template>
   <div class="space-y-4">
     <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
@@ -55,13 +65,3 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { formatPrice } from './orderUtils'
-
-defineProps({
-  orders: { type: Array, required: true },
-})
-
-defineEmits(['open-detail', 'approve', 'reject'])
-</script>

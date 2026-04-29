@@ -1,3 +1,39 @@
+<script setup>
+import { reactive } from 'vue'
+import { Plus } from 'lucide-vue-next'
+import { formatPrice, PRODUCT_UNIT, productPrices } from './orderUtils'
+
+defineProps({
+  visible: { type: Boolean, required: true },
+})
+
+const emit = defineEmits(['close', 'submit'])
+
+const form = reactive({ store: '', items: [] })
+
+function addItem() {
+  form.items.push({ product: '', qty: 1, unitPrice: 0 })
+}
+
+function submit() {
+  if (!form.store || form.items.length === 0) {
+    alert('매장과 품목을 입력해주세요.')
+    return
+  }
+  const validItems = form.items.filter(i => i.product)
+  if (validItems.length === 0) {
+    alert('품목을 선택해주세요.')
+    return
+  }
+  emit('submit', {
+    store: form.store,
+    items: validItems.map(i => ({ product: i.product, qty: i.qty, unitPrice: productPrices[i.product] ?? 0 })),
+  })
+  form.store = ''
+  form.items = []
+}
+</script>
+
 <template>
   <div v-if="visible" class="fixed inset-0 z-50 flex items-center justify-center">
     <div class="absolute inset-0 bg-black/40" @click="$emit('close')"></div>
@@ -68,39 +104,3 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { reactive } from 'vue'
-import { Plus } from 'lucide-vue-next'
-import { formatPrice, PRODUCT_UNIT, productPrices } from './orderUtils'
-
-defineProps({
-  visible: { type: Boolean, required: true },
-})
-
-const emit = defineEmits(['close', 'submit'])
-
-const form = reactive({ store: '', items: [] })
-
-function addItem() {
-  form.items.push({ product: '', qty: 1, unitPrice: 0 })
-}
-
-function submit() {
-  if (!form.store || form.items.length === 0) {
-    alert('매장과 품목을 입력해주세요.')
-    return
-  }
-  const validItems = form.items.filter(i => i.product)
-  if (validItems.length === 0) {
-    alert('품목을 선택해주세요.')
-    return
-  }
-  emit('submit', {
-    store: form.store,
-    items: validItems.map(i => ({ product: i.product, qty: i.qty, unitPrice: productPrices[i.product] ?? 0 })),
-  })
-  form.store = ''
-  form.items = []
-}
-</script>

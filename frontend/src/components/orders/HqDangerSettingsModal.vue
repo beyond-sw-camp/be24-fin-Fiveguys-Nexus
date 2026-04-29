@@ -1,3 +1,18 @@
+<script setup>
+import { ref } from 'vue'
+
+const props = defineProps({
+  visible: { type: Boolean, required: true },
+  initThreshold: { type: Number, default: 200 },
+  initMonths: { type: Number, default: 3 },
+})
+
+defineEmits(['close', 'save'])
+
+const threshold = ref(props.initThreshold)
+const months = ref(props.initMonths)
+</script>
+
 <template>
   <div v-if="visible" class="fixed inset-0 z-50 flex items-center justify-center">
     <div class="absolute inset-0 bg-black/40" @click="$emit('close')"></div>
@@ -42,18 +57,3 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref } from 'vue'
-
-const props = defineProps({
-  visible: { type: Boolean, required: true },
-  initThreshold: { type: Number, default: 200 },
-  initMonths: { type: Number, default: 3 },
-})
-
-defineEmits(['close', 'save'])
-
-const threshold = ref(props.initThreshold)
-const months = ref(props.initMonths)
-</script>

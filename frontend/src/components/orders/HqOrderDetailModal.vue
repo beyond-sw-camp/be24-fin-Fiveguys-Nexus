@@ -1,3 +1,13 @@
+<script setup>
+import { statusClass, formatPrice } from './orderUtils'
+
+defineProps({
+  order: { type: Object, default: null },
+})
+
+defineEmits(['close'])
+</script>
+
 <template>
   <div v-if="order" class="fixed inset-0 z-50 flex items-center justify-center">
     <div class="absolute inset-0 bg-black/40" @click="$emit('close')"></div>
@@ -107,13 +117,3 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { statusClass, formatPrice } from './orderUtils'
-
-defineProps({
-  order: { type: Object, default: null },
-})
-
-defineEmits(['close'])
-</script>

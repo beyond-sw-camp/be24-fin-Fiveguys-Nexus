@@ -98,7 +98,9 @@ async function fetchStoreInventory() {
   try {
     const { data } = await getStoreInventoryByStore(selectedStoreIdx.value)
     const list = Array.isArray(data) ? data : []
-    items.value = list.map(mapInventoryRow)
+    items.value = list
+      .filter((row) => row && row.idx !== null && row.idx !== undefined)
+      .map(mapInventoryRow)
   } catch (error) {
     console.error('Failed to fetch store inventory:', error)
     items.value = []
@@ -137,6 +139,11 @@ watch([filterRegion, storeSearch], () => {
     selectedStoreIdx.value = ''
     items.value = []
   }
+})
+
+watch(selectedStoreIdx, (value) => {
+  if (!value) return
+  fetchStoreInventory()
 })
 
 function getStatus(item) {
@@ -193,7 +200,7 @@ onMounted(() => {
       v-model:selected-store-idx="selectedStoreIdx"
       :visible-stores="visibleStores"
       :list-loading="listLoading"
-      @fetch-store-inventory="fetchStoreInventory"
+      @submit="fetchStoreInventory"
     />
 
     <InventoryStatusFilters v-model="filterStatus" :status-filters="statusFilters" />

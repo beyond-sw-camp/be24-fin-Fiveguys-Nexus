@@ -26,12 +26,11 @@ const emit = defineEmits([
   'update:filterRegion',
   'update:storeSearch',
   'update:selectedStoreIdx',
-  'fetch-store-inventory',
+  'submit',
 ])
 
 const onStoreChange = (event) => {
   emit('update:selectedStoreIdx', event.target.value)
-  emit('fetch-store-inventory')
 }
 </script>
 
@@ -72,7 +71,7 @@ const onStoreChange = (event) => {
       type="button"
       class="px-3 py-2 rounded-lg border border-[#F37321] text-sm font-semibold text-[#F37321] hover:bg-[#F37321]/5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
       :disabled="!props.selectedStoreIdx || props.listLoading"
-      @click="emit('fetch-store-inventory')"
+      @click="emit('submit')"
     >
       {{ props.listLoading ? '조회 중...' : '재고 조회' }}
     </button>

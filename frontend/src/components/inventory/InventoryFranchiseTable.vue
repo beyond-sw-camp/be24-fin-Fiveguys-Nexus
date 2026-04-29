@@ -50,7 +50,7 @@ const handleRowKeydown = (event, item) => {
       <tbody class="divide-y divide-gray-100">
         <tr
           v-for="item in props.items"
-          :key="item.idx ?? `${item.code}-${item.manufacturedDate ?? 'none'}`"
+          :key="item.idx"
           role="button"
           tabindex="0"
           class="hover:bg-gray-50/50 transition-colors cursor-pointer"

@@ -4,15 +4,12 @@ package com.example.nexus.domain.product.model;
 import com.example.nexus.domain.category.model.Category;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Table(name = "product")
 @Getter
-@Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Product {
@@ -23,10 +20,10 @@ public class Product {
     private Long idx;
 
     @Column(name = "product_name", nullable = false)
-    private String name;
+    private String productName;
 
     @Column(name = "product_unit", nullable = false)
-    private String unit;
+    private String productUnit;
 
     @Column(name = "max_stock", nullable = false)
     private Integer maxStock;
@@ -37,14 +34,23 @@ public class Product {
     @Column(name = "unit_price", nullable = false)
     private Integer unitPrice;
 
-    @Column(name = "dager_days", nullable = false)
+    @Column(name = "danger_days", nullable = false)
     private String dangerDays;
 
-    @Column(name = "is_delete", nullable = false)
-    private Boolean isDelete;
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_idx", nullable = false)
     private Category category;
 
+    public void update(String productName, String productUnit, Integer maxStock, Integer minStock, Integer unitPrice, String dangerDays, Category category) {
+        this.productName = productName;
+        this.productUnit = productUnit;
+        this.maxStock = maxStock;
+        this.minStock = minStock;
+        this.unitPrice = unitPrice;
+        this.dangerDays = dangerDays;
+        this.category = category;
+    }
 }

@@ -70,12 +70,27 @@ const abnormalOrders = ref([
     ] },
 ])
 
-const pendingManualOrders = ref([
-  { id: 'MAN-20260420-001', store: '이탈리안 키친', date: '2026-04-20 09:10', status: '확정',
-    items: [{ product: '한우 등심', qty: 10, unitPrice: 85000 }, { product: '버터', qty: 5, unitPrice: 9000 }] },
-  { id: 'MAN-20260419-002', store: '일식 스시바',   date: '2026-04-19 14:30', status: '배송중',
-    items: [{ product: '올리브오일', qty: 8, unitPrice: 12000 }, { product: '간장', qty: 5, unitPrice: 4000 }, { product: '생수', qty: 10, unitPrice: 8000 }] },
-])
+const manualOrders = ref([])
+
+async function fetchManualOrders() {
+  try {
+    const res = await ordersApi.getManualOrders()
+    manualOrders.value = res.data.result.map(o => ({
+      id: o.idx,
+      store: o.storeName,
+      date: o.createdAt?.replace('T', ' ').slice(0, 16) ?? '-',
+      price: o.price,
+      status: o.ordersStatus === 'WAITING' ? '제안중' : o.ordersStatus === 'APPROVE' ? '확정' : '거절',
+      items: (o.ordersItemList ?? []).map(i => ({
+        product: i.productName,
+        qty: i.count,
+        unitPrice: i.unitPrice,
+      })),
+    }))
+  } catch (e) {
+    console.error('수동 발주 목록 조회 실패', e)
+  }
+}
 
 // Tab routing
 function applyOrderRouteQuery() {

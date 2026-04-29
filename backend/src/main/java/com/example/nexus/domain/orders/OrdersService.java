@@ -118,14 +118,20 @@ public class OrdersService {
     public void approve(Long ordersIdx) {
         Orders orders = ordersRepository.findById(ordersIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
-        orders.approveDangerOrder();
+        if (orders.isDanger()) {
+            orders.clearDanger();
+        }
+        orders.approve();
     }
 
     @Transactional
     public void reject(Long ordersIdx) {
         Orders orders = ordersRepository.findById(ordersIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
-        orders.rejectDangerOrder();
+        if (orders.isDanger()) {
+            orders.clearDanger();
+        }
+        orders.reject();
     }
 
     public List<OrdersDto.OrdersRes> findByUserIdx(Long userIdx) {

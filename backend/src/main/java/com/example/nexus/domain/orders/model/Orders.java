@@ -50,13 +50,15 @@ public class Orders {
     @OneToOne(mappedBy = "orders", fetch = FetchType.LAZY)
     private Delivery delivery;
 
-    public void approveDangerOrder() {
-        this.isDanger = false;
+    public void approve() {
         this.ordersStatus = OrdersStatus.APPROVE;
     }
 
-    public void rejectDangerOrder() {
-        this.isDanger = false;
+    public void reject() {
         this.ordersStatus = OrdersStatus.REJECT;
+    }
+
+    public void clearDanger() {
+        this.isDanger = false;
     }
 }

@@ -103,6 +103,7 @@ function applyOrderRouteQuery() {
 onMounted(() => {
   applyOrderRouteQuery()
   fetchAutoOrders()
+  fetchManualOrders()
 })
 
 function setOrderViewTab(id) {

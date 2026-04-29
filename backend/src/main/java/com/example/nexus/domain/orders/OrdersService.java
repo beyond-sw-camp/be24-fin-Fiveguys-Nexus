@@ -118,7 +118,7 @@ public class OrdersService {
     public void approve(Long ordersIdx) {
         Orders orders = ordersRepository.findById(ordersIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
-        orders.approveDanger();
+        orders.approveDangerOrder();
     }
 
     public List<OrdersDto.OrdersRes> findByUserIdx(Long userIdx) {

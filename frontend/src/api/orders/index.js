@@ -20,10 +20,15 @@ const updateDangerSettings = (data) => {
   return api.put('/orders/danger', data)
 }
 
+const createManualOrder = (data) => {
+  return api.post('/orders/reg/manual', data)
+}
+
 export default {
   getManualOrders,
   getAutoOrders,
   getOrderDetail,
   getDangerSettings,
   updateDangerSettings,
+  createManualOrder,
 }

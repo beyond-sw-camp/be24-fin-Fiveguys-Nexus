@@ -162,19 +162,17 @@ function rejectAbnormal(o)  { o.processed = true; alert(`${o.store} 발주 반�
 // Manual order modal
 const showManualForm = ref(false)
 
-function submitManualOrder({ store, items }) {
-  const now = new Date().toISOString().slice(0, 16).replace('T', ' ')
-  orderHistory.value.unshift({
-    id: `ORD-${Date.now()}`,
-    type: '수동',
-    store,
-    date: now,
-    status: '확정',
-    items,
-  })
-  alert('발주가 생성되었습니다.')
-  showManualForm.value = false
-  setOrderViewTab('history')
+async function submitManualOrder(data) {
+  try {
+    await ordersApi.createManualOrder(data)
+    alert('발주가 생성되었습니다.')
+    showManualForm.value = false
+    await fetchManualOrders()
+    setOrderViewTab('manual')
+  } catch (e) {
+    console.error('수동 발주 생성 실패', e)
+    alert('발주 생성에 실패했습니다.')
+  }
 }
 </script>
 

@@ -26,12 +26,12 @@ public class StoreController {
 
     // [본사] keyword로 가맹점 검색
     @GetMapping("/search")
-    public ResponseEntity<List<StoreDto.StoreSearchRes>> searchStore(@RequestParam(value = "keyword", required = false, defaultValue = "") String keyword) {
+    public ResponseEntity searchStore(@RequestParam(value = "keyword", required = false, defaultValue = "") String keyword) {
         StoreDto.StoreSearchReq reqDto = new StoreDto.StoreSearchReq(keyword);
 
         List<StoreDto.StoreSearchRes> result = storeService.searchByStoreName(reqDto);
 
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(BaseResponse.success(result));
     }
 
     @GetMapping("/list")

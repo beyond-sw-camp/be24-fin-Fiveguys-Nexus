@@ -20,6 +20,7 @@ public class StoreDto {
         private String business;
         private LocalDateTime createdAt;
         private LocalDateTime closedAt;
+        private String status;
 
 
         public static StoreDto.StoreListRes from(Store entity){
@@ -32,8 +33,8 @@ public class StoreDto {
                     .business(entity.getBusiness())
                     .createdAt(entity.getCreatedAt())
                     .closedAt(entity.getClosedAt())
+                    .status(entity.isDeleted() ? "폐점":"입점")
                     .build();
         }
-
     }
 }

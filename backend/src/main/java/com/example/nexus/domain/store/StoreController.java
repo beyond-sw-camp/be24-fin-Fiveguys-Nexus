@@ -7,8 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.example.nexus.common.model.BaseResponse;
 import com.example.nexus.domain.store.model.StoreDto;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,8 +14,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
-
-import java.util.List;
 
 @RequestMapping("/store")
 @RestController
@@ -35,6 +31,7 @@ public class StoreController {
         return ResponseEntity.ok(result);
     }
 
+    // 가맹점 목록 조회
     @GetMapping("/list")
     public ResponseEntity list(){
         List<StoreDto.StoreListRes> result = storeService.list();

@@ -3,15 +3,10 @@ package com.example.nexus.domain.store;
 import com.example.nexus.common.model.BaseResponse;
 import com.example.nexus.domain.store.model.StoreDto;
 import com.example.nexus.domain.store.model.StoreInventoryDto;
-import com.example.nexus.domain.user.model.AuthUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-
 import java.util.List;
-import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @RequestMapping("/store")
 @RestController
@@ -28,10 +23,18 @@ public class StoreController {
         return ResponseEntity.ok(result);
     }
 
+    // 가맹점 목록 조회
     @GetMapping("/list")
-    public ResponseEntity<?> listStore() {
-        List<StoreDto.StoreListRes> result = storeService.list();
+    public ResponseEntity storeList(){
+        List<StoreDto.StoreListRes> result = storeService.storeList();
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
 
+
+    // 가맹점 목록 상세 조회
+    @GetMapping("/detail/list/{storeIdx}")
+    public ResponseEntity storeDetailList(@PathVariable Long storeIdx){
+        StoreDto.StoreDetailListRes result = storeService.storeDetailList(storeIdx);
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 }

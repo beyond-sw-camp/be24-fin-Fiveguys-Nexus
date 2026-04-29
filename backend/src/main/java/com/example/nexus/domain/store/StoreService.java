@@ -33,8 +33,8 @@ public class StoreService {
         return result;
     }
 
-    public StoreDto.StoreDetailListRes storeDetailList(Long idx) {
-        Optional<Store> res = storeRepository.findById(idx);
+    public StoreDto.StoreDetailListRes storeDetailList(Long storeIdx) {
+        Optional<Store> res = storeRepository.findById(storeIdx);
 
         if(res.isPresent()){
             Store data = res.get();

@@ -24,7 +24,7 @@ public class OrdersController {
 
     @GetMapping("/list/auto")
     public ResponseEntity autoList() {
-        List<OrdersDto.OrdersRes> result = orderService.findAllAuto();
+        List<OrdersDto.OrderListRes> result = orderService.findAllAuto();
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 

@@ -207,7 +207,7 @@ const storeMenus = [
 
 const currentMenus = computed(() => {
   if (auth.isAdmin)      return adminMenus
-  if (auth.isStoreOwner) return storeMenus
+  if (auth.isStore) return storeMenus
   return []
 })
 
@@ -257,50 +257,50 @@ function isGroupOpen(menu) {
 // ── 역할별 스타일 ─────────────────────────────────────────
 const footerRoleLabel = computed(() => {
   if (auth.isAdmin)      return '본사 관리자'
-  if (auth.isStoreOwner) return auth.user?.storeName ? `${auth.user.storeName} 점주` : '가맹점 점주'
+  if (auth.isStore) return auth.user?.storeName ? `${auth.user.storeName} 점주` : '가맹점 점주'
   return '사용자'
 })
 
 const roleLabelShort = computed(() => {
   if (auth.isAdmin)      return '본사 관리자'
-  if (auth.isStoreOwner) return auth.user?.storeName
+  if (auth.isStore) return auth.user?.storeName
   return ''
 })
 
 const footerRoleTextClass = computed(() => {
   if (auth.isAdmin)      return 'text-[#F37321]'
-  if (auth.isStoreOwner) return 'text-blue-600'
+  if (auth.isStore) return 'text-blue-600'
   return 'text-gray-500'
 })
 
 const footerRoleDotClass = computed(() => {
   if (auth.isAdmin)      return 'bg-[#F37321]'
-  if (auth.isStoreOwner) return 'bg-blue-500'
+  if (auth.isStore) return 'bg-blue-500'
   return 'bg-gray-400'
 })
 
 const logoBorderClass = computed(() => {
   if (auth.isAdmin)      return 'border-[#F37321]'
-  if (auth.isStoreOwner) return 'border-blue-500'
+  if (auth.isStore) return 'border-blue-500'
   return 'border-gray-200'
 })
 
 const activeMenuClass = computed(() => {
   if (auth.isAdmin)      return 'text-[#F37321] bg-orange-50/70 font-semibold'
-  if (auth.isStoreOwner) return 'text-blue-600 bg-blue-50/70 font-semibold'
+  if (auth.isStore) return 'text-blue-600 bg-blue-50/70 font-semibold'
   return 'text-gray-900 bg-gray-100 font-semibold'
 })
 
 
 const activeIconClass = computed(() => {
   if (auth.isAdmin)      return 'text-[#F37321]'
-  if (auth.isStoreOwner) return 'text-blue-500'
+  if (auth.isStore) return 'text-blue-500'
   return 'text-gray-700'
 })
 
 const avatarColorClass = computed(() => {
   if (auth.isAdmin)      return 'text-[#F37321]'
-  if (auth.isStoreOwner) return 'text-blue-500'
+  if (auth.isStore) return 'text-blue-500'
   return 'text-gray-500'
 })
 

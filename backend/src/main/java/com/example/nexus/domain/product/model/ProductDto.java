@@ -43,5 +43,30 @@ public class ProductDto {
         }
     }
 
+    @Getter
+    @Builder
+    public static class ListRes {
+        private Long idx;
+        private String productName;
+        private String categoryName;
+        private String productUnit;
+        private Integer maxStock;
+        private Integer minStock;
+        private Integer unitPrice;
+        private String dangerDays;
 
+
+        public static ListRes from(Product entity) {
+            return ListRes.builder()
+                    .idx(entity.getIdx())
+                    .productName(entity.getProductName())
+                    .categoryName(entity.getCategory().getCategoryName())
+                    .productUnit(entity.getProductUnit())
+                    .maxStock(entity.getMaxStock())
+                    .minStock(entity.getMinStock())
+                    .unitPrice(entity.getUnitPrice())
+                    .dangerDays(entity.getDangerDays())
+                    .build();
+        }
+    }
 }

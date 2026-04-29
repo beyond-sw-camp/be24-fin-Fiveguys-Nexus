@@ -34,9 +34,9 @@ public class OrdersController {
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 
-    @PostMapping
-    public ResponseEntity create(@RequestBody OrdersDto.OrdersReq req) {
-        orderService.create(req);
+    @PostMapping("/manual")
+    public ResponseEntity createManualOrder(@RequestBody OrdersDto.OrdersReq req) {
+        orderService.createManualOrder(req);
         return ResponseEntity.ok(BaseResponse.success("create success"));
     }
 

@@ -40,7 +40,7 @@ public class OrdersService {
     }
 
     @Transactional
-    public void create(OrdersDto.OrdersReq req) {
+    public void createManualOrder(OrdersDto.OrdersReq req) {
         // 0. 주문 아이템 리스트 검증
         if (req.getOrdersItemList() == null || req.getOrdersItemList().isEmpty()) {
             throw new BaseException(BaseResponseStatus.REQUEST_ERROR);

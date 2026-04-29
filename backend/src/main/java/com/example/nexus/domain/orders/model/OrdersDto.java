@@ -46,4 +46,24 @@ public class OrdersDto {
                     .build();
         }
     }
+
+    @Builder
+    @Getter
+    public static class OrderListRes {
+        private Long idx;
+        private Long price;
+        private OrdersStatus ordersStatus;
+        private LocalDateTime createdAt;
+        private String storeName;
+
+        public static OrderListRes from(Orders entity) {
+            return OrderListRes.builder()
+                    .idx(entity.getIdx())
+                    .price(entity.getPrice())
+                    .ordersStatus(entity.getOrdersStatus())
+                    .createdAt(entity.getCreatedAt())
+                    .storeName(entity.getStore().getStoreName())
+                    .build();
+        }
+    }
 }

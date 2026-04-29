@@ -1,58 +1,7 @@
-<template>
-  <div class="p-5 space-y-4">
-    <!-- Header -->
-    <div class="flex justify-between items-start gap-4">
-      <div class="min-w-0 flex-1">
-        <h1 class="text-xl font-bold text-gray-900 tracking-tight">발주 관리</h1>
-      </div>
-      <div class="flex gap-2">
-        <button @click="showSettings = true"
-          class="px-4 py-2 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 flex items-center gap-2 cursor-pointer">
-          <Settings class="w-4 h-4" /> 이상 발주 기준 설정
-        </button>
-        <button @click="showManualForm = true"
-          class="bg-[#F37321] text-white px-4 py-2 text-sm font-semibold rounded hover:bg-[#e0661d] transition-colors flex items-center gap-2 cursor-pointer">
-          <Plus class="w-4 h-4" /> 수동 발주 생성
-        </button>
-      </div>
-    </div>
-
-    <!-- Tabs -->
-    <div class="flex border-b border-gray-200">
-      <button v-for="tab in tabs" :key="tab.id"
-        @click="setOrderViewTab(tab.id)"
-        class="px-5 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors cursor-pointer"
-        :class="activeTab === tab.id
-          ? 'border-[#F37321] text-[#F37321]'
-          : 'border-transparent text-gray-500 hover:text-gray-700'">
-        {{ tab.label }}
-        <span v-if="tab.badge"
-          class="ml-1.5 text-xs font-bold px-1.5 py-0.5 rounded"
-          :class="activeTab === tab.id ? 'bg-orange-100 text-[#F37321]' : 'bg-gray-100 text-gray-500'">
-          {{ tab.badge }}
-        </span>
-      </button>
-    </div>
-
-    <!-- Tab Contents -->
-    <HqAutoOrderTable v-if="activeTab === 'auto'" :orders="autoOrders" @open-detail="openDetail" />
-    <HqManualOrderTable v-if="activeTab === 'manual'" :orders="pendingManualOrders" @open-detail="openDetail" />
-    <HqOrderHistoryTable v-if="activeTab === 'history'" :orders="orderHistory" @open-detail="openDetail" />
-    <HqAbnormalOrderTable v-if="activeTab === 'abnormal'" :orders="abnormalOrders"
-      @open-detail="openDetail" @approve="approveAbnormal" @reject="rejectAbnormal" />
-
-    <!-- Modals -->
-    <HqManualOrderModal :visible="showManualForm" @close="showManualForm = false" @submit="submitManualOrder" />
-    <HqOrderDetailModal :order="selectedOrder" @close="selectedOrder = null" />
-    <HqDangerSettingsModal :visible="showSettings" @close="showSettings = false" @save="saveDangerSettings" />
-  </div>
-</template>
-
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Plus, Settings } from 'lucide-vue-next'
-import { productPrices } from '@/components/orders/orderUtils'
 import ordersApi from '@/api/orders'
 import HqAutoOrderTable from '@/components/orders/HqAutoOrderTable.vue'
 import HqManualOrderTable from '@/components/orders/HqManualOrderTable.vue'
@@ -199,3 +148,53 @@ function submitManualOrder({ store, items }) {
   setOrderViewTab('history')
 }
 </script>
+
+<template>
+  <div class="p-5 space-y-4">
+    <!-- Header -->
+    <div class="flex justify-between items-start gap-4">
+      <div class="min-w-0 flex-1">
+        <h1 class="text-xl font-bold text-gray-900 tracking-tight">발주 관리</h1>
+      </div>
+      <div class="flex gap-2">
+        <button @click="showSettings = true"
+          class="px-4 py-2 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 flex items-center gap-2 cursor-pointer">
+          <Settings class="w-4 h-4" /> 이상 발주 기준 설정
+        </button>
+        <button @click="showManualForm = true"
+          class="bg-[#F37321] text-white px-4 py-2 text-sm font-semibold rounded hover:bg-[#e0661d] transition-colors flex items-center gap-2 cursor-pointer">
+          <Plus class="w-4 h-4" /> 수동 발주 생성
+        </button>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex border-b border-gray-200">
+      <button v-for="tab in tabs" :key="tab.id"
+        @click="setOrderViewTab(tab.id)"
+        class="px-5 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors cursor-pointer"
+        :class="activeTab === tab.id
+          ? 'border-[#F37321] text-[#F37321]'
+          : 'border-transparent text-gray-500 hover:text-gray-700'">
+        {{ tab.label }}
+        <span v-if="tab.badge"
+          class="ml-1.5 text-xs font-bold px-1.5 py-0.5 rounded"
+          :class="activeTab === tab.id ? 'bg-orange-100 text-[#F37321]' : 'bg-gray-100 text-gray-500'">
+          {{ tab.badge }}
+        </span>
+      </button>
+    </div>
+
+    <!-- Tab Contents -->
+    <HqAutoOrderTable v-if="activeTab === 'auto'" :orders="autoOrders" @open-detail="openDetail" />
+    <HqManualOrderTable v-if="activeTab === 'manual'" :orders="pendingManualOrders" @open-detail="openDetail" />
+    <HqOrderHistoryTable v-if="activeTab === 'history'" :orders="orderHistory" @open-detail="openDetail" />
+    <HqAbnormalOrderTable v-if="activeTab === 'abnormal'" :orders="abnormalOrders"
+      @open-detail="openDetail" @approve="approveAbnormal" @reject="rejectAbnormal" />
+
+    <!-- Modals -->
+    <HqManualOrderModal :visible="showManualForm" @close="showManualForm = false" @submit="submitManualOrder" />
+    <HqOrderDetailModal :order="selectedOrder" @close="selectedOrder = null" />
+    <HqDangerSettingsModal :visible="showSettings" @close="showSettings = false" @save="saveDangerSettings" />
+  </div>
+</template>

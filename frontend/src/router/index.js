@@ -61,7 +61,7 @@ const router = createRouter({
     {
       path: '/order',
       name: 'order',
-      component: () => import('@/views/OrderManageView.vue'),
+      component: () => import('@/views/hq/HqOrderManageView.vue'),
       meta: { role: 'ADMIN' },
     },
     { path: '/inventory', redirect: '/inventory/head-office' },

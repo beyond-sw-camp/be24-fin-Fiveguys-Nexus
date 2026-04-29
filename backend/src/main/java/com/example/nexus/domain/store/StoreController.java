@@ -3,15 +3,11 @@ package com.example.nexus.domain.store;
 import com.example.nexus.common.model.BaseResponse;
 import com.example.nexus.domain.store.model.StoreDto;
 import com.example.nexus.domain.store.model.StoreInventoryDto;
-import com.example.nexus.domain.user.model.AuthUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @RequestMapping("/store")
 @RestController
@@ -24,6 +20,16 @@ public class StoreController {
     public ResponseEntity<List<StoreInventoryDto.ListRes>> listByStoreIdx(@PathVariable Long storeIdx) {
 
         List<StoreInventoryDto.ListRes> result = storeService.listByStoreIdx(storeIdx);
+
+        return ResponseEntity.ok(result);
+    }
+
+    // [본사] 가맹점명 검색
+    @GetMapping("/search")
+    public ResponseEntity<List<StoreDto.StoreSearchRes>> searchStore(@RequestParam(value = "keyword", required = false, defaultValue = "") String keyword) {
+        StoreDto.StoreSearchReq reqDto = new StoreDto.StoreSearchReq(keyword);
+
+        List<StoreDto.StoreSearchRes> result = storeService.searchByStoreName(reqDto);
 
         return ResponseEntity.ok(result);
     }

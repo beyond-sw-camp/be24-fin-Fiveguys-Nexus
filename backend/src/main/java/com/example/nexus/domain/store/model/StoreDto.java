@@ -1,8 +1,10 @@
 package com.example.nexus.domain.store.model;
 
-import jakarta.persistence.Column;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
@@ -35,5 +37,29 @@ public class StoreDto {
                     .build();
         }
 
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class StoreSearchReq {
+        private String keyword;
+    }
+
+    @Builder
+    @Getter
+    public static class StoreSearchRes {
+        private Long idx;
+        private String storeName;
+        private String address;
+
+        public static StoreSearchRes from(Store entity) {
+            return StoreSearchRes.builder()
+                    .idx(entity.getIdx())
+                    .storeName(entity.getStoreName())
+                    .address(entity.getAddress())
+                    .build();
+        }
     }
 }

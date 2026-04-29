@@ -50,4 +50,10 @@ public class UserDto {
                     .build();
         }
     }
+
+
+    public static class StoreSignupReq {
+        private String email;
+    }
+
 }

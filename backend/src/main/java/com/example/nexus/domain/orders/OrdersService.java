@@ -134,6 +134,23 @@ public class OrdersService {
         orders.reject();
     }
 
+    @Transactional
+    public void addItem(Long ordersIdx, OrdersItemDto.OrdersItemReq req) {
+        Orders orders = ordersRepository.findById(ordersIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        Product product = productRepository.findById(req.getProductIdx())
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        ordersItemRepository.save(OrdersItem.builder()
+                .count(req.getCount())
+                .product(product)
+                .orders(orders)
+                .build());
+
+        orders.updatePrice(orders.getPrice() + (long) product.getUnitPrice() * req.getCount());
+    }
+
     public List<OrdersDto.OrdersRes> findByUserIdx(Long userIdx) {
         Store store = storeRepository.findByUserIdx(userIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));

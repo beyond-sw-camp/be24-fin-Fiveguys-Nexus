@@ -61,4 +61,8 @@ public class Orders {
     public void clearDanger() {
         this.isDanger = false;
     }
+
+    public void updatePrice(Long price) {
+        this.price = price;
+    }
 }

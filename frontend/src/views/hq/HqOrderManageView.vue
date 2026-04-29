@@ -121,6 +121,18 @@ async function openDetail(ordersIdx) {
 
 // Settings modal
 const showSettings = ref(false)
+const dangerSettings = ref({ ratio: null, period: null })
+
+async function openDangerSettings() {
+  try {
+    const res = await ordersApi.getDangerSettings()
+    const s = res.data.result
+    dangerSettings.value = { ratio: s.ratio, period: s.period }
+  } catch (e) {
+    console.error('이상 발주 기준 조회 실패', e)
+  }
+  showSettings.value = true
+}
 
 function saveDangerSettings({ threshold, months }) {
   showSettings.value = false
@@ -157,7 +169,7 @@ function submitManualOrder({ store, items }) {
         <h1 class="text-xl font-bold text-gray-900 tracking-tight">발주 관리</h1>
       </div>
       <div class="flex gap-2">
-        <button @click="showSettings = true"
+        <button @click="openDangerSettings"
           class="px-4 py-2 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 flex items-center gap-2 cursor-pointer">
           <Settings class="w-4 h-4" /> 이상 발주 기준 설정
         </button>
@@ -195,6 +207,6 @@ function submitManualOrder({ store, items }) {
     <!-- Modals -->
     <HqManualOrderModal :visible="showManualForm" @close="showManualForm = false" @submit="submitManualOrder" />
     <HqOrderDetailModal :order="selectedOrder" @close="selectedOrder = null" />
-    <HqDangerSettingsModal :visible="showSettings" @close="showSettings = false" @save="saveDangerSettings" />
+    <HqDangerSettingsModal :visible="showSettings" :init-threshold="dangerSettings.ratio" :init-months="dangerSettings.period" @close="showSettings = false" @save="saveDangerSettings" />
   </div>
 </template>

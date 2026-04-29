@@ -27,8 +27,8 @@ public class UserController {
 
     @PostMapping("/store/signup")
     public ResponseEntity storeSignup(@RequestBody UserDto.StoreSignupReq dto) {
-        
-        return ResponseEntity.ok("성공");
+        UserDto.StoreSignupRes storeSignupRes = userService.storeSignup(dto);
+        return ResponseEntity.ok("임시 비밀번호 : " + storeSignupRes.getPassword());
     }
 
 //    @PostMapping("/login")

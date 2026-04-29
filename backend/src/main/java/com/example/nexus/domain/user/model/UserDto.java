@@ -52,14 +52,38 @@ public class UserDto {
     }
 
     @Getter
+    @Builder
     public static class StoreSignupReq {
         private String email;
+        private String password;
+        private String name;
+
+        public User toEntity() {
+            return User.builder()
+                    .email(this.email)
+                    .userName(this.name)
+                    .password(this.password)
+                    .role(Role.STORE)
+                    .tel("")
+                    .isDeleted(false)
+                    .build();
+        }
     }
 
-
+    @Builder
+    @Getter
     public static class StoreSignupRes {
         private String email;
         private String password;
+        private String name;
+
+        public static StoreSignupRes from(User entity, String password) {
+            return StoreSignupRes.builder()
+                    .email(entity.getEmail())
+                    .password(password)
+                    .name(entity.getUserName())
+                    .build();
+        }
     }
 
 }

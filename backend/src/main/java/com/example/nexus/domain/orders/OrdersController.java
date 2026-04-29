@@ -63,14 +63,14 @@ public class OrdersController {
         return ResponseEntity.ok(BaseResponse.success("update success"));
     }
 
-    @PutMapping("/danger/{ordersIdx}/approve")
-    public ResponseEntity dangerApprove(@PathVariable Long ordersIdx) {
+    @PutMapping("/{ordersIdx}/approve")
+    public ResponseEntity approve(@PathVariable Long ordersIdx) {
         orderService.approve(ordersIdx);
         return ResponseEntity.ok(BaseResponse.success("update success"));
     }
 
-    @PutMapping("/danger/{ordersIdx}/reject")
-    public ResponseEntity dangerReject(@PathVariable Long ordersIdx) {
+    @PutMapping("/{ordersIdx}/reject")
+    public ResponseEntity reject(@PathVariable Long ordersIdx) {
         orderService.reject(ordersIdx);
         return ResponseEntity.ok(BaseResponse.success("update success"));
     }

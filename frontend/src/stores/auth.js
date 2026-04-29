@@ -7,7 +7,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isLoggedIn = computed(() => !!user.value)
   const isAdmin = computed(() => user.value?.role === 'ADMIN')
-  const isStoreOwner = computed(() => user.value?.role === 'STORE_OWNER')
+  const isStore = computed(() => user.value?.role === 'STORE')
 
   const USER_PROFILES = {
     'admin@theventi.co.kr': {
@@ -89,5 +89,5 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('nexus_user')
   }
 
-  return { user, isLoggedIn, isAdmin, isStoreOwner, login, logout }
+  return { user, isLoggedIn, isAdmin, isStore, login, logout }
 })

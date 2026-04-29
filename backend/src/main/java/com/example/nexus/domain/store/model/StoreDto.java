@@ -19,8 +19,6 @@ public class StoreDto {
         private String ownerEmail;
         private String address;
         private String business;
-        private LocalDateTime createdAt;
-        private LocalDateTime closedAt;
         private String status;
 
 
@@ -32,8 +30,6 @@ public class StoreDto {
                     .ownerEmail(entity.getUser().getEmail())
                     .address(entity.getAddress())
                     .business(entity.getBusiness())
-                    .createdAt(entity.getCreatedAt())
-                    .closedAt(entity.getClosedAt())
                     .status(entity.isDeleted() ? "폐점":"입점")
                     .build();
         }

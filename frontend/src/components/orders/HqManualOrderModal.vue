@@ -57,7 +57,29 @@ onMounted(async () => {
 })
 
 function addItem() {
-  form.items.push({ product: '', qty: 1, unitPrice: 0 })
+  form.items.push({ product: null, productKeyword: '', showDropdown: false, qty: 1, unitPrice: 0 })
+}
+
+function filterProducts(item) {
+  if (item.productKeyword.trim().length === 0) {
+    item.showDropdown = false
+    return []
+  }
+  item.showDropdown = true
+  return products.value.filter(p => p.productName.includes(item.productKeyword))
+}
+
+function selectProduct(item, product) {
+  item.product = product.idx
+  item.productKeyword = product.productName
+  item.unitPrice = product.unitPrice
+  item.showDropdown = false
+}
+
+function clearProduct(item) {
+  item.product = null
+  item.productKeyword = ''
+  item.unitPrice = 0
 }
 
 function submit() {
@@ -113,24 +135,28 @@ function submit() {
             </button>
           </div>
           <div v-for="(item, idx) in form.items" :key="idx" class="flex gap-2 items-center">
-            <select v-model="item.product" @change="item.unitPrice = productPrices[item.product] ?? 0"
-              class="flex-1 px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none">
-              <option value="">품목 선택</option>
-              <option>한우 등심</option>
-              <option>올리브오일</option>
-              <option>버터</option>
-              <option>생크림</option>
-              <option>간장</option>
-              <option>양파</option>
-              <option>생수</option>
-            </select>
+            <div class="flex-1 relative">
+              <div v-if="item.product" class="flex items-center justify-between px-3 py-2 rounded border border-[#F37321] bg-orange-50 text-sm">
+                <span class="font-medium text-gray-900">{{ item.productKeyword }}</span>
+                <button @click="clearProduct(item)" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
+              </div>
+              <input v-else v-model="item.productKeyword" @input="filterProducts(item)" placeholder="상품명 검색"
+                class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none" />
+              <ul v-if="item.showDropdown && filterProducts(item).length > 0"
+                class="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded shadow-lg max-h-32 overflow-y-auto">
+                <li v-for="p in filterProducts(item)" :key="p.idx" @click="selectProduct(item, p)"
+                  class="px-3 py-2 text-sm hover:bg-orange-50 cursor-pointer">
+                  {{ p.productName }} <span class="text-gray-400 text-xs">{{ p.productUnit }}</span>
+                </li>
+              </ul>
+            </div>
             <div class="flex items-center gap-1.5">
               <input v-model.number="item.qty" type="number" min="1" placeholder="수량"
                 class="w-20 px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none" />
-              <span class="text-xs text-gray-400 font-medium w-6">{{ PRODUCT_UNIT[item.product] ?? '' }}</span>
+              <span class="text-xs text-gray-400 font-medium w-6">{{ item.product ? products.find(p => p.idx === item.product)?.productUnit : '' }}</span>
             </div>
             <div class="w-28 px-3 py-2 rounded border border-gray-100 bg-gray-50 text-sm text-gray-500 text-right shrink-0">
-              {{ item.product ? formatPrice(productPrices[item.product] ?? 0) : '-' }}
+              {{ item.product ? formatPrice(item.unitPrice) : '-' }}
             </div>
             <button @click="form.items.splice(idx, 1)"
               class="px-3 py-2 text-xs font-semibold rounded border border-red-200 text-red-500 bg-red-50 hover:bg-red-500 hover:text-white hover:cursor-pointer transition-colors shrink-0">

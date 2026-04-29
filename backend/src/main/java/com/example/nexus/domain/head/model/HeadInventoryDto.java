@@ -24,7 +24,7 @@ public class HeadInventoryDto {
                     .status(entity.getStatus())
                     .manufacturedDate(entity.getManufacturedDate())
                     .productIdx(entity.getProduct().getIdx())
-                    .productName(entity.getProduct().getName())
+                    .productName(entity.getProduct().getProductName())
                     .build();
         }
     }

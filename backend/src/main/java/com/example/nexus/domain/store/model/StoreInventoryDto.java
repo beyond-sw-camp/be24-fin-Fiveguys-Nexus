@@ -31,7 +31,7 @@ public class StoreInventoryDto {
                     .storeIdx(entity.getStore().getIdx())
                     .storeName(entity.getStore().getStoreName())
                     .productIdx(entity.getProduct().getIdx())
-                    .productName(entity.getProduct().getName())
+                    .productName(entity.getProduct().getProductName())
                     .minStock(entity.getProduct().getMinStock())
                     .build();
         }

@@ -84,12 +84,8 @@ async function fetchAutoOrders() {
       id: o.idx,
       store: o.storeName,
       date: o.createdAt?.replace('T', ' ').slice(0, 16) ?? '-',
+      price: o.price,
       status: '제안중',
-      items: o.ordersItemList.map(i => ({
-        product: i.productName,
-        qty: i.count,
-        unitPrice: i.unitPrice,
-      })),
     }))
   } catch (e) {
     console.error('자동 발주 목록 조회 실패', e)
@@ -153,8 +149,25 @@ function setOrderViewTab(id) {
 // Detail modal
 const selectedOrder = ref(null)
 
-function openDetail(order) {
-  selectedOrder.value = order
+async function openDetail(ordersIdx) {
+  try {
+    const res = await ordersApi.getOrderDetail(ordersIdx)
+    const o = res.data.result
+    selectedOrder.value = {
+      id: o.idx,
+      type: o.ordersType === 'AUTO' ? '자동' : '수동',
+      store: o.storeName,
+      date: o.createdAt?.replace('T', ' ').slice(0, 16) ?? '-',
+      status: o.ordersStatus === 'WAITING' ? '제안중' : o.ordersStatus === 'APPROVE' ? '확정' : '거절',
+      items: o.ordersItemList.map(i => ({
+        product: i.productName,
+        qty: i.count,
+        unitPrice: i.unitPrice,
+      })),
+    }
+  } catch (e) {
+    console.error('발주 상세 조회 실패', e)
+  }
 }
 
 // Settings modal

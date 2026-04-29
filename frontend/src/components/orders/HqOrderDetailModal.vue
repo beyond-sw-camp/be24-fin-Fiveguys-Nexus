@@ -86,7 +86,11 @@ defineEmits(['close'])
               </tbody>
               <tfoot v-if="order.type !== '이상'" class="bg-gray-50 border-t border-gray-200">
                 <tr>
-                  <td colspan="3" class="px-4 py-2.5 text-right text-xs font-bold text-gray-500">합계</td>
+                  <td class="px-4 py-2.5 text-left text-xs font-bold text-gray-500">합계</td>
+                  <td class="px-4 py-2.5 text-right font-bold text-gray-900">
+                    {{ (order.items ?? []).reduce((s, i) => s + i.qty, 0).toLocaleString() }}
+                  </td>
+                  <td class="px-4 py-2.5"></td>
                   <td class="px-4 py-2.5 text-right font-black text-[#F37321]">
                     {{ formatPrice((order.items ?? []).reduce((s, i) => s + (i.unitPrice ? i.unitPrice * i.qty : 0), 0)) }}
                   </td>

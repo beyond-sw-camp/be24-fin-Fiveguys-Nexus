@@ -33,13 +33,12 @@ public class StoreController {
 
         return ResponseEntity.ok(result);
     }
-  
+
     @GetMapping("/list")
     public ResponseEntity storeList(){
         List<StoreDto.StoreListRes> result = storeService.storeList();
         return ResponseEntity.ok(BaseResponse.success(result));
     }
-
 
     // 가맹점 목록 상세 조회
     @GetMapping("/detail/list/{storeIdx}")

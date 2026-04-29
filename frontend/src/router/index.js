@@ -118,7 +118,7 @@ const router = createRouter({
     {
       path: '/store-order',
       name: 'storeOrder',
-      component: () => import('@/views/store/StoreOrderView.vue'),
+      component: () => import('@/views/store/StoreOrderManageView.vue'),
       meta: { role: 'STORE_OWNER' },
     },
     {

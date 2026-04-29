@@ -25,7 +25,7 @@ defineEmits(['open-detail'])
           </thead>
           <tbody class="divide-y divide-gray-100">
             <tr v-for="o in orders" :key="o.id" class="hover:bg-gray-50/50 transition-colors cursor-pointer"
-              @click="$emit('open-detail', { id: o.id, type: '수동', store: o.store, status: o.status, date: o.date, items: o.items })">
+              @click="$emit('open-detail', o.id)">
               <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ o.id }}</td>
               <td class="px-5 py-3.5 font-semibold text-gray-900">{{ o.store }}</td>
               <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ o.date }}</td>

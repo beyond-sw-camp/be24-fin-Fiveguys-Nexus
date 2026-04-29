@@ -9,6 +9,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ProductService {
@@ -26,4 +29,16 @@ public class ProductService {
         }
         return null;
     }
+
+    @Transactional(readOnly = true)
+    public List<ProductDto.ListRes> findAllProduct() {
+        List<Product> entities = productRepository.findAll();
+        List<ProductDto.ListRes> dtos = new ArrayList<>();
+
+        for (Product entity : entities) {
+            dtos.add(ProductDto.ListRes.from(entity));
+        }
+        return dtos;
+    }
+
 }

@@ -87,7 +87,7 @@ public class OrdersService {
     }
 
     public List<OrdersDto.OrdersRes> findAll() {
-        return ordersRepository.findAll().stream()
+        return ordersRepository.findAllByOrdersStatus(OrdersStatus.APPROVE).stream()
                 .map(OrdersDto.OrdersRes::from)
                 .toList();
     }

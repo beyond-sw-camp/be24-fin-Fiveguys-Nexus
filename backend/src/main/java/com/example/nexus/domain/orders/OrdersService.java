@@ -151,6 +151,17 @@ public class OrdersService {
         orders.updatePrice(orders.getPrice() + (long) product.getUnitPrice() * req.getCount());
     }
 
+    @Transactional
+    public void updateItemCount(Long ordersItemIdx, Integer count) {
+        OrdersItem item = ordersItemRepository.findById(ordersItemIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        Orders orders = item.getOrders();
+        long priceDiff = (long) item.getProduct().getUnitPrice() * (count - item.getCount());
+        item.updateCount(count);
+        orders.updatePrice(orders.getPrice() + priceDiff);
+    }
+
     public List<OrdersDto.OrdersRes> findByUserIdx(Long userIdx) {
         Store store = storeRepository.findByUserIdx(userIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));

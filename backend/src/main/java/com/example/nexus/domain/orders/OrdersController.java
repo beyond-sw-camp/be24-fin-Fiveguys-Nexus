@@ -82,6 +82,12 @@ public class OrdersController {
         return ResponseEntity.ok(BaseResponse.success("create success"));
     }
 
+    @PutMapping("/items/{ordersItemIdx}")
+    public ResponseEntity updateItemCount(@PathVariable Long ordersItemIdx, @RequestBody OrdersItemDto.OrdersItemReq req) {
+        orderService.updateItemCount(ordersItemIdx, req.getCount());
+        return ResponseEntity.ok(BaseResponse.success("update success"));
+    }
+
     @GetMapping("/store/list")
     public ResponseEntity storeList(@AuthenticationPrincipal AuthUserDetails authUserDetails) {
         if (authUserDetails == null) {

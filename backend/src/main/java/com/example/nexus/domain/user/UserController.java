@@ -25,20 +25,20 @@ public class UserController {
         return ResponseEntity.ok("성공");
     }
 
-    @PostMapping("/login")
-    public ResponseEntity login(@RequestBody UserDto.LoginReq dto) {
-        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword(), null);
-
-        Authentication authentication = authenticationManager.authenticate(token);
-        AuthUserDetails user = (AuthUserDetails) authentication.getPrincipal();
-
-        if (user != null) {
-            String jwt = JwtUtil.createToken(user.getIdx(), user.getUsername(), user.getRole().toString());
-            return ResponseEntity.ok().header("Set-Cookie", "CTOKEN=" + jwt + "; Path=/").build();
-        }
-
-        return ResponseEntity.ok("로그인 실패");
-
-    }
+//    @PostMapping("/login")
+//    public ResponseEntity login(@RequestBody UserDto.LoginReq dto) {
+//        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword(), null);
+//
+//        Authentication authentication = authenticationManager.authenticate(token);
+//        AuthUserDetails user = (AuthUserDetails) authentication.getPrincipal();
+//
+//        if (user != null) {
+//            String jwt = JwtUtil.createToken(user.getIdx(), user.getUsername(), user.getRole().toString());
+//            return ResponseEntity.ok().header("Set-Cookie", "CTOKEN=" + jwt + "; Path=/").build();
+//        }
+//
+//        return ResponseEntity.ok("로그인 실패");
+//
+//    }
 
 }

@@ -1,16 +1,19 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 const props = defineProps({
   visible: { type: Boolean, required: true },
-  initThreshold: { type: Number, default: 200 },
-  initMonths: { type: Number, default: 3 },
+  initThreshold: { type: Number, default: null },
+  initMonths: { type: Number, default: null },
 })
 
 defineEmits(['close', 'save'])
 
 const threshold = ref(props.initThreshold)
 const months = ref(props.initMonths)
+
+watch(() => props.initThreshold, (v) => { threshold.value = v })
+watch(() => props.initMonths, (v) => { months.value = v })
 </script>
 
 <template>

@@ -64,11 +64,20 @@ public class OrdersController {
     }
 
     @GetMapping("/store/list")
-    public ResponseEntity storeList(@AuthenticationPrincipal AuthUserDetails userDetails) {
-        if (userDetails == null) {
+    public ResponseEntity storeList(@AuthenticationPrincipal AuthUserDetails authUserDetails) {
+        if (authUserDetails == null) {
             throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
         }
-        List<OrdersDto.OrdersRes> result = orderService.findByUserIdx(userDetails.getIdx());
+        List<OrdersDto.OrdersRes> result = orderService.findByUserIdx(authUserDetails.getIdx());
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
+
+    @GetMapping("/store/find")
+    public ResponseEntity storeFind(@AuthenticationPrincipal AuthUserDetails authUserDetails) {
+        if (authUserDetails == null) {
+            throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+        List<OrdersDto.OrdersRes> result = orderService.findByUserIdxAndOrdersStatus(authUserDetails.getIdx());
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 

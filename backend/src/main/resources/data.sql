@@ -37,13 +37,13 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- ============================================================
 -- 비밀번호: 모두 'password123' BCrypt 인코딩
 INSERT INTO user (email, password, user_name, tel, role, is_deleted) VALUES
-('admin@theventi.co.kr', '{bcrypt}$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', '김본사', '010-1234-5678', 'ADMIN', false),
-('manager01@theventi.co.kr', '{bcrypt}$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', '이정우', '010-2345-6789', 'MANAGER', false),
-('store01@theventi.co.kr', '{bcrypt}$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', '박민수', '010-3456-7890', 'STORE', false),
-('store02@theventi.co.kr', '{bcrypt}$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', '최유진', '010-4567-8901', 'STORE', false),
-('store03@theventi.co.kr', '{bcrypt}$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', '정수아', '010-5678-9012', 'STORE', false),
-('store04@theventi.co.kr', '{bcrypt}$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', '한지민', '010-6789-0123', 'STORE', false),
-('store05@theventi.co.kr', '{bcrypt}$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', '윤서준', '010-7890-1234', 'STORE', false);
+('admin@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '김본사', '010-1234-5678', 'ADMIN', false),
+('manager01@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '이정우', '010-2345-6789', 'MANAGER', false),
+('store01@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '박민수', '010-3456-7890', 'STORE', false),
+('store02@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '최유진', '010-4567-8901', 'STORE', false),
+('store03@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '정수아', '010-5678-9012', 'STORE', false),
+('store04@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '한지민', '010-6789-0123', 'STORE', false),
+('store05@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '윤서준', '010-7890-1234', 'STORE', false);
 
 -- ============================================================
 -- 2. Store (가맹점 5개)

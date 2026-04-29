@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -21,7 +22,8 @@ public class StoreService {
         return inventoryList.stream().map(StoreInventoryDto.ListRes::from).toList();
     }
 
-    public List<StoreDto.StoreListRes> list() {
+
+    public List<StoreDto.StoreListRes> storeList() {
         List<Store> res = storeRepository.findAll();
         List<StoreDto.StoreListRes> result = new ArrayList<>();
 
@@ -37,5 +39,14 @@ public class StoreService {
         List<Store> res = storeRepository.findByStoreNameContainingIgnoreCase(searchKeyword);
 
         return res.stream().map(StoreDto.StoreSearchRes::from).toList();
+      
+    public StoreDto.StoreDetailListRes storeDetailList(Long storeIdx) {
+        Optional<Store> res = storeRepository.findById(storeIdx);
+
+        if(res.isPresent()){
+            Store data = res.get();
+            return StoreDto.StoreDetailListRes.from(data);
+        }
+        return null;
     }
 }

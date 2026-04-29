@@ -24,7 +24,6 @@ public class StoreController {
         return ResponseEntity.ok(result);
     }
 
-    // [본사] 가맹점명 검색
     @GetMapping("/search")
     public ResponseEntity<List<StoreDto.StoreSearchRes>> searchStore(@RequestParam(value = "keyword", required = false, defaultValue = "") String keyword) {
         StoreDto.StoreSearchReq reqDto = new StoreDto.StoreSearchReq(keyword);
@@ -33,11 +32,18 @@ public class StoreController {
 
         return ResponseEntity.ok(result);
     }
-
+  
     @GetMapping("/list")
-    public ResponseEntity<?> listStore() {
-        List<StoreDto.StoreListRes> result = storeService.list();
+    public ResponseEntity storeList(){
+        List<StoreDto.StoreListRes> result = storeService.storeList();
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
 
+
+    // 가맹점 목록 상세 조회
+    @GetMapping("/detail/list/{storeIdx}")
+    public ResponseEntity storeDetailList(@PathVariable Long storeIdx){
+        StoreDto.StoreDetailListRes result = storeService.storeDetailList(storeIdx);
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 }

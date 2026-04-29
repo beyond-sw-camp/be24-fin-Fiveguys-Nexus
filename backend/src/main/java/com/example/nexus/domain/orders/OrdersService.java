@@ -122,4 +122,13 @@ public class OrdersService {
                 .map(OrdersDto.OrdersRes::from)
                 .toList();
     }
+
+    public List<OrdersDto.OrdersRes> findByUserIdxAndOrdersStatus(Long userIdx) {
+        Store store = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        return ordersRepository.findAllByStore_IdxAndOrdersStatus(store.getIdx(), OrdersStatus.WAITING).stream()
+                .map(OrdersDto.OrdersRes::from)
+                .toList();
+    }
 }

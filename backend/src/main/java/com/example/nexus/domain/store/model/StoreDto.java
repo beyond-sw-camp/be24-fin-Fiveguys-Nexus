@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class StoreDto {
 
@@ -20,8 +21,7 @@ public class StoreDto {
         private String ownerEmail;
         private String address;
         private String business;
-        private LocalDateTime createdAt;
-        private LocalDateTime closedAt;
+        private String status;
 
 
         public static StoreDto.StoreListRes from(Store entity){
@@ -32,11 +32,41 @@ public class StoreDto {
                     .ownerEmail(entity.getUser().getEmail())
                     .address(entity.getAddress())
                     .business(entity.getBusiness())
-                    .createdAt(entity.getCreatedAt())
-                    .closedAt(entity.getClosedAt())
+                    .status(entity.isDeleted() ? "폐점":"입점")
                     .build();
         }
+    }
 
+    @Builder
+    @Getter
+    // 가맹점 목록 상세 조회
+    public static class StoreDetailListRes{
+        private Long idx;
+        private String storeName;
+        private String ownerName;
+        private String ownerEmail;
+        private String address;
+        private String business;
+        private String createdAt;
+        private String closedAt;
+        private String filePath;
+
+        public static StoreDto.StoreDetailListRes from(Store entity){
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+            return StoreDetailListRes.builder()
+                    .idx(entity.getIdx())
+                    .storeName(entity.getStoreName())
+                    .ownerName(entity.getUser().getUserName())
+                    .ownerEmail(entity.getUser().getEmail())
+                    .address(entity.getAddress() + " " + entity.getAddressDetail())
+                    .business(entity.getBusiness())
+                    .createdAt(entity.getCreatedAt().format(formatter))
+                    .closedAt(entity.getClosedAt() == null ? "운영 중" : entity.getClosedAt().format(formatter))
+                    .filePath(entity.getFilePath())
+                    .build();
+        }
     }
 
     @Getter

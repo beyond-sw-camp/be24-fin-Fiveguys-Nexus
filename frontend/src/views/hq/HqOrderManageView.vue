@@ -121,7 +121,7 @@ async function openDetail(ordersIdx) {
 
 // Settings modal
 const showSettings = ref(false)
-const dangerSettings = ref({ ratio: null, period: null })
+const dangerSettings = ref({ ratio: 200, period: 3 })
 
 async function openDangerSettings() {
   try {

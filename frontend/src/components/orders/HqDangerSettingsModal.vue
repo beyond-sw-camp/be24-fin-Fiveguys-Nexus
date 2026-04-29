@@ -3,8 +3,8 @@ import { ref, watch } from 'vue'
 
 const props = defineProps({
   visible: { type: Boolean, required: true },
-  initThreshold: { type: Number, default: null },
-  initMonths: { type: Number, default: null },
+  initThreshold: { type: Number, default: 200 },
+  initMonths: { type: Number, default: 3 },
 })
 
 defineEmits(['close', 'save'])

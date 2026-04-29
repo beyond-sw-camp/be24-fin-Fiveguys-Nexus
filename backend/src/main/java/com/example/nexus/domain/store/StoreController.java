@@ -8,6 +8,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.example.nexus.common.model.BaseResponse;
 import com.example.nexus.domain.store.model.StoreDto;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -34,8 +35,15 @@ public class StoreController {
     // 가맹점 목록 조회
     @GetMapping("/list")
     public ResponseEntity list(){
-        List<StoreDto.StoreListRes> result = storeService.list();
+        List<StoreDto.StoreListRes> result = storeService.storeList();
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
 
+
+    // 가맹점 목록 상세 조회
+    @GetMapping("/Detail/list/{idx}")
+    public ResponseEntity list(@PathVariable Long idx){
+        StoreDto.StoreDetailListRes result = storeService.storeDetailList(idx);
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 }

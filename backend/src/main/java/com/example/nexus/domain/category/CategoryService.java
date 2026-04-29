@@ -17,7 +17,7 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
 
     @Transactional
-    public CategoryDto.RegRes register(CategoryDto.RegReq dto) {
+    public CategoryDto.RegRes addCategory(CategoryDto.RegReq dto) {
         Category entity = categoryRepository.save(dto.toEntity());
         return CategoryDto.RegRes.from(entity);
     }

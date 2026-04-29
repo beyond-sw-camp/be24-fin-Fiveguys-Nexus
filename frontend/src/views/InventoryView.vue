@@ -1,8 +1,8 @@
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { RouterLink } from 'vue-router'
 import { History } from 'lucide-vue-next'
-import { getStoreList, getStoreInventoryByStore } from '@/api/store'
+import { getStoreList, getStoreInventoryByStore, searchStoreList } from '@/api/store'
 import { useInventoryCommon } from '@/composables/useInventoryCommon'
 import InventoryStatusFilters from '@/components/inventory/InventoryStatusFilters.vue'
 import InventoryDetailModal from '@/components/inventory/InventoryDetailModal.vue'
@@ -19,6 +19,8 @@ const storeList = ref([])
 const items = ref([])
 const listLoading = ref(false)
 const listError = ref('')
+let searchDebounceTimer = null
+const SEARCH_DEBOUNCE_MS = 250
 
 const { totalStock, fifoLots, isExpiringSoon, hasExpiringSoonLot } = useInventoryCommon()
 
@@ -75,17 +77,30 @@ function mapInventoryRow(row) {
   }
 }
 
-async function loadStoreList() {
-  listError.value = ''
+async function loadStoreList(keyword = '') {
   try {
-    const { data } = await getStoreList()
-    const list = data?.result
+    resetStoreListError()
+    const response = await fetchStoreListByKeyword(keyword)
+    const { data } = response
+    const list = Array.isArray(data) ? data : data?.result
     storeList.value = Array.isArray(list) ? list : []
   } catch (error) {
-    console.error('Failed to fetch store list:', error)
-    storeList.value = []
-    listError.value = '매장 목록을 불러오지 못했습니다.'
+    handleStoreListError(error)
   }
+}
+
+function fetchStoreListByKeyword(keyword = '') {
+  return keyword ? searchStoreList(keyword) : getStoreList()
+}
+
+function resetStoreListError() {
+  listError.value = ''
+}
+
+function handleStoreListError(error) {
+  console.error('Failed to fetch store list:', error)
+  storeList.value = []
+  listError.value = '매장 목록을 불러오지 못했습니다.'
 }
 
 async function fetchStoreInventory() {
@@ -133,6 +148,7 @@ const filteredItems = computed(() => {
 })
 
 watch([filterRegion, storeSearch], () => {
+  // 검색/지역 조건이 바뀌어 현재 선택 매장이 목록에서 사라지면 선택/결과를 초기화한다.
   if (!selectedStoreIdx.value) return
   const selectedExists = visibleStores.value.some((s) => String(s.idx) === selectedStoreIdx.value)
   if (!selectedExists) {
@@ -141,7 +157,16 @@ watch([filterRegion, storeSearch], () => {
   }
 })
 
+watch(storeSearch, (keyword) => {
+  // 키워드 입력은 디바운스로 서버 검색 호출을 제한한다.
+  if (searchDebounceTimer) clearTimeout(searchDebounceTimer)
+  searchDebounceTimer = setTimeout(() => {
+    loadStoreList(keyword.trim())
+  }, SEARCH_DEBOUNCE_MS)
+})
+
 watch(selectedStoreIdx, (value) => {
+  // 매장 선택이 바뀌면 해당 매장 재고를 즉시 조회한다.
   if (!value) return
   fetchStoreInventory()
 })
@@ -173,7 +198,11 @@ function closeDetail() {
 }
 
 onMounted(() => {
-  loadStoreList()
+  loadStoreList('')
+})
+
+onBeforeUnmount(() => {
+  if (searchDebounceTimer) clearTimeout(searchDebounceTimer)
 })
 </script>
 

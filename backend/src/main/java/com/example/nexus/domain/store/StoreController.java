@@ -24,6 +24,7 @@ public class StoreController {
         return ResponseEntity.ok(result);
     }
 
+    // [본사] keyword로 가맹점 검색
     @GetMapping("/search")
     public ResponseEntity<List<StoreDto.StoreSearchRes>> searchStore(@RequestParam(value = "keyword", required = false, defaultValue = "") String keyword) {
         StoreDto.StoreSearchReq reqDto = new StoreDto.StoreSearchReq(keyword);

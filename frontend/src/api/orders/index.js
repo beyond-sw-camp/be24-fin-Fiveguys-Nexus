@@ -1,5 +1,9 @@
 import api from '@/plugins/axiosinterceptor'
 
+const getManualOrders = () => {
+  return api.get('/orders/list/manual')
+}
+
 const getAutoOrders = () => {
   return api.get('/orders/list/auto')
 }
@@ -17,6 +21,7 @@ const updateDangerSettings = (data) => {
 }
 
 export default {
+  getManualOrders,
   getAutoOrders,
   getOrderDetail,
   getDangerSettings,

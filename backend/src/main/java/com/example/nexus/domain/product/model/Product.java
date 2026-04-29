@@ -44,4 +44,13 @@ public class Product {
     @JoinColumn(name = "category_idx", nullable = false)
     private Category category;
 
+    public void update(String productName, String productUnit, Integer maxStock, Integer minStock, Integer unitPrice, String dangerDays, Category category) {
+        this.productName = productName;
+        this.productUnit = productUnit;
+        this.maxStock = maxStock;
+        this.minStock = minStock;
+        this.unitPrice = unitPrice;
+        this.dangerDays = dangerDays;
+        this.category = category;
+    }
 }

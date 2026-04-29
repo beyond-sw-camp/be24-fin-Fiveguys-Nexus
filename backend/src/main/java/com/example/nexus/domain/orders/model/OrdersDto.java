@@ -4,11 +4,19 @@ import com.example.nexus.common.enums.OrdersStatus;
 import com.example.nexus.common.enums.OrdersType;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 public class OrdersDto {
+
+    @Getter
+    @NoArgsConstructor
+    public static class OrdersReq {
+        private Long storeIdx;
+        private List<OrdersItemDto.OrdersItemReq> ordersItemList;
+    }
 
     @Getter
     @Builder

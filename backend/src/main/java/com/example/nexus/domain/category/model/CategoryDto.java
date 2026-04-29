@@ -30,4 +30,18 @@ public class CategoryDto {
                     .build();
         }
     }
+
+    @Getter
+    @Builder
+    public static class ListRes {
+        private Long idx;
+        private String categoryName;
+
+        public static ListRes from(Category entity) {
+            return ListRes.builder()
+                    .idx(entity.getIdx())
+                    .categoryName(entity.getCategoryName())
+                    .build();
+        }
+    }
 }

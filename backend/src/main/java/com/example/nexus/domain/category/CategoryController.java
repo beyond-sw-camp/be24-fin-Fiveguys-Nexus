@@ -4,10 +4,9 @@ import com.example.nexus.domain.category.model.CategoryDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RequestMapping("/category")
 @RequiredArgsConstructor
@@ -16,8 +15,14 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @PostMapping("/reg")
-    public ResponseEntity<CategoryDto.RegRes> register(@Valid @RequestBody CategoryDto.RegReq dto) {
+    public ResponseEntity<CategoryDto.RegRes> createCategory(@Valid @RequestBody CategoryDto.RegReq dto) {
         CategoryDto.RegRes result = categoryService.register(dto);
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/list")
+    public ResponseEntity readCategoryList() {
+        List<CategoryDto.ListRes> dto = categoryService.findAllCategories();
+        return ResponseEntity.ok(dto);
     }
 }

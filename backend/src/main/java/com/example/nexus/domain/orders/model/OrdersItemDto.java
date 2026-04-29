@@ -26,7 +26,7 @@ public class OrdersItemDto {
                     .idx(entity.getIdx())
                     .count(entity.getCount())
                     .orderIdx(entity.getOrders().getIdx())
-                    .productName(entity.getProduct().getName())
+                    .productName(entity.getProduct().getProductName())
                     .unitPrice(entity.getProduct().getUnitPrice())
                     .build();
         }

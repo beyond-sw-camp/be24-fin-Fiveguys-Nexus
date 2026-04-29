@@ -26,7 +26,7 @@ public class CategoryController {
         return ResponseEntity.ok(dto);
     }
 
-    @DeleteMapping("/{idx}")
+    @DeleteMapping("/delete/{idx}")
     public ResponseEntity deleteCategory(@PathVariable Long idx) {
         categoryService.deleteCategory(idx);
         return ResponseEntity.ok("success delete category");

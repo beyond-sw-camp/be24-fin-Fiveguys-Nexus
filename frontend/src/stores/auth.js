@@ -9,18 +9,18 @@ export const useAuthStore = defineStore('auth', () => {
   const isStoreOwner = computed(() => user.value?.role === 'STORE_OWNER')
 
   const MOCK_USERS = {
-    A001: {
-      id: 'A001', name: '이재혁', role: 'ADMIN',
+    'admin@theventi.co.kr': {
+      id: 'admin@theventi.co.kr', name: '이재혁', role: 'ADMIN',
       dept: 'SCM 통제센터', email: 'jh.lee@hanwha-nexus.com', avatar: 'HQ',
     },
-    S001: {
-      id: 'S001', name: '김동현', role: 'STORE_OWNER',
+    'store01@theventi.co.kr': {
+      id: 'store01@theventi.co.kr', name: '김동현', role: 'STORE_OWNER',
       storeName: '한화빌딩점', storeId: 'S001', email: 'dh.kim@store.com', avatar: 'KD',
     },
   }
 
   function login(userId, password) {
-    if (password !== '1234') return false
+    if (password !== 'password123') return false
     const found = MOCK_USERS[userId]
     if (!found) return false
     user.value = found

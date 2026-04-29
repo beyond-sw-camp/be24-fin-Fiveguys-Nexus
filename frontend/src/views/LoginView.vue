@@ -32,7 +32,7 @@
                 <span class="ml-1.5 text-[11px] font-bold px-1.5 py-0.5 rounded"
                   :class="demo.badgeClass">{{ demo.roleLabel }}</span>
               </p>
-              <p class="text-xs text-gray-400 mt-0.5 font-mono">{{ demo.id }} / 1234</p>
+              <p class="text-xs text-gray-400 mt-0.5 font-mono">{{ demo.id }} / password123</p>
             </div>
             <span class="text-xs text-gray-300 group-hover:text-[#F37321] transition-colors font-medium">입력 →</span>
           </div>
@@ -97,12 +97,12 @@ const error = ref('')
 
 const demoAccounts = [
   {
-    id: 'A001', name: '이재혁', avatar: 'HQ', roleLabel: '운영자 (본사)',
+    id: 'admin@theventi.co.kr', name: '이재혁', avatar: 'HQ', roleLabel: '운영자 (본사)',
     colorClass: 'bg-[#F37321]',
     badgeClass: 'bg-orange-50 text-orange-600 border border-orange-200',
   },
   {
-    id: 'S001', name: '김동현', avatar: 'KD', roleLabel: '점주 (가맹점)',
+    id: 'store01@theventi.co.kr', name: '김동현', avatar: 'KD', roleLabel: '점주 (가맹점)',
     colorClass: 'bg-blue-500',
     badgeClass: 'bg-blue-50 text-blue-600 border border-blue-200',
   },
@@ -110,7 +110,7 @@ const demoAccounts = [
 
 function fillDemo(demo) {
   form.value.id = demo.id
-  form.value.password = '1234'
+  form.value.password = 'password123'
   error.value = ''
 }
 

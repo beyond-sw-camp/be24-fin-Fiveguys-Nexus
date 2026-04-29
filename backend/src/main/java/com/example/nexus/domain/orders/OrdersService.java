@@ -114,6 +114,13 @@ public class OrdersService {
         dangerRepository.save(danger);
     }
 
+    @Transactional
+    public void approve(Long ordersIdx) {
+        Orders orders = ordersRepository.findById(ordersIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+        orders.approveDanger();
+    }
+
     public List<OrdersDto.OrdersRes> findByUserIdx(Long userIdx) {
         Store store = storeRepository.findByUserIdx(userIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));

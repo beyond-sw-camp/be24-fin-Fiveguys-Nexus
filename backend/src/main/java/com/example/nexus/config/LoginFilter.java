@@ -35,7 +35,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
-        response.getWriter().write("login failed");
+        response.getWriter().write("login failed: " + failed.getMessage());
     }
 
     @Override

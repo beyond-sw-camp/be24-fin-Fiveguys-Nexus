@@ -25,6 +25,8 @@
       :fifo-lots="fifoLots"
       :is-expiring-soon="isExpiringSoon"
       :get-subtitle="getSubtitle"
+      :editable="true"
+      @apply-adjustments="applyLotAdjustments"
       @close="closeDetail"
     />
   </div>
@@ -32,7 +34,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { getPosInventoryList } from '@/api/pos'
+import { changePosInventoryCount, getPosInventoryList } from '@/api/pos'
 import InventoryDetailModal from '@/components/inventory/InventoryDetailModal.vue'
 import StoreInventoryTable from '@/components/inventory/StoreInventoryTable.vue'
 
@@ -134,6 +136,23 @@ function openDetail(item) {
 
 function closeDetail() {
   detailItem.value = null
+}
+
+async function applyLotAdjustments(changes) {
+  if (!detailItem.value) return
+  if (!Array.isArray(changes) || changes.length === 0) return
+
+  try {
+    await Promise.all(
+      changes.map((row) => changePosInventoryCount(row.id, row.adjustTo)),
+    )
+    await fetchInventory()
+    closeDetail()
+    alert('lot 재고 보정이 완료되었습니다.')
+  } catch (error) {
+    console.error('Failed to update POS inventory:', error)
+    alert('lot 재고 보정에 실패했습니다.')
+  }
 }
 
 function isExpiringSoon(expiry) {

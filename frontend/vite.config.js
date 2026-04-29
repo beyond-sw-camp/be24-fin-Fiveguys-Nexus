@@ -11,16 +11,7 @@ export default defineConfig({
     vueDevTools(),
   ],
   server: {
-    proxy: {
-      '/head': {
-        target: 'http://localhost:8080',
-        changeOrigin: true,
-      },
-      '/store': {
-        target: 'http://localhost:8080',
-        changeOrigin: true,
-      },
-    },
+    
   },
   resolve: {
     alias: {

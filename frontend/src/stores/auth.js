@@ -7,7 +7,8 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isLoggedIn = computed(() => !!user.value)
   const isAdmin = computed(() => user.value?.role === 'ADMIN')
-  const isStoreOwner = computed(() => user.value?.role === 'STORE_OWNER')
+  // 백엔드는 Role.STORE를 주지만 프론트 라우터 메타는 STORE_OWNER를 기대합니다.
+  const isStoreOwner = computed(() => user.value?.role === 'STORE_OWNER' || user.value?.role === 'STORE')
 
   const USER_PROFILES = {
     'admin@theventi.co.kr': {
@@ -51,11 +52,12 @@ export const useAuthStore = defineStore('auth', () => {
     const role = payload?.role
     if (!email || !role) return null
 
+    const mappedRole = role === 'STORE' ? 'STORE_OWNER' : role
     const profile = USER_PROFILES[email] ?? {}
     return {
       id: email,
       email,
-      role,
+      role: mappedRole,
       name: profile.name ?? email,
       avatar: profile.avatar ?? 'US',
       ...(profile.dept ? { dept: profile.dept } : {}),

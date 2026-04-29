@@ -26,7 +26,8 @@ public class JwtFilter extends OncePerRequestFilter {
         String path = request.getServletPath();
 
         return path.startsWith ("/login") ||
-                path.startsWith("/signup");
+                path.startsWith("/signup") ||
+                path.startsWith("/store/signup");
     }
 
     @Override
@@ -34,21 +35,26 @@ public class JwtFilter extends OncePerRequestFilter {
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
                 if (cookie.getName().equals("CTOKEN")) {
-                    Long idx = JwtUtil.getUserIdx(cookie.getValue());
-                    String username = JwtUtil.getUsername(cookie.getValue());
-                    String role = JwtUtil.getRole(cookie.getValue());
-                    AuthUserDetails principal = AuthUserDetails.builder()
-                            .idx(idx)
-                            .username(username)
-                            .role(Role.valueOf(role))
-                            .build();
+                    try {
+                        Long idx = JwtUtil.getUserIdx(cookie.getValue());
+                        String username = JwtUtil.getUsername(cookie.getValue());
+                        String role = JwtUtil.getRole(cookie.getValue());
+                        AuthUserDetails principal = AuthUserDetails.builder()
+                                .idx(idx)
+                                .username(username)
+                                .role(Role.valueOf(role))
+                                .build();
 
-                    Authentication authentication = new UsernamePasswordAuthenticationToken(
-                            principal,
-                            null,
-                            List.of(new SimpleGrantedAuthority(role))
-                    );
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                                principal,
+                                null,
+                                List.of(new SimpleGrantedAuthority(role))
+                        );
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                    } catch (RuntimeException ignored) {
+                        // 만료/파싱 실패 등으로 토큰을 신뢰할 수 없는 경우,
+                        // 인증 컨텍스트를 건드리지 않고 요청을 그대로 진행한다.
+                    }
                 }
             }
         }

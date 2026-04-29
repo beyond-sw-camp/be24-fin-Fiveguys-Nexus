@@ -116,7 +116,6 @@ function fillDemo(demo) {
 
 async function handleLogin() {
   error.value = ''
-  alert(form.value.email + " " + form.value.password)
   const ok = await auth.login(form.value.email, form.value.password)
   if (!ok) {
     error.value = '아이디 또는 비밀번호가 올바르지 않습니다.'
@@ -124,6 +123,6 @@ async function handleLogin() {
   }
   
   if (auth.isAdmin) router.push('/dashboard')
-  else if (auth.isStoreOwner) router.push('/store-dashboard')
+  else if (auth.isStore) router.push('/store-dashboard')
 }
 </script>

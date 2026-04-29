@@ -133,7 +133,7 @@ const applyAdjustments = () => {
             :disabled="!hasDraftLotChanges"
             @click="applyAdjustments"
           >
-            lot 보정 반영
+            수정
           </button>
           <button
             type="button"

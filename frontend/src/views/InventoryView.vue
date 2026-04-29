@@ -1,8 +1,8 @@
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { RouterLink } from 'vue-router'
 import { History } from 'lucide-vue-next'
-import { getStoreList, getStoreInventoryByStore } from '@/api/store'
+import { getStoreList, getStoreInventoryByStore, searchStoreList } from '@/api/store'
 import { useInventoryCommon } from '@/composables/useInventoryCommon'
 import InventoryStatusFilters from '@/components/inventory/InventoryStatusFilters.vue'
 import InventoryDetailModal from '@/components/inventory/InventoryDetailModal.vue'
@@ -19,6 +19,7 @@ const storeList = ref([])
 const items = ref([])
 const listLoading = ref(false)
 const listError = ref('')
+let searchDebounceTimer = null
 
 const { totalStock, fifoLots, isExpiringSoon, hasExpiringSoonLot } = useInventoryCommon()
 
@@ -75,11 +76,14 @@ function mapInventoryRow(row) {
   }
 }
 
-async function loadStoreList() {
+async function loadStoreList(keyword = '') {
   listError.value = ''
   try {
-    const { data } = await getStoreList()
-    const list = data?.result
+    const response = keyword
+      ? await searchStoreList(keyword)
+      : await getStoreList()
+    const { data } = response
+    const list = Array.isArray(data) ? data : data?.result
     storeList.value = Array.isArray(list) ? list : []
   } catch (error) {
     console.error('Failed to fetch store list:', error)
@@ -141,6 +145,13 @@ watch([filterRegion, storeSearch], () => {
   }
 })
 
+watch(storeSearch, (keyword) => {
+  if (searchDebounceTimer) clearTimeout(searchDebounceTimer)
+  searchDebounceTimer = setTimeout(() => {
+    loadStoreList(keyword.trim())
+  }, 250)
+})
+
 watch(selectedStoreIdx, (value) => {
   if (!value) return
   fetchStoreInventory()
@@ -173,7 +184,11 @@ function closeDetail() {
 }
 
 onMounted(() => {
-  loadStoreList()
+  loadStoreList('')
+})
+
+onBeforeUnmount(() => {
+  if (searchDebounceTimer) clearTimeout(searchDebounceTimer)
 })
 </script>
 

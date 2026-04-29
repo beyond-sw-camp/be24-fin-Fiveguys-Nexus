@@ -1,7 +1,9 @@
 <script setup>
-import { reactive } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
 import { Plus } from 'lucide-vue-next'
-import { formatPrice, PRODUCT_UNIT, productPrices } from './orderUtils'
+import { formatPrice } from './orderUtils'
+import { getStoreList } from '@/api/store'
+import { getProductList } from '@/api/product'
 
 defineProps({
   visible: { type: Boolean, required: true },
@@ -9,7 +11,19 @@ defineProps({
 
 const emit = defineEmits(['close', 'submit'])
 
+const stores = ref([])
+const products = ref([])
 const form = reactive({ store: '', items: [] })
+
+onMounted(async () => {
+  try {
+    const [storeRes, productRes] = await Promise.all([getStoreList(), getProductList()])
+    stores.value = storeRes.data.result
+    products.value = productRes.data
+  } catch (e) {
+    console.error('매장/상품 목록 조회 실패', e)
+  }
+})
 
 function addItem() {
   form.items.push({ product: '', qty: 1, unitPrice: 0 })

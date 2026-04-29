@@ -1,15 +1,14 @@
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { RouterLink } from 'vue-router'
 import { History } from 'lucide-vue-next'
-import { getStoreList, getStoreInventoryByStore } from '@/api/store'
+import { getStoreList, getStoreInventoryByStore, searchStoreList } from '@/api/store'
 import { useInventoryCommon } from '@/composables/useInventoryCommon'
 import InventoryStatusFilters from '@/components/inventory/InventoryStatusFilters.vue'
 import InventoryDetailModal from '@/components/inventory/InventoryDetailModal.vue'
 import InventoryFranchiseToolbar from '@/components/inventory/InventoryFranchiseToolbar.vue'
 import InventoryFranchiseTable from '@/components/inventory/InventoryFranchiseTable.vue'
 
-const filterRegion = ref('')
 const storeSearch = ref('')
 const selectedStoreIdx = ref('')
 const filterStatus = ref('all')
@@ -19,6 +18,8 @@ const storeList = ref([])
 const items = ref([])
 const listLoading = ref(false)
 const listError = ref('')
+let searchDebounceTimer = null
+const SEARCH_DEBOUNCE_MS = 250
 
 const { totalStock, fifoLots, isExpiringSoon, hasExpiringSoonLot } = useInventoryCommon()
 
@@ -29,24 +30,10 @@ const statusFilters = [
   { value: 'normal', label: '정상' },
 ]
 
-function regionFromAddress(address) {
-  if (!address) return ''
-  const text = String(address)
-  if (text.includes('서울')) return '서울'
-  if (text.includes('경기')) return '경기'
-  if (text.includes('부산')) return '부산'
-  return ''
-}
-
-const storesInRegion = computed(() => {
-  if (!filterRegion.value) return storeList.value
-  return storeList.value.filter((s) => regionFromAddress(s.address) === filterRegion.value)
-})
-
 const visibleStores = computed(() => {
   const q = storeSearch.value.toLowerCase()
-  if (!q) return storesInRegion.value
-  return storesInRegion.value.filter((s) => String(s.storeName ?? '').toLowerCase().includes(q))
+  if (!q) return storeList.value
+  return storeList.value.filter((s) => String(s.storeName ?? '').toLowerCase().includes(q))
 })
 
 function formatDate(value) {
@@ -75,17 +62,30 @@ function mapInventoryRow(row) {
   }
 }
 
-async function loadStoreList() {
-  listError.value = ''
+async function loadStoreList(keyword = '') {
   try {
-    const { data } = await getStoreList()
-    const list = data?.result
+    resetStoreListError()
+    const response = await fetchStoreListByKeyword(keyword)
+    const { data } = response
+    const list = Array.isArray(data) ? data : data?.result
     storeList.value = Array.isArray(list) ? list : []
   } catch (error) {
-    console.error('Failed to fetch store list:', error)
-    storeList.value = []
-    listError.value = '매장 목록을 불러오지 못했습니다.'
+    handleStoreListError(error)
   }
+}
+
+function fetchStoreListByKeyword(keyword = '') {
+  return keyword ? searchStoreList(keyword) : getStoreList()
+}
+
+function resetStoreListError() {
+  listError.value = ''
+}
+
+function handleStoreListError(error) {
+  console.error('Failed to fetch store list:', error)
+  storeList.value = []
+  listError.value = '매장 목록을 불러오지 못했습니다.'
 }
 
 async function fetchStoreInventory() {
@@ -132,7 +132,8 @@ const filteredItems = computed(() => {
   return sortRows(rows)
 })
 
-watch([filterRegion, storeSearch], () => {
+watch(storeSearch, () => {
+  // 검색 조건 변경으로 현재 선택 매장이 목록에서 사라지면 선택/결과를 초기화한다.
   if (!selectedStoreIdx.value) return
   const selectedExists = visibleStores.value.some((s) => String(s.idx) === selectedStoreIdx.value)
   if (!selectedExists) {
@@ -141,7 +142,16 @@ watch([filterRegion, storeSearch], () => {
   }
 })
 
+watch(storeSearch, (keyword) => {
+  // 키워드 입력은 디바운스로 서버 검색 호출을 제한한다.
+  if (searchDebounceTimer) clearTimeout(searchDebounceTimer)
+  searchDebounceTimer = setTimeout(() => {
+    loadStoreList(keyword.trim())
+  }, SEARCH_DEBOUNCE_MS)
+})
+
 watch(selectedStoreIdx, (value) => {
+  // 매장 선택이 바뀌면 해당 매장 재고를 즉시 조회한다.
   if (!value) return
   fetchStoreInventory()
 })
@@ -173,7 +183,11 @@ function closeDetail() {
 }
 
 onMounted(() => {
-  loadStoreList()
+  loadStoreList('')
+})
+
+onBeforeUnmount(() => {
+  if (searchDebounceTimer) clearTimeout(searchDebounceTimer)
 })
 </script>
 
@@ -195,7 +209,6 @@ onMounted(() => {
     </div>
 
     <InventoryFranchiseToolbar
-      v-model:filter-region="filterRegion"
       v-model:store-search="storeSearch"
       v-model:selected-store-idx="selectedStoreIdx"
       :visible-stores="visibleStores"

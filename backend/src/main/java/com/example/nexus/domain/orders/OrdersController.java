@@ -3,6 +3,7 @@ package com.example.nexus.domain.orders;
 import com.example.nexus.common.model.BaseResponse;
 import com.example.nexus.domain.orders.model.DangerDto;
 import com.example.nexus.domain.orders.model.OrdersDto;
+import com.example.nexus.domain.orders.model.OrdersItemDto;
 import com.example.nexus.domain.user.model.AuthUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -61,6 +62,36 @@ public class OrdersController {
     public ResponseEntity save(@RequestBody DangerDto.DangerReq req) {
         orderService.save(req);
         return ResponseEntity.ok(BaseResponse.success("update success"));
+    }
+
+    @PutMapping("/{ordersIdx}/approve")
+    public ResponseEntity approve(@PathVariable Long ordersIdx) {
+        orderService.approve(ordersIdx);
+        return ResponseEntity.ok(BaseResponse.success("update success"));
+    }
+
+    @PutMapping("/{ordersIdx}/reject")
+    public ResponseEntity reject(@PathVariable Long ordersIdx) {
+        orderService.reject(ordersIdx);
+        return ResponseEntity.ok(BaseResponse.success("update success"));
+    }
+
+    @PostMapping("/{ordersIdx}/items")
+    public ResponseEntity addItem(@PathVariable Long ordersIdx, @RequestBody OrdersItemDto.OrdersItemReq req) {
+        orderService.addItem(ordersIdx, req);
+        return ResponseEntity.ok(BaseResponse.success("create success"));
+    }
+
+    @PutMapping("/items/{ordersItemIdx}")
+    public ResponseEntity updateItemCount(@PathVariable Long ordersItemIdx, @RequestBody OrdersItemDto.OrdersItemReq req) {
+        orderService.updateItemCount(ordersItemIdx, req.getCount());
+        return ResponseEntity.ok(BaseResponse.success("update success"));
+    }
+
+    @DeleteMapping("/items/{ordersItemIdx}")
+    public ResponseEntity deleteItem(@PathVariable Long ordersItemIdx) {
+        orderService.deleteItem(ordersItemIdx);
+        return ResponseEntity.ok(BaseResponse.success("delete success"));
     }
 
     @GetMapping("/store/list")

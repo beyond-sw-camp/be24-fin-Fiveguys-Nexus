@@ -6,6 +6,7 @@ import com.example.nexus.domain.store.model.StoreInventoryDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RequestMapping("/store")
@@ -23,7 +24,16 @@ public class StoreController {
         return ResponseEntity.ok(result);
     }
 
-    // 가맹점 목록 조회
+    // [본사] keyword로 가맹점 검색
+    @GetMapping("/search")
+    public ResponseEntity<List<StoreDto.StoreSearchRes>> searchStore(@RequestParam(value = "keyword", required = false, defaultValue = "") String keyword) {
+        StoreDto.StoreSearchReq reqDto = new StoreDto.StoreSearchReq(keyword);
+
+        List<StoreDto.StoreSearchRes> result = storeService.searchByStoreName(reqDto);
+
+        return ResponseEntity.ok(result);
+    }
+  
     @GetMapping("/list")
     public ResponseEntity storeList(){
         List<StoreDto.StoreListRes> result = storeService.storeList();

@@ -14,18 +14,21 @@ import java.util.List;
 public class CategoryController {
     private final CategoryService categoryService;
 
+    // 카테고리 등록
     @PostMapping("/reg")
     public ResponseEntity<CategoryDto.RegRes> createCategory(@Valid @RequestBody CategoryDto.RegReq dto) {
-        CategoryDto.RegRes result = categoryService.register(dto);
+        CategoryDto.RegRes result = categoryService.addCategory(dto);
         return ResponseEntity.ok(result);
     }
 
+    // 카테고리 목록 조회
     @GetMapping("/list")
     public ResponseEntity readCategoryList() {
         List<CategoryDto.ListRes> dto = categoryService.findAllCategories();
         return ResponseEntity.ok(dto);
     }
 
+    // 카테고리 소프트 삭제
     @DeleteMapping("/delete/{idx}")
     public ResponseEntity deleteCategory(@PathVariable Long idx) {
         categoryService.deleteCategory(idx);

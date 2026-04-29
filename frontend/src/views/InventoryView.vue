@@ -20,6 +20,7 @@ const items = ref([])
 const listLoading = ref(false)
 const listError = ref('')
 let searchDebounceTimer = null
+const SEARCH_DEBOUNCE_MS = 250
 
 const { totalStock, fifoLots, isExpiringSoon, hasExpiringSoonLot } = useInventoryCommon()
 
@@ -79,9 +80,7 @@ function mapInventoryRow(row) {
 async function loadStoreList(keyword = '') {
   listError.value = ''
   try {
-    const response = keyword
-      ? await searchStoreList(keyword)
-      : await getStoreList()
+    const response = await requestStoreList(keyword)
     const { data } = response
     const list = Array.isArray(data) ? data : data?.result
     storeList.value = Array.isArray(list) ? list : []
@@ -90,6 +89,10 @@ async function loadStoreList(keyword = '') {
     storeList.value = []
     listError.value = '매장 목록을 불러오지 못했습니다.'
   }
+}
+
+function requestStoreList(keyword = '') {
+  return keyword ? searchStoreList(keyword) : getStoreList()
 }
 
 async function fetchStoreInventory() {
@@ -149,7 +152,7 @@ watch(storeSearch, (keyword) => {
   if (searchDebounceTimer) clearTimeout(searchDebounceTimer)
   searchDebounceTimer = setTimeout(() => {
     loadStoreList(keyword.trim())
-  }, 250)
+  }, SEARCH_DEBOUNCE_MS)
 })
 
 watch(selectedStoreIdx, (value) => {

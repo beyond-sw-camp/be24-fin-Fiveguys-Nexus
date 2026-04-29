@@ -88,6 +88,12 @@ public class OrdersController {
         return ResponseEntity.ok(BaseResponse.success("update success"));
     }
 
+    @DeleteMapping("/items/{ordersItemIdx}")
+    public ResponseEntity deleteItem(@PathVariable Long ordersItemIdx) {
+        orderService.deleteItem(ordersItemIdx);
+        return ResponseEntity.ok(BaseResponse.success("delete success"));
+    }
+
     @GetMapping("/store/list")
     public ResponseEntity storeList(@AuthenticationPrincipal AuthUserDetails authUserDetails) {
         if (authUserDetails == null) {

@@ -21,7 +21,7 @@ const updateDangerSettings = (data) => {
 }
 
 const createManualOrder = (data) => {
-  return api.post('/orders/manual', data)
+  return api.post('/orders/reg/manual', data)
 }
 
 export default {

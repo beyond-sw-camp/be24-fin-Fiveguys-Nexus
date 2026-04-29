@@ -47,6 +47,7 @@ public class StoreDto {
         private String business;
         private String createdAt;
         private String closedAt;
+        private String filePath;
 
         public static StoreDto.StoreDetailListRes from(Store entity){
 
@@ -61,6 +62,7 @@ public class StoreDto {
                     .business(entity.getBusiness())
                     .createdAt(entity.getCreatedAt().format(formatter))
                     .closedAt(entity.getClosedAt() == null ? "운영 중" : entity.getClosedAt().format(formatter))
+                    .filePath(entity.getFilePath())
                     .build();
         }
     }

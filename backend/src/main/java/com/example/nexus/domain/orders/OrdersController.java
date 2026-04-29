@@ -63,6 +63,12 @@ public class OrdersController {
         return ResponseEntity.ok(BaseResponse.success("update success"));
     }
 
+    @PutMapping("/danger/{ordersIdx}/approve")
+    public ResponseEntity dangerApprove(@PathVariable Long ordersIdx) {
+        orderService.approve(ordersIdx);
+        return ResponseEntity.ok(BaseResponse.success("update success"));
+    }
+
     @GetMapping("/store/list")
     public ResponseEntity storeList(@AuthenticationPrincipal AuthUserDetails authUserDetails) {
         if (authUserDetails == null) {

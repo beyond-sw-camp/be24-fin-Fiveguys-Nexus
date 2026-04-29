@@ -49,4 +49,9 @@ public class Orders {
 
     @OneToOne(mappedBy = "orders", fetch = FetchType.LAZY)
     private Delivery delivery;
+
+    public void approveDangerOrder() {
+        this.isDanger = false;
+        this.ordersStatus = OrdersStatus.APPROVE;
+    }
 }

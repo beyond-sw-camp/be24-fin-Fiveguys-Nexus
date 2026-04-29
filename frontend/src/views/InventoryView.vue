@@ -21,14 +21,31 @@
         <option value="경기">경기</option>
         <option value="부산">부산</option>
       </select>
-      <select v-model="filterStore"
-        class="px-3 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none bg-white">
-        <option value="">전체 매장</option>
-        <option>한우 오마카세</option>
-        <option>이탈리안 키친</option>
-        <option>일식 스시바</option>
-        <option>차이나 가든</option>
+      <input
+        v-model.trim="storeSearch"
+        type="search"
+        placeholder="매장명 검색"
+        autocomplete="off"
+        class="min-w-[10rem] flex-1 max-w-xs px-3 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none bg-white"
+      />
+      <select
+        v-model="selectedStoreIdx"
+        class="min-w-[12rem] px-3 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none bg-white"
+        @change="onStoreSelectChange"
+      >
+        <option value="">매장 선택</option>
+        <option v-for="s in visibleStores" :key="s.idx" :value="String(s.idx)">
+          {{ s.storeName }}
+        </option>
       </select>
+      <button
+        type="button"
+        class="px-3 py-2 rounded-lg border border-[#F37321] text-sm font-semibold text-[#F37321] hover:bg-[#F37321]/5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        :disabled="!selectedStoreIdx || listLoading"
+        @click="fetchStoreInventory"
+      >
+        {{ listLoading ? '조회 중…' : '재고 조회' }}
+      </button>
       <div class="flex gap-1.5">
         <button v-for="f in statusFilters" :key="f.value"
           type="button"
@@ -41,6 +58,8 @@
         </button>
       </div>
     </div>
+
+    <p v-if="listError" class="text-sm text-red-600">{{ listError }}</p>
 
     <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
       <table class="w-full text-sm text-left">
@@ -56,7 +75,7 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
-          <tr v-for="item in filteredItems" :key="item.code + item.store"
+          <tr v-for="item in filteredItems" :key="item.idx ?? (item.code + String(item.manufacturedDate ?? ''))"
             role="button"
             tabindex="0"
             class="hover:bg-gray-50/50 transition-colors cursor-pointer"
@@ -141,100 +160,111 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { History } from 'lucide-vue-next'
+import { getStoreList, getStoreInventoryByStore } from '@/api/store'
 
 const filterRegion = ref('')
-const filterStore  = ref('')
+const storeSearch = ref('')
+const selectedStoreIdx = ref('')
 const filterStatus = ref('all')
 const detailItem = ref(null)
 const detailTitleId = 'inv-store-detail-title'
-
-const storeRegion = {
-  '한우 오마카세': '서울',
-  '이탈리안 키친': '서울',
-  '일식 스시바':   '경기',
-  '차이나 가든':   '부산',
-}
+const storeList = ref([])
+const items = ref([])
+const listLoading = ref(false)
+const listError = ref('')
 
 const statusFilters = [
-  { value: 'all',      label: '전체' },
-  { value: 'danger',   label: '재고부족' },
+  { value: 'all', label: '전체' },
+  { value: 'danger', label: '재고부족' },
   { value: 'expiring', label: '유통기한 임박' },
-  { value: 'normal',   label: '정상' },
+  { value: 'normal', label: '정상' },
 ]
 
-const items = ref([
-  {
-    code: 'C100', name: '한우 등심', store: '한우 오마카세', safe: 60,
-    avgStock: 82,
+function regionFromAddress(address) {
+  if (!address) return ''
+  const text = String(address)
+  if (text.includes('서울')) return '서울'
+  if (text.includes('경기')) return '경기'
+  if (text.includes('부산')) return '부산'
+  return ''
+}
+
+const storesInRegion = computed(() => {
+  if (!filterRegion.value) return storeList.value
+  return storeList.value.filter((s) => regionFromAddress(s.address) === filterRegion.value)
+})
+
+const visibleStores = computed(() => {
+  const q = storeSearch.value.toLowerCase()
+  if (!q) return storesInRegion.value
+  return storesInRegion.value.filter((s) => String(s.storeName ?? '').toLowerCase().includes(q))
+})
+
+function formatDateFromApi(value) {
+  if (!value) return null
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime())) return null
+  return d.toISOString().slice(0, 10)
+}
+
+function mapInventoryRow(row) {
+  return {
+    idx: row.idx,
+    code: `P${row.productIdx}`,
+    name: row.productName,
+    store: row.storeName,
+    safe: row.minStock ?? 0,
+    avgStock: row.avgStock,
+    apiStatus: row.status,
+    manufacturedDate: row.manufacturedDate,
     lots: [
-      { expiry: '2026-04-22', qty: 38 },
-      { expiry: '2026-04-25', qty: 50 },
+      {
+        expiry: formatDateFromApi(row.manufacturedDate),
+        qty: row.count ?? 0,
+      },
     ],
-  },
-  {
-    code: 'C110', name: '한우 안심', store: '한우 오마카세', safe: 40,
-    avgStock: 36,
-    lots: [
-      { expiry: '2026-04-18', qty: 12 },
-      { expiry: '2026-04-20', qty: 22 },
-    ],
-  },
-  {
-    code: 'C100', name: '한우 등심', store: '이탈리안 키친', safe: 65,
-    avgStock: 59,
-    lots: [
-      { expiry: '2026-04-19', qty: 20 },
-      { expiry: '2026-04-21', qty: 32 },
-    ],
-  },
-  {
-    code: 'C200', name: '버터', store: '일식 스시바', safe: 25,
-    avgStock: 24,
-    lots: [{ expiry: '2026-07-10', qty: 26 }],
-  },
-  {
-    code: 'C210', name: '간장', store: '한우 오마카세', safe: 20,
-    avgStock: 19,
-    lots: [{ expiry: '2026-05-02', qty: 17 }],
-  },
-  {
-    code: 'C220', name: '올리브오일', store: '이탈리안 키친', safe: 12,
-    avgStock: 9,
-    lots: [
-      { expiry: '2026-04-19', qty: 5 },
-      { expiry: '2026-04-22', qty: 3 },
-    ],
-  },
-  {
-    code: 'C300', name: '연어', store: '차이나 가든', safe: 70,
-    avgStock: 88,
-    lots: [
-      { expiry: '2026-06-05', qty: 40 },
-      { expiry: '2026-06-10', qty: 56 },
-    ],
-  },
-  {
-    code: 'C310', name: '새우', store: '일식 스시바', safe: 50,
-    avgStock: 47,
-    lots: [{ expiry: '2026-06-18', qty: 41 }],
-  },
-  {
-    code: 'C500', name: '생수(박스)', store: '한우 오마카세', safe: 300,
-    avgStock: 410,
-    lots: [{ expiry: null, qty: 420 }],
-  },
-  {
-    code: 'C510', name: '생크림', store: '차이나 가든', safe: 400,
-    avgStock: null,
-    lots: [
-      { expiry: null, qty: 200 },
-      { expiry: null, qty: 310 },
-    ],
-  },
-])
+  }
+}
+
+async function loadStoreList() {
+  listError.value = ''
+  try {
+    const { data } = await getStoreList()
+    const list = data?.result
+    storeList.value = Array.isArray(list) ? list : []
+  } catch (error) {
+    console.error('Failed to fetch store list:', error)
+    storeList.value = []
+    listError.value = '매장 목록을 불러오지 못했습니다.'
+  }
+}
+
+async function fetchStoreInventory() {
+  if (!selectedStoreIdx.value) {
+    items.value = []
+    return
+  }
+  listLoading.value = true
+  listError.value = ''
+  try {
+    const { data } = await getStoreInventoryByStore(selectedStoreIdx.value)
+    const list = Array.isArray(data) ? data : []
+    items.value = list.map(mapInventoryRow)
+  } catch (error) {
+    console.error('Failed to fetch store inventory:', error)
+    items.value = []
+    listError.value = '해당 매장 재고를 불러오지 못했습니다.'
+  } finally {
+    listLoading.value = false
+  }
+}
+
+function onStoreSelectChange() {
+  fetchStoreInventory()
+}
 
 function totalStock(item) {
   return (item.lots ?? []).reduce((s, l) => s + l.qty, 0)
@@ -262,7 +292,7 @@ function hasExpiringSoonLot(item) {
 }
 
 function sortKey(a) {
-  return `${a.code}\u0000${a.store}`
+  return `${a.code}\u0000${a.idx ?? ''}`
 }
 
 function sortRows(list) {
@@ -272,8 +302,6 @@ function sortRows(list) {
 const filteredItems = computed(() => {
   const rows = items.value.filter((item) => {
     const stock = totalStock(item)
-    if (filterRegion.value && storeRegion[item.store] !== filterRegion.value) return false
-    if (filterStore.value && item.store !== filterStore.value) return false
     if (filterStatus.value === 'danger' && stock >= item.safe) return false
     if (filterStatus.value === 'normal' && (stock < item.safe || hasExpiringSoonLot(item))) return false
     if (filterStatus.value === 'expiring' && !hasExpiringSoonLot(item)) return false
@@ -282,10 +310,12 @@ const filteredItems = computed(() => {
   return sortRows(rows)
 })
 
-watch(filterRegion, (region) => {
-  if (!region || !filterStore.value) return
-  if (storeRegion[filterStore.value] !== region) {
-    filterStore.value = ''
+watch([filterRegion, storeSearch], () => {
+  if (!selectedStoreIdx.value) return
+  const selectedExists = visibleStores.value.some((s) => String(s.idx) === selectedStoreIdx.value)
+  if (!selectedExists) {
+    selectedStoreIdx.value = ''
+    items.value = []
   }
 })
 
@@ -296,6 +326,8 @@ function isExpiringSoon(expiry) {
 }
 
 function getStatus(item) {
+  if (item.apiStatus === 'CRITICAL') return '재고위험'
+  if (item.apiStatus === 'LOW') return '재고부족'
   const stock = totalStock(item)
   if (stock < item.safe) return '재고부족'
   if (hasExpiringSoonLot(item)) return '유통기한 임박'
@@ -303,6 +335,8 @@ function getStatus(item) {
 }
 
 function getStatusClass(item) {
+  if (item.apiStatus === 'CRITICAL') return 'bg-red-50 text-red-700 border border-red-200'
+  if (item.apiStatus === 'LOW') return 'bg-red-50 text-red-600 border border-red-200'
   const stock = totalStock(item)
   if (stock < item.safe) return 'bg-red-50 text-red-600 border border-red-200'
   if (hasExpiringSoonLot(item)) return 'bg-orange-50 text-orange-500 border border-orange-200'
@@ -316,4 +350,8 @@ function openDetail(item) {
 function closeDetail() {
   detailItem.value = null
 }
+
+onMounted(() => {
+  loadStoreList()
+})
 </script>

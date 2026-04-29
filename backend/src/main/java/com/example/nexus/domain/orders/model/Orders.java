@@ -54,4 +54,9 @@ public class Orders {
         this.isDanger = false;
         this.ordersStatus = OrdersStatus.APPROVE;
     }
+
+    public void rejectDangerOrder() {
+        this.isDanger = false;
+        this.ordersStatus = OrdersStatus.REJECT;
+    }
 }

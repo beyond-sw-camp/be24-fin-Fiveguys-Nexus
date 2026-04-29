@@ -27,4 +27,14 @@ public class ProductController {
         List<ProductDto.ListRes> list = productService.findAllProduct();
         return ResponseEntity.ok(list);
     }
+
+    // 기존 제품 수정
+    @PutMapping("/update/{idx}")
+    public ResponseEntity<String> updateProduct(@PathVariable Long idx, @RequestBody ProductDto.RegReq dto) {
+        boolean isModified = productService.updateProduct(idx, dto);
+        if (isModified) {
+            return ResponseEntity.ok("success modify product");
+        }
+        return ResponseEntity.badRequest().body("fail to modify: product or category not found");
+    }
 }

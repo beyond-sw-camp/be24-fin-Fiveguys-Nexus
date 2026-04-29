@@ -49,8 +49,8 @@ public class UserService implements UserDetailsService {
         User user = storeSignupReq.toEntity();
         System.out.println(user.getPassword());
         user.setPassword(passwordEncoder.encode(storeSignupReq.getPassword()));
-
-        userRepository.save(storeSignupReq.toEntity());
+        System.out.println("암호화 후 비밀번호 : " + user.getPassword());
+        userRepository.save(user);
 
         UserDto.StoreSignupRes storeSignupRes = UserDto.StoreSignupRes.from(storeSignupReq.toEntity(), randomPassword);
         

@@ -10,9 +10,6 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: false
-  sql:
-    init:
-      mode: always
 
 server:
   port: 8080

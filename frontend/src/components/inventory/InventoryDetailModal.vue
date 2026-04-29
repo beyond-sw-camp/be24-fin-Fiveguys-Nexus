@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 const props = defineProps({
   item: {
@@ -26,9 +26,13 @@ const props = defineProps({
     type: Function,
     required: true,
   },
+  editable: {
+    type: Boolean,
+    default: false,
+  },
 })
 
-defineEmits(['close'])
+const emit = defineEmits(['close', 'apply-adjustments'])
 
 const sortedLots = computed(() => {
   if (!props.item) return []
@@ -36,6 +40,33 @@ const sortedLots = computed(() => {
 })
 
 const lotDate = (row) => row?.manufacturedDate ?? row?.expiry ?? null
+const draftLots = ref([])
+
+watch(
+  sortedLots,
+  (lots) => {
+    draftLots.value = lots.map((row, idx) => ({
+      id: row.id ?? `${lotDate(row) ?? 'none'}-${idx}`,
+      expiry: lotDate(row),
+      qty: row.qty ?? 0,
+      adjustTo: row.qty ?? 0,
+    }))
+  },
+  { immediate: true },
+)
+
+const hasDraftLotChanges = computed(() =>
+  draftLots.value.some((row) => Number(row.adjustTo) !== Number(row.qty)),
+)
+
+const applyAdjustments = () => {
+  const changes = draftLots.value
+    .map((row) => ({ ...row, adjustTo: Number(row.adjustTo) }))
+    .filter((row) => Number.isFinite(row.adjustTo) && row.adjustTo >= 0 && row.adjustTo !== Number(row.qty))
+
+  if (!changes.length) return
+  emit('apply-adjustments', changes)
+}
 </script>
 
 <template>
@@ -72,19 +103,38 @@ const lotDate = (row) => row?.manufacturedDate ?? row?.expiry ?? null
               <tr class="border-b border-gray-100 bg-white sticky top-0">
                 <th class="px-5 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">유통기한</th>
                 <th class="px-5 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">수량</th>
+                <th v-if="props.editable" class="px-5 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">보정 후</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
-              <tr v-for="(row, idx) in sortedLots" :key="row.id ?? `${lotDate(row) ?? 'none'}-${row.qty}-${idx}`">
+              <tr v-for="(row, idx) in draftLots" :key="row.id ?? `${row.expiry ?? 'none'}-${row.qty}-${idx}`">
                 <td class="px-5 py-3 text-xs font-mono" :class="isExpiringSoon(lotDate(row)) ? 'text-orange-600 font-semibold' : 'text-gray-700'">
                   {{ lotDate(row) ?? '—' }}
                 </td>
                 <td class="px-5 py-3 text-right font-semibold text-gray-900">{{ row.qty.toLocaleString() }}</td>
+                <td v-if="props.editable" class="px-5 py-3 text-right">
+                  <input
+                    v-model.number="row.adjustTo"
+                    type="number"
+                    min="0"
+                    step="1"
+                    class="w-full max-w-[6rem] ml-auto px-2 py-1.5 rounded-md border border-gray-200 text-sm text-right focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none"
+                  />
+                </td>
               </tr>
             </tbody>
           </table>
         </div>
         <div class="px-6 py-4 border-t border-gray-100 flex justify-end">
+          <button
+            v-if="props.editable"
+            type="button"
+            class="px-4 py-2 text-sm font-semibold text-white bg-blue-500 rounded hover:bg-blue-600 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed mr-2"
+            :disabled="!hasDraftLotChanges"
+            @click="applyAdjustments"
+          >
+            lot 보정 반영
+          </button>
           <button
             type="button"
             class="px-4 py-2 text-sm font-semibold text-gray-600 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer"

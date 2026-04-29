@@ -1,9 +1,7 @@
 <script setup>
+import { computed, ref } from 'vue'
+
 const props = defineProps({
-  filterRegion: {
-    type: String,
-    required: true,
-  },
   storeSearch: {
     type: String,
     required: true,
@@ -23,49 +21,72 @@ const props = defineProps({
 })
 
 const emit = defineEmits([
-  'update:filterRegion',
   'update:storeSearch',
   'update:selectedStoreIdx',
   'submit',
 ])
 
-const onStoreChange = (event) => {
-  emit('update:selectedStoreIdx', event.target.value)
+const isDropdownOpen = ref(false)
+
+const shouldShowDropdown = computed(() => {
+  return isDropdownOpen.value && props.storeSearch.trim().length > 0
+})
+
+const onSearchFocus = () => {
+  isDropdownOpen.value = true
+}
+
+const onSearchBlur = () => {
+  // Allow option click via mousedown before blur closes.
+  setTimeout(() => {
+    isDropdownOpen.value = false
+  }, 120)
+}
+
+const onSearchInput = (event) => {
+  emit('update:storeSearch', event.target.value)
+  emit('update:selectedStoreIdx', '')
+  isDropdownOpen.value = true
+}
+
+const selectStore = (store) => {
+  emit('update:storeSearch', store.storeName)
+  emit('update:selectedStoreIdx', String(store.idx))
+  isDropdownOpen.value = false
 }
 </script>
 
 <template>
   <div class="flex gap-3 items-center flex-wrap">
-    <select
-      :value="props.filterRegion"
-      class="px-3 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none bg-white"
-      @change="emit('update:filterRegion', $event.target.value)"
-    >
-      <option value="">전체 지역</option>
-      <option value="서울">서울</option>
-      <option value="경기">경기</option>
-      <option value="부산">부산</option>
-    </select>
-
-    <input
-      :value="props.storeSearch"
-      type="search"
-      placeholder="매장명 검색"
-      autocomplete="off"
-      class="min-w-[10rem] flex-1 max-w-xs px-3 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none bg-white"
-      @input="emit('update:storeSearch', $event.target.value)"
-    />
-
-    <select
-      :value="props.selectedStoreIdx"
-      class="min-w-[12rem] px-3 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none bg-white"
-      @change="onStoreChange"
-    >
-      <option value="">매장 선택</option>
-      <option v-for="s in props.visibleStores" :key="s.idx" :value="String(s.idx)">
-        {{ s.storeName }}
-      </option>
-    </select>
+    <div class="relative min-w-[14rem] flex-1 max-w-xs">
+      <input
+        :value="props.storeSearch"
+        type="search"
+        placeholder="매장명 검색"
+        autocomplete="off"
+        class="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none bg-white"
+        @focus="onSearchFocus"
+        @blur="onSearchBlur"
+        @input="onSearchInput"
+      />
+      <div
+        v-if="shouldShowDropdown"
+        class="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-sm max-h-56 overflow-y-auto"
+      >
+        <button
+          v-for="s in props.visibleStores"
+          :key="s.idx"
+          type="button"
+          class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer"
+          @mousedown.prevent="selectStore(s)"
+        >
+          {{ s.storeName }}
+        </button>
+        <p v-if="props.visibleStores.length === 0" class="px-3 py-2 text-sm text-gray-400">
+          검색 결과가 없습니다.
+        </p>
+      </div>
+    </div>
 
     <button
       type="button"

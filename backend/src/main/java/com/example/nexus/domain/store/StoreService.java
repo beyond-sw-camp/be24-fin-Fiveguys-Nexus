@@ -35,7 +35,7 @@ public class StoreService {
 
     public List<StoreDto.StoreSearchRes> searchByStoreName(StoreDto.StoreSearchReq reqDto) {
         String keyword = reqDto.getKeyword();
-        String searchKeyword = keyword == null ? "" : keyword.trim();
+        String searchKeyword = keyword.trim();
         List<Store> res = storeRepository.findByStoreNameContainingIgnoreCase(searchKeyword);
 
         return res.stream().map(StoreDto.StoreSearchRes::from).toList();

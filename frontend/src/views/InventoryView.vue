@@ -9,7 +9,6 @@ import InventoryDetailModal from '@/components/inventory/InventoryDetailModal.vu
 import InventoryFranchiseToolbar from '@/components/inventory/InventoryFranchiseToolbar.vue'
 import InventoryFranchiseTable from '@/components/inventory/InventoryFranchiseTable.vue'
 
-const filterRegion = ref('')
 const storeSearch = ref('')
 const selectedStoreIdx = ref('')
 const filterStatus = ref('all')
@@ -31,24 +30,10 @@ const statusFilters = [
   { value: 'normal', label: '정상' },
 ]
 
-function regionFromAddress(address) {
-  if (!address) return ''
-  const text = String(address)
-  if (text.includes('서울')) return '서울'
-  if (text.includes('경기')) return '경기'
-  if (text.includes('부산')) return '부산'
-  return ''
-}
-
-const storesInRegion = computed(() => {
-  if (!filterRegion.value) return storeList.value
-  return storeList.value.filter((s) => regionFromAddress(s.address) === filterRegion.value)
-})
-
 const visibleStores = computed(() => {
   const q = storeSearch.value.toLowerCase()
-  if (!q) return storesInRegion.value
-  return storesInRegion.value.filter((s) => String(s.storeName ?? '').toLowerCase().includes(q))
+  if (!q) return storeList.value
+  return storeList.value.filter((s) => String(s.storeName ?? '').toLowerCase().includes(q))
 })
 
 function formatDate(value) {
@@ -147,8 +132,8 @@ const filteredItems = computed(() => {
   return sortRows(rows)
 })
 
-watch([filterRegion, storeSearch], () => {
-  // 검색/지역 조건이 바뀌어 현재 선택 매장이 목록에서 사라지면 선택/결과를 초기화한다.
+watch(storeSearch, () => {
+  // 검색 조건 변경으로 현재 선택 매장이 목록에서 사라지면 선택/결과를 초기화한다.
   if (!selectedStoreIdx.value) return
   const selectedExists = visibleStores.value.some((s) => String(s.idx) === selectedStoreIdx.value)
   if (!selectedExists) {
@@ -224,7 +209,6 @@ onBeforeUnmount(() => {
     </div>
 
     <InventoryFranchiseToolbar
-      v-model:filter-region="filterRegion"
       v-model:store-search="storeSearch"
       v-model:selected-store-idx="selectedStoreIdx"
       :visible-stores="visibleStores"

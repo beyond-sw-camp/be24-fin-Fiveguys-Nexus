@@ -40,12 +40,16 @@ function formatDate(value) {
   if (!value) return null
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return null
-  return date.toISOString().slice(0, 10)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 function mapInventoryRow(row) {
   return {
     idx: row.idx,
+    productIdx: row.productIdx,
     code: `P${row.productIdx}`,
     name: row.productName,
     store: row.storeName,
@@ -53,13 +57,48 @@ function mapInventoryRow(row) {
     avgStock: row.avgStock,
     apiStatus: row.status,
     manufacturedDate: row.manufacturedDate,
+    expiryDate: row.expiryDate,
     lots: [
       {
-        expiry: formatDate(row.manufacturedDate),
+        id: row.idx,
+        manufacturedDate: formatDate(row.expiryDate ?? row.manufacturedDate),
+        expiry: formatDate(row.expiryDate ?? row.manufacturedDate),
         qty: row.count ?? 0,
       },
     ],
   }
+}
+
+function statusRank(status) {
+  if (status === 'CRITICAL') return 0
+  if (status === 'LOW') return 1
+  return 2
+}
+
+function aggregateInventoryRows(list) {
+  const grouped = new Map()
+
+  for (const row of list) {
+    if (!row || row.idx === null || row.idx === undefined) continue
+    const mapped = mapInventoryRow(row)
+    const key = `${mapped.store}-${mapped.productIdx}`
+    const existing = grouped.get(key)
+
+    if (!existing) {
+      grouped.set(key, mapped)
+      continue
+    }
+
+    existing.lots.push(...mapped.lots)
+    if (statusRank(mapped.apiStatus) < statusRank(existing.apiStatus)) {
+      existing.apiStatus = mapped.apiStatus
+    }
+    existing.manufacturedDate = (existing.manufacturedDate && mapped.manufacturedDate)
+      ? (existing.manufacturedDate < mapped.manufacturedDate ? existing.manufacturedDate : mapped.manufacturedDate)
+      : (existing.manufacturedDate ?? mapped.manufacturedDate)
+  }
+
+  return Array.from(grouped.values())
 }
 
 async function loadStoreList(keyword = '') {
@@ -98,9 +137,7 @@ async function fetchStoreInventory() {
   try {
     const { data } = await getStoreInventoryByStore(selectedStoreIdx.value)
     const list = Array.isArray(data) ? data : []
-    items.value = list
-      .filter((row) => row && row.idx !== null && row.idx !== undefined)
-      .map(mapInventoryRow)
+    items.value = aggregateInventoryRows(list)
   } catch (error) {
     console.error('Failed to fetch store inventory:', error)
     items.value = []

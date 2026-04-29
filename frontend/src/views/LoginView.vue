@@ -123,6 +123,6 @@ async function handleLogin() {
   }
   
   if (auth.isAdmin) router.push('/dashboard')
-  else if (auth.isStore) router.push('/store-dashboard')
+  else if (auth.isStoreOwner) router.push('/store-dashboard')
 }
 </script>

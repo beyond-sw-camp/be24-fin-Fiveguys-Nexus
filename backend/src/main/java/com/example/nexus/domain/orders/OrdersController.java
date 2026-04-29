@@ -30,7 +30,7 @@ public class OrdersController {
 
     @GetMapping("/list/manual")
     public ResponseEntity manualList() {
-        List<OrdersDto.OrdersRes> result = orderService.findAllManual();
+        List<OrdersDto.OrderListRes> result = orderService.findAllManual();
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 

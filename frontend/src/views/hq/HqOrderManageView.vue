@@ -18,7 +18,7 @@ const abnormalCount = computed(() => abnormalOrders.value.filter(o => !o.process
 
 const tabs = computed(() => [
   { id: 'auto',     label: '자동 발주 제안', badge: autoOrders.value.length || null },
-  { id: 'manual',   label: '수동 발주 제안' },
+  { id: 'manual',   label: '수동 발주 제안', badge: manualOrders.value.length || null },
   { id: 'history',  label: '발주 이력' },
   { id: 'abnormal', label: '이상 발주', badge: abnormalCount.value || null },
 ])
@@ -70,12 +70,22 @@ const abnormalOrders = ref([
     ] },
 ])
 
-const pendingManualOrders = ref([
-  { id: 'MAN-20260420-001', store: '이탈리안 키친', date: '2026-04-20 09:10', status: '확정',
-    items: [{ product: '한우 등심', qty: 10, unitPrice: 85000 }, { product: '버터', qty: 5, unitPrice: 9000 }] },
-  { id: 'MAN-20260419-002', store: '일식 스시바',   date: '2026-04-19 14:30', status: '배송중',
-    items: [{ product: '올리브오일', qty: 8, unitPrice: 12000 }, { product: '간장', qty: 5, unitPrice: 4000 }, { product: '생수', qty: 10, unitPrice: 8000 }] },
-])
+const manualOrders = ref([])
+
+async function fetchManualOrders() {
+  try {
+    const res = await ordersApi.getManualOrders()
+    manualOrders.value = res.data.result.map(o => ({
+      id: o.idx,
+      store: o.storeName,
+      date: o.createdAt?.replace('T', ' ').slice(0, 16) ?? '-',
+      price: o.price,
+      status: o.ordersStatus === 'WAITING' ? '제안중' : o.ordersStatus === 'APPROVE' ? '확정' : '거절',
+    }))
+  } catch (e) {
+    console.error('수동 발주 목록 조회 실패', e)
+  }
+}
 
 // Tab routing
 function applyOrderRouteQuery() {
@@ -88,6 +98,7 @@ function applyOrderRouteQuery() {
 onMounted(() => {
   applyOrderRouteQuery()
   fetchAutoOrders()
+  fetchManualOrders()
 })
 
 function setOrderViewTab(id) {
@@ -205,7 +216,7 @@ function submitManualOrder({ store, items }) {
 
     <!-- Tab Contents -->
     <HqAutoOrderTable v-if="activeTab === 'auto'" :orders="autoOrders" @open-detail="openDetail" />
-    <HqManualOrderTable v-if="activeTab === 'manual'" :orders="pendingManualOrders" @open-detail="openDetail" />
+    <HqManualOrderTable v-if="activeTab === 'manual'" :orders="manualOrders" @open-detail="openDetail" />
     <HqOrderHistoryTable v-if="activeTab === 'history'" :orders="orderHistory" @open-detail="openDetail" />
     <HqAbnormalOrderTable v-if="activeTab === 'abnormal'" :orders="abnormalOrders"
       @open-detail="openDetail" @approve="approveAbnormal" @reject="rejectAbnormal" />

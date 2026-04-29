@@ -155,7 +155,7 @@ function submit() {
             <div class="flex items-center gap-1.5">
               <input v-model.number="item.qty" type="number" min="1" placeholder="수량"
                 class="w-20 px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none" />
-              <span class="text-xs text-gray-400 font-medium w-6">{{ item.product ? products.find(p => p.idx === item.product)?.productUnit : '' }}</span>
+              <span class="text-xs text-gray-400 font-medium w-auto shrink-0">{{ item.product ? products.find(p => p.idx === item.product)?.productUnit : '' }}</span>
             </div>
             <div class="w-28 px-3 py-2 rounded border border-gray-100 bg-gray-50 text-sm text-gray-500 text-right shrink-0">
               {{ item.product ? formatPrice(item.unitPrice) : '-' }}

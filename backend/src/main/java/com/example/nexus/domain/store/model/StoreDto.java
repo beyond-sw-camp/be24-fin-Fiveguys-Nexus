@@ -1,8 +1,10 @@
 package com.example.nexus.domain.store.model;
 
-import jakarta.persistence.Column;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -63,6 +65,30 @@ public class StoreDto {
                     .createdAt(entity.getCreatedAt().format(formatter))
                     .closedAt(entity.getClosedAt() == null ? "운영 중" : entity.getClosedAt().format(formatter))
                     .filePath(entity.getFilePath())
+                    .build();
+        }
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class StoreSearchReq {
+        private String keyword;
+    }
+
+    @Builder
+    @Getter
+    public static class StoreSearchRes {
+        private Long idx;
+        private String storeName;
+        private String address;
+
+        public static StoreSearchRes from(Store entity) {
+            return StoreSearchRes.builder()
+                    .idx(entity.getIdx())
+                    .storeName(entity.getStoreName())
+                    .address(entity.getAddress())
                     .build();
         }
     }

@@ -22,6 +22,8 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
     }
 
+    // store 회원가입
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(username).orElseThrow();

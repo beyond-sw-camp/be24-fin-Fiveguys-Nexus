@@ -56,4 +56,10 @@ public class UserDto {
         private String email;
     }
 
+
+    public static class StoreSignupRes {
+        private String email;
+        private String password;
+    }
+
 }

@@ -1,10 +1,6 @@
-import api from '@/plugins/axiosinterceptor.js'
+import api from '@/plugins/axiosinterceptor'
 
-const getStoreList = async () => {
-  const res = await api.get('/api/store/list')
-  return res.data
-}
+export const getStoreList = () => api.get('/store/list')
 
-export default {
-  getStoreList,
-}
+export const getStoreInventoryByStore = (storeIdx) =>
+  api.get(`/store/inventory/list/${storeIdx}`)

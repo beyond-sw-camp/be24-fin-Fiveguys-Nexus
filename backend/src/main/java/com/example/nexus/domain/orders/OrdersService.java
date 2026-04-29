@@ -87,7 +87,7 @@ public class OrdersService {
     }
 
     public List<OrdersDto.OrdersRes> findAll() {
-        return ordersRepository.findAll().stream()
+        return ordersRepository.findAllByOrdersStatus(OrdersStatus.APPROVE).stream()
                 .map(OrdersDto.OrdersRes::from)
                 .toList();
     }
@@ -119,6 +119,15 @@ public class OrdersService {
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
 
         return ordersRepository.findAllByStore_IdxAndOrdersStatus(store.getIdx(), OrdersStatus.APPROVE).stream()
+                .map(OrdersDto.OrdersRes::from)
+                .toList();
+    }
+
+    public List<OrdersDto.OrdersRes> findByUserIdxAndOrdersStatus(Long userIdx) {
+        Store store = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        return ordersRepository.findAllByStore_IdxAndOrdersStatus(store.getIdx(), OrdersStatus.WAITING).stream()
                 .map(OrdersDto.OrdersRes::from)
                 .toList();
     }

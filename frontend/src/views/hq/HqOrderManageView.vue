@@ -53,6 +53,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Plus, Settings } from 'lucide-vue-next'
 import { productPrices } from '@/components/orders/orderUtils'
+import ordersApi from '@/api/orders'
 import HqAutoOrderTable from '@/components/orders/HqAutoOrderTable.vue'
 import HqManualOrderTable from '@/components/orders/HqManualOrderTable.vue'
 import HqOrderHistoryTable from '@/components/orders/HqOrderHistoryTable.vue'
@@ -67,25 +68,33 @@ const router = useRouter()
 const abnormalCount = computed(() => abnormalOrders.value.filter(o => !o.processed).length)
 
 const tabs = computed(() => [
-  { id: 'auto',     label: '자동 발주 제안', badge: autoOrders.value.filter(o => o.status === '제안중').length || null },
+  { id: 'auto',     label: '자동 발주 제안', badge: autoOrders.value.length || null },
   { id: 'manual',   label: '수동 발주 제안' },
   { id: 'history',  label: '발주 이력' },
   { id: 'abnormal', label: '이상 발주', badge: abnormalCount.value || null },
 ])
 const activeTab = ref('auto')
 
-const autoOrders = ref([
-  { id: 'AUTO-20260413-001', store: '이탈리안 키친',  date: '2026-04-13 22:00', status: '제안중',
-    items: [{ product: '한우 등심', qty: 10, unitPrice: 85000 }, { product: '올리브오일', qty: 5, unitPrice: 12000 }] },
-  { id: 'AUTO-20260413-002', store: '일식 스시바',    date: '2026-04-13 22:00', status: '제안중',
-    items: [{ product: '연어', qty: 8, unitPrice: 32000 }, { product: '생크림', qty: 10, unitPrice: 7000 }, { product: '생수', qty: 5, unitPrice: 8000 }] },
-  { id: 'AUTO-20260413-003', store: '한우 오마카세',  date: '2026-04-13 22:00', status: '제안중',
-    items: [{ product: '간장', qty: 10, unitPrice: 4000 }, { product: '버터', qty: 5, unitPrice: 9000 }] },
-  { id: 'AUTO-20260412-004', store: '차이나 가든',    date: '2026-04-12 22:00', status: '확정',
-    items: [{ product: '양파', qty: 20, unitPrice: 1500 }, { product: '생수', qty: 10, unitPrice: 8000 }] },
-  { id: 'AUTO-20260412-005', store: '한우 오마카세',  date: '2026-04-12 22:00', status: '거절',
-    items: [{ product: '한우 안심', qty: 5, unitPrice: 95000 }, { product: '마늘', qty: 10, unitPrice: 8000 }] },
-])
+const autoOrders = ref([])
+
+async function fetchAutoOrders() {
+  try {
+    const res = await ordersApi.getAutoOrders()
+    autoOrders.value = res.data.result.map(o => ({
+      id: o.idx,
+      store: o.storeName,
+      date: o.createdAt?.replace('T', ' ').slice(0, 16) ?? '-',
+      status: '제안중',
+      items: o.ordersItemList.map(i => ({
+        product: i.productName,
+        qty: i.count,
+        unitPrice: i.unitPrice,
+      })),
+    }))
+  } catch (e) {
+    console.error('자동 발주 목록 조회 실패', e)
+  }
+}
 
 const orderHistory = ref([
   { id: 'ORD-20260413-001', type: '자동', store: '차이나 가든',    date: '2026-04-12 22:00', status: '배송중',
@@ -133,6 +142,7 @@ function applyOrderRouteQuery() {
 
 onMounted(() => {
   applyOrderRouteQuery()
+  fetchAutoOrders()
 })
 
 function setOrderViewTab(id) {

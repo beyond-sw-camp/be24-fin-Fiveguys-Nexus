@@ -27,7 +27,7 @@ public class OrdersDto {
         private OrdersStatus ordersStatus;
         private boolean isDanger;
         private LocalDateTime createdAt;
-        private Long storeIdx;
+        private String storeName;
         private List<OrdersItemDto.OrdersItemRes> ordersItemList;
         private Long deliveryIdx;
 
@@ -39,7 +39,7 @@ public class OrdersDto {
                     .ordersStatus(entity.getOrdersStatus())
                     .isDanger(entity.isDanger())
                     .createdAt(entity.getCreatedAt())
-                    .storeIdx(entity.getStore().getIdx())
+                    .storeName(entity.getStore().getStoreName())
                     .ordersItemList(entity.getOrdersItemList().stream()
                             .map(OrdersItemDto.OrdersItemRes::from).toList())
                     .deliveryIdx(entity.getDelivery() != null ? entity.getDelivery().getIdx() : null)

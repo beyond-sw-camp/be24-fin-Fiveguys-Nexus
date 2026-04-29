@@ -73,7 +73,32 @@
         </div>
 
         <form class="p-6 space-y-4" @submit.prevent="submitForm">
-          <div class="grid grid-cols-2 gap-4">
+          <!-- 계정 생성(create): 아이디 + 이메일만 입력 -->
+          <div v-if="formMode === 'create'" class="grid grid-cols-2 gap-4">
+            <div class="space-y-1.5">
+              <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">성함</label>
+              <input
+                v-model.trim="form.name"
+                type="text"
+                placeholder="예: 김동현"
+                class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none"
+                required
+              />
+            </div>
+            <div class="space-y-1.5">
+              <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">이메일</label>
+              <input
+                v-model.trim="form.email"
+                type="email"
+                placeholder="예: user@hanwha-nexus.com"
+                class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none"
+                required
+              />
+            </div>
+          </div>
+
+          <!-- 계정 수정(edit): 기존 입력 필드 유지 -->
+          <div v-else class="grid grid-cols-2 gap-4">
             <div class="space-y-1.5">
               <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">사번 (ID)</label>
               <input
@@ -97,7 +122,7 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
+          <div v-if="formMode !== 'create'" class="grid grid-cols-2 gap-4">
             <div class="space-y-1.5">
               <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">부서</label>
               <input
@@ -120,7 +145,7 @@
             </div>
           </div>
 
-          <div class="space-y-1.5">
+          <div v-if="formMode !== 'create'" class="space-y-1.5">
             <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">아바타 이니셜</label>
             <input
               v-model.trim="form.avatar"
@@ -182,6 +207,7 @@
 
 <script setup>
 import { reactive, ref } from 'vue'
+import api from '@/plugins/axiosinterceptor'
 
 const STORAGE_KEY = 'nexus_admin_accounts'
 
@@ -260,34 +286,56 @@ function closeFormModal() {
   resetForm()
 }
 
-function submitForm() {
-  const normalizedId = form.id.toUpperCase()
-  const normalizedAvatar = form.avatar.toUpperCase()
+async function submitForm() {
+  const normalizedId = form.name.toUpperCase()
+  const normalizedEmail = form.email.toLowerCase()
+  const normalizedAvatar = (form.avatar || form.name).toUpperCase()
 
   if (formMode.value === 'create') {
-    if (accounts.value.some((account) => account.id === normalizedId)) {
-      alert('이미 존재하는 계정 ID 입니다.')
+    if (accounts.value.some((account) => account.email.toLowerCase() === normalizedEmail)) {
+      alert('이미 존재하는 이메일 입니다.')
       return
     }
 
-    saveAccounts([
-      {
-        id: normalizedId,
-        name: form.name,
-        role: 'ADMIN',
-        dept: form.dept,
-        email: form.email,
-        avatar: normalizedAvatar,
-      },
-      ...accounts.value,
-    ])
-    alert('계정이 생성되었습니다.')
+    try {
+      const response = await api.post('/store/signup', {
+        email: normalizedEmail,
+        password: 'password123',
+        name: form.name.trim(),
+      })
+
+      const avatar = normalizedAvatar.slice(0, 2) || 'ST'
+      saveAccounts([
+        {
+          id: normalizedId,
+          name: form.name.trim(),
+          role: 'STORE_OWNER',
+          dept: '가맹점',
+          email: normalizedEmail,
+          avatar,
+        },
+        ...accounts.value,
+      ])
+
+      const responseData = response?.data
+      let tempPassword = ''
+      if (typeof responseData === 'string') {
+        const match = responseData.match(/임시\s*비밀번호\s*:\s*(.*)/)
+        tempPassword = (match?.[1] ?? responseData).trim()
+      }
+
+      if (tempPassword) alert(`임시 비밀번호: ${tempPassword}`)
+      else alert('계정이 생성되었습니다.')
+    } catch (e) {
+      alert('계정 생성에 실패했습니다.')
+      return
+    }
   } else {
     if (!selectedAccount.value) return
     saveAccounts(
       accounts.value.map((account) =>
         account.id === selectedAccount.value.id
-          ? { ...account, name: form.name, dept: form.dept, email: form.email, avatar: normalizedAvatar }
+          ? { ...account, name: form.name, dept: form.dept, email: normalizedEmail, avatar: normalizedAvatar }
           : account
       )
     )

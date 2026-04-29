@@ -221,7 +221,7 @@ function submitManualOrder({ store, items }) {
 
     <!-- Tab Contents -->
     <HqAutoOrderTable v-if="activeTab === 'auto'" :orders="autoOrders" @open-detail="openDetail" />
-    <HqManualOrderTable v-if="activeTab === 'manual'" :orders="pendingManualOrders" @open-detail="openDetail" />
+    <HqManualOrderTable v-if="activeTab === 'manual'" :orders="manualOrders" @open-detail="openDetail" />
     <HqOrderHistoryTable v-if="activeTab === 'history'" :orders="orderHistory" @open-detail="openDetail" />
     <HqAbnormalOrderTable v-if="activeTab === 'abnormal'" :orders="abnormalOrders"
       @open-detail="openDetail" @approve="approveAbnormal" @reject="rejectAbnormal" />

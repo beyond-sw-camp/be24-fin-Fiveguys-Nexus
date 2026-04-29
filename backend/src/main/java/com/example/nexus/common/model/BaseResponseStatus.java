@@ -18,6 +18,16 @@ public enum BaseResponseStatus {
     USER_NOT_FOUND(false, 3006, "존재하지 않는 사용자입니다."),
     PASSWORD_WRONG(false, 3007, "비밀번호가 일치하지 않습니다."),
 
+
+    // 3100번대 ~ 가맹점 등록 클라이언트 오류
+    NOT_FOUND_USER(false, 3101, "해당 이메일로 등록된 점주 정보를 찾을 수 없습니다."),
+    STORE_NAME_ALREADY_EXISTS(false, 3102, "이미 등록된 매장명입니다."),
+    BUSINESS_NUMBER_ALREADY_EXISTS(false, 3103, "이미 등록된 사업자 번호입니다."),
+    ALREADY_HAS_STORE(false, 3104, "이미 매장을 보유한 점주입니다."),
+
+
+
+
     // 4000번대 실패
     REQUEST_ERROR(false, 4001, "입력값이 잘못되었습니다."),
     NOT_FOUND_DATA(false, 4002, "데이터를 찾을 수 없습니다."),
@@ -36,6 +46,7 @@ public enum BaseResponseStatus {
     PAYMENT_BILLING_INVALID_OWNER(false, 4104, "결제 수단의 소유자가 아닙니다."),
     PAYMENT_BILLING_REQUIRED(false, 4105, "최소 1개의 결제 수단이 필요합니다."),
     PAYMENT_DEFAULT_BILLING_REQUIRED(false, 4106, "기본 결제 수단이 존재하지 않습니다."),
+
     // 5000번대 실패
     FAIL(false, 5000, "요청 실패");
 

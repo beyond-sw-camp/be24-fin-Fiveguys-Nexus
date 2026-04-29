@@ -33,7 +33,8 @@ public class StoreController {
 
         return ResponseEntity.ok(result);
     }
-  
+
+    // 가맹점 목록 조회
     @GetMapping("/list")
     public ResponseEntity storeList(){
         List<StoreDto.StoreListRes> result = storeService.storeList();
@@ -46,5 +47,12 @@ public class StoreController {
     public ResponseEntity storeDetailList(@PathVariable Long storeIdx){
         StoreDto.StoreDetailListRes result = storeService.storeDetailList(storeIdx);
         return ResponseEntity.ok(BaseResponse.success(result));
+    }
+
+    // 신규 가맹점 등록
+    @PostMapping("/new/register")
+    public ResponseEntity storeReg(@RequestBody StoreDto.StoreRegReq dto ){
+        storeService.storeReg(dto);
+        return ResponseEntity.ok(BaseResponse.success("성공"));
     }
 }

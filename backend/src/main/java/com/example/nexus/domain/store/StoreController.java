@@ -34,15 +34,15 @@ public class StoreController {
 
     // 가맹점 목록 조회
     @GetMapping("/list")
-    public ResponseEntity list(){
+    public ResponseEntity storeList(){
         List<StoreDto.StoreListRes> result = storeService.storeList();
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 
 
     // 가맹점 목록 상세 조회
-    @GetMapping("/Detail/list/{idx}")
-    public ResponseEntity list(@PathVariable Long idx){
+    @GetMapping("/detail/list/{idx}")
+    public ResponseEntity storeDetailList(@PathVariable Long idx){
         StoreDto.StoreDetailListRes result = storeService.storeDetailList(idx);
         return ResponseEntity.ok(BaseResponse.success(result));
     }

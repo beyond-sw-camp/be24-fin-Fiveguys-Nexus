@@ -25,4 +25,10 @@ public class CategoryController {
         List<CategoryDto.ListRes> dto = categoryService.findAllCategories();
         return ResponseEntity.ok(dto);
     }
+
+    @DeleteMapping("/delete/{idx}")
+    public ResponseEntity deleteCategory(@PathVariable Long idx) {
+        categoryService.deleteCategory(idx);
+        return ResponseEntity.ok("success delete category");
+    }
 }

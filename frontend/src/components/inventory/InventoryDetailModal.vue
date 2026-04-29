@@ -34,6 +34,8 @@ const sortedLots = computed(() => {
   if (!props.item) return []
   return props.fifoLots(props.item)
 })
+
+const lotDate = (row) => row?.manufacturedDate ?? row?.expiry ?? null
 </script>
 
 <template>
@@ -68,16 +70,14 @@ const sortedLots = computed(() => {
           <table class="w-full text-sm text-left">
             <thead>
               <tr class="border-b border-gray-100 bg-white sticky top-0">
-                <th class="px-5 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">순번</th>
                 <th class="px-5 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">유통기한</th>
                 <th class="px-5 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">수량</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
-              <tr v-for="(row, idx) in sortedLots" :key="row.id ?? `${row.expiry ?? 'none'}-${row.qty}-${idx}`">
-                <td class="px-5 py-3 text-gray-500">{{ idx + 1 }}</td>
-                <td class="px-5 py-3 text-xs font-mono" :class="isExpiringSoon(row.expiry) ? 'text-orange-600 font-semibold' : 'text-gray-700'">
-                  {{ row.expiry ?? '—' }}
+              <tr v-for="(row, idx) in sortedLots" :key="row.id ?? `${lotDate(row) ?? 'none'}-${row.qty}-${idx}`">
+                <td class="px-5 py-3 text-xs font-mono" :class="isExpiringSoon(lotDate(row)) ? 'text-orange-600 font-semibold' : 'text-gray-700'">
+                  {{ lotDate(row) ?? '—' }}
                 </td>
                 <td class="px-5 py-3 text-right font-semibold text-gray-900">{{ row.qty.toLocaleString() }}</td>
               </tr>

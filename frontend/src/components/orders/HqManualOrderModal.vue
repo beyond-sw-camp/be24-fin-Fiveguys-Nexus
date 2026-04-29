@@ -93,11 +93,13 @@ function submit() {
     return
   }
   emit('submit', {
-    store: form.store,
-    items: validItems.map(i => ({ product: i.product, qty: i.qty, unitPrice: productPrices[i.product] ?? 0 })),
+    storeIdx: form.store,
+    ordersItemList: validItems.map(i => ({ productIdx: i.product, count: i.qty })),
   })
   form.store = ''
   form.items = []
+  selectedStore.value = null
+  storeKeyword.value = ''
 }
 </script>
 

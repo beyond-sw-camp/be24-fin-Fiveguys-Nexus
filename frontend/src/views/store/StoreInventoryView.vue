@@ -124,81 +124,81 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { X } from 'lucide-vue-next'
+import { ref, computed, onMounted } from 'vue'
+import { getPosInventoryList } from '@/api/pos'
 
 const detailTitleId = 'store-inv-detail-title'
 const detailItem = ref(null)
 const draftLots = ref([])
+const inventory = ref([])
 
-const inventory = ref([
-  {
-    code: 'C100', name: '한우 등심', min: 10,
+function formatDate(value) {
+  if (!value) return null
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return null
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
+function mapInventoryRow(row) {
+  return {
+    idx: row.idx,
+    productIdx: row.productIdx,
+    code: `P${row.productIdx}`,
+    name: row.productName,
+    min: row.minStock ?? 0,
+    apiStatus: row.status,
     lots: [
-      { id: 'c100-1', expiry: '2026-04-18', qty: 3 },
-      { id: 'c100-2', expiry: '2026-04-22', qty: 2 },
+      {
+        id: row.idx,
+        expiry: formatDate(row.manufacturedDate),
+        qty: row.count ?? 0,
+      },
     ],
-  },
-  {
-    code: 'C101', name: '한우 안심', min: 8,
-    lots: [
-      { id: 'c101-1', expiry: '2026-04-19', qty: 4 },
-      { id: 'c101-2', expiry: '2026-04-23', qty: 5 },
-    ],
-  },
-  {
-    code: 'C200', name: '연어', min: 8,
-    lots: [
-      { id: 'c200-1', expiry: '2026-04-16', qty: 2 },
-      { id: 'c200-2', expiry: '2026-04-20', qty: 1 },
-    ],
-  },
-  {
-    code: 'C201', name: '참치', min: 6,
-    lots: [{ id: 'c201-1', expiry: '2026-04-17', qty: 4 }],
-  },
-  {
-    code: 'C300', name: '양파', min: 20,
-    lots: [
-      { id: 'c300-1', expiry: '2026-05-10', qty: 5 },
-      { id: 'c300-2', expiry: '2026-05-20', qty: 3 },
-    ],
-  },
-  {
-    code: 'C301', name: '마늘', min: 15,
-    lots: [{ id: 'c301-1', expiry: '2026-05-15', qty: 12 }],
-  },
-  {
-    code: 'C302', name: '대파', min: 10,
-    lots: [{ id: 'c302-1', expiry: '2026-04-25', qty: 8 }],
-  },
-  {
-    code: 'C400', name: '간장', min: 8,
-    lots: [{ id: 'c400-1', expiry: '2027-01-01', qty: 3 }],
-  },
-  {
-    code: 'C401', name: '올리브오일', min: 5,
-    lots: [{ id: 'c401-1', expiry: '2026-12-01', qty: 2 }],
-  },
-  {
-    code: 'C500', name: '버터', min: 5,
-    lots: [{ id: 'c500-1', expiry: '2026-06-30', qty: 2 }],
-  },
-  {
-    code: 'C501', name: '생크림', min: 4,
-    lots: [
-      { id: 'c501-1', expiry: '2026-04-20', qty: 1 },
-    ],
-  },
-  {
-    code: 'C600', name: '콜라(박스)', min: 15,
-    lots: [{ id: 'c600-1', expiry: '2026-12-31', qty: 18 }],
-  },
-  {
-    code: 'C601', name: '생수(박스)', min: 20,
-    lots: [{ id: 'c601-1', expiry: null, qty: 25 }],
-  },
-])
+  }
+}
+
+function statusRank(status) {
+  if (status === 'CRITICAL') return 0
+  if (status === 'LOW') return 1
+  return 2
+}
+
+function aggregateInventoryRows(list) {
+  const grouped = new Map()
+  for (const row of list) {
+    if (!row || row.idx === null || row.idx === undefined) continue
+    const mapped = mapInventoryRow(row)
+    const key = String(mapped.productIdx)
+    const existing = grouped.get(key)
+
+    if (!existing) {
+      grouped.set(key, mapped)
+      continue
+    }
+
+    existing.lots.push(...mapped.lots)
+    if (statusRank(mapped.apiStatus) < statusRank(existing.apiStatus)) {
+      existing.apiStatus = mapped.apiStatus
+    }
+  }
+  return Array.from(grouped.values()).sort((a, b) =>
+    a.code.localeCompare(b.code, undefined, { numeric: true }),
+  )
+}
+
+async function fetchInventory() {
+  try {
+    const { data } = await getPosInventoryList()
+    const list = Array.isArray(data) ? data : []
+    inventory.value = aggregateInventoryRows(list)
+  } catch (error) {
+    console.error('Failed to fetch POS inventory:', error)
+    inventory.value = []
+  }
+}
 
 function totalStock(item) {
   return (item.lots ?? []).reduce((s, l) => s + l.qty, 0)
@@ -251,6 +251,8 @@ function isExpiringSoon(expiry) {
 }
 
 function getStatus(item) {
+  if (item.apiStatus === 'CRITICAL') return '위험'
+  if (item.apiStatus === 'LOW') return '부족'
   const stock = totalStock(item)
   if (stock < item.min) return '부족'
   if (hasExpiringSoonLot(item)) return '유통기한 임박'
@@ -258,6 +260,8 @@ function getStatus(item) {
 }
 
 function getStatusClass(item) {
+  if (item.apiStatus === 'CRITICAL') return 'bg-red-50 text-red-700 border border-red-200'
+  if (item.apiStatus === 'LOW') return 'bg-red-50 text-red-600 border border-red-200'
   const stock = totalStock(item)
   if (stock < item.min) return 'bg-red-50 text-red-600 border border-red-200'
   if (hasExpiringSoonLot(item)) return 'bg-orange-50 text-orange-500 border border-orange-200'
@@ -300,4 +304,8 @@ function applyLotAdjustments() {
   alert('lot 재고 보정이 완료되었습니다.')
   closeDetail()
 }
+
+onMounted(() => {
+  fetchInventory()
+})
 </script>

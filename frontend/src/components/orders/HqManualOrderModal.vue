@@ -2,7 +2,7 @@
 import { reactive, ref, onMounted } from 'vue'
 import { Plus } from 'lucide-vue-next'
 import { formatPrice } from './orderUtils'
-import { getStoreList } from '@/api/store'
+import { searchStoreList } from '@/api/store'
 import { getProductList } from '@/api/product'
 
 defineProps({
@@ -12,16 +12,47 @@ defineProps({
 const emit = defineEmits(['close', 'submit'])
 
 const stores = ref([])
+const storeKeyword = ref('')
+const selectedStore = ref(null)
+const showStoreDropdown = ref(false)
 const products = ref([])
 const form = reactive({ store: '', items: [] })
 
+async function searchStore() {
+  if (storeKeyword.value.trim().length === 0) {
+    stores.value = []
+    showStoreDropdown.value = false
+    return
+  }
+  try {
+    const res = await searchStoreList(storeKeyword.value)
+    stores.value = res.data.result
+    showStoreDropdown.value = stores.value.length > 0
+  } catch (e) {
+    console.error('매장 검색 실패', e)
+  }
+}
+
+function selectStore(store) {
+  selectedStore.value = store
+  form.store = store.idx
+  storeKeyword.value = store.storeName
+  showStoreDropdown.value = false
+}
+
+function clearStore() {
+  selectedStore.value = null
+  form.store = ''
+  storeKeyword.value = ''
+  stores.value = []
+}
+
 onMounted(async () => {
   try {
-    const [storeRes, productRes] = await Promise.all([getStoreList(), getProductList()])
-    stores.value = storeRes.data.result
+    const productRes = await getProductList()
     products.value = productRes.data
   } catch (e) {
-    console.error('매장/상품 목록 조회 실패', e)
+    console.error('상품 목록 조회 실패', e)
   }
 })
 
@@ -59,14 +90,20 @@ function submit() {
       <div class="p-6 space-y-4">
         <div class="space-y-1.5">
           <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">대상 매장</label>
-          <select v-model="form.store"
-            class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none">
-            <option value="">선택</option>
-            <option>한우 오마카세</option>
-            <option>이탈리안 키친</option>
-            <option>일식 스시바</option>
-            <option>차이나 가든</option>
-          </select>
+          <div class="relative">
+            <div v-if="selectedStore" class="flex items-center justify-between w-full px-3 py-2 rounded border border-[#F37321] bg-orange-50 text-sm">
+              <span class="font-medium text-gray-900">{{ selectedStore.storeName }}</span>
+              <button @click="clearStore" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
+            </div>
+            <input v-else v-model="storeKeyword" @input="searchStore" placeholder="매장명을 검색하세요"
+              class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none" />
+            <ul v-if="showStoreDropdown" class="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded shadow-lg max-h-40 overflow-y-auto">
+              <li v-for="store in stores" :key="store.idx" @click="selectStore(store)"
+                class="px-3 py-2 text-sm hover:bg-orange-50 cursor-pointer">
+                {{ store.storeName }} <span class="text-gray-400 text-xs">{{ store.address }}</span>
+              </li>
+            </ul>
+          </div>
         </div>
         <div class="space-y-2">
           <div class="flex justify-between items-center">

@@ -2,9 +2,10 @@ package com.example.nexus.domain.pos.model;
 
 import com.example.nexus.common.enums.InventoryStatus;
 import com.example.nexus.domain.store.model.StoreInventory;
-import com.example.nexus.domain.store.model.StoreInventoryDto;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
@@ -33,6 +34,45 @@ public class PosStoreInventoryDto {
                     .productIdx(entity.getProduct().getIdx())
                     .productName(entity.getProduct().getName())
                     .minStock(entity.getProduct().getMinStock())
+                    .build();
+        }
+    }
+
+    @Getter
+    @Builder
+    public static class CountRes {
+        private Long idx;
+        private Integer count;
+
+        public static PosStoreInventoryDto.CountRes from(PosStoreInventory entity) {
+            return PosStoreInventoryDto.CountRes.builder()
+                    .idx(entity.getIdx())
+                    .count(entity.getCount())
+                    .build();
+        }
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class CountReq {
+        private Integer count;
+    }
+
+    @Getter
+    @Builder
+    public static class SyncCountRes {
+        private Long posInventoryIdx;
+        private Integer posCount;
+        private Long hqInventoryIdx;
+        private Integer hqCount;
+
+        public static PosStoreInventoryDto.SyncCountRes from(PosStoreInventory posEntity, StoreInventory hqEntity) {
+            return PosStoreInventoryDto.SyncCountRes.builder()
+                    .posInventoryIdx(posEntity.getIdx())
+                    .posCount(posEntity.getCount())
+                    .hqInventoryIdx(hqEntity.getIdx())
+                    .hqCount(hqEntity.getCount())
                     .build();
         }
     }

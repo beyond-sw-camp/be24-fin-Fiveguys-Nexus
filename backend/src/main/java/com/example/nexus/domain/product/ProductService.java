@@ -41,4 +41,23 @@ public class ProductService {
         return dtos;
     }
 
+    @Transactional
+    public boolean updateProduct(Long idx, ProductDto.RegReq dto) {
+        Product product = productRepository.findById(idx).orElse(null);
+        if (product == null) return false;
+
+        Category category = categoryRepository.findById(dto.getCategoryIdx()).orElse(null);
+        if (category == null) return false;
+
+        product.update(
+                dto.getProductName(),
+                dto.getProductUnit(),
+                dto.getMaxStock(),
+                dto.getMinStock(),
+                dto.getUnitPrice(),
+                dto.getDangerDays(),
+                category
+        );
+        return true;
+    }
 }

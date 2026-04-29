@@ -9,10 +9,8 @@ defineEmits(['open-detail'])
 </script>
 
 <template>
-  <div class="space-y-5">
-    <div>
-      <h3 class="text-sm font-bold text-gray-700 mb-2">진행 중인 수동 발주</h3>
-      <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+  <div class="space-y-4">
+    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
         <table class="w-full text-sm text-left">
           <thead>
             <tr class="border-b border-gray-200 bg-gray-50">
@@ -35,11 +33,10 @@ defineEmits(['open-detail'])
               </td>
             </tr>
             <tr v-if="orders.length === 0">
-              <td colspan="5" class="px-5 py-8 text-center text-sm text-gray-400">진행 중인 수동 발주가 없습니다.</td>
+              <td colspan="5" class="px-5 py-10 text-center text-sm text-gray-400">수동 발주 제안이 없습니다.</td>
             </tr>
           </tbody>
         </table>
-      </div>
     </div>
   </div>
 </template>

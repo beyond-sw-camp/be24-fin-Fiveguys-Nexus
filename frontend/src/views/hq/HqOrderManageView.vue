@@ -18,7 +18,7 @@ const abnormalCount = computed(() => abnormalOrders.value.filter(o => !o.process
 
 const tabs = computed(() => [
   { id: 'auto',     label: '자동 발주 제안', badge: autoOrders.value.length || null },
-  { id: 'manual',   label: '수동 발주 제안' },
+  { id: 'manual',   label: '수동 발주 제안', badge: manualOrders.value.length || null },
   { id: 'history',  label: '발주 이력' },
   { id: 'abnormal', label: '이상 발주', badge: abnormalCount.value || null },
 ])

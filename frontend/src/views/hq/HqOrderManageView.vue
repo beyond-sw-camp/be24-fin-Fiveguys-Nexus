@@ -134,8 +134,14 @@ async function openDangerSettings() {
   showSettings.value = true
 }
 
-function saveDangerSettings({ threshold, months }) {
-  showSettings.value = false
+async function saveDangerSettings({ threshold, months }) {
+  try {
+    await ordersApi.updateDangerSettings({ ratio: threshold, period: months })
+    dangerSettings.value = { ratio: threshold, period: months }
+    showSettings.value = false
+  } catch (e) {
+    console.error('이상 발주 기준 저장 실패', e)
+  }
 }
 
 // Abnormal order actions

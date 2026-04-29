@@ -81,11 +81,6 @@ async function fetchManualOrders() {
       date: o.createdAt?.replace('T', ' ').slice(0, 16) ?? '-',
       price: o.price,
       status: o.ordersStatus === 'WAITING' ? '제안중' : o.ordersStatus === 'APPROVE' ? '확정' : '거절',
-      items: (o.ordersItemList ?? []).map(i => ({
-        product: i.productName,
-        qty: i.count,
-        unitPrice: i.unitPrice,
-      })),
     }))
   } catch (e) {
     console.error('수동 발주 목록 조회 실패', e)

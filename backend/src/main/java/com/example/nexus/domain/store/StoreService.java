@@ -39,6 +39,7 @@ public class StoreService {
         List<Store> res = storeRepository.findByStoreNameContainingIgnoreCase(searchKeyword);
 
         return res.stream().map(StoreDto.StoreSearchRes::from).toList();
+    }
       
     public StoreDto.StoreDetailListRes storeDetailList(Long storeIdx) {
         Optional<Store> res = storeRepository.findById(storeIdx);

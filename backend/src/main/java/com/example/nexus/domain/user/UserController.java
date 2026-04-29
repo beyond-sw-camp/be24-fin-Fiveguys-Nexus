@@ -25,6 +25,12 @@ public class UserController {
         return ResponseEntity.ok("성공");
     }
 
+    @PostMapping("/store/signup")
+    public ResponseEntity storeSignup(@RequestBody UserDto.StoreSignupReq dto) {
+        
+        return ResponseEntity.ok("성공");
+    }
+
 //    @PostMapping("/login")
 //    public ResponseEntity login(@RequestBody UserDto.LoginReq dto) {
 //        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword(), null);

@@ -51,7 +51,7 @@ public class UserDto {
         }
     }
 
-
+    @Getter
     public static class StoreSignupReq {
         private String email;
     }

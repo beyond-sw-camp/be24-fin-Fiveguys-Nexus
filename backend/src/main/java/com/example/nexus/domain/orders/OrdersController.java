@@ -28,18 +28,6 @@ public class OrdersController {
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 
-    @GetMapping("/list/manual")
-    public ResponseEntity manualList() {
-        List<OrdersDto.OrderListRes> result = orderService.findAllManual();
-        return ResponseEntity.ok(BaseResponse.success(result));
-    }
-
-    @PostMapping("/reg/manual")
-    public ResponseEntity createManualOrder(@RequestBody OrdersDto.OrdersReq req) {
-        orderService.createManualOrder(req);
-        return ResponseEntity.ok(BaseResponse.success("create success"));
-    }
-
     @GetMapping("/list")
     public ResponseEntity list() {
         List<OrdersDto.OrdersRes> result = orderService.findAll();

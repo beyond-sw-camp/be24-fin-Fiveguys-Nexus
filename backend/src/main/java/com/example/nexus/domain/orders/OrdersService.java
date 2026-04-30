@@ -33,59 +33,6 @@ public class OrdersService {
                 .toList();
     }
 
-    public List<OrdersDto.OrderListRes> findAllManual() {
-        return ordersRepository.findAllByOrdersTypeAndOrdersStatus(OrdersType.MANUAL, OrdersStatus.WAITING).stream()
-                .map(OrdersDto.OrderListRes::from)
-                .toList();
-    }
-
-    @Transactional
-    public void createManualOrder(OrdersDto.OrdersReq req) {
-        // 0. 주문 아이템 리스트 검증
-        if (req.getOrdersItemList() == null || req.getOrdersItemList().isEmpty()) {
-            throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
-        }
-
-        // 1. store 조회
-        Store store = storeRepository.findById(req.getStoreIdx())
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
-
-        // 2. Product 조회 및 총 가격 계산
-        long totalprice = 0;
-        List<OrdersItem> itemList = new ArrayList<>();
-
-        for(OrdersItemDto.OrdersItemReq itemReq : req.getOrdersItemList()) {
-            Product product = productRepository.findById(itemReq.getProductIdx())
-                    .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
-
-            totalprice += (long) product.getUnitPrice() * itemReq.getCount();
-
-            itemList.add(OrdersItem.builder()
-                    .count(itemReq.getCount())
-                    .product(product)
-                    .build());
-        }
-
-        // 3. Orders 저장
-        Orders orders = ordersRepository.save(Orders.builder()
-                .price(totalprice)
-                .ordersType(OrdersType.MANUAL)
-                .ordersStatus(OrdersStatus.WAITING)
-                .isDanger(false)
-                .createdAt(LocalDateTime.now())
-                .store(store)
-                .build());
-
-        // 4. OrdersItem 저장
-        for(OrdersItem item : itemList) {
-            ordersItemRepository.save(OrdersItem.builder()
-                    .count(item.getCount())
-                    .product(item.getProduct())
-                    .orders(orders)
-                    .build());
-        }
-    }
-
     @Transactional
     public void createStoreManualOrder(Long userIdx, OrdersDto.OrdersReq req) {
         if (req.getOrdersItemList() == null || req.getOrdersItemList().isEmpty()) {

@@ -46,4 +46,10 @@ public class ProductController {
         }
         return ResponseEntity.badRequest().body("fail to delete: product not found");
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<ProductDto.ListRes>> searchProduct(@RequestParam String productName) {
+        List<ProductDto.ListRes> result = productService.searchProduct(productName);
+        return ResponseEntity.ok(result);
+    }
 }

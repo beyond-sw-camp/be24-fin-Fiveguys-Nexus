@@ -67,4 +67,11 @@ public class ProductService {
             return true;
         }).orElse(false);
     }
+
+    @Transactional(readOnly = true)
+    public List<ProductDto.ListRes> searchProduct(String productName) {
+        return productRepository.findByProductNameContaining(productName).stream()
+                .map(ProductDto.ListRes::from)
+                .toList();
+    }
 }

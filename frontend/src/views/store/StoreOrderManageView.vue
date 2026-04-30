@@ -193,6 +193,7 @@
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">총 금액</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주일시</th>
               <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">상태</th>
+              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">처리</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
@@ -218,6 +219,13 @@
                 <span class="text-xs font-bold px-2 py-0.5 rounded" :class="historyStatusCls(h.status)">
                   {{ h.status }}
                 </span>
+              </td>
+              <td class="px-5 py-3.5">
+                <button v-if="h.status === '확정'"
+                  @click.stop="cancelOrder(h)"
+                  class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-red-200 text-red-500 bg-red-50 hover:bg-red-500 hover:text-white hover:cursor-pointer transition-colors">
+                  취소
+                </button>
               </td>
             </tr>
             <tr v-if="orderHistory.length === 0">
@@ -466,10 +474,12 @@ function openHistoryDetail(h) {
 }
 
 const HISTORY_STATUS_CLS = {
+  '확정':     'bg-green-50 text-green-700 border border-green-200',
   '승인대기': 'bg-gray-100 text-gray-500 border border-gray-200',
   '배송중':   'bg-blue-50 text-blue-600 border border-blue-200',
   '입고완료': 'bg-green-50 text-green-700 border border-green-200',
   '거절':     'bg-red-50 text-red-600 border border-red-200',
+  '취소':     'bg-red-50 text-red-500 border border-red-200',
 }
 const historyStatusCls = s => HISTORY_STATUS_CLS[s] ?? 'bg-gray-100 text-gray-500 border border-gray-200'
 
@@ -543,6 +553,18 @@ function rejectOrder(order) {
   if (confirm('발주서를 거절하시겠습니까?')) {
     const idx = pendingOrders.value.indexOf(order)
     pendingOrders.value.splice(idx, 1)
+  }
+}
+
+async function cancelOrder(order) {
+  if (!confirm('발주를 취소하시겠습니까?')) return
+  try {
+    await ordersApi.cancelOrder(order.id)
+    order.status = '취소'
+    alert('발주가 취소되었습니다.')
+  } catch (e) {
+    console.error('발주 취소 실패', e)
+    alert('발주 취소에 실패했습니다.')
   }
 }
 

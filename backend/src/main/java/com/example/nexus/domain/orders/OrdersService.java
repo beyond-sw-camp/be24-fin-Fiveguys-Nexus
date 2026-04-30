@@ -94,6 +94,17 @@ public class OrdersService {
         orders.cancel();
     }
 
+    @Transactional
+    public void approveAllConfirmed() {
+        // 1. CONFIRMED 상태의 모든 발주 조회
+        List<Orders> confirmedOrders = ordersRepository.findAllByOrdersStatus(OrdersStatus.CONFIRMED);
+
+        // 2. 각 발주를 APPROVE 상태로 변경
+        for (Orders orders : confirmedOrders) {
+            orders.approve();
+        }
+    }
+
     public List<OrdersDto.OrderListRes> findAllConfirmed() {
         return ordersRepository.findAllByOrdersStatus(OrdersStatus.CONFIRMED).stream()
                 .map(OrdersDto.OrderListRes::from)

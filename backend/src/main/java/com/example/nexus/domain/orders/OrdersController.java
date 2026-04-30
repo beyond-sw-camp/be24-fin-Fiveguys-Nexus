@@ -82,6 +82,12 @@ public class OrdersController {
         return ResponseEntity.ok(BaseResponse.success("delete success"));
     }
 
+    @PutMapping("/confirmed/approve")
+    public ResponseEntity approveAll() {
+        orderService.approveAllConfirmed();
+        return ResponseEntity.ok(BaseResponse.success("update success"));
+    }
+
     @PutMapping("/{ordersIdx}/cancel")
     public ResponseEntity cancel(@PathVariable Long ordersIdx) {
         orderService.cancelOrder(ordersIdx);

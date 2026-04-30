@@ -1,9 +1,5 @@
 import api from '@/plugins/axiosinterceptor'
 
-const getManualOrders = () => {
-  return api.get('/orders/list/manual')
-}
-
 const getAutoOrders = () => {
   return api.get('/orders/list/auto')
 }
@@ -28,12 +24,21 @@ const cancelOrder = (ordersIdx) => {
   return api.put(`/orders/${ordersIdx}/cancel`)
 }
 
+const getConfirmedOrders = () => {
+  return api.get('/orders/list/confirmed')
+}
+
+const approveAllConfirmed = () => {
+  return api.put('/orders/approve-all')
+}
+
 export default {
-  getManualOrders,
   getAutoOrders,
   getOrderDetail,
   getDangerSettings,
   updateDangerSettings,
   createStoreManualOrder,
   cancelOrder,
+  getConfirmedOrders,
+  approveAllConfirmed,
 }

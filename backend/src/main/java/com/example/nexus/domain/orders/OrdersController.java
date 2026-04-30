@@ -34,6 +34,12 @@ public class OrdersController {
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 
+    @GetMapping("/list/history")
+    public ResponseEntity historyList() {
+        List<OrdersDto.OrderListRes> result = orderService.findOrderHistory();
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
+
     @GetMapping("/{ordersIdx}")
     public ResponseEntity ordersDetail(@PathVariable Long ordersIdx) {
         OrdersDto.OrdersRes result = orderService.findById(ordersIdx);

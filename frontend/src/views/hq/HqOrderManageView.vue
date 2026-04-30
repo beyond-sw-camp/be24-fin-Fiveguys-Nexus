@@ -135,7 +135,7 @@ async function openDetail(ordersIdx) {
       type: o.ordersType === 'AUTO' ? '자동' : '수동',
       store: o.storeName,
       date: o.createdAt?.replace('T', ' ').slice(0, 16) ?? '-',
-      status: o.ordersStatus === 'WAITING' ? '제안중' : o.ordersStatus === 'APPROVE' ? '확정' : '거절',
+      status: o.ordersStatus === 'WAITING' ? '제안중' : o.ordersStatus === 'APPROVE' ? '승인' : o.ordersStatus === 'CONFIRMED' ? '확정' : o.ordersStatus === 'CANCELLED' ? '취소' : '거절',
       items: o.ordersItemList.map(i => ({
         product: i.productName,
         qty: i.count,

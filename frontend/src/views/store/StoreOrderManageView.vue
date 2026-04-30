@@ -2,6 +2,10 @@
   <div class="p-5 space-y-4">
     <div class="flex justify-between items-start gap-4">
       <h1 class="text-xl font-bold text-gray-900 tracking-tight">발주서 확인</h1>
+      <button @click="showManualForm = true"
+        class="bg-blue-500 text-white px-4 py-2 text-sm font-semibold rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2 cursor-pointer">
+        <Plus class="w-4 h-4" /> 수동 발주 생성
+      </button>
     </div>
 
     <div class="flex border-b border-gray-200">
@@ -346,12 +350,16 @@
         </div>
       </div>
     </div>
+
+    <StoreManualOrderModal :visible="showManualForm" @close="showManualForm = false" @submit="submitManualOrder" />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, reactive } from 'vue'
-import { ClipboardList, CreditCard, Sparkles, ChevronDown } from 'lucide-vue-next'
+import { ClipboardList, CreditCard, Sparkles, ChevronDown, Plus } from 'lucide-vue-next'
+import StoreManualOrderModal from '@/components/orders/StoreManualOrderModal.vue'
+import ordersApi from '@/api/orders'
 
 const PRODUCT_UNIT = {
   '한우 등심':  'kg',
@@ -535,6 +543,20 @@ function rejectOrder(order) {
   if (confirm('발주서를 거절하시겠습니까?')) {
     const idx = pendingOrders.value.indexOf(order)
     pendingOrders.value.splice(idx, 1)
+  }
+}
+
+const showManualForm = ref(false)
+
+async function submitManualOrder(data) {
+  try {
+    await ordersApi.createStoreManualOrder(data)
+    alert('발주가 생성되었습니다.')
+    showManualForm.value = false
+    activeTab.value = 'pending'
+  } catch (e) {
+    console.error('수동 발주 생성 실패', e)
+    alert('발주 생성에 실패했습니다.')
   }
 }
 

@@ -30,9 +30,13 @@ public class OrdersController {
     private final OrdersService orderService;
 
     @GetMapping("/list/auto")
-    public ResponseEntity autoList() {
-        List<OrdersDto.OrderListRes> result = orderService.findAllAuto();
-        return ResponseEntity.ok(BaseResponse.success(result));
+    public ResponseEntity autoList(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<OrdersDto.OrderListRes> result = orderService.findAllAuto(keyword, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+        return ResponseEntity.ok(BaseResponse.success(PageResponse.from(result)));
     }
 
     @GetMapping("/list/confirmed")

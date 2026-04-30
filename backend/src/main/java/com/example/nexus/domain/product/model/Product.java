@@ -5,9 +5,13 @@ import com.example.nexus.domain.category.model.Category;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Table(name = "product")
+@SQLDelete(sql = "UPDATE product SET is_deleted = true WHERE product_idx = ?")
+@SQLRestriction("is_deleted = false")
 @Getter
 @Builder
 @NoArgsConstructor

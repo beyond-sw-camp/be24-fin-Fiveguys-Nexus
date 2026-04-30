@@ -37,4 +37,10 @@ public class ProductController {
         }
         return ResponseEntity.badRequest().body("fail to modify: product or category not found");
     }
+
+    @DeleteMapping("/delete/{idx}")
+    public ResponseEntity deleteProduct(@PathVariable Long idx) {
+        productService.deleteProduct(idx);
+        return ResponseEntity.ok("sucess delete product");
+    }
 }

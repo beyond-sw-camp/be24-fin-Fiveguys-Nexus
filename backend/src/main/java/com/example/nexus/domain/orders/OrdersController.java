@@ -34,12 +34,6 @@ public class OrdersController {
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 
-    @GetMapping("/list")
-    public ResponseEntity list() {
-        List<OrdersDto.OrdersRes> result = orderService.findAll();
-        return ResponseEntity.ok(BaseResponse.success(result));
-    }
-
     @GetMapping("/{ordersIdx}")
     public ResponseEntity ordersDetail(@PathVariable Long ordersIdx) {
         OrdersDto.OrdersRes result = orderService.findById(ordersIdx);

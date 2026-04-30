@@ -100,12 +100,6 @@ public class OrdersService {
                 .toList();
     }
 
-    public List<OrdersDto.OrdersRes> findAll() {
-        return ordersRepository.findAllByOrdersStatus(OrdersStatus.APPROVE).stream()
-                .map(OrdersDto.OrdersRes::from)
-                .toList();
-    }
-
     public OrdersDto.OrdersRes findById(Long ordersIdx) {
         Orders orders = ordersRepository.findById(ordersIdx).orElseThrow(
                 () -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));

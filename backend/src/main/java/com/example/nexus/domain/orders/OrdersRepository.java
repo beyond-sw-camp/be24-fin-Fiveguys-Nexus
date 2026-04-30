@@ -3,7 +3,6 @@ package com.example.nexus.domain.orders;
 import com.example.nexus.common.enums.OrdersStatus;
 import com.example.nexus.common.enums.OrdersType;
 import com.example.nexus.domain.orders.model.Orders;
-import com.example.nexus.domain.store.model.Store;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

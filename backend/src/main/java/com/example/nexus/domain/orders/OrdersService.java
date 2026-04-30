@@ -94,9 +94,9 @@ public class OrdersService {
         orders.cancel();
     }
 
-    public List<OrdersDto.OrdersRes> findAll() {
-        return ordersRepository.findAllByOrdersStatus(OrdersStatus.APPROVE).stream()
-                .map(OrdersDto.OrdersRes::from)
+    public List<OrdersDto.OrderListRes> findAllConfirmed() {
+        return ordersRepository.findAllByOrdersStatus(OrdersStatus.CONFIRMED).stream()
+                .map(OrdersDto.OrderListRes::from)
                 .toList();
     }
 

@@ -28,9 +28,9 @@ public class OrdersController {
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 
-    @GetMapping("/list")
-    public ResponseEntity list() {
-        List<OrdersDto.OrdersRes> result = orderService.findAll();
+    @GetMapping("/list/confirmed")
+    public ResponseEntity confirmedList() {
+        List<OrdersDto.OrderListRes> result = orderService.findAllConfirmed();
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 

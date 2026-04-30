@@ -30,10 +30,17 @@ public class OrdersService {
     private final StoreRepository storeRepository;
     private final ProductRepository productRepository;
 
-    public List<OrdersDto.OrderListRes> findAllAuto() {
-        return ordersRepository.findAllByOrdersTypeAndOrdersStatus(OrdersType.AUTO, OrdersStatus.WAITING).stream()
-                .map(OrdersDto.OrderListRes::from)
-                .toList();
+    // 자동 발주 제안 검색 조회 (AUTO + WAITING 상태 대상)
+    // 매장명 키워드 검색 + 페이징 처리
+    public Page<OrdersDto.OrderListRes> findAllAuto(String keyword, Pageable pageable) {
+        Specification<Orders> spec = OrdersSpecification.ordersTypeEquals(OrdersType.AUTO)
+                .and(OrdersSpecification.statusIn(List.of(OrdersStatus.WAITING)));
+
+        if (keyword != null && !keyword.isBlank()) {
+            spec = spec.and(OrdersSpecification.keywordLike(keyword));
+        }
+
+        return ordersRepository.findAll(spec, pageable).map(OrdersDto.OrderListRes::from);
     }
 
     @Transactional

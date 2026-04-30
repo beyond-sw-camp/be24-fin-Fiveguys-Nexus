@@ -2,7 +2,7 @@
 import { ref, reactive, onMounted, computed, nextTick } from 'vue'
 import { Plus, Search, FileText, ChevronDown } from 'lucide-vue-next'
 import { getStoreList , getStoreDetailList, getPresignedUrl, postNewRegister} from '@/api/store/index.js'
-import axios from "axios";
+import axios from 'axios'
 
 
 const searchQuery = ref('')

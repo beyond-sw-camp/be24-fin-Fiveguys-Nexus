@@ -73,7 +73,7 @@ public class OrdersController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        Page<OrdersDto.OrderListRes> result = orderService.findDangerOrders(
+        Page<DangerDto.DangerListRes> result = orderService.findDangerOrders(
                 startDate, endDate, keyword,
                 PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
         return ResponseEntity.ok(BaseResponse.success(PageResponse.from(result)));

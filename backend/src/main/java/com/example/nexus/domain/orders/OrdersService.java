@@ -152,7 +152,8 @@ public class OrdersService {
 
     // 이상 발주 검색 조회 (isDanger=true 대상)
     // 기간, 키워드 조건으로 필터링 + 페이징 처리
-    public Page<OrdersDto.OrderListRes> findDangerOrders(LocalDate startDate, LocalDate endDate, String keyword, Pageable pageable) {
+    // 각 발주에 대해 같은 매장의 최근 N개월 평균 수량 계산
+    public Page<DangerDto.DangerListRes> findDangerOrders(LocalDate startDate, LocalDate endDate, String keyword, Pageable pageable) {
         Specification<Orders> spec = OrdersSpecification.isDangerTrue();
 
         if (startDate != null) {
@@ -165,7 +166,15 @@ public class OrdersService {
             spec = spec.and(OrdersSpecification.keywordLike(keyword));
         }
 
-        return ordersRepository.findAll(spec, pageable).map(OrdersDto.OrderListRes::from);
+        Danger danger = dangerRepository.findById(1L).orElse(null);
+        int period = danger != null ? danger.getPeriod() : 3;
+
+        return ordersRepository.findAll(spec, pageable).map(orders -> {
+            LocalDateTime since = orders.getCreatedAt().minusMonths(period);
+            Integer avgQty = ordersRepository.findAvgQtyByStoreAndPeriod(
+                    orders.getStore().getIdx(), since);
+            return DangerDto.DangerListRes.from(orders, avgQty);
+        });
     }
 
     public OrdersDto.OrdersRes findById(Long ordersIdx) {

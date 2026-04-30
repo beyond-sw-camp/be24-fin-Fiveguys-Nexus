@@ -33,8 +33,20 @@ const getConfirmedOrders = (params = {}) => {
 
 }
 
+const getDangerOrders = (params = {}) => {
+  return api.get('/orders/list/danger', { params })
+}
+
 const approveAllConfirmed = () => {
   return api.put('/orders/confirmed/approve')
+}
+
+const approveDangerOrder = (ordersIdx) => {
+  return api.put(`/orders/${ordersIdx}/approve`)
+}
+
+const rejectDangerOrder = (ordersIdx) => {
+  return api.put(`/orders/${ordersIdx}/reject`)
 }
 
 export default {
@@ -46,5 +58,8 @@ export default {
   createStoreManualOrder,
   cancelOrder,
   getConfirmedOrders,
+  getDangerOrders,
   approveAllConfirmed,
+  approveDangerOrder,
+  rejectDangerOrder,
 }

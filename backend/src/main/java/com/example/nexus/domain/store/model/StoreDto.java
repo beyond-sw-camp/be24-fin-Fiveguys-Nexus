@@ -62,7 +62,12 @@ public class StoreDto {
                     .address(entity.getAddress() + " " + entity.getAddressDetail())
                     .business(entity.getBusiness())
                     .createdAt(entity.getCreatedAt().format(formatter))
-                    .closedAt(entity.getClosedAt() == null ? "운영 중" : entity.getClosedAt().format(formatter))
+                    .closedAt(
+                            entity.getClosedAt() == null && !entity.isDeleted()
+                                    ? "운영 중"
+                                    : entity.getClosedAt().format(formatter)
+
+                    )
                     .filePath(entity.getFilePath())
                     .build();
         }

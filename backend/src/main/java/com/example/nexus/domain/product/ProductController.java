@@ -39,8 +39,11 @@ public class ProductController {
     }
 
     @DeleteMapping("/delete/{idx}")
-    public ResponseEntity deleteProduct(@PathVariable Long idx) {
-        productService.deleteProduct(idx);
-        return ResponseEntity.ok("success delete product");
+    public ResponseEntity<String> deleteProduct(@PathVariable Long idx) {
+        boolean isDeleted = productService.deleteProduct(idx);
+        if (isDeleted) {
+            return ResponseEntity.ok("success delete product");
+        }
+        return ResponseEntity.badRequest().body("fail to delete: product not found");
     }
 }

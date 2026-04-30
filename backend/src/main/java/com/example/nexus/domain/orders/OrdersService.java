@@ -152,7 +152,7 @@ public class OrdersService {
 
     // 이상 발주 검색 조회 (isDanger=true 대상)
     // 기간, 키워드 조건으로 필터링 + 페이징 처리
-    public Page<OrdersDto.OrderListRes> findAbnormalOrders(LocalDate startDate, LocalDate endDate, String keyword, Pageable pageable) {
+    public Page<OrdersDto.OrderListRes> findDangerOrders(LocalDate startDate, LocalDate endDate, String keyword, Pageable pageable) {
         Specification<Orders> spec = OrdersSpecification.isDangerTrue();
 
         if (startDate != null) {

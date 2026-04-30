@@ -138,10 +138,16 @@ public class OrdersService {
         return ordersRepository.findAll(spec, pageable).map(OrdersDto.OrderListRes::from);
     }
 
-    public List<OrdersDto.OrderListRes> findAllConfirmed() {
-        return ordersRepository.findAllByOrdersStatus(OrdersStatus.CONFIRMED).stream()
-                .map(OrdersDto.OrderListRes::from)
-                .toList();
+    // 확정 발주 검색 조회 (CONFIRMED 상태 대상)
+    // 매장명 키워드 검색 + 페이징 처리
+    public Page<OrdersDto.OrderListRes> findAllConfirmed(String keyword, Pageable pageable) {
+        Specification<Orders> spec = OrdersSpecification.statusIn(List.of(OrdersStatus.CONFIRMED));
+
+        if (keyword != null && !keyword.isBlank()) {
+            spec = spec.and(OrdersSpecification.keywordLike(keyword));
+        }
+
+        return ordersRepository.findAll(spec, pageable).map(OrdersDto.OrderListRes::from);
     }
 
     public OrdersDto.OrdersRes findById(Long ordersIdx) {

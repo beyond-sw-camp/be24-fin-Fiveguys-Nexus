@@ -40,16 +40,23 @@ async function fetchAutoOrders() {
   }
 }
 
-const orderHistory = ref([
-  { id: 'ORD-20260413-001', type: '자동', store: '차이나 가든',    date: '2026-04-12 22:00', status: '배송중',
-    items: [{ product: '양파', qty: 20, unitPrice: 1500 }, { product: '생수', qty: 10, unitPrice: 8000 }] },
-  { id: 'ORD-20260413-002', type: '수동', store: '한우 오마카세',  date: '2026-04-11 10:30', status: '입고완료',
-    items: [{ product: '한우 등심', qty: 15, unitPrice: 85000 }, { product: '올리브오일', qty: 5, unitPrice: 12000 }] },
-  { id: 'ORD-20260412-003', type: '자동', store: '이탈리안 키친',  date: '2026-04-11 22:00', status: '입고완료',
-    items: [{ product: '버터', qty: 10, unitPrice: 9000 }, { product: '생크림', qty: 8, unitPrice: 7000 }, { product: '간장', qty: 5, unitPrice: 4000 }] },
-  { id: 'ORD-20260411-004', type: '수동', store: '일식 스시바',    date: '2026-04-10 14:15', status: '입고완료',
-    items: [{ product: '연어', qty: 10, unitPrice: 32000 }, { product: '마늘', qty: 5, unitPrice: 8000 }] },
-])
+const orderHistory = ref([])
+
+async function fetchOrderHistory() {
+  try {
+    const res = await ordersApi.getOrderHistory()
+    orderHistory.value = res.data.result.map(o => ({
+      id: o.idx,
+      type: o.ordersType === 'AUTO' ? '자동' : '수동',
+      store: o.storeName,
+      date: o.createdAt?.replace('T', ' ').slice(0, 16) ?? '-',
+      price: o.price,
+      status: o.ordersStatus === 'APPROVE' ? '승인' : o.ordersStatus === 'REJECT' ? '거절' : '취소',
+    }))
+  } catch (e) {
+    console.error('발주 이력 조회 실패', e)
+  }
+}
 
 const abnormalOrders = ref([
   { id: 'ORD-20260414-ABN1', store: '이탈리안 키친', qty: 85, avgQty: 15, ratio: 567, date: '2026-04-14 11:22', processed: false,
@@ -114,6 +121,7 @@ onMounted(() => {
   applyOrderRouteQuery()
   fetchAutoOrders()
   fetchConfirmedOrders()
+  fetchOrderHistory()
 })
 
 function setOrderViewTab(id) {
@@ -121,6 +129,7 @@ function setOrderViewTab(id) {
   router.replace({ path: '/order', query: { tab: id } })
   if (id === 'confirmed') fetchConfirmedOrders()
   if (id === 'auto') fetchAutoOrders()
+  if (id === 'history') fetchOrderHistory()
 }
 
 // Detail modal

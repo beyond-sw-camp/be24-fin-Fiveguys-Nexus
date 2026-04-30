@@ -50,6 +50,14 @@ public class Orders {
     @OneToOne(mappedBy = "orders", fetch = FetchType.LAZY)
     private Delivery delivery;
 
+    public void confirm() {
+        this.ordersStatus = OrdersStatus.CONFIRMED;
+    }
+
+    public void cancel() {
+        this.ordersStatus = OrdersStatus.CANCELLED;
+    }
+
     public void approve() {
         this.ordersStatus = OrdersStatus.APPROVE;
     }

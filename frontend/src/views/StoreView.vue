@@ -1,7 +1,8 @@
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted, computed, nextTick } from 'vue'
 import { Plus, Search, FileText, ChevronDown } from 'lucide-vue-next'
 import { getStoreList , getStoreDetailList} from '@/api/store/index.js'
+
 
 const searchQuery = ref('')
 const filterStatus = ref('전체')
@@ -59,6 +60,7 @@ const form = reactive({
   storeName : '' ,
   ownerName:'',
   ownerEmail: '',
+  postcode:'',
   address : '',
   addressDetail :'',
   business: '',
@@ -95,7 +97,18 @@ async function openModal(idx =! null) {
     // [수정 모드]
     const res = await getStoreDetailList(idx);
     const detailData = res.data.result;
-
+    Object.assign(form, {
+      storeName : '' ,
+      ownerName:'',
+      ownerEmail: '',
+      postcode:'',
+      address : '',
+      addressDetail :'',
+      business: '',
+      createdAt:'',
+      closedAt:'',
+      filePath: '',
+    });
     // v-model로 연결된 form에 DB에서 가져온 값을 세팅 (화면에 바로 보임)
     Object.assign(form, detailData);
 
@@ -103,15 +116,16 @@ async function openModal(idx =! null) {
   } else {
     // [등록 모드] idx가 없으면 입력 칸을 싹 비움
     Object.assign(form, {
-      storeName: '',
-      ownerName: '',
+      storeName : '' ,
+      ownerName:'',
       ownerEmail: '',
-      address: '',
-      addressDetail: '',
+      postcode:'',
+      address : '',
+      addressDetail :'',
       business: '',
-      createdAt: '',
-      closedAt: '',
-      filePath: ''
+      createdAt:'',
+      closedAt:'',
+      filePath: '',
     });
     editTarget.value = null;
   }
@@ -121,7 +135,7 @@ async function openModal(idx =! null) {
 // 파일 선택 감지
 function handleFileChange(e) {
   const file = e.target.files[0]
-  if (file) form.value.bizPdfName = file.name
+  if (file) form.filePath = file.name
 }
 
 // 입력한 정보 저장하기
@@ -136,6 +150,34 @@ function saveStore() {
 
 function downloadPdf() {
   alert('사업자 등록증 PDF를 다운로드합니다.')
+}
+
+// 카카오 주소 API
+const sample6_execDaumPostcode = () => {
+  new window.daum.Postcode({
+    oncomplete: (data) => {
+      let addr = ''; // 주소 변수
+
+      // 사용자가 선택한 주소 타입에 따라 해당 주소 값을 가져온다.
+      if (data.userSelectedType === 'R') { // 도로명 주소
+        addr = data.roadAddress;
+      } else { // 지번 주소
+        addr = data.jibunAddress;
+      }
+
+      // [핵심] Vue의 reactive 객체에 직접 값을 할당합니다.
+      form.address = addr;
+
+      // 만약 우편번호도 저장하고 싶다면 form에 추가 후 할당하세요.
+      form.postcode = data.zonecode;
+
+      // 상세주소 입력창으로 포커스 이동
+      nextTick(() => {
+        const detailInput = document.getElementById("sample6_detailAddress");
+        if (detailInput) detailInput.focus();
+      });
+    }
+  }).open();
 }
 
 onMounted(() => {
@@ -389,12 +431,43 @@ onMounted(() => {
             </div>
           </div>
 
-          <div class="space-y-1.5">
-            <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">위치</label>
-            <input v-model="form.address" required type="text" placeholder="예: 갤러리아 백화점 B1F 101호"
-                   class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
-          </div>
+          <div class="space-y-3">
+            <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">위치 (주소)</label>
 
+            <div class="flex gap-2">
+              <input
+                v-model="form.postcode"
+                type="text"
+                id="sample6_postcode"
+                placeholder="우편번호"
+                readonly
+                class="w-32 px-4 py-2 rounded-lg border border-gray-200 text-sm outline-none bg-gray-50"
+              />
+              <button
+                type="button"
+                @click="sample6_execDaumPostcode"
+                class="px-4 py-2 bg-gray-800 text-white text-sm rounded-lg hover:bg-gray-700 transition-colors cursor-pointer"
+              >
+                주소 검색
+              </button>
+            </div>
+
+            <input
+              v-model="form.address"
+              type="text"
+              placeholder="도로명/지번 주소"
+              readonly
+              class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all"
+            />
+
+            <input
+              v-model="form.addressDetail"
+              type="text"
+              id="sample6_detailAddress"
+              placeholder="상세 주소를 입력해주세요"
+              class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all"
+            />
+          </div>
           <!-- 수정 모달에서만 표시 -->
           <div v-if="editTarget" class="grid grid-cols-2 gap-5">
             <div class="space-y-1.5">

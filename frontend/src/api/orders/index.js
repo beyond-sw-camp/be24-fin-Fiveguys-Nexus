@@ -24,8 +24,8 @@ const cancelOrder = (ordersIdx) => {
   return api.put(`/orders/${ordersIdx}/cancel`)
 }
 
-const getOrderHistory = () => {
-  return api.get('/orders/list/history')
+const getOrderHistory = (params = {}) => {
+  return api.get('/orders/list/history', { params })
 }
 
 const getConfirmedOrders = () => {

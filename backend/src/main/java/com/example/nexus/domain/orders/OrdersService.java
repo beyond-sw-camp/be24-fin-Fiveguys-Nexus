@@ -150,6 +150,24 @@ public class OrdersService {
         return ordersRepository.findAll(spec, pageable).map(OrdersDto.OrderListRes::from);
     }
 
+    // 이상 발주 검색 조회 (isDanger=true 대상)
+    // 기간, 키워드 조건으로 필터링 + 페이징 처리
+    public Page<OrdersDto.OrderListRes> findDangerOrders(LocalDate startDate, LocalDate endDate, String keyword, Pageable pageable) {
+        Specification<Orders> spec = OrdersSpecification.isDangerTrue();
+
+        if (startDate != null) {
+            spec = spec.and(OrdersSpecification.createdAfter(startDate));
+        }
+        if (endDate != null) {
+            spec = spec.and(OrdersSpecification.createdBefore(endDate));
+        }
+        if (keyword != null && !keyword.isBlank()) {
+            spec = spec.and(OrdersSpecification.keywordLike(keyword));
+        }
+
+        return ordersRepository.findAll(spec, pageable).map(OrdersDto.OrderListRes::from);
+    }
+
     public OrdersDto.OrdersRes findById(Long ordersIdx) {
         Orders orders = ordersRepository.findById(ordersIdx).orElseThrow(
                 () -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));

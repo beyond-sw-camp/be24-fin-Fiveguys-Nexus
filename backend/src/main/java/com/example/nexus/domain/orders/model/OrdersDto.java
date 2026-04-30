@@ -52,6 +52,7 @@ public class OrdersDto {
     public static class OrderListRes {
         private Long idx;
         private Long price;
+        private OrdersType ordersType;
         private OrdersStatus ordersStatus;
         private LocalDateTime createdAt;
         private String storeName;
@@ -60,6 +61,7 @@ public class OrdersDto {
             return OrderListRes.builder()
                     .idx(entity.getIdx())
                     .price(entity.getPrice())
+                    .ordersType(entity.getOrdersType())
                     .ordersStatus(entity.getOrdersStatus())
                     .createdAt(entity.getCreatedAt())
                     .storeName(entity.getStore().getStoreName())

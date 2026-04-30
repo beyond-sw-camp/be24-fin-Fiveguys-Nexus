@@ -105,6 +105,12 @@ public class OrdersService {
         }
     }
 
+    public List<OrdersDto.OrderListRes> findOrderHistory() {
+        return ordersRepository.findAllByOrdersStatusIn(List.of(OrdersStatus.APPROVE, OrdersStatus.REJECT, OrdersStatus.CANCELLED)).stream()
+                .map(OrdersDto.OrderListRes::from)
+                .toList();
+    }
+
     public List<OrdersDto.OrderListRes> findAllConfirmed() {
         return ordersRepository.findAllByOrdersStatus(OrdersStatus.CONFIRMED).stream()
                 .map(OrdersDto.OrderListRes::from)

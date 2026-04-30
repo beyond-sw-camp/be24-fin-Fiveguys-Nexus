@@ -82,7 +82,7 @@ public class OrdersController {
         return ResponseEntity.ok(BaseResponse.success("delete success"));
     }
 
-    @PutMapping("/comfirmed/approve")
+    @PutMapping("/confirmed/approve")
     public ResponseEntity approveAll() {
         orderService.approveAllConfirmed();
         return ResponseEntity.ok(BaseResponse.success("update success"));

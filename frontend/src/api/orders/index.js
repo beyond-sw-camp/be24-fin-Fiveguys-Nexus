@@ -29,7 +29,7 @@ const getConfirmedOrders = () => {
 }
 
 const approveAllConfirmed = () => {
-  return api.put('/orders/approve-all')
+  return api.put('/orders/confirmed/approve')
 }
 
 export default {

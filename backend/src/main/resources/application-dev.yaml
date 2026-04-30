@@ -11,6 +11,18 @@ spring:
       ddl-auto: update
     show-sql: false
 
+  cloud:
+    aws:
+      credentials:
+        access-key: ${AWS_ACCESS_KEY}
+        secret-key: ${AWS_SECRET_KEY}
+      s3:
+        store-bucket: ${AWS_S3_STORE_BUCKET}
+        menu-bucket: ${AWS_S3_MENU_BUCKET}
+      region:
+        static: ${AWS_S3_STATIC}
+
+
 server:
   port: 8080
 

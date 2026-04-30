@@ -82,7 +82,7 @@ const filteredHistory = computed(() =>
             </td>
             <td class="px-5 py-3.5 font-semibold text-gray-900">{{ h.store }}</td>
             <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ h.date }}</td>
-            <td class="px-5 py-3.5 font-semibold text-gray-700">{{ formatPrice((h.items ?? []).reduce((s, i) => s + i.unitPrice * i.qty, 0)) }}</td>
+            <td class="px-5 py-3.5 font-semibold text-gray-700">{{ formatPrice(h.price) }}</td>
             <td class="px-5 py-3.5">
               <span class="text-xs font-bold px-2 py-0.5 rounded" :class="statusClass(h.status)">{{ h.status }}</span>
             </td>

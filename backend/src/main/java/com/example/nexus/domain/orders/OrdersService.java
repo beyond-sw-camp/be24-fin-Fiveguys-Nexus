@@ -11,8 +11,12 @@ import com.example.nexus.domain.store.StoreRepository;
 import com.example.nexus.domain.store.model.Store;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -105,10 +109,26 @@ public class OrdersService {
         }
     }
 
-    public List<OrdersDto.OrderListRes> findOrderHistory() {
-        return ordersRepository.findAllByOrdersStatusIn(List.of(OrdersStatus.APPROVE, OrdersStatus.REJECT, OrdersStatus.CANCELLED)).stream()
-                .map(OrdersDto.OrderListRes::from)
-                .toList();
+    // 발주 이력 검색 조회 (APPROVE, REJECT, CANCELLED 상태 대상)
+    // 발주 유형, 기간, 키워드 조건으로 필터링 + 페이징 처리
+    public Page<OrdersDto.OrderListRes> findOrderHistory(OrdersType ordersType, LocalDate startDate, LocalDate endDate, String keyword, Pageable pageable) {
+        Specification<Orders> spec = OrdersSpecification.statusIn(
+                List.of(OrdersStatus.APPROVE, OrdersStatus.REJECT, OrdersStatus.CANCELLED));
+
+        if (ordersType != null) {
+            spec = spec.and(OrdersSpecification.ordersTypeEquals(ordersType));
+        }
+        if (startDate != null) {
+            spec = spec.and(OrdersSpecification.createdAfter(startDate));
+        }
+        if (endDate != null) {
+            spec = spec.and(OrdersSpecification.createdBefore(endDate));
+        }
+        if (keyword != null && !keyword.isBlank()) {
+            spec = spec.and(OrdersSpecification.keywordLike(keyword));
+        }
+
+        return ordersRepository.findAll(spec, pageable).map(OrdersDto.OrderListRes::from);
     }
 
     public List<OrdersDto.OrderListRes> findAllConfirmed() {

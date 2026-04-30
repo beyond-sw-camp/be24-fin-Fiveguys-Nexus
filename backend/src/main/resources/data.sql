@@ -474,6 +474,69 @@ INSERT INTO orders (store_idx, price, order_type, order_status, is_danger, creat
 (5, 242500, 'MANUAL', 'APPROVE', false, '2026-04-18 16:30:00'),
 (5, 75500, 'MANUAL', 'REJECT', false, '2026-04-25 09:45:00');
 
+-- 발주 이력 추가 데이터 (orders 12~34)
+-- 강남역점 3월
+INSERT INTO orders (store_idx, price, order_type, order_status, is_danger, created_at) VALUES
+(1, 220000, 'AUTO', 'APPROVE', false, '2026-03-05 07:00:00'),
+(1, 65000, 'MANUAL', 'CANCELLED', false, '2026-03-12 10:00:00');
+
+-- 홍대입구점 3월
+INSERT INTO orders (store_idx, price, order_type, order_status, is_danger, created_at) VALUES
+(2, 255000, 'AUTO', 'APPROVE', false, '2026-03-08 07:00:00'),
+(2, 75000, 'MANUAL', 'REJECT', false, '2026-03-15 11:00:00');
+
+-- 신촌점 3월
+INSERT INTO orders (store_idx, price, order_type, order_status, is_danger, created_at) VALUES
+(3, 347500, 'AUTO', 'APPROVE', false, '2026-03-10 07:00:00'),
+(3, 116000, 'MANUAL', 'APPROVE', false, '2026-03-20 14:30:00');
+
+-- 건대입구점 3월
+INSERT INTO orders (store_idx, price, order_type, order_status, is_danger, created_at) VALUES
+(4, 357500, 'AUTO', 'APPROVE', false, '2026-03-12 07:00:00'),
+(4, 213000, 'MANUAL', 'CANCELLED', false, '2026-03-25 09:00:00');
+
+-- 잠실점 3월
+INSERT INTO orders (store_idx, price, order_type, order_status, is_danger, created_at) VALUES
+(5, 285000, 'AUTO', 'APPROVE', false, '2026-03-15 07:00:00'),
+(5, 30000, 'MANUAL', 'REJECT', false, '2026-03-22 15:00:00');
+
+-- 강남역점 3~4월
+INSERT INTO orders (store_idx, price, order_type, order_status, is_danger, created_at) VALUES
+(1, 180000, 'AUTO', 'APPROVE', false, '2026-03-25 07:00:00'),
+(1, 112000, 'MANUAL', 'APPROVE', false, '2026-04-01 10:00:00');
+
+-- 홍대입구점 4월
+INSERT INTO orders (store_idx, price, order_type, order_status, is_danger, created_at) VALUES
+(2, 276500, 'AUTO', 'APPROVE', false, '2026-04-03 07:00:00'),
+(2, 56000, 'MANUAL', 'CANCELLED', false, '2026-04-05 11:30:00');
+
+-- 신촌점 4월
+INSERT INTO orders (store_idx, price, order_type, order_status, is_danger, created_at) VALUES
+(3, 222000, 'AUTO', 'APPROVE', false, '2026-04-02 07:00:00'),
+(3, 34000, 'MANUAL', 'REJECT', false, '2026-04-08 09:30:00');
+
+-- 건대입구점 4월
+INSERT INTO orders (store_idx, price, order_type, order_status, is_danger, created_at) VALUES
+(4, 285500, 'AUTO', 'APPROVE', false, '2026-04-05 07:00:00'),
+(4, 224000, 'MANUAL', 'APPROVE', false, '2026-04-10 13:00:00');
+
+-- 잠실점 4월
+INSERT INTO orders (store_idx, price, order_type, order_status, is_danger, created_at) VALUES
+(5, 211500, 'AUTO', 'APPROVE', false, '2026-04-07 07:00:00'),
+(5, 98000, 'MANUAL', 'CANCELLED', false, '2026-04-12 16:00:00');
+
+-- 강남역점 4월 추가
+INSERT INTO orders (store_idx, price, order_type, order_status, is_danger, created_at) VALUES
+(1, 550000, 'AUTO', 'REJECT', true, '2026-04-14 07:00:00');
+
+-- 홍대입구점 4월 추가
+INSERT INTO orders (store_idx, price, order_type, order_status, is_danger, created_at) VALUES
+(2, 216000, 'AUTO', 'APPROVE', false, '2026-04-12 07:00:00');
+
+-- 신촌점 4월 추가
+INSERT INTO orders (store_idx, price, order_type, order_status, is_danger, created_at) VALUES
+(3, 110500, 'MANUAL', 'APPROVE', false, '2026-04-15 11:00:00');
+
 -- ============================================================
 -- 12. OrdersItem (발주 항목)
 -- ============================================================
@@ -549,6 +612,139 @@ INSERT INTO orders_item (orders_idx, product_idx, count) VALUES
 (11, 7, 3),
 (11, 17, 2);
 
+-- 강남역점 3월 1차 (orders 12): 원두+우유+얼음 = 220000
+INSERT INTO orders_item (orders_idx, product_idx, count) VALUES
+(12, 1, 8),
+(12, 3, 20),
+(12, 27, 100);
+
+-- 강남역점 3월 2차 (orders 13): 시럽류 = 65000 (취소)
+INSERT INTO orders_item (orders_idx, product_idx, count) VALUES
+(13, 7, 3),
+(13, 8, 3),
+(13, 10, 2);
+
+-- 홍대입구점 3월 1차 (orders 14): 원두+우유+휘핑크림 = 255000
+INSERT INTO orders_item (orders_idx, product_idx, count) VALUES
+(14, 1, 10),
+(14, 3, 30),
+(14, 6, 5);
+
+-- 홍대입구점 3월 2차 (orders 15): 퓨레 = 75000 (반려)
+INSERT INTO orders_item (orders_idx, product_idx, count) VALUES
+(15, 12, 3),
+(15, 13, 3);
+
+-- 신촌점 3월 1차 (orders 16): 원두+우유+라지컵 = 347500
+INSERT INTO orders_item (orders_idx, product_idx, count) VALUES
+(16, 1, 12),
+(16, 3, 25),
+(16, 22, 3);
+
+-- 신촌점 3월 2차 (orders 17): 파우더+티백 = 116000
+INSERT INTO orders_item (orders_idx, product_idx, count) VALUES
+(17, 17, 2),
+(17, 18, 3),
+(17, 19, 2);
+
+-- 건대입구점 3월 1차 (orders 18): 원두+우유+오트밀크 = 357500
+INSERT INTO orders_item (orders_idx, product_idx, count) VALUES
+(18, 1, 15),
+(18, 3, 35),
+(18, 5, 10);
+
+-- 건대입구점 3월 2차 (orders 19): 포장재 = 213000 (취소)
+INSERT INTO orders_item (orders_idx, product_idx, count) VALUES
+(19, 22, 3),
+(19, 23, 3),
+(19, 25, 2);
+
+-- 잠실점 3월 1차 (orders 20): 원두+우유+딸기퓨레 = 285000
+INSERT INTO orders_item (orders_idx, product_idx, count) VALUES
+(20, 1, 10),
+(20, 3, 30),
+(20, 12, 5);
+
+-- 잠실점 3월 2차 (orders 21): 시럽 = 30000 (반려)
+INSERT INTO orders_item (orders_idx, product_idx, count) VALUES
+(21, 9, 2),
+(21, 11, 2);
+
+-- 강남역점 3월 3차 (orders 22): 디카페인+저지방+휘핑 = 180000
+INSERT INTO orders_item (orders_idx, product_idx, count) VALUES
+(22, 2, 5),
+(22, 4, 15),
+(22, 6, 8);
+
+-- 강남역점 4월 추가 (orders 23): 퓨레+즙 = 112000
+INSERT INTO orders_item (orders_idx, product_idx, count) VALUES
+(23, 14, 5),
+(23, 15, 3),
+(23, 16, 3);
+
+-- 홍대입구점 4월 1차 (orders 24): 원두+우유+시럽 = 276500
+INSERT INTO orders_item (orders_idx, product_idx, count) VALUES
+(24, 1, 12),
+(24, 3, 25),
+(24, 7, 4);
+
+-- 홍대입구점 4월 2차 (orders 25): 티백 = 56000 (취소)
+INSERT INTO orders_item (orders_idx, product_idx, count) VALUES
+(25, 20, 2),
+(25, 21, 2);
+
+-- 신촌점 4월 1차 (orders 26): 원두+우유+망고퓨레 = 222000
+INSERT INTO orders_item (orders_idx, product_idx, count) VALUES
+(26, 1, 8),
+(26, 3, 20),
+(26, 13, 4);
+
+-- 신촌점 4월 2차 (orders 27): 연유+설탕 = 34000 (반려)
+INSERT INTO orders_item (orders_idx, product_idx, count) VALUES
+(27, 29, 3),
+(27, 28, 5);
+
+-- 건대입구점 4월 1차 (orders 28): 원두+우유+시럽+퓨레 = 285500
+INSERT INTO orders_item (orders_idx, product_idx, count) VALUES
+(28, 1, 10),
+(28, 3, 20),
+(28, 8, 3),
+(28, 12, 5);
+
+-- 건대입구점 4월 2차 (orders 29): 포장재 = 224000
+INSERT INTO orders_item (orders_idx, product_idx, count) VALUES
+(29, 22, 4),
+(29, 24, 3),
+(29, 26, 2);
+
+-- 잠실점 4월 1차 (orders 30): 원두+오트밀크+시럽 = 211500
+INSERT INTO orders_item (orders_idx, product_idx, count) VALUES
+(30, 1, 10),
+(30, 5, 8),
+(30, 7, 3);
+
+-- 잠실점 4월 2차 (orders 31): 파우더 = 98000 (취소)
+INSERT INTO orders_item (orders_idx, product_idx, count) VALUES
+(31, 17, 2),
+(31, 18, 4);
+
+-- 강남역점 4월 위험발주 (orders 32): 대량 원두+얼음 = 550000 (반려)
+INSERT INTO orders_item (orders_idx, product_idx, count) VALUES
+(32, 1, 30),
+(32, 27, 200);
+
+-- 홍대입구점 4월 추가 (orders 33): 우유+저지방+휘핑 = 216000
+INSERT INTO orders_item (orders_idx, product_idx, count) VALUES
+(33, 3, 40),
+(33, 4, 20),
+(33, 6, 10);
+
+-- 신촌점 4월 추가 (orders 34): 시럽류 = 110500
+INSERT INTO orders_item (orders_idx, product_idx, count) VALUES
+(34, 7, 5),
+(34, 8, 5),
+(34, 9, 3);
+
 -- ============================================================
 -- 13. Delivery (배송)
 -- ============================================================
@@ -566,7 +762,23 @@ INSERT INTO delivery (orders_idx, delivery_status, delay_reason, dep_date, est_d
 -- 건대입구점 1차: 배송 지연
 (8, 'DELAY', '물류센터 차량 고장으로 인한 배송 지연', '2026-04-23 14:00:00', '2026-04-24 10:00:00', '2026-04-25 15:00:00'),
 -- 잠실점 1차: 배송 출발
-(10, 'START', NULL, '2026-04-29 08:00:00', '2026-04-29 14:00:00', '2026-04-29 14:00:00');
+(10, 'START', NULL, '2026-04-29 08:00:00', '2026-04-29 14:00:00', '2026-04-29 14:00:00'),
+-- 추가 발주 배송 (APPROVE 건)
+(12, 'DELIVERED', NULL, '2026-03-05 14:00:00', '2026-03-06 10:00:00', '2026-03-06 09:30:00'),
+(14, 'DELIVERED', NULL, '2026-03-08 14:00:00', '2026-03-09 10:00:00', '2026-03-09 10:15:00'),
+(16, 'DELIVERED', NULL, '2026-03-10 14:00:00', '2026-03-11 10:00:00', '2026-03-11 09:45:00'),
+(17, 'DELIVERED', NULL, '2026-03-20 15:00:00', '2026-03-21 10:00:00', '2026-03-21 10:30:00'),
+(18, 'DELIVERED', NULL, '2026-03-12 14:00:00', '2026-03-13 10:00:00', '2026-03-13 11:00:00'),
+(20, 'DELIVERED', NULL, '2026-03-15 14:00:00', '2026-03-16 10:00:00', '2026-03-16 09:50:00'),
+(22, 'DELIVERED', NULL, '2026-03-25 14:00:00', '2026-03-26 10:00:00', '2026-03-26 10:10:00'),
+(23, 'DELIVERED', NULL, '2026-04-01 14:00:00', '2026-04-02 10:00:00', '2026-04-02 09:40:00'),
+(24, 'DELIVERED', NULL, '2026-04-03 14:00:00', '2026-04-04 10:00:00', '2026-04-04 10:20:00'),
+(26, 'DELIVERED', NULL, '2026-04-02 14:00:00', '2026-04-03 10:00:00', '2026-04-03 09:55:00'),
+(28, 'DELIVERED', NULL, '2026-04-05 14:00:00', '2026-04-06 10:00:00', '2026-04-06 10:30:00'),
+(29, 'DELIVERED', NULL, '2026-04-10 14:00:00', '2026-04-11 10:00:00', '2026-04-11 09:45:00'),
+(30, 'DELIVERED', NULL, '2026-04-07 14:00:00', '2026-04-08 10:00:00', '2026-04-08 10:05:00'),
+(33, 'DELIVERED', NULL, '2026-04-12 14:00:00', '2026-04-13 10:00:00', '2026-04-13 09:50:00'),
+(34, 'DELIVERED', NULL, '2026-04-15 14:00:00', '2026-04-16 10:00:00', '2026-04-16 10:15:00');
 
 -- ============================================================
 -- 14. PosPay (POS 결제 - 최근 매출 데이터)
@@ -798,7 +1010,23 @@ INSERT INTO head_income (store_idx, orders_idx, price, status) VALUES
 (2, 4, 481000, true),
 (3, 7, 161000, true),
 (4, 8, 756000, false),
-(5, 10, 242500, true);
+(5, 10, 242500, true),
+-- 추가 발주 수익
+(1, 12, 220000, true),
+(2, 14, 255000, true),
+(3, 16, 347500, true),
+(3, 17, 116000, true),
+(4, 18, 357500, true),
+(5, 20, 285000, true),
+(1, 22, 180000, true),
+(1, 23, 112000, true),
+(2, 24, 276500, true),
+(3, 26, 222000, true),
+(4, 28, 285500, true),
+(4, 29, 224000, true),
+(5, 30, 211500, true),
+(2, 33, 216000, true),
+(3, 34, 110500, true);
 
 -- ============================================================
 -- 19. HeadNotification (본사 알림)

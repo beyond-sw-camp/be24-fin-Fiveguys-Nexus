@@ -1,7 +1,9 @@
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted, computed, nextTick } from 'vue'
 import { Plus, Search, FileText, ChevronDown } from 'lucide-vue-next'
-import { getStoreList , getStoreDetailList} from '@/api/store/index.js'
+import { getStoreList , getStoreDetailList, getPresignedUrl, getNewRegister} from '@/api/store/index.js'
+import axios from "axios";
+
 
 const searchQuery = ref('')
 const filterStatus = ref('전체')
@@ -9,14 +11,14 @@ const activeDropdown = ref(null)
 
 const statusOptions = ['전체', '입점', '폐점']
 
+// --- 가맹점 목록 리스트 ---
 const storesList = reactive([])
-
 
 const storeListRes = async ()=>{
   const res = await getStoreList()
   storesList.push(...res.data.result)
-
 }
+
 const filteredStores = computed(() => {
   let list = [...storesList];
 
@@ -28,7 +30,6 @@ const filteredStores = computed(() => {
     }
     return true; // '전체'일 때는 모두 반환
   })
-  console.log(list)
 
 // 2. 검색어 필터링 (storeName, ownerName, address 기준)
   const q = searchQuery.value.trim().toLowerCase()
@@ -55,52 +56,155 @@ const showModal = ref(false)
 const showDetailModal = ref(false)
 const editTarget = ref(null)
 const detailTarget = ref(null)
-const form = ref({ storeName: '', ownerName: '', address: '', business: '', ownerEmail: '', openedAt: '', status: '입점', bizPdfName: ''})
 
+// 초기화 하는 함수
+const getInitialForm = () => ({
+  storeName: '',
+  ownerName: '',
+  ownerEmail: '',
+  postcode: '',
+  address: '',
+  addressDetail: '',
+  business: '',
+  createdAt: '',
+  closedAt: '',
+  filePath: '',
+});
+
+const form = reactive(getInitialForm())
+
+
+// 상태 토글
 function toggleDropdown(type) {
   activeDropdown.value = activeDropdown.value === type ? null : type
 }
 
+// 토글 필터링 조건
 function selectFilter(type, value) {
   if (type === 'status') filterStatus.value = value
   activeDropdown.value = null
 }
 
+// 검색
 function handleSearch() {}
 
-// 상세 모달
+// 가맹점 목록 클릭시 상세 모달창
 async function openDetail(idx) {
   const res = await getStoreDetailList(idx)
-  console.log(res.data.result)
+
   detailTarget.value = res.data.result
   showDetailModal.value = true
 }
 
-function openModal(store) {
-  editTarget.value = store
-  form.value = store
-    ? { ...store, bizPdfName: '' }
-    : { name: '', owner: '', details: '', bizNumber: '', email: '', openDate: '', closeDate: '', bizPdfName: '' }
-  showModal.value = true
-}
+// 수정 등록 팝업 창 열기
+async function openModal(idx =! null) {
 
-function handleFileChange(e) {
-  const file = e.target.files[0]
-  if (file) form.value.bizPdfName = file.name
-}
+  if (idx) {
+    // [수정 모드]
+    const res = await getStoreDetailList(idx);
+    const detailData = res.data.result;
+    Object.assign(form, getInitialForm());
+    // v-model로 연결된 form에 DB에서 가져온 값을 세팅 (화면에 바로 보임)
+    Object.assign(form, detailData);
 
-// 저장 로직 (백엔드 연동 전 임시 처리)
-function saveStore() {
-  if (editTarget.value) {
-    Object.assign(editTarget.value, form.value)
+    editTarget.value = detailData; // 나중에 수정 API 보낼 때 쓸 idx가 담긴 원본
   } else {
-    storesList.push({ idx: Date.now(), ...form.value })
+    // [등록 모드] idx가 없으면 입력 칸을 싹 비움
+    Object.assign(form, getInitialForm());
+    editTarget.value = null;
   }
-  showModal.value = false
+  showModal.value = true;
+}
+
+// 파일 선택 감지
+async function handleFileChange(e) {
+  const file = e.target.files[0]
+
+  const presigned = await getPresignedUrl(file.name)
+
+  // 2. [응답] 백엔드가 "이 주소(uploadUrl)로 올리고, 이름은 이걸(fileKey)로 써!"라고 함[cite: 2]
+  const { url, fileName } = presigned.data.result;
+
+  // 3. [업로드] 받은 주소로 실제 파일 전송[cite: 2]
+  await axios.put(url, fileName, {
+    headers: { 'Content-Type': fileName.type }
+  });
+
+  form.fileName = file.name;
+  if (file) form.filePath = fileName
+}
+
+
+async function saveStore() {
+  // 수정
+  if (editTarget.value) {
+    // 1. 변경 사항이 있는지 간단히 체크
+    const isNoChange = JSON.stringify(editTarget.value) === JSON.stringify(form.value);
+
+    if (isNoChange) {
+      alert("수정된 내용이 없습니다.");
+      showModal.value = false;
+      return; // 함수 종료 (백엔드 요청 안 함)
+    }
+
+  }
+  // 등록
+  else {
+    const storeRegDto = reactive({
+      storeName: '',
+      ownerEmail: '',
+      postcode: '',
+      address: '',
+      addressDetail: '',
+      business: '',
+      filePath: '',
+    })
+    Object.assign(storeRegDto, form.value);
+
+    try {
+      const res = await getNewRegister(storeRegDto);
+
+      if (res.data.code === 2000) {
+        alert("가맹점이 등록되었습니다.");
+      }
+    } catch (error) {
+
+      alert("등록 실패: " + error.message);
+    }
+  }
+  showModal.value = false;
 }
 
 function downloadPdf() {
   alert('사업자 등록증 PDF를 다운로드합니다.')
+}
+
+// 카카오 주소 API
+const sample6_execDaumPostcode = () => {
+  new window.daum.Postcode({
+    oncomplete: (data) => {
+      let addr = ''; // 주소 변수
+
+      // 사용자가 선택한 주소 타입에 따라 해당 주소 값을 가져온다.
+      if (data.userSelectedType === 'R') { // 도로명 주소
+        addr = data.roadAddress;
+      } else { // 지번 주소
+        addr = data.jibunAddress;
+      }
+
+      // [핵심] Vue의 reactive 객체에 직접 값을 할당합니다.
+      form.address = addr;
+
+      // 만약 우편번호도 저장하고 싶다면 form에 추가 후 할당하세요.
+      form.postcode = data.zonecode;
+
+      // 상세주소 입력창으로 포커스 이동
+      nextTick(() => {
+        const detailInput = document.getElementById("sample6_detailAddress");
+        if (detailInput) detailInput.focus();
+      });
+    }
+  }).open();
 }
 
 onMounted(() => {
@@ -218,7 +322,7 @@ onMounted(() => {
           <td class="px-5 py-3.5">
             <div class="flex justify-center">
               <button
-                @click.stop="openModal(store)"
+                @click.stop="openModal(store.idx)"
                 :disabled="store.status === '폐점'"
                 class="px-3 py-1.5 text-xs font-semibold rounded transition-colors shadow-sm"
                 :class="store.status === '입점'
@@ -335,46 +439,79 @@ onMounted(() => {
         <form @submit.prevent="saveStore" class="p-8 space-y-5">
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">가맹점명</label>
-            <input v-model="form.name" required type="text" placeholder="예: 한우 오마카세"
+            <input v-model="form.storeName" required type="text" placeholder="예: 한우 오마카세"
                    class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
           </div>
 
-          <div class="grid grid-cols-2 gap-5">
-            <div class="space-y-1.5">
+          <div class="grid gap-5" :class="editTarget ? 'grid-cols-2' : 'grid-cols-1'">
+
+            <div v-if="editTarget" class="space-y-1.5">
               <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">담당자명</label>
-              <input v-model="form.owner" required type="text" placeholder="성함 입력"
+              <input v-model="form.ownerName" required type="text" placeholder="성함 입력"
                      class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
             </div>
+
             <div class="space-y-1.5">
               <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">이메일</label>
-              <input v-model="form.email" type="email" placeholder="example@email.com"
+              <input v-model="form.ownerEmail" type="email" placeholder="example@email.com"
                      class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
             </div>
           </div>
 
-          <div class="space-y-1.5">
-            <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">위치</label>
-            <input v-model="form.details" required type="text" placeholder="예: 갤러리아 백화점 B1F 101호"
-                   class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
-          </div>
+          <div class="space-y-3">
+            <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">위치 (주소)</label>
 
+            <div class="flex gap-2">
+              <input
+                v-model="form.postcode"
+                type="text"
+                id="sample6_postcode"
+                placeholder="우편번호"
+                readonly
+                class="w-32 px-4 py-2 rounded-lg border border-gray-200 text-sm outline-none bg-gray-50"
+              />
+              <button
+                type="button"
+                @click="sample6_execDaumPostcode"
+                class="px-4 py-2 bg-gray-800 text-white text-sm rounded-lg hover:bg-gray-700 transition-colors cursor-pointer"
+              >
+                주소 검색
+              </button>
+            </div>
+
+            <input
+              v-model="form.address"
+              type="text"
+              placeholder="도로명/지번 주소"
+              readonly
+              class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all"
+            />
+
+            <input
+              v-model="form.addressDetail"
+              type="text"
+              id="sample6_detailAddress"
+              placeholder="상세 주소를 입력해주세요"
+              class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all"
+            />
+          </div>
           <!-- 수정 모달에서만 표시 -->
           <div v-if="editTarget" class="grid grid-cols-2 gap-5">
             <div class="space-y-1.5">
               <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">개업일</label>
-              <input v-model="form.openDate" type="date"
+              <input v-model="form.createdAt" type="date"
                      class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
             </div>
             <div class="space-y-1.5">
               <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">폐업일</label>
-              <input v-model="form.closeDate" type="date"
+              <input v-model="form.closedAt" type="date"
                      class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
             </div>
           </div>
 
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">사업자번호</label>
-            <input v-model="form.bizNumber" type="text" placeholder="000-00-00000"
+            <input v-model="form.business" type="text" placeholder="000-00-00000"
                    class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
           </div>
 
@@ -382,7 +519,7 @@ onMounted(() => {
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">사업자 PDF</label>
             <label class="cursor-pointer block">
               <div class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm text-gray-400 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between">
-                <span>{{ form.bizPdfName || '파일을 선택해주세요' }}</span>
+                <span>{{ form.fileName || '파일을 선택해주세요' }}</span>
                 <FileText class="w-4 h-4" />
               </div>
               <input type="file" class="hidden" @change="handleFileChange" accept=".pdf" />

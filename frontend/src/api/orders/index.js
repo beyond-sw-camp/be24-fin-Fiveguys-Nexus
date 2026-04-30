@@ -1,7 +1,7 @@
 import api from '@/plugins/axiosinterceptor'
 
-const getAutoOrders = () => {
-  return api.get('/orders/list/auto')
+const getAutoOrders = (params = {}) => {
+  return api.get('/orders/list/auto', { params })
 }
 
 const getOrderDetail = (ordersIdx) => {

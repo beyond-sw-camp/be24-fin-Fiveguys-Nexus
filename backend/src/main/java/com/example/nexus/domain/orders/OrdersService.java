@@ -34,13 +34,16 @@ public class OrdersService {
 
     @Transactional
     public void createStoreManualOrder(Long userIdx, OrdersDto.OrdersReq req) {
+        // 1. 주문 아이템 리스트 검증
         if (req.getOrdersItemList() == null || req.getOrdersItemList().isEmpty()) {
             throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
         }
 
+        // 2. 인증 정보로 매장 조회
         Store store = storeRepository.findByUserIdx(userIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
 
+        // 3. Product 조회 및 총 가격 계산
         long totalprice = 0;
         List<OrdersItem> itemList = new ArrayList<>();
 
@@ -56,6 +59,7 @@ public class OrdersService {
                     .build());
         }
 
+        // 4. Orders 저장
         Orders orders = ordersRepository.save(Orders.builder()
                 .price(totalprice)
                 .ordersType(OrdersType.MANUAL)
@@ -65,6 +69,7 @@ public class OrdersService {
                 .store(store)
                 .build());
 
+        // 5. OrdersItem 저장
         for (OrdersItem item : itemList) {
             ordersItemRepository.save(OrdersItem.builder()
                     .count(item.getCount())

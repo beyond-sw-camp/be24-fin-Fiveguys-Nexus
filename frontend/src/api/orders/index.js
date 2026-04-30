@@ -30,6 +30,7 @@ const getOrderHistory = (params = {}) => {
 
 const getConfirmedOrders = (params = {}) => {
   return api.get('/orders/list/confirmed', { params })
+
 }
 
 const approveAllConfirmed = () => {

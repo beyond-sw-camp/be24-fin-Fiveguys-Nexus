@@ -107,20 +107,35 @@ const abnormalOrders = ref([
 ])
 
 const confirmedOrders = ref([])
+const confirmedPage = ref(0)
+const confirmedTotalPages = ref(1)
+const confirmedSearchParams = ref({})
 
-async function fetchConfirmedOrders() {
+async function fetchConfirmedOrders(params = confirmedSearchParams.value, page = confirmedPage.value) {
   try {
-    const res = await ordersApi.getConfirmedOrders()
-    confirmedOrders.value = res.data.result.map(o => ({
+    const res = await ordersApi.getConfirmedOrders({ ...params, page, size: 10 })
+    const data = res.data.result
+    confirmedOrders.value = data.content.map(o => ({
       id: o.idx,
       store: o.storeName,
       date: o.createdAt?.replace('T', ' ').slice(0, 16) ?? '-',
       price: o.price,
       status: '확정',
     }))
+    confirmedPage.value = data.number
+    confirmedTotalPages.value = data.totalPages
   } catch (e) {
     console.error('확정 발주 목록 조회 실패', e)
   }
+}
+
+function onConfirmedSearch(params) {
+  confirmedSearchParams.value = params
+  fetchConfirmedOrders(params, 0)
+}
+
+function onConfirmedPageChange(page) {
+  fetchConfirmedOrders(confirmedSearchParams.value, page)
 }
 
 async function approveAllConfirmed() {
@@ -258,7 +273,9 @@ function rejectAbnormal(o)  { o.processed = true; alert(`${o.store} 발주 반�
           <CheckCheck class="w-4 h-4" /> 전체 승인
         </button>
       </div>
-      <HqConfirmedOrderTable :orders="confirmedOrders" @open-detail="openDetail" />
+      <HqConfirmedOrderTable :orders="confirmedOrders"
+        :current-page="confirmedPage" :total-pages="confirmedTotalPages"
+        @open-detail="openDetail" @search="onConfirmedSearch" @page-change="onConfirmedPageChange" />
     </div>
     <HqOrderHistoryTable v-if="activeTab === 'history'" :orders="orderHistory"
       :current-page="historyPage" :total-pages="historyTotalPages"

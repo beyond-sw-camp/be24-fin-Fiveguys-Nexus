@@ -48,12 +48,16 @@ INSERT INTO user (email, password, user_name, tel, role, is_deleted) VALUES
 -- ============================================================
 -- 2. Store (가맹점 5개)
 -- ============================================================
-INSERT INTO store (user_idx, store_name, address, address_detail, file_path, business, created_at, closed_at, is_deleted) VALUES
-(3, '더벤티 강남역점', '서울특별시 강남구 강남대로 396', '1층 101호', '/uploads/store/gangnam.jpg', '123-45-67890', '2023-03-15 09:00:00', NULL, false),
-(4, '더벤티 홍대입구점', '서울특별시 마포구 양화로 160', '1층', '/uploads/store/hongdae.jpg', '234-56-78901', '2023-06-01 09:00:00', NULL, false),
-(5, '더벤티 신촌점', '서울특별시 서대문구 신촌로 141', '지하1층 B102호', '/uploads/store/sinchon.jpg', '345-67-89012', '2023-09-10 09:00:00', NULL, false),
-(6, '더벤티 건대입구점', '서울특별시 광진구 능동로 120', '1층 103호', '/uploads/store/konkuk.jpg', '456-78-90123', '2024-01-08 09:00:00', NULL, false),
-(7, '더벤티 잠실점', '서울특별시 송파구 올림픽로 240', '1층', '/uploads/store/jamsil.jpg', '567-89-01234', '2024-04-20 09:00:00', NULL, false);
+INSERT INTO store (user_idx, store_name, postcode, address, address_detail, file_path, business, created_at, closed_at, is_deleted) VALUES
+(3, '더벤티 강남역점', '06232', '서울특별시 강남구 강남대로 396', '1층 101호', '/uploads/store/gangnam.jpg', '123-45-67890', '2023-03-15 09:00:00', NULL, false),
+(4, '더벤티 홍대입구점', '04050', '서울특별시 마포구 양화로 160', '1층', '/uploads/store/hongdae.jpg', '234-56-78901', '2023-06-01 09:00:00', '2023-09-10 09:00:00', true),
+(5, '더벤티 신촌점', '03785', '서울특별시 서대문구 신촌로 141', '지하1층 B102호', '/uploads/store/sinchon.jpg', '345-67-89012', '2023-09-10 09:00:00', NULL, false),
+(6, '더벤티 건대입구점', '05029', '서울특별시 광진구 능동로 120', '1층 103호', '/uploads/store/konkuk.jpg', '456-78-90123', '2024-01-08 09:00:00', '2024-04-20 09:00:00', true),
+(7, '더벤티 잠실점', '05554', '서울특별시 송파구 올림픽로 240', '1층', '/uploads/store/jamsil.jpg', '567-89-01234', '2024-04-20 09:00:00', NULL, false);
+
+
+
+
 
 -- ============================================================
 -- 3. Category (원자재 카테고리)

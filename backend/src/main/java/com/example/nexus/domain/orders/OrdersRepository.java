@@ -13,6 +13,7 @@ import java.util.List;
 public interface OrdersRepository extends JpaRepository<Orders, Long>, JpaSpecificationExecutor<Orders> {
     List<Orders> findAllByStore_IdxAndOrdersStatus(Long storeIdx, OrdersStatus orderStatus);
     List<Orders> findAllByOrdersStatus(OrdersStatus ordersStatus);
+    List<Orders> findAllByIsDangerTrue();
 
     @Query("SELECT COALESCE(SUM(i.count), 0) / GREATEST(COUNT(DISTINCT o.idx), 1) " +
             "FROM Orders o JOIN o.ordersItemList i " +

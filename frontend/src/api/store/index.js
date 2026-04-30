@@ -13,5 +13,5 @@ export const getStoreInventoryByStore = (storeIdx) =>
 export const getPresignedUrl = (fileName) =>
   api.get(`/store/presignedUrl/${fileName}`)
 
-export const getNewRegister = (storeRegDto)=>
-  api.get('/store/new/register',storeRegDto)
+export const postNewRegister = (storeRegDto)=>
+  api.post('/store/new/register',storeRegDto)

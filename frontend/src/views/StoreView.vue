@@ -1,7 +1,7 @@
 <script setup>
 import { ref, reactive, onMounted, computed, nextTick } from 'vue'
 import { Plus, Search, FileText, ChevronDown } from 'lucide-vue-next'
-import { getStoreList , getStoreDetailList, getPresignedUrl, getNewRegister} from '@/api/store/index.js'
+import { getStoreList , getStoreDetailList, getPresignedUrl, postNewRegister} from '@/api/store/index.js'
 import axios from "axios";
 
 
@@ -52,6 +52,28 @@ const filteredStores = computed(() => {
   })
 })
 
+const formatBusinessNumber = (e) => {
+  // 1. 숫자 이외의 문자(한글, 영문 등)를 모두 제거
+  let val = e.target.value.replace(/[^0-9]/g, '');
+
+  // 2. 최대 10자리까지만 남기기
+  if (val.length > 10) val = val.substring(0, 10);
+
+  // 3. 포맷팅 로직 (000-00-00000)
+  let formatted = '';
+  if (val.length <= 3) {
+    formatted = val;
+  } else if (val.length <= 5) {
+    formatted = `${val.slice(0, 3)}-${val.slice(3)}`;
+  } else {
+    formatted = `${val.slice(0, 3)}-${val.slice(3, 5)}-${val.slice(5, 10)}`;
+  }
+
+  // [중요] input 태그의 실제 값과 Vue 상태를 강제로 일치시킴
+  e.target.value = formatted;
+  form.business = formatted;
+};
+
 const showModal = ref(false)
 const showDetailModal = ref(false)
 const editTarget = ref(null)
@@ -69,6 +91,7 @@ const getInitialForm = () => ({
   createdAt: '',
   closedAt: '',
   filePath: '',
+  fileName:''
 });
 
 const form = reactive(getInitialForm())
@@ -159,13 +182,17 @@ async function saveStore() {
       business: '',
       filePath: '',
     })
-    Object.assign(storeRegDto, form.value);
+    Object.assign(storeRegDto, form);
 
     try {
-      const res = await getNewRegister(storeRegDto);
+      const res = await postNewRegister(storeRegDto);
 
       if (res.data.code === 2000) {
         alert("가맹점이 등록되었습니다.");
+
+        // [추가] 목록을 비우고 다시 서버에서 받아옵니다.
+        storesList.length = 0;
+        await storeListRes();
       }
     } catch (error) {
 
@@ -387,9 +414,6 @@ onMounted(() => {
 
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">사업자번호</label>
-            <div class="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm font-mono text-gray-500">
-              {{ detailTarget?.business }}
-            </div>
           </div>
 
           <div class="grid grid-cols-2 gap-5 p-4 bg-gray-50 rounded-lg border border-gray-100">
@@ -511,8 +535,14 @@ onMounted(() => {
 
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">사업자번호</label>
-            <input v-model="form.business" type="text" placeholder="000-00-00000"
-                   class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
+            <input
+              :value="form.business"
+              @input="formatBusinessNumber"
+              type="text"
+              placeholder="숫자만 입력하세요"
+              maxlength="12"
+              class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all"
+            />
           </div>
 
           <div class="space-y-1.5">

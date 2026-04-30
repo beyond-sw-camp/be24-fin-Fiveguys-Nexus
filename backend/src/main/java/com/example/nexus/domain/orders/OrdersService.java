@@ -9,7 +9,6 @@ import com.example.nexus.domain.product.ProductRepository;
 import com.example.nexus.domain.product.model.Product;
 import com.example.nexus.domain.store.StoreRepository;
 import com.example.nexus.domain.store.model.Store;
-import com.example.nexus.domain.user.model.User;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

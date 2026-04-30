@@ -2,6 +2,7 @@ package com.example.nexus.domain.orders;
 
 import com.example.nexus.common.enums.OrdersType;
 import com.example.nexus.common.model.BaseResponse;
+import com.example.nexus.common.model.PageResponse;
 import com.example.nexus.domain.orders.model.DangerDto;
 import com.example.nexus.domain.orders.model.OrdersDto;
 import com.example.nexus.domain.orders.model.OrdersItemDto;
@@ -51,7 +52,7 @@ public class OrdersController {
         Page<OrdersDto.OrderListRes> result = orderService.findOrderHistory(
                 ordersType, startDate, endDate, keyword,
                 PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
-        return ResponseEntity.ok(BaseResponse.success(result));
+        return ResponseEntity.ok(BaseResponse.success(PageResponse.from(result)));
     }
 
     @GetMapping("/{ordersIdx}")

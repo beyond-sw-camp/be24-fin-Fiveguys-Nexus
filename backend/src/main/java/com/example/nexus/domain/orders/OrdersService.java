@@ -109,6 +109,8 @@ public class OrdersService {
         }
     }
 
+    // 발주 이력 검색 조회 (APPROVE, REJECT, CANCELLED 상태 대상)
+    // 발주 유형, 기간, 키워드 조건으로 필터링 + 페이징 처리
     public Page<OrdersDto.OrderListRes> findOrderHistory(OrdersType ordersType, LocalDate startDate, LocalDate endDate, String keyword, Pageable pageable) {
         Specification<Orders> spec = OrdersSpecification.statusIn(
                 List.of(OrdersStatus.APPROVE, OrdersStatus.REJECT, OrdersStatus.CANCELLED));

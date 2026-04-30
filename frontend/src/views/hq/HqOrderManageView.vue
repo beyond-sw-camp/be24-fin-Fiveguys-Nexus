@@ -41,11 +41,15 @@ async function fetchAutoOrders() {
 }
 
 const orderHistory = ref([])
+const historyPage = ref(0)
+const historyTotalPages = ref(1)
+const historySearchParams = ref({})
 
-async function fetchOrderHistory() {
+async function fetchOrderHistory(params = historySearchParams.value, page = historyPage.value) {
   try {
-    const res = await ordersApi.getOrderHistory()
-    orderHistory.value = res.data.result.map(o => ({
+    const res = await ordersApi.getOrderHistory({ ...params, page, size: 10 })
+    const data = res.data.result
+    orderHistory.value = data.content.map(o => ({
       id: o.idx,
       type: o.ordersType === 'AUTO' ? '자동' : '수동',
       store: o.storeName,
@@ -53,9 +57,20 @@ async function fetchOrderHistory() {
       price: o.price,
       status: o.ordersStatus === 'APPROVE' ? '승인' : o.ordersStatus === 'REJECT' ? '거절' : '취소',
     }))
+    historyPage.value = data.number
+    historyTotalPages.value = data.totalPages
   } catch (e) {
     console.error('발주 이력 조회 실패', e)
   }
+}
+
+function onHistorySearch(params) {
+  historySearchParams.value = params
+  fetchOrderHistory(params, 0)
+}
+
+function onHistoryPageChange(page) {
+  fetchOrderHistory(historySearchParams.value, page)
 }
 
 const abnormalOrders = ref([
@@ -228,7 +243,9 @@ function rejectAbnormal(o)  { o.processed = true; alert(`${o.store} 발주 반�
       </div>
       <HqConfirmedOrderTable :orders="confirmedOrders" @open-detail="openDetail" />
     </div>
-    <HqOrderHistoryTable v-if="activeTab === 'history'" :orders="orderHistory" @open-detail="openDetail" />
+    <HqOrderHistoryTable v-if="activeTab === 'history'" :orders="orderHistory"
+      :current-page="historyPage" :total-pages="historyTotalPages"
+      @open-detail="openDetail" @search="onHistorySearch" @page-change="onHistoryPageChange" />
     <HqAbnormalOrderTable v-if="activeTab === 'abnormal'" :orders="abnormalOrders"
       @open-detail="openDetail" @approve="approveAbnormal" @reject="rejectAbnormal" />
 

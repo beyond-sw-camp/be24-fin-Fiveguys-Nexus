@@ -62,12 +62,9 @@ public class ProductService {
 
     @Transactional
     public boolean deleteProduct(Long idx) {
-        Product product = productRepository.findById(idx).orElse(null);
-
-        if (product != null) {
+        return productRepository.findById(idx).map(product -> {
             productRepository.delete(product);
             return true;
-        }
-        return false;
+        }).orElse(false);
     }
 }

@@ -7,8 +7,9 @@ export function statusClass(status) {
     '제안중':   'bg-blue-50 text-blue-600 border border-blue-200',
     '검토필요': 'bg-rose-50 text-rose-700 border border-rose-200',
     '확정':     'bg-green-50 text-green-700 border border-green-200',
-    '거절':     'bg-gray-100 text-gray-400 border border-gray-200',
-    '취소':     'bg-red-50 text-red-500 border border-red-200',
+    '승인':     'bg-green-50 text-green-600 border border-green-200',
+    '거절':     'bg-red-50 text-red-500 border border-red-200',
+    '취소':     'bg-amber-50 text-amber-600 border border-amber-200',
     '배송중':   'bg-orange-50 text-orange-600 border border-orange-200',
     '입고완료': 'bg-emerald-50 text-emerald-700 border border-emerald-200',
   }

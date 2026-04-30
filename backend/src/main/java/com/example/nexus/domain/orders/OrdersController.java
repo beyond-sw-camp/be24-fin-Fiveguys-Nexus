@@ -28,18 +28,6 @@ public class OrdersController {
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 
-    @GetMapping("/list/manual")
-    public ResponseEntity manualList() {
-        List<OrdersDto.OrderListRes> result = orderService.findAllManual();
-        return ResponseEntity.ok(BaseResponse.success(result));
-    }
-
-    @PostMapping("/reg/manual")
-    public ResponseEntity createManualOrder(@RequestBody OrdersDto.OrdersReq req) {
-        orderService.createManualOrder(req);
-        return ResponseEntity.ok(BaseResponse.success("create success"));
-    }
-
     @GetMapping("/list")
     public ResponseEntity list() {
         List<OrdersDto.OrdersRes> result = orderService.findAll();
@@ -92,6 +80,15 @@ public class OrdersController {
     public ResponseEntity deleteItem(@PathVariable Long ordersItemIdx) {
         orderService.deleteItem(ordersItemIdx);
         return ResponseEntity.ok(BaseResponse.success("delete success"));
+    }
+
+    @PostMapping("/store/reg/manual")
+    public ResponseEntity createStoreManualOrder(@AuthenticationPrincipal AuthUserDetails authUserDetails, @RequestBody OrdersDto.OrdersReq req) {
+        if (authUserDetails == null) {
+            throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+        orderService.createStoreManualOrder(authUserDetails.getIdx(), req);
+        return ResponseEntity.ok(BaseResponse.success("create success"));
     }
 
     @GetMapping("/store/list")

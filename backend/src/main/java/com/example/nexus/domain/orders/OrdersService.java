@@ -9,7 +9,6 @@ import com.example.nexus.domain.product.ProductRepository;
 import com.example.nexus.domain.product.model.Product;
 import com.example.nexus.domain.store.StoreRepository;
 import com.example.nexus.domain.store.model.Store;
-import com.example.nexus.domain.user.model.User;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -33,28 +32,22 @@ public class OrdersService {
                 .toList();
     }
 
-    public List<OrdersDto.OrderListRes> findAllManual() {
-        return ordersRepository.findAllByOrdersTypeAndOrdersStatus(OrdersType.MANUAL, OrdersStatus.WAITING).stream()
-                .map(OrdersDto.OrderListRes::from)
-                .toList();
-    }
-
     @Transactional
-    public void createManualOrder(OrdersDto.OrdersReq req) {
-        // 0. 주문 아이템 리스트 검증
+    public void createStoreManualOrder(Long userIdx, OrdersDto.OrdersReq req) {
+        // 1. 주문 아이템 리스트 검증
         if (req.getOrdersItemList() == null || req.getOrdersItemList().isEmpty()) {
             throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
         }
 
-        // 1. store 조회
-        Store store = storeRepository.findById(req.getStoreIdx())
+        // 2. 인증 정보로 매장 조회
+        Store store = storeRepository.findByUserIdx(userIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
 
-        // 2. Product 조회 및 총 가격 계산
+        // 3. Product 조회 및 총 가격 계산
         long totalprice = 0;
         List<OrdersItem> itemList = new ArrayList<>();
 
-        for(OrdersItemDto.OrdersItemReq itemReq : req.getOrdersItemList()) {
+        for (OrdersItemDto.OrdersItemReq itemReq : req.getOrdersItemList()) {
             Product product = productRepository.findById(itemReq.getProductIdx())
                     .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
 
@@ -66,7 +59,7 @@ public class OrdersService {
                     .build());
         }
 
-        // 3. Orders 저장
+        // 4. Orders 저장
         Orders orders = ordersRepository.save(Orders.builder()
                 .price(totalprice)
                 .ordersType(OrdersType.MANUAL)
@@ -76,8 +69,8 @@ public class OrdersService {
                 .store(store)
                 .build());
 
-        // 4. OrdersItem 저장
-        for(OrdersItem item : itemList) {
+        // 5. OrdersItem 저장
+        for (OrdersItem item : itemList) {
             ordersItemRepository.save(OrdersItem.builder()
                     .count(item.getCount())
                     .product(item.getProduct())

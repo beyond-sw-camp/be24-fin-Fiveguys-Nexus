@@ -67,4 +67,15 @@ public class ProductService {
             return true;
         }).orElse(false);
     }
+
+    @Transactional(readOnly = true)
+    public List<ProductDto.ListRes> searchProduct(String productName) {
+        List<Product> entities = productRepository.findByProductNameContaining(productName);
+        List<ProductDto.ListRes> dtos = new ArrayList<>();
+
+        for (Product entity : entities) {
+            dtos.add(ProductDto.ListRes.from(entity));
+        }
+        return dtos;
+    }
 }

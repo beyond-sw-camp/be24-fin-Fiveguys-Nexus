@@ -1,4 +1,4 @@
-package com.example.nexus.config.S3;
+package com.example.nexus.config.s3;
 
 
 import org.springframework.beans.factory.annotation.Value;

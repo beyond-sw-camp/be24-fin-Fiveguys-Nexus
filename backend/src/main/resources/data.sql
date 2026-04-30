@@ -70,7 +70,7 @@ INSERT INTO category (category_name, is_deleted) VALUES
 -- ============================================================
 -- 4. Product (원자재 - 더벤티 실제 메뉴 기반)
 -- ============================================================
-INSERT INTO product (category_idx, product_name, product_unit, max_stock, min_stock, unit_price, dager_days, is_delete) VALUES
+INSERT INTO product (category_idx, product_name, product_unit, max_stock, min_stock, unit_price, danger_days, is_deleted) VALUES
 -- 원두/커피 (category 1)
 (1, '에스프레소 원두', 'kg', 50, 10, 15000, '30', false),
 (1, '디카페인 원두', 'kg', 30, 5, 18000, '30', false),
@@ -450,29 +450,29 @@ INSERT INTO pos_store_inventory (store_idx, product_idx, count, status, manufact
 -- ============================================================
 -- 강남역점 발주 (승인 완료)
 INSERT INTO orders (store_idx, price, order_type, order_status, is_danger, created_at) VALUES
-(1, 285000, 'MANUAL', 'APPROVE', false, '2026-04-10 09:30:00'),
-(1, 152500, 'AUTO', 'APPROVE', false, '2026-04-17 07:00:00'),
-(1, 98000, 'MANUAL', 'APPROVE', false, '2026-04-24 10:15:00');
+(1, 310000, 'MANUAL', 'APPROVE', false, '2026-04-10 09:30:00'),
+(1, 180000, 'AUTO', 'APPROVE', false, '2026-04-17 07:00:00'),
+(1, 106000, 'MANUAL', 'APPROVE', false, '2026-04-24 10:15:00');
 
 -- 홍대입구점 발주 (혼합 상태)
 INSERT INTO orders (store_idx, price, order_type, order_status, is_danger, created_at) VALUES
-(2, 340000, 'AUTO', 'APPROVE', true, '2026-04-15 07:00:00'),
-(2, 195000, 'MANUAL', 'WAITING', false, '2026-04-28 11:20:00'),
-(2, 420000, 'AUTO', 'WAITING', true, '2026-04-29 07:00:00');
+(2, 481000, 'AUTO', 'APPROVE', true, '2026-04-15 07:00:00'),
+(2, 201500, 'MANUAL', 'CONFIRMED', false, '2026-04-28 11:20:00'),
+(2, 717500, 'AUTO', 'WAITING', true, '2026-04-29 07:00:00');
 
 -- 신촌점 발주
 INSERT INTO orders (store_idx, price, order_type, order_status, is_danger, created_at) VALUES
-(3, 175000, 'MANUAL', 'APPROVE', false, '2026-04-20 14:00:00');
+(3, 161000, 'MANUAL', 'APPROVE', false, '2026-04-20 14:00:00');
 
 -- 건대입구점 발주 (위험 발주)
 INSERT INTO orders (store_idx, price, order_type, order_status, is_danger, created_at) VALUES
-(4, 520000, 'AUTO', 'APPROVE', true, '2026-04-22 07:00:00'),
-(4, 380000, 'AUTO', 'WAITING', true, '2026-04-29 07:00:00');
+(4, 756000, 'AUTO', 'APPROVE', true, '2026-04-22 07:00:00'),
+(4, 405000, 'AUTO', 'WAITING', true, '2026-04-29 07:00:00');
 
 -- 잠실점 발주
 INSERT INTO orders (store_idx, price, order_type, order_status, is_danger, created_at) VALUES
-(5, 210000, 'MANUAL', 'APPROVE', false, '2026-04-18 16:30:00'),
-(5, 135000, 'MANUAL', 'REJECT', false, '2026-04-25 09:45:00');
+(5, 242500, 'MANUAL', 'APPROVE', false, '2026-04-18 16:30:00'),
+(5, 75500, 'MANUAL', 'REJECT', false, '2026-04-25 09:45:00');
 
 -- ============================================================
 -- 12. OrdersItem (발주 항목)
@@ -792,13 +792,13 @@ INSERT INTO news_summary (store_idx, summary_date, target, summary_title, summar
 -- 18. HeadIncome (본사 수익)
 -- ============================================================
 INSERT INTO head_income (store_idx, orders_idx, price, status) VALUES
-(1, 1, 285000, true),
-(1, 2, 152500, true),
-(1, 3, 98000, true),
-(2, 4, 340000, true),
-(3, 7, 175000, true),
-(4, 8, 520000, false),
-(5, 10, 210000, true);
+(1, 1, 310000, true),
+(1, 2, 180000, true),
+(1, 3, 106000, true),
+(2, 4, 481000, true),
+(3, 7, 161000, true),
+(4, 8, 756000, false),
+(5, 10, 242500, true);
 
 -- ============================================================
 -- 19. HeadNotification (본사 알림)

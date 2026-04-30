@@ -38,6 +38,9 @@ public class Store {
     @Column(nullable = false,  unique = true)
     private String business;
 
+    @Column(nullable = false)
+    private Integer postcode;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 

@@ -44,7 +44,9 @@ public class StoreDto {
         private String storeName;
         private String ownerName;
         private String ownerEmail;
+        private Integer postcode;
         private String address;
+        private String addressDetail;
         private String business;
         private String createdAt;
         private String closedAt;
@@ -59,10 +61,17 @@ public class StoreDto {
                     .storeName(entity.getStoreName())
                     .ownerName(entity.getUser().getUserName())
                     .ownerEmail(entity.getUser().getEmail())
-                    .address(entity.getAddress() + " " + entity.getAddressDetail())
+                    .postcode(entity.getPostcode())
+                    .address(entity.getAddress())
+                    .addressDetail(entity.getAddressDetail())
                     .business(entity.getBusiness())
                     .createdAt(entity.getCreatedAt().format(formatter))
-                    .closedAt(entity.getClosedAt() == null ? "운영 중" : entity.getClosedAt().format(formatter))
+                    .closedAt(
+                            entity.getClosedAt() == null && !entity.isDeleted()
+                                    ? "운영 중"
+                                    : entity.getClosedAt().format(formatter)
+
+                    )
                     .filePath(entity.getFilePath())
                     .build();
         }
@@ -97,6 +106,7 @@ public class StoreDto {
     public static class StoreRegReq{
         private String storeName;
         private String ownerEmail;
+        private Integer postcode;
         private String address;
         private String addressDetail;
         private String business;
@@ -105,6 +115,7 @@ public class StoreDto {
         public Store toEntity(){
             return Store.builder()
                     .storeName(this.storeName)
+                    .postcode(this.postcode)
                     .address(this.address)
                     .addressDetail(this.addressDetail)
                     .business(this.business)

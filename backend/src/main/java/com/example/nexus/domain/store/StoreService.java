@@ -93,6 +93,7 @@ public class StoreService {
 
         Store store = Store.builder()
                 .storeName(dto.getStoreName())
+                .postcode(dto.getPostcode())
                 .address(dto.getAddress())
                 .addressDetail(dto.getAddressDetail())
                 .filePath(dto.getFilePath())

@@ -58,7 +58,7 @@ public class StoreController {
     }
 
     // S3 Pre-signed URL 요청
-    @GetMapping("/presigned-url/{fileName}")
+    @GetMapping("/presignedUrl/{fileName}")
     public ResponseEntity presignedUrl(@PathVariable(name = "fileName") String fileName){
         // 1. 서비스를 호출하여 URL과 고유 파일명을 받아옵니다.
         Map<String, String> result = storeService.getPresignedUrl(fileName);

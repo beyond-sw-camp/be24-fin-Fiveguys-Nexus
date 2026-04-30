@@ -106,6 +106,7 @@ public class StoreDto {
     public static class StoreRegReq{
         private String storeName;
         private String ownerEmail;
+        private Integer postcode;
         private String address;
         private String addressDetail;
         private String business;
@@ -114,6 +115,7 @@ public class StoreDto {
         public Store toEntity(){
             return Store.builder()
                     .storeName(this.storeName)
+                    .postcode(this.postcode)
                     .address(this.address)
                     .addressDetail(this.addressDetail)
                     .business(this.business)

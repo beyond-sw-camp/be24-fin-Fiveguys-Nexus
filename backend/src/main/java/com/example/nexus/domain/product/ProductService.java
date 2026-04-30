@@ -70,12 +70,8 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public List<ProductDto.ListRes> searchProduct(String productName) {
-        List<Product> entities = productRepository.findByProductNameContaining(productName);
-        List<ProductDto.ListRes> dtos = new ArrayList<>();
-
-        for (Product entity : entities) {
-            dtos.add(ProductDto.ListRes.from(entity));
-        }
-        return dtos;
+        return productRepository.findByProductNameContaining(productName).stream()
+                .map(ProductDto.ListRes::from)
+                .toList();
     }
 }

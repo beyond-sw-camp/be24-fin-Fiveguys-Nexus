@@ -79,30 +79,29 @@ function resetFilters() {
         <tbody class="divide-y divide-gray-100">
           <tr v-for="o in orders" :key="o.id"
             class="hover:bg-gray-50/50 transition-colors cursor-pointer"
-            :class="o.processed ? 'opacity-50' : ''"
-            @click="$emit('open-detail', { id: o.id, type: '이상', store: o.store, status: o.processed ? '처리완료' : 'DANGER', date: o.date, items: o.items, avgQty: o.avgQty, ratio: o.ratio })"
+            @click="$emit('open-detail', o.id)"
           >
             <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ o.id }}</td>
             <td class="px-5 py-3.5 font-semibold text-gray-900">{{ o.store }}</td>
-            <td class="px-5 py-3.5 font-bold text-red-600">{{ o.qty.toLocaleString() }}</td>
-            <td class="px-5 py-3.5 text-gray-500">{{ o.avgQty.toLocaleString() }}</td>
+            <td class="px-5 py-3.5 font-bold text-red-600">{{ (o.qty ?? 0).toLocaleString() }}</td>
+            <td class="px-5 py-3.5 text-gray-500">{{ (o.avgQty ?? 0).toLocaleString() }}</td>
             <td class="px-5 py-3.5">
               <span class="text-xs font-black px-2 py-0.5 rounded bg-red-50 text-red-600 border border-red-200">
                 +{{ o.ratio }}%
               </span>
             </td>
-            <td class="px-5 py-3.5 font-semibold text-gray-700">{{ formatPrice((o.items ?? []).reduce((s, i) => s + i.unitPrice * i.qty, 0)) }}</td>
+            <td class="px-5 py-3.5 font-semibold text-gray-700">{{ formatPrice(o.price) }}</td>
             <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ o.date }}</td>
             <td class="px-5 py-3.5">
               <span class="text-xs font-bold px-2 py-0.5 rounded"
-                :class="o.processed
+                :class="o.status === 'APPROVE' || o.status === 'REJECT'
                   ? 'bg-gray-100 text-gray-400 border border-gray-200'
                   : 'bg-red-50 text-red-600 border border-red-200'">
-                {{ o.processed ? '처리완료' : 'DANGER' }}
+                {{ o.status === 'APPROVE' || o.status === 'REJECT' ? '처리완료' : 'DANGER' }}
               </span>
             </td>
             <td class="px-5 py-3.5">
-              <div v-if="!o.processed" class="flex justify-center gap-1.5">
+              <div v-if="o.status !== 'APPROVE' && o.status !== 'REJECT'" class="flex justify-center gap-1.5">
                 <button @click.stop="$emit('approve', o)"
                   class="px-2.5 py-1 bg-[#F37321] text-white text-xs font-semibold hover:bg-[#e0661d] rounded cursor-pointer">승인</button>
                 <button @click.stop="$emit('reject', o)"

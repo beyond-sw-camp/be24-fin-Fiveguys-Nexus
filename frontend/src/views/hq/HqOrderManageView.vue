@@ -13,7 +13,7 @@ import HqDangerSettingsModal from '@/components/orders/HqDangerSettingsModal.vue
 const route = useRoute()
 const router = useRouter()
 
-const abnormalCount = computed(() => abnormalOrders.value.length)
+const abnormalCount = computed(() => abnormalOrders.value.filter(o => o.status !== 'APPROVE' && o.status !== 'REJECT').length)
 
 const tabs = computed(() => [
   { id: 'auto',      label: '자동 발주 제안' },
@@ -103,6 +103,9 @@ async function fetchAbnormalOrders(params = abnormalSearchParams.value, page = a
       date: o.createdAt?.replace('T', ' ').slice(0, 16) ?? '-',
       price: o.price,
       status: o.ordersStatus,
+      qty: o.totalQty,
+      avgQty: o.avgQty,
+      ratio: o.ratio,
     }))
     abnormalPage.value = data.number
     abnormalTotalPages.value = data.totalPages

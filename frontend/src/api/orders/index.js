@@ -40,6 +40,14 @@ const approveAllConfirmed = () => {
   return api.put('/orders/confirmed/approve')
 }
 
+const approveDangerOrder = (ordersIdx) => {
+  return api.put(`/orders/${ordersIdx}/approve`)
+}
+
+const rejectDangerOrder = (ordersIdx) => {
+  return api.put(`/orders/${ordersIdx}/reject`)
+}
+
 export default {
   getAutoOrders,
   getOrderDetail,
@@ -51,4 +59,6 @@ export default {
   getConfirmedOrders,
   getDangerOrders,
   approveAllConfirmed,
+  approveDangerOrder,
+  rejectDangerOrder,
 }

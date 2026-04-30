@@ -13,7 +13,7 @@ import HqDangerSettingsModal from '@/components/orders/HqDangerSettingsModal.vue
 const route = useRoute()
 const router = useRouter()
 
-const abnormalCount = computed(() => abnormalOrders.value.filter(o => !o.processed).length)
+const abnormalCount = computed(() => abnormalOrders.value.length)
 
 const tabs = computed(() => [
   { id: 'auto',      label: '자동 발주 제안' },
@@ -88,23 +88,37 @@ function onHistoryPageChange(page) {
   fetchOrderHistory(historySearchParams.value, page)
 }
 
-const abnormalOrders = ref([
-  { id: 'ORD-20260414-ABN1', store: '이탈리안 키친', qty: 85, avgQty: 15, ratio: 567, date: '2026-04-14 11:22', processed: false,
-    items: [
-      { product: '한우 등심',  qty: 85, unitPrice: 85000, avgQty: 15, ratio: 567, isAbnormal: true  },
-      { product: '올리브오일', qty: 6,  unitPrice: 12000, avgQty: 5,  ratio: 20,  isAbnormal: false },
-    ] },
-  { id: 'ORD-20260413-ABN2', store: '일식 스시바',   qty: 60, avgQty: 10, ratio: 500, date: '2026-04-13 09:15', processed: false,
-    items: [
-      { product: '버터',   qty: 60, unitPrice: 9000, avgQty: 10, ratio: 500, isAbnormal: true  },
-      { product: '생크림', qty: 12, unitPrice: 7000, avgQty: 11, ratio: 9,   isAbnormal: false },
-    ] },
-  { id: 'ORD-20260412-ABN3', store: '차이나 가든',   qty: 500, avgQty: 50, ratio: 900, date: '2026-04-12 16:40', processed: true,
-    items: [
-      { product: '양파', qty: 500, unitPrice: 1500, avgQty: 50, ratio: 900, isAbnormal: true  },
-      { product: '생수', qty: 40,  unitPrice: 8000, avgQty: 38, ratio: 5,   isAbnormal: false },
-    ] },
-])
+const abnormalOrders = ref([])
+const abnormalPage = ref(0)
+const abnormalTotalPages = ref(1)
+const abnormalSearchParams = ref({})
+
+async function fetchAbnormalOrders(params = abnormalSearchParams.value, page = abnormalPage.value) {
+  try {
+    const res = await ordersApi.getDangerOrders({ ...params, page, size: 10 })
+    const data = res.data.result
+    abnormalOrders.value = data.content.map(o => ({
+      id: o.idx,
+      store: o.storeName,
+      date: o.createdAt?.replace('T', ' ').slice(0, 16) ?? '-',
+      price: o.price,
+      status: o.ordersStatus,
+    }))
+    abnormalPage.value = data.number
+    abnormalTotalPages.value = data.totalPages
+  } catch (e) {
+    console.error('이상 발주 목록 조회 실패', e)
+  }
+}
+
+function onAbnormalSearch(params) {
+  abnormalSearchParams.value = params
+  fetchAbnormalOrders(params, 0)
+}
+
+function onAbnormalPageChange(page) {
+  fetchAbnormalOrders(abnormalSearchParams.value, page)
+}
 
 const confirmedOrders = ref([])
 const confirmedPage = ref(0)
@@ -167,6 +181,7 @@ onMounted(() => {
   fetchAutoOrders()
   fetchConfirmedOrders()
   fetchOrderHistory()
+  fetchAbnormalOrders()
 })
 
 function setOrderViewTab(id) {
@@ -175,6 +190,7 @@ function setOrderViewTab(id) {
   if (id === 'confirmed') fetchConfirmedOrders()
   if (id === 'auto') fetchAutoOrders()
   if (id === 'history') fetchOrderHistory()
+  if (id === 'abnormal') fetchAbnormalOrders()
 }
 
 // Detail modal
@@ -227,8 +243,28 @@ async function saveDangerSettings({ threshold, months }) {
 }
 
 // Abnormal order actions
-function approveAbnormal(o) { o.processed = true; alert(`${o.store} 발주 승인 처리되었습니다.`) }
-function rejectAbnormal(o)  { o.processed = true; alert(`${o.store} 발주 반려 처리되었습니다.`) }
+async function approveAbnormal(o) {
+  if (!confirm(`${o.store} 발주를 승인하시겠습니까?`)) return
+  try {
+    await ordersApi.approveDangerOrder(o.id)
+    alert(`${o.store} 발주 승인 처리되었습니다.`)
+    await fetchAbnormalOrders()
+  } catch (e) {
+    console.error('이상 발주 승인 실패', e)
+    alert('승인 처리에 실패했습니다.')
+  }
+}
+async function rejectAbnormal(o) {
+  if (!confirm(`${o.store} 발주를 반려하시겠습니까?`)) return
+  try {
+    await ordersApi.rejectDangerOrder(o.id)
+    alert(`${o.store} 발주 반려 처리되었습니다.`)
+    await fetchAbnormalOrders()
+  } catch (e) {
+    console.error('이상 발주 반려 실패', e)
+    alert('반려 처리에 실패했습니다.')
+  }
+}
 
 </script>
 
@@ -281,7 +317,9 @@ function rejectAbnormal(o)  { o.processed = true; alert(`${o.store} 발주 반�
       :current-page="historyPage" :total-pages="historyTotalPages"
       @open-detail="openDetail" @search="onHistorySearch" @page-change="onHistoryPageChange" />
     <HqAbnormalOrderTable v-if="activeTab === 'abnormal'" :orders="abnormalOrders"
-      @open-detail="openDetail" @approve="approveAbnormal" @reject="rejectAbnormal" />
+      :current-page="abnormalPage" :total-pages="abnormalTotalPages"
+      @open-detail="openDetail" @approve="approveAbnormal" @reject="rejectAbnormal"
+      @search="onAbnormalSearch" @page-change="onAbnormalPageChange" />
 
     <!-- Modals -->
     <HqOrderDetailModal :order="selectedOrder" @close="selectedOrder = null" />

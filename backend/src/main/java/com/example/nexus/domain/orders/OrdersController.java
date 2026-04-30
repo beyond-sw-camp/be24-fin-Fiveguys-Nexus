@@ -1,16 +1,22 @@
 package com.example.nexus.domain.orders;
 
+import com.example.nexus.common.enums.OrdersType;
 import com.example.nexus.common.model.BaseResponse;
 import com.example.nexus.domain.orders.model.DangerDto;
 import com.example.nexus.domain.orders.model.OrdersDto;
 import com.example.nexus.domain.orders.model.OrdersItemDto;
 import com.example.nexus.domain.user.model.AuthUserDetails;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
@@ -35,8 +41,16 @@ public class OrdersController {
     }
 
     @GetMapping("/list/history")
-    public ResponseEntity historyList() {
-        List<OrdersDto.OrderListRes> result = orderService.findOrderHistory();
+    public ResponseEntity historyList(
+            @RequestParam(required = false) OrdersType ordersType,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Page<OrdersDto.OrderListRes> result = orderService.findOrderHistory(
+                ordersType, startDate, endDate, keyword,
+                PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 

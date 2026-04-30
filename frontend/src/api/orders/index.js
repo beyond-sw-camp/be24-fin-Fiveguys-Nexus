@@ -24,6 +24,10 @@ const createStoreManualOrder = (data) => {
   return api.post('/orders/store/reg/manual', data)
 }
 
+const cancelOrder = (ordersIdx) => {
+  return api.put(`/orders/${ordersIdx}/cancel`)
+}
+
 export default {
   getManualOrders,
   getAutoOrders,
@@ -31,4 +35,5 @@ export default {
   getDangerSettings,
   updateDangerSettings,
   createStoreManualOrder,
+  cancelOrder,
 }

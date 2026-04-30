@@ -72,7 +72,7 @@ const filteredHistory = computed(() =>
         </thead>
         <tbody class="divide-y divide-gray-100">
           <tr v-for="h in filteredHistory" :key="h.id" class="hover:bg-gray-50/50 transition-colors cursor-pointer"
-            @click="$emit('open-detail', { id: h.id, type: h.type, store: h.store, status: h.status, date: h.date, items: h.items })">
+            @click="$emit('open-detail', h.id)">
             <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ h.id }}</td>
             <td class="px-5 py-3.5">
               <span class="text-xs font-bold px-2 py-0.5 rounded"

@@ -18,7 +18,8 @@
       <div class="flex gap-3 items-center flex-wrap mb-4">
         <div class="relative">
           <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input v-model="searchQuery" type="text" placeholder="제품명 또는 매장명 검색..."
+          <input v-model="searchQuery" type="text" placeholder="제품명 검색..."
+                 @input="handleSearch"
                  class="pl-10 pr-4 py-2 rounded-lg border border-gray-200 text-sm w-64 bg-white shadow-sm
                    focus:border-[#F37321] focus:ring-1 focus:ring-[#F37321] outline-none transition-colors" />
         </div>
@@ -45,9 +46,8 @@
         <table class="w-full text-sm text-left">
           <thead>
           <tr class="border-b border-gray-200 bg-gray-50">
-            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">제품코드</th>
+            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">제품 번호(ID)</th>
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">제품명</th>
-            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">입점 매장</th>
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">카테고리</th>
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">단위</th>
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">최대재고</th>
@@ -58,34 +58,29 @@
           </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
-          <tr v-for="p in filteredProducts" :key="p.code + '_' + (p.storeId || 'new')" class="hover:bg-gray-50/50 transition-colors">
-            <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ p.code }}</td>
-            <td class="px-5 py-3.5 font-semibold text-gray-900">{{ p.name }}</td>
+          <tr v-for="p in filteredProducts" :key="p.idx" class="hover:bg-gray-50/50 transition-colors">
+            <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ p.idx }}</td>
+            <td class="px-5 py-3.5 font-semibold text-gray-900">{{ p.productName }}</td>
             <td class="px-5 py-3.5">
-                <span class="text-xs font-semibold px-2 py-0.5 rounded bg-blue-50 text-blue-500 border border-blue-100">
-                  {{ p.storeName || '미지정' }}
-                </span>
+              <span class="text-xs font-semibold px-2 py-0.5 bg-gray-100 text-gray-600 border border-gray-200 rounded">{{ p.categoryName }}</span>
             </td>
-            <td class="px-5 py-3.5">
-              <span class="text-xs font-semibold px-2 py-0.5 bg-gray-100 text-gray-600 border border-gray-200 rounded">{{ p.category }}</span>
-            </td>
-            <td class="px-5 py-3.5 text-gray-600">{{ p.unit }}</td>
-            <td class="px-5 py-3.5 font-medium text-gray-900">{{ p.baseStock?.toLocaleString() }}</td>
+            <td class="px-5 py-3.5 text-gray-600">{{ p.productUnit }}</td>
+            <td class="px-5 py-3.5 font-medium text-gray-900">{{ p.maxStock?.toLocaleString() }}</td>
             <td class="px-5 py-3.5 font-semibold text-[#F37321]">{{ p.minStock?.toLocaleString() }}</td>
-            <td class="px-5 py-3.5 font-medium text-gray-900">₩ {{ p.price?.toLocaleString() }}</td>
+            <td class="px-5 py-3.5 font-medium text-gray-900">₩ {{ p.unitPrice?.toLocaleString() }}</td>
             <td class="px-5 py-3.5 text-xs font-mono"
-                :class="p.expiryDays ? 'text-amber-600 font-semibold' : 'text-gray-400'">
-              {{ p.expiryDays ? `D-${p.expiryDays}` : '-' }}
+                :class="p.dangerDays ? 'text-amber-600 font-semibold' : 'text-gray-400'">
+              {{ p.dangerDays ? `D-${p.dangerDays}` : '-' }}
             </td>
             <td class="px-5 py-3.5">
               <div class="flex justify-center gap-2">
-                <button @click="openModal(p)" class="px-3 py-1.5 text-xs font-semibold text-[#F37321] border border-[#F37321] rounded hover:bg-orange-50 transition-colors cursor-pointer">수정</button>
-                <button @click="deleteProduct(p.code)" class="px-3 py-1.5 text-xs font-semibold text-red-500 border border-red-400 rounded hover:bg-red-50 transition-colors cursor-pointer">삭제</button>
+                <button @click="openEditModal(p)" class="px-3 py-1.5 text-xs font-semibold text-[#F37321] border border-[#F37321] rounded hover:bg-orange-50 transition-colors cursor-pointer">수정</button>
+                <button @click="handleDeleteProduct(p.idx)" class="px-3 py-1.5 text-xs font-semibold text-red-500 border border-red-400 rounded hover:bg-red-50 transition-colors cursor-pointer">삭제</button>
               </div>
             </td>
           </tr>
           <tr v-if="filteredProducts.length === 0">
-            <td colspan="10" class="px-5 py-12 text-center text-gray-400 text-sm">검색 결과가 없습니다.</td>
+            <td colspan="9" class="px-5 py-12 text-center text-gray-400 text-sm">등록된 제품이 없거나 검색 결과가 없습니다.</td>
           </tr>
           </tbody>
         </table>
@@ -97,51 +92,50 @@
       <div class="absolute inset-0 bg-black/40" @click="showModal = false"></div>
       <div class="relative bg-white rounded-lg w-full max-w-lg border border-gray-200 shadow-xl">
         <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-          <h3 class="font-bold text-gray-900">{{ form.code ? '제품 정보 수정' : '신규 제품 등록' }}</h3>
+          <h3 class="font-bold text-gray-900">{{ form.idx ? '제품 정보 수정' : '신규 제품 등록' }}</h3>
           <button @click="showModal = false" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
         </div>
-        <form @submit.prevent="saveProduct" class="p-6 space-y-4">
+        <form @submit.prevent="handleSaveProduct" class="p-6 space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-1.5">
               <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">제품명</label>
-              <input v-model="form.name" required type="text"
+              <input v-model="form.productName" required type="text"
                      class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none" />
             </div>
             <div class="space-y-1.5">
               <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">카테고리</label>
-              <select v-model="form.category"
+              <select v-model="form.categoryIdx" required
                       class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none">
-                <option v-for="c in categories" :key="c.idx" :value="c.categoryName">{{ c.categoryName }}</option>
+                <option v-for="c in categories" :key="c.idx" :value="c.idx">{{ c.categoryName }}</option>
               </select>
             </div>
           </div>
-          <!-- (단위, 재고, 단가 등 입력 필드) -->
           <div class="grid grid-cols-3 gap-4">
             <div class="space-y-1.5">
               <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">단위</label>
-              <input v-model="form.unit" type="text" placeholder="ex) kg, 개, L"
+              <input v-model="form.productUnit" required type="text" placeholder="ex) kg, 개"
                      class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none" />
             </div>
             <div class="space-y-1.5">
               <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">최대재고</label>
-              <input v-model.number="form.baseStock" type="number" min="0"
+              <input v-model.number="form.maxStock" required type="number" min="0"
                      class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none" />
             </div>
             <div class="space-y-1.5">
               <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">최소재고</label>
-              <input v-model.number="form.minStock" type="number" min="0"
+              <input v-model.number="form.minStock" required type="number" min="0"
                      class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none" />
             </div>
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-1.5">
               <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">단가 (원)</label>
-              <input v-model.number="form.price" type="number" min="0"
+              <input v-model.number="form.unitPrice" required type="number" min="0"
                      class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none" />
             </div>
             <div class="space-y-1.5">
               <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">위험 유통기한 (일)</label>
-              <input v-model.number="form.expiryDays" type="number" min="0" placeholder="예) 7"
+              <input v-model="form.dangerDays" type="text" placeholder="예) 7"
                      class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none" />
             </div>
           </div>
@@ -155,7 +149,7 @@
       </div>
     </div>
 
-    <!-- 카테고리 관리 모달 (DB 연동) -->
+    <!-- 카테고리 관리 모달 -->
     <div v-if="showCategoryModal" class="fixed inset-0 z-50 flex items-center justify-center">
       <div class="absolute inset-0 bg-black/40" @click="showCategoryModal = false"></div>
       <div class="relative bg-white rounded-lg w-full max-w-md border border-gray-200 shadow-xl">
@@ -199,53 +193,31 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { Trash2, Search, Tag, Plus } from 'lucide-vue-next'
-// 작성한 API 함수 임포트
 import { createCategory, readCategoryList, deleteCategory } from '@/api/category'
+import { getProductList, addNewProduct, updateProduct, deleteProduct, searchProduct } from '@/api/product'
 
 // --- 상태 관리 ---
-const categories = ref([]) // 서버에서 받아올 카테고리 (객체 배열)
+const categories = ref([])
+const products = ref([]) // 서버에서 받아올 제품 리스트
 const selectedCategory = ref('전체')
 const searchQuery = ref('')
 const newCategoryInput = ref('')
 const showCategoryModal = ref(false)
 const showModal = ref(false)
 
-// --- 더벤티 더미 데이터 (제품/매장 정보는 유지) ---
-const products = ref([
-  { code: 'V100', name: '더벤티 뉴-에스프레소 블렌드', category: '커피/원두',    unit: 'kg',  baseStock: 150, minStock: 30, price: 28000, expiryDays: 90 },
-  { code: 'V101', name: '디카페인 과테말라 블렌드',   category: '커피/원두',    unit: 'kg',  baseStock: 40,  minStock: 10, price: 32000, expiryDays: 90 },
-  { code: 'V200', name: '서울우유 바리스타즈 (1L)',  category: '유제품/리얼라떼', unit: '팩',  baseStock: 300, minStock: 60, price: 2750,  expiryDays: 7  },
-  { code: 'V201', name: '연유 베이스 (시그니처)',     category: '유제품/리얼라떼', unit: 'kg',  baseStock: 80,  minStock: 20, price: 12000, expiryDays: 30 },
-  { code: 'V300', name: '자몽 농축액',              category: '에이드/티',    unit: 'kg',  baseStock: 50,  minStock: 15, price: 18500, expiryDays: 180 },
-  { code: 'V301', name: '청포도 베이스',            category: '에이드/티',    unit: 'kg',  baseStock: 50,  minStock: 15, price: 16000, expiryDays: 180 },
-  { code: 'V400', name: '자바칩 토핑',              category: '프라페/버블티', unit: 'kg',  baseStock: 60,  minStock: 12, price: 22000, expiryDays: null },
-  { code: 'V401', name: '타피오카 펄 (냉동)',        category: '프라페/버블티', unit: 'kg',  baseStock: 100, minStock: 25, price: 14000, expiryDays: 365 },
-  { code: 'V402', name: '쿠키앤크림 파우더',         category: '프라페/버블티', unit: 'kg',  baseStock: 40,  minStock: 10, price: 15500, expiryDays: null },
-  { code: 'V500', name: '감자빵/고구마빵 (냉동)',    category: '베이커리',     unit: '박스', baseStock: 30,  minStock: 5,  price: 45000, expiryDays: 180 },
-  { code: 'V501', name: '미니 붕어빵 (팥/슈크림)',    category: '베이커리',     unit: 'kg',  baseStock: 40,  minStock: 8,  price: 13000, expiryDays: 180 },
-  { code: 'V600', name: 'Venti 아이스컵 (20oz)',    category: '더벤티 소모품', unit: '박스', baseStock: 50,  minStock: 15, price: 72000, expiryDays: null },
-  { code: 'V601', name: 'Venti 핫컵 (20oz)',      category: '더벤티 소모품', unit: '박스', baseStock: 30,  minStock: 10, price: 68000, expiryDays: null },
-  { code: 'V602', name: '보라색 빨대 (개별포장)',     category: '더벤티 소모품', unit: '박스', baseStock: 20,  minStock: 5,  price: 35000, expiryDays: null },
-  { code: 'V603', name: '퍼플 로고 컵홀더',          category: '더벤티 소모품', unit: '박스', baseStock: 40,  minStock: 12, price: 42000, expiryDays: null },
-])
+// 제품 등록/수정용 폼 상태 (RegReq DTO 규격)
+const form = ref({
+  idx: null, // 수정 시에만 존재
+  productName: '',
+  categoryIdx: null,
+  productUnit: '',
+  maxStock: 0,
+  minStock: 0,
+  unitPrice: 0,
+  dangerDays: ''
+})
 
-const stores = ref([
-  { id: 'VT01', name: '더벤티 서울강남역점' },
-  { id: 'VT02', name: '더벤티 부산서면본점' },
-  { id: 'VT03', name: '더벤티 대구동성로점' },
-  { id: 'VT04', name: '더벤티 광주상무점' },
-  { id: 'VT05', name: '더벤티 인천구월점' },
-])
-
-const storeProductMap = {
-  VT01: ['V100', 'V101', 'V200', 'V201', 'V300', 'V400', 'V500', 'V600', 'V602', 'V603'],
-  VT02: ['V100', 'V101', 'V200', 'V201', 'V301', 'V401', 'V501', 'V600', 'V601', 'V602', 'V603'],
-  VT03: ['V100', 'V200', 'V300', 'V301', 'V400', 'V402', 'V600', 'V602'],
-  VT04: ['V100', 'V101', 'V200', 'V201', 'V401', 'V500', 'V600', 'V602', 'V603'],
-  VT05: ['V100', 'V200', 'V300', 'V400', 'V401', 'V501', 'V600', 'V602'],
-}
-
-// --- 서버 데이터 연동 로직 ---
+// --- 데이터 로딩 (Read) ---
 const fetchCategories = async () => {
   try {
     const response = await readCategoryList()
@@ -255,23 +227,115 @@ const fetchCategories = async () => {
   }
 }
 
+const fetchProducts = async () => {
+  try {
+    const response = await getProductList()
+    products.value = response.data
+  } catch (error) {
+    console.error('제품 목록 조회 실패:', error)
+  }
+}
+
 onMounted(() => {
   fetchCategories()
+  fetchProducts()
 })
 
+// --- 검색 기능 (Search API 연동) ---
+const handleSearch = async () => {
+  if (!searchQuery.value.trim()) {
+    await fetchProducts()
+    return
+  }
+  try {
+    const response = await searchProduct(searchQuery.value)
+    products.value = response.data
+  } catch (error) {
+    console.error('제품 검색 실패:', error)
+  }
+}
+
+// --- 카테고리 필터링 (클라이언트 사이드) ---
+const filteredProducts = computed(() => {
+  return products.value.filter(p => {
+    return selectedCategory.value === '전체' || p.categoryName === selectedCategory.value
+  })
+})
+
+// --- 제품 관리 (C.U.D) ---
+function openAddModal() {
+  form.value = {
+    idx: null,
+    productName: '',
+    categoryIdx: categories.value.length > 0 ? categories.value[0].idx : null,
+    productUnit: '',
+    maxStock: 0,
+    minStock: 0,
+    unitPrice: 0,
+    dangerDays: ''
+  }
+  showModal.value = true
+}
+
+function openEditModal(product) {
+  // ListRes 데이터를 RegReq 규격으로 매핑
+  // 카테고리 이름 대신 현재 등록된 카테고리 중 이름이 같은 것의 idx를 찾음
+  const cat = categories.value.find(c => c.categoryName === product.categoryName)
+  form.value = {
+    idx: product.idx,
+    productName: product.productName,
+    categoryIdx: cat ? cat.idx : null,
+    productUnit: product.productUnit,
+    maxStock: product.maxStock,
+    minStock: product.minStock,
+    unitPrice: product.unitPrice,
+    dangerDays: product.dangerDays
+  }
+  showModal.value = true
+}
+
+async function handleSaveProduct() {
+  try {
+    const dto = { ...form.value }
+    delete dto.idx // 등록/수정 요청 바디에서는 idx 제외 (경로 변수로 처리되거나 자동생성)
+
+    if (form.value.idx) {
+      // 수정 (PUT)
+      await updateProduct(form.value.idx, dto)
+      alert('제품 정보가 수정되었습니다.')
+    } else {
+      // 신규 등록 (POST)
+      await addNewProduct(dto)
+      alert('새 제품이 등록되었습니다.')
+    }
+    showModal.value = false
+    await fetchProducts() // 목록 새로고침
+  } catch (error) {
+    console.error('제품 저장 실패:', error)
+    alert('저장 중 오류가 발생했습니다.')
+  }
+}
+
+async function handleDeleteProduct(idx) {
+  if (!confirm('이 제품을 삭제하시겠습니까?')) return
+  try {
+    await deleteProduct(idx)
+    await fetchProducts()
+  } catch (error) {
+    console.error('삭제 실패:', error)
+    alert('삭제 중 오류가 발생했습니다.')
+  }
+}
+
+// --- 카테고리 액션 (기존 코드 유지) ---
 async function addCategoryAction() {
   const name = newCategoryInput.value.trim()
   if (!name) return
-  if (categories.value.some(c => c.categoryName === name)) {
-    alert('이미 존재하는 카테고리입니다.')
-    return
-  }
   try {
     await createCategory(name)
     newCategoryInput.value = ''
     await fetchCategories()
   } catch (error) {
-    console.error(error);
     alert('카테고리 등록 실패')
   }
 }
@@ -283,69 +347,7 @@ async function deleteCategoryAction(idx, name) {
     await fetchCategories()
     if (selectedCategory.value === name) selectedCategory.value = '전체'
   } catch (error) {
-    console.error(error);
-    alert('삭제 중 오류가 발생했습니다.')
-  }
-}
-
-// --- 기존 UI 유지 계산 로직 ---
-const expandedProducts = computed(() => {
-  const productMap = new Map(products.value.map(p => [p.code, p]))
-  const storeMap = new Map(stores.value.map(s => [s.id, s.name]))
-  const result = []
-  for (const [storeId, codes] of Object.entries(storeProductMap)) {
-    const storeName = storeMap.get(storeId) ?? storeId
-    for (const code of codes) {
-      const product = productMap.get(code)
-      if (product) result.push({ ...product, storeId, storeName })
-    }
-  }
-  return result
-})
-
-const filteredProducts = computed(() => {
-  const q = searchQuery.value.trim().toLowerCase()
-  return expandedProducts.value.filter(p => {
-    const matchCat = selectedCategory.value === '전체' || p.category === selectedCategory.value
-    const matchSearch = !q || p.name.toLowerCase().includes(q) || p.storeName.toLowerCase().includes(q)
-    return matchCat && matchSearch
-  })
-})
-
-// --- 제품 관리 폼 로직 ---
-const form = ref({ code: '', name: '', category: '', unit: '', baseStock: 0, minStock: 0, price: 0, expiryDays: null })
-
-function openAddModal() {
-  form.value = {
-    code: '', name: '',
-    category: categories.value.length > 0 ? categories.value[0].categoryName : '',
-    unit: '', baseStock: 0, minStock: 0, price: 0, expiryDays: null
-  }
-  showModal.value = true
-}
-
-function openModal(product) {
-  const { storeId, storeName, ...fields } = product
-  form.value = { ...fields }
-  showModal.value = true
-}
-
-function saveProduct() {
-  // 실제 제품 연동 시에는 여기서 axios.post/put 호출
-  const original = products.value.find(p => p.code === form.value.code)
-  if (original) {
-    Object.assign(original, form.value)
-  } else {
-    // 신규 등록 시 임시 코드 생성
-    if(!form.value.code) form.value.code = 'NEW-' + Math.floor(Math.random()*1000)
-    products.value.push({ ...form.value })
-  }
-  showModal.value = false
-}
-
-function deleteProduct(code) {
-  if (confirm('제품을 삭제하시겠습니까?')) {
-    products.value = products.value.filter(p => p.code !== code)
+    alert('삭제 실패: 해당 카테고리를 사용하는 제품이 있을 수 있습니다.')
   }
 }
 </script>

@@ -32,6 +32,10 @@ const getConfirmedOrders = (params = {}) => {
   return api.get('/orders/list/confirmed', { params })
 }
 
+const getDangerOrders = (params = {}) => {
+  return api.get('/orders/list/danger', { params })
+}
+
 const approveAllConfirmed = () => {
   return api.put('/orders/confirmed/approve')
 }
@@ -45,5 +49,6 @@ export default {
   createStoreManualOrder,
   cancelOrder,
   getConfirmedOrders,
+  getDangerOrders,
   approveAllConfirmed,
 }

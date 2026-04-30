@@ -9,8 +9,8 @@ export const addNewProduct = (dto) =>
   api.post('/product/reg', dto)
 
 // 기존 제품 수정
-export const updateProduct = (idx) =>
-  api.put(`/product/update/${idx}`)
+export const updateProduct = (idx, dto) =>
+  api.put(`/product/update/${idx}`, dto)
 
 // 제품 삭제
 export const deleteProduct = (idx) =>

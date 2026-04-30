@@ -1,7 +1,8 @@
 <script setup>
 import { ref, reactive, onMounted, computed, nextTick } from 'vue'
 import { Plus, Search, FileText, ChevronDown } from 'lucide-vue-next'
-import { getStoreList , getStoreDetailList} from '@/api/store/index.js'
+import { getStoreList , getStoreDetailList, getPresignedUrl} from '@/api/store/index.js'
+import axios from "axios";
 
 
 const searchQuery = ref('')
@@ -29,7 +30,6 @@ const filteredStores = computed(() => {
     }
     return true; // '전체'일 때는 모두 반환
   })
-  console.log(list)
 
 // 2. 검색어 필터링 (storeName, ownerName, address 기준)
   const q = searchQuery.value.trim().toLowerCase()
@@ -63,9 +63,9 @@ const form = reactive({
   postcode:'',
   address : '',
   addressDetail :'',
-  business: '',
   createdAt:'',
   closedAt:'',
+  business: '',
   filePath: '',
 })
 
@@ -93,6 +93,7 @@ async function openDetail(idx) {
 
 // 수정 등록 팝업 창 열기
 async function openModal(idx =! null) {
+
   if (idx) {
     // [수정 모드]
     const res = await getStoreDetailList(idx);
@@ -126,6 +127,7 @@ async function openModal(idx =! null) {
       createdAt:'',
       closedAt:'',
       filePath: '',
+      fileName:'',
     });
     editTarget.value = null;
   }
@@ -133,9 +135,24 @@ async function openModal(idx =! null) {
 }
 
 // 파일 선택 감지
-function handleFileChange(e) {
+async function handleFileChange(e) {
   const file = e.target.files[0]
-  if (file) form.filePath = file.name
+
+  const presigned = await getPresignedUrl(file.name)
+  console.log(presigned.data)
+
+  // 2. [응답] 백엔드가 "이 주소(uploadUrl)로 올리고, 이름은 이걸(fileKey)로 써!"라고 함[cite: 2]
+  const { url, fileName } = presigned.data.result;
+
+  // 3. [업로드] 받은 주소로 실제 파일 전송[cite: 2]
+  await axios.put(url, fileName, {
+    headers: { 'Content-Type': fileName.type }
+  });
+
+
+  form.fileName = file.name;
+
+  if (file) form.filePath = fileName
 }
 
 // 입력한 정보 저장하기
@@ -492,7 +509,7 @@ onMounted(() => {
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">사업자 PDF</label>
             <label class="cursor-pointer block">
               <div class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm text-gray-400 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between">
-                <span>{{ form.filePath || '파일을 선택해주세요' }}</span>
+                <span>{{ form.fileName || '파일을 선택해주세요' }}</span>
                 <FileText class="w-4 h-4" />
               </div>
               <input type="file" class="hidden" @change="handleFileChange" accept=".pdf" />

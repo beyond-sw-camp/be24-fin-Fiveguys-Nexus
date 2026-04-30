@@ -9,3 +9,6 @@ export const searchStoreList = (keyword = '') =>
 
 export const getStoreInventoryByStore = (storeIdx) =>
   api.get(`/store/inventory/list/${storeIdx}`)
+
+export const getPresignedUrl = (fileName) =>
+  api.get(`/store/presignedUrl/${fileName}`)

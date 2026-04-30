@@ -86,6 +86,48 @@ public class OrdersService {
         }
     }
 
+    @Transactional
+    public void createStoreManualOrder(Long userIdx, OrdersDto.OrdersReq req) {
+        if (req.getOrdersItemList() == null || req.getOrdersItemList().isEmpty()) {
+            throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
+        }
+
+        Store store = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        long totalprice = 0;
+        List<OrdersItem> itemList = new ArrayList<>();
+
+        for (OrdersItemDto.OrdersItemReq itemReq : req.getOrdersItemList()) {
+            Product product = productRepository.findById(itemReq.getProductIdx())
+                    .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+            totalprice += (long) product.getUnitPrice() * itemReq.getCount();
+
+            itemList.add(OrdersItem.builder()
+                    .count(itemReq.getCount())
+                    .product(product)
+                    .build());
+        }
+
+        Orders orders = ordersRepository.save(Orders.builder()
+                .price(totalprice)
+                .ordersType(OrdersType.MANUAL)
+                .ordersStatus(OrdersStatus.WAITING)
+                .isDanger(false)
+                .createdAt(LocalDateTime.now())
+                .store(store)
+                .build());
+
+        for (OrdersItem item : itemList) {
+            ordersItemRepository.save(OrdersItem.builder()
+                    .count(item.getCount())
+                    .product(item.getProduct())
+                    .orders(orders)
+                    .build());
+        }
+    }
+
     public List<OrdersDto.OrdersRes> findAll() {
         return ordersRepository.findAllByOrdersStatus(OrdersStatus.APPROVE).stream()
                 .map(OrdersDto.OrdersRes::from)

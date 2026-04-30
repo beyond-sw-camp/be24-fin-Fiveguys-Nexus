@@ -94,6 +94,15 @@ public class OrdersController {
         return ResponseEntity.ok(BaseResponse.success("delete success"));
     }
 
+    @PostMapping("/store/reg/manual")
+    public ResponseEntity createStoreManualOrder(@AuthenticationPrincipal AuthUserDetails authUserDetails, @RequestBody OrdersDto.OrdersReq req) {
+        if (authUserDetails == null) {
+            throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+        orderService.createStoreManualOrder(authUserDetails.getIdx(), req);
+        return ResponseEntity.ok(BaseResponse.success("create success"));
+    }
+
     @GetMapping("/store/list")
     public ResponseEntity storeList(@AuthenticationPrincipal AuthUserDetails authUserDetails) {
         if (authUserDetails == null) {

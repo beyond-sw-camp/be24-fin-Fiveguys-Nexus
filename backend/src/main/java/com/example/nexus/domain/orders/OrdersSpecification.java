@@ -26,6 +26,10 @@ public class OrdersSpecification {
         return (root, query, cb) -> cb.lessThan(root.get("createdAt"), endDate.plusDays(1).atStartOfDay());
     }
 
+    public static Specification<Orders> isDangerTrue() {
+        return (root, query, cb) -> cb.isTrue(root.get("isDanger"));
+    }
+
     public static Specification<Orders> keywordLike(String keyword) {
         return (root, query, cb) -> {
             String pattern = "%" + keyword + "%";

@@ -40,9 +40,14 @@ public class OrdersController {
     }
 
     @GetMapping("/list/confirmed")
-    public ResponseEntity confirmedList() {
-        List<OrdersDto.OrderListRes> result = orderService.findAllConfirmed();
-        return ResponseEntity.ok(BaseResponse.success(result));
+    public ResponseEntity confirmedList(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<OrdersDto.OrderListRes> result = orderService.findAllConfirmed(
+                keyword, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+        return ResponseEntity.ok(BaseResponse.success(PageResponse.from(result)));
     }
 
     @GetMapping("/list/history")
@@ -52,9 +57,24 @@ public class OrdersController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size
+    ) {
         Page<OrdersDto.OrderListRes> result = orderService.findOrderHistory(
                 ordersType, startDate, endDate, keyword,
+                PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+        return ResponseEntity.ok(BaseResponse.success(PageResponse.from(result)));
+    }
+
+    @GetMapping("/list/danger")
+    public ResponseEntity dangerList(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<OrdersDto.OrderListRes> result = orderService.findDangerOrders(
+                startDate, endDate, keyword,
                 PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
         return ResponseEntity.ok(BaseResponse.success(PageResponse.from(result)));
     }

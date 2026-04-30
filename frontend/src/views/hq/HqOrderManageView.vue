@@ -119,6 +119,8 @@ onMounted(() => {
 function setOrderViewTab(id) {
   activeTab.value = id
   router.replace({ path: '/order', query: { tab: id } })
+  if (id === 'confirmed') fetchConfirmedOrders()
+  if (id === 'auto') fetchAutoOrders()
 }
 
 // Detail modal

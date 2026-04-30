@@ -1,7 +1,7 @@
 <script setup>
 import { ref, reactive, onMounted, computed, nextTick } from 'vue'
 import { Plus, Search, FileText, ChevronDown } from 'lucide-vue-next'
-import { getStoreList , getStoreDetailList, getPresignedUrl} from '@/api/store/index.js'
+import { getStoreList , getStoreDetailList, getPresignedUrl, getNewRegister} from '@/api/store/index.js'
 import axios from "axios";
 
 
@@ -56,18 +56,22 @@ const showModal = ref(false)
 const showDetailModal = ref(false)
 const editTarget = ref(null)
 const detailTarget = ref(null)
-const form = reactive({
-  storeName : '' ,
-  ownerName:'',
+
+// 초기화 하는 함수
+const getInitialForm = () => ({
+  storeName: '',
+  ownerName: '',
   ownerEmail: '',
-  postcode:'',
-  address : '',
-  addressDetail :'',
-  createdAt:'',
-  closedAt:'',
+  postcode: '',
+  address: '',
+  addressDetail: '',
   business: '',
+  createdAt: '',
+  closedAt: '',
   filePath: '',
-})
+});
+
+const form = reactive(getInitialForm())
 
 
 // 상태 토글
@@ -87,6 +91,7 @@ function handleSearch() {}
 // 가맹점 목록 클릭시 상세 모달창
 async function openDetail(idx) {
   const res = await getStoreDetailList(idx)
+  console.log(res.data.code)
   detailTarget.value = res.data.result
   showDetailModal.value = true
 }
@@ -98,37 +103,14 @@ async function openModal(idx =! null) {
     // [수정 모드]
     const res = await getStoreDetailList(idx);
     const detailData = res.data.result;
-    Object.assign(form, {
-      storeName : '' ,
-      ownerName:'',
-      ownerEmail: '',
-      postcode:'',
-      address : '',
-      addressDetail :'',
-      business: '',
-      createdAt:'',
-      closedAt:'',
-      filePath: '',
-    });
+    Object.assign(form, getInitialForm());
     // v-model로 연결된 form에 DB에서 가져온 값을 세팅 (화면에 바로 보임)
     Object.assign(form, detailData);
 
     editTarget.value = detailData; // 나중에 수정 API 보낼 때 쓸 idx가 담긴 원본
   } else {
     // [등록 모드] idx가 없으면 입력 칸을 싹 비움
-    Object.assign(form, {
-      storeName : '' ,
-      ownerName:'',
-      ownerEmail: '',
-      postcode:'',
-      address : '',
-      addressDetail :'',
-      business: '',
-      createdAt:'',
-      closedAt:'',
-      filePath: '',
-      fileName:'',
-    });
+    Object.assign(form, getInitialForm());
     editTarget.value = null;
   }
   showModal.value = true;
@@ -140,7 +122,6 @@ async function handleFileChange(e) {
 
   const presigned = await getPresignedUrl(file.name)
   console.log(presigned.data)
-
   // 2. [응답] 백엔드가 "이 주소(uploadUrl)로 올리고, 이름은 이걸(fileKey)로 써!"라고 함[cite: 2]
   const { url, fileName } = presigned.data.result;
 
@@ -149,20 +130,52 @@ async function handleFileChange(e) {
     headers: { 'Content-Type': fileName.type }
   });
 
-
   form.fileName = file.name;
-
   if (file) form.filePath = fileName
 }
 
-// 입력한 정보 저장하기
-function saveStore() {
+
+async function saveStore() {
+  // 수정
   if (editTarget.value) {
-    Object.assign(editTarget.value, form.value)
-  } else {
-    storesList.push({ idx: Date.now(), ...form.value })
+    // 1. 변경 사항이 있는지 간단히 체크
+    const isNoChange = JSON.stringify(editTarget.value) === JSON.stringify(form.value);
+
+    if (isNoChange) {
+      alert("수정된 내용이 없습니다.");
+      showModal.value = false;
+      return; // 함수 종료 (백엔드 요청 안 함)
+    }
+
   }
-  showModal.value = false
+  // 등록
+  else {
+    console.log("지금은 등록 모드입니다. DB에 저장합니다.");
+
+    const storeRegDto = reactive({
+      storeName: '',
+      ownerEmail: '',
+      postcode: '',
+      address: '',
+      addressDetail: '',
+      business: '',
+      filePath: '',
+    })
+    Object.assign(storeRegDto, form.value);
+
+    try {
+      const res = await getNewRegister(storeRegDto);
+      console.log(res.data)
+
+      if (res.data.code === 2000) {
+        alert("가맹점이 등록되었습니다.");
+      }
+    } catch (error) {
+
+      alert("등록 실패: " + error.message);
+    }
+  }
+  showModal.value = false;
 }
 
 function downloadPdf() {

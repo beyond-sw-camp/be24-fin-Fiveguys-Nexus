@@ -2,7 +2,6 @@
 import { reactive, ref, onMounted } from 'vue'
 import { Plus } from 'lucide-vue-next'
 import { formatPrice } from './orderUtils'
-import { searchStoreList } from '@/api/store'
 import { getProductList } from '@/api/product'
 
 defineProps({
@@ -11,41 +10,8 @@ defineProps({
 
 const emit = defineEmits(['close', 'submit'])
 
-const stores = ref([])
-const storeKeyword = ref('')
-const selectedStore = ref(null)
-const showStoreDropdown = ref(false)
 const products = ref([])
-const form = reactive({ store: '', items: [] })
-
-async function searchStore() {
-  if (storeKeyword.value.trim().length === 0) {
-    stores.value = []
-    showStoreDropdown.value = false
-    return
-  }
-  try {
-    const res = await searchStoreList(storeKeyword.value)
-    stores.value = res.data.result
-    showStoreDropdown.value = stores.value.length > 0
-  } catch (e) {
-    console.error('매장 검색 실패', e)
-  }
-}
-
-function selectStore(store) {
-  selectedStore.value = store
-  form.store = store.idx
-  storeKeyword.value = store.storeName
-  showStoreDropdown.value = false
-}
-
-function clearStore() {
-  selectedStore.value = null
-  form.store = ''
-  storeKeyword.value = ''
-  stores.value = []
-}
+const form = reactive({ items: [] })
 
 onMounted(async () => {
   try {
@@ -83,8 +49,8 @@ function clearProduct(item) {
 }
 
 function submit() {
-  if (!form.store || form.items.length === 0) {
-    alert('매장과 품목을 입력해주세요.')
+  if (form.items.length === 0) {
+    alert('품목을 입력해주세요.')
     return
   }
   const validItems = form.items.filter(i => i.product)
@@ -93,13 +59,9 @@ function submit() {
     return
   }
   emit('submit', {
-    storeIdx: form.store,
     ordersItemList: validItems.map(i => ({ productIdx: i.product, count: i.qty })),
   })
-  form.store = ''
   form.items = []
-  selectedStore.value = null
-  storeKeyword.value = ''
 }
 </script>
 
@@ -112,49 +74,32 @@ function submit() {
         <button @click="$emit('close')" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
       </div>
       <div class="p-6 space-y-4">
-        <div class="space-y-1.5">
-          <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">대상 매장</label>
-          <div class="relative">
-            <div v-if="selectedStore" class="flex items-center justify-between w-full px-3 py-2 rounded border border-[#F37321] bg-orange-50 text-sm">
-              <span class="font-medium text-gray-900">{{ selectedStore.storeName }}</span>
-              <button @click="clearStore" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
-            </div>
-            <input v-else v-model="storeKeyword" @input="searchStore" placeholder="매장명을 검색하세요"
-              class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none" />
-            <ul v-if="showStoreDropdown" class="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded shadow-lg max-h-40 overflow-y-auto">
-              <li v-for="store in stores" :key="store.idx" @click="selectStore(store)"
-                class="px-3 py-2 text-sm hover:bg-orange-50 cursor-pointer">
-                {{ store.storeName }} <span class="text-gray-400 text-xs">{{ store.address }}</span>
-              </li>
-            </ul>
-          </div>
-        </div>
         <div class="space-y-2">
           <div class="flex justify-between items-center">
             <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">발주 품목</label>
-            <button @click="addItem" class="text-xs text-[#F37321] font-semibold hover:underline flex items-center gap-1 cursor-pointer">
+            <button @click="addItem" class="text-xs text-blue-500 font-semibold hover:underline flex items-center gap-1 cursor-pointer">
               <Plus class="w-3 h-3" /> 품목 추가
             </button>
           </div>
           <div v-for="(item, idx) in form.items" :key="idx" class="flex gap-2 items-center">
             <div class="flex-1 relative">
-              <div v-if="item.product" class="flex items-center justify-between px-3 py-2 rounded border border-[#F37321] bg-orange-50 text-sm">
+              <div v-if="item.product" class="flex items-center justify-between px-3 py-2 rounded border border-blue-400 bg-blue-50 text-sm">
                 <span class="font-medium text-gray-900">{{ item.productKeyword }}</span>
                 <button @click="clearProduct(item)" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
               </div>
               <input v-else v-model="item.productKeyword" @input="filterProducts(item)" placeholder="상품명 검색"
-                class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none" />
+                class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none" />
               <ul v-if="item.showDropdown && filterProducts(item).length > 0"
                 class="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded shadow-lg max-h-32 overflow-y-auto">
                 <li v-for="p in filterProducts(item)" :key="p.idx" @click="selectProduct(item, p)"
-                  class="px-3 py-2 text-sm hover:bg-orange-50 cursor-pointer">
+                  class="px-3 py-2 text-sm hover:bg-blue-50 cursor-pointer">
                   {{ p.productName }} <span class="text-gray-400 text-xs">{{ p.productUnit }}</span>
                 </li>
               </ul>
             </div>
             <div class="flex items-center gap-1.5">
               <input v-model.number="item.qty" type="number" min="1" placeholder="수량"
-                class="w-20 px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none" />
+                class="w-20 px-3 py-2 rounded border border-gray-200 text-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none" />
               <span class="text-xs text-gray-400 font-medium w-auto shrink-0">{{ item.product ? products.find(p => p.idx === item.product)?.productUnit : '' }}</span>
             </div>
             <div class="w-28 px-3 py-2 rounded border border-gray-100 bg-gray-50 text-sm text-gray-500 text-right shrink-0">
@@ -169,7 +114,7 @@ function submit() {
             class="text-sm text-gray-400 text-center py-4 bg-gray-50 border border-gray-100 rounded">
             품목 추가 버튼을 눌러 발주 품목을 입력하세요.
           </div>
-          <div v-if="form.items.length > 0" class="text-right text-sm font-bold text-[#F37321]">
+          <div v-if="form.items.length > 0" class="text-right text-sm font-bold text-blue-600">
             합계: {{ formatPrice(form.items.reduce((s, i) => s + (i.unitPrice || 0) * (i.qty || 0), 0)) }}
           </div>
         </div>
@@ -178,7 +123,7 @@ function submit() {
         <button @click="$emit('close')"
           class="flex-1 py-2.5 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 cursor-pointer">취소</button>
         <button @click="submit"
-          class="flex-1 py-2.5 rounded bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d] cursor-pointer">발주 생성</button>
+          class="flex-1 py-2.5 rounded bg-blue-500 text-white text-sm font-bold hover:bg-blue-600 cursor-pointer">발주 생성</button>
       </div>
     </div>
   </div>

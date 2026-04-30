@@ -1,14 +1,13 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Plus, Settings } from 'lucide-vue-next'
+import { Settings } from 'lucide-vue-next'
 import ordersApi from '@/api/orders'
 import HqAutoOrderTable from '@/components/orders/HqAutoOrderTable.vue'
 import HqManualOrderTable from '@/components/orders/HqManualOrderTable.vue'
 import HqOrderHistoryTable from '@/components/orders/HqOrderHistoryTable.vue'
 import HqAbnormalOrderTable from '@/components/orders/HqAbnormalOrderTable.vue'
 import HqOrderDetailModal from '@/components/orders/HqOrderDetailModal.vue'
-import HqManualOrderModal from '@/components/orders/HqManualOrderModal.vue'
 import HqDangerSettingsModal from '@/components/orders/HqDangerSettingsModal.vue'
 
 const route = useRoute()
@@ -159,21 +158,6 @@ async function saveDangerSettings({ threshold, months }) {
 function approveAbnormal(o) { o.processed = true; alert(`${o.store} 발주 승인 처리되었습니다.`) }
 function rejectAbnormal(o)  { o.processed = true; alert(`${o.store} 발주 반려 처리되었습니다.`) }
 
-// Manual order modal
-const showManualForm = ref(false)
-
-async function submitManualOrder(data) {
-  try {
-    await ordersApi.createManualOrder(data)
-    alert('발주가 생성되었습니다.')
-    showManualForm.value = false
-    await fetchManualOrders()
-    setOrderViewTab('manual')
-  } catch (e) {
-    console.error('수동 발주 생성 실패', e)
-    alert('발주 생성에 실패했습니다.')
-  }
-}
 </script>
 
 <template>
@@ -183,16 +167,10 @@ async function submitManualOrder(data) {
       <div class="min-w-0 flex-1">
         <h1 class="text-xl font-bold text-gray-900 tracking-tight">발주 관리</h1>
       </div>
-      <div class="flex gap-2">
-        <button @click="openDangerSettings"
-          class="px-4 py-2 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 flex items-center gap-2 cursor-pointer">
-          <Settings class="w-4 h-4" /> 이상 발주 기준 설정
-        </button>
-        <button @click="showManualForm = true"
-          class="bg-[#F37321] text-white px-4 py-2 text-sm font-semibold rounded hover:bg-[#e0661d] transition-colors flex items-center gap-2 cursor-pointer">
-          <Plus class="w-4 h-4" /> 수동 발주 생성
-        </button>
-      </div>
+      <button @click="openDangerSettings"
+        class="px-4 py-2 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 flex items-center gap-2 cursor-pointer">
+        <Settings class="w-4 h-4" /> 이상 발주 기준 설정
+      </button>
     </div>
 
     <!-- Tabs -->
@@ -220,7 +198,6 @@ async function submitManualOrder(data) {
       @open-detail="openDetail" @approve="approveAbnormal" @reject="rejectAbnormal" />
 
     <!-- Modals -->
-    <HqManualOrderModal :visible="showManualForm" @close="showManualForm = false" @submit="submitManualOrder" />
     <HqOrderDetailModal :order="selectedOrder" @close="selectedOrder = null" />
     <HqDangerSettingsModal :visible="showSettings" :init-threshold="dangerSettings.ratio" :init-months="dangerSettings.period" @close="showSettings = false" @save="saveDangerSettings" />
   </div>

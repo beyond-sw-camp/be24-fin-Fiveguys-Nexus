@@ -1,29 +1,37 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
+import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import { statusClass, formatPrice } from './orderUtils'
 
 const props = defineProps({
   orders: { type: Array, required: true },
+  currentPage: { type: Number, default: 0 },
+  totalPages: { type: Number, default: 1 },
 })
 
-defineEmits(['open-detail'])
+const emit = defineEmits(['open-detail', 'search', 'page-change'])
 
 const filterType = ref('')
 const dateFrom = ref('')
 const dateTo = ref('')
 const search = ref('')
 
-const filteredHistory = computed(() =>
-  props.orders.filter((h) => {
-    if (filterType.value && h.type !== filterType.value) return false
-    const day = h.date.slice(0, 10)
-    if (dateFrom.value && day < dateFrom.value) return false
-    if (dateTo.value && day > dateTo.value) return false
-    const q = search.value.trim()
-    if (q && !h.id.includes(q) && !h.store.includes(q) && !h.items.some(i => i.product.includes(q))) return false
-    return true
-  }),
-)
+function emitSearch() {
+  emit('search', {
+    ordersType: filterType.value || null,
+    startDate: dateFrom.value || null,
+    endDate: dateTo.value || null,
+    keyword: search.value.trim() || null,
+  })
+}
+
+function resetFilters() {
+  filterType.value = ''
+  dateFrom.value = ''
+  dateTo.value = ''
+  search.value = ''
+  emitSearch()
+}
 </script>
 
 <template>
@@ -34,8 +42,8 @@ const filteredHistory = computed(() =>
         <select v-model="filterType"
           class="w-24 px-3 py-2 rounded border border-gray-200 text-sm outline-none focus:border-[#F37321]">
           <option value="">전체</option>
-          <option value="자동">자동</option>
-          <option value="수동">수동</option>
+          <option value="AUTO">자동</option>
+          <option value="MANUAL">수동</option>
         </select>
       </label>
       <label class="flex flex-col gap-2">
@@ -49,10 +57,17 @@ const filteredHistory = computed(() =>
       <div class="flex flex-col gap-2 flex-1 min-w-40">
         <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">검색</span>
         <div class="flex gap-2 items-center">
-          <input v-model="search" type="search" placeholder="발주번호·가맹점·품목"
-            class="flex-1 px-3 py-2 rounded border border-gray-200 text-sm outline-none focus:border-[#F37321]" />
-          <button type="button" class="text-xs font-semibold text-gray-500 border border-gray-200 px-4 py-2 rounded hover:bg-gray-50 shrink-0 cursor-pointer"
-            @click="filterType = ''; dateFrom = ''; dateTo = ''; search = ''">
+          <input v-model="search" type="search" placeholder="발주번호·가맹점"
+            class="flex-1 px-3 py-2 rounded border border-gray-200 text-sm outline-none focus:border-[#F37321]"
+            @keyup.enter="emitSearch" />
+          <button type="button"
+            class="text-xs font-semibold text-white bg-[#F37321] px-4 py-2 rounded hover:bg-[#e0661d] shrink-0 cursor-pointer"
+            @click="emitSearch">
+            검색
+          </button>
+          <button type="button"
+            class="text-xs font-semibold text-gray-500 border border-gray-200 px-4 py-2 rounded hover:bg-gray-50 shrink-0 cursor-pointer"
+            @click="resetFilters">
             초기화
           </button>
         </div>
@@ -71,7 +86,7 @@ const filteredHistory = computed(() =>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
-          <tr v-for="h in filteredHistory" :key="h.id" class="hover:bg-gray-50/50 transition-colors cursor-pointer"
+          <tr v-for="h in orders" :key="h.id" class="hover:bg-gray-50/50 transition-colors cursor-pointer"
             @click="$emit('open-detail', h.id)">
             <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ h.id }}</td>
             <td class="px-5 py-3.5">
@@ -87,11 +102,35 @@ const filteredHistory = computed(() =>
               <span class="text-xs font-bold px-2 py-0.5 rounded" :class="statusClass(h.status)">{{ h.status }}</span>
             </td>
           </tr>
-          <tr v-if="filteredHistory.length === 0">
+          <tr v-if="orders.length === 0">
             <td colspan="6" class="px-5 py-10 text-center text-sm text-gray-400">조건에 맞는 발주 이력이 없습니다.</td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- Pagination -->
+    <div v-if="totalPages > 1" class="flex justify-center items-center gap-2 pt-2">
+      <button
+        class="p-2 rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+        :disabled="currentPage === 0"
+        @click="$emit('page-change', currentPage - 1)">
+        <ChevronLeft class="w-4 h-4" />
+      </button>
+      <button v-for="page in totalPages" :key="page"
+        class="w-8 h-8 rounded text-sm font-semibold cursor-pointer"
+        :class="currentPage === page - 1
+          ? 'bg-[#F37321] text-white'
+          : 'text-gray-500 hover:bg-gray-50'"
+        @click="$emit('page-change', page - 1)">
+        {{ page }}
+      </button>
+      <button
+        class="p-2 rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+        :disabled="currentPage === totalPages - 1"
+        @click="$emit('page-change', currentPage + 1)">
+        <ChevronRight class="w-4 h-4" />
+      </button>
     </div>
   </div>
 </template>

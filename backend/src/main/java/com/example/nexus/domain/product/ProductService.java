@@ -4,7 +4,6 @@ import com.example.nexus.domain.category.CategoryRepository;
 import com.example.nexus.domain.category.model.Category;
 import com.example.nexus.domain.product.model.Product;
 import com.example.nexus.domain.product.model.ProductDto;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,5 +58,16 @@ public class ProductService {
                 category
         );
         return true;
+    }
+
+    @Transactional
+    public boolean deleteProduct(Long idx) {
+        Product product = productRepository.findById(idx).orElse(null);
+
+        if (product != null) {
+            productRepository.delete(product);
+            return true;
+        }
+        return false;
     }
 }

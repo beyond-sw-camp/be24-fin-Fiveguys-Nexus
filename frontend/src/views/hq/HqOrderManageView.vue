@@ -16,28 +16,43 @@ const router = useRouter()
 const abnormalCount = computed(() => abnormalOrders.value.filter(o => !o.processed).length)
 
 const tabs = computed(() => [
-  { id: 'auto',      label: '자동 발주 제안', badge: autoOrders.value.length || null },
-  { id: 'confirmed', label: '확정 발주',      badge: confirmedOrders.value.length || null },
+  { id: 'auto',      label: '자동 발주 제안' },
+  { id: 'confirmed', label: '확정 발주' },
   { id: 'history',   label: '발주 이력' },
-  { id: 'abnormal',  label: '이상 발주',      badge: abnormalCount.value || null },
+  { id: 'abnormal',  label: '이상 발주', badge: abnormalCount.value || null },
 ])
 const activeTab = ref('auto')
 
 const autoOrders = ref([])
+const autoPage = ref(0)
+const autoTotalPages = ref(1)
+const autoSearchParams = ref({})
 
-async function fetchAutoOrders() {
+async function fetchAutoOrders(params = autoSearchParams.value, page = autoPage.value) {
   try {
-    const res = await ordersApi.getAutoOrders()
-    autoOrders.value = res.data.result.map(o => ({
+    const res = await ordersApi.getAutoOrders({ ...params, page, size: 10 })
+    const data = res.data.result
+    autoOrders.value = data.content.map(o => ({
       id: o.idx,
       store: o.storeName,
       date: o.createdAt?.replace('T', ' ').slice(0, 16) ?? '-',
       price: o.price,
       status: '제안중',
     }))
+    autoPage.value = data.number
+    autoTotalPages.value = data.totalPages
   } catch (e) {
     console.error('자동 발주 목록 조회 실패', e)
   }
+}
+
+function onAutoSearch(params) {
+  autoSearchParams.value = params
+  fetchAutoOrders(params, 0)
+}
+
+function onAutoPageChange(page) {
+  fetchAutoOrders(autoSearchParams.value, page)
 }
 
 const orderHistory = ref([])
@@ -233,7 +248,9 @@ function rejectAbnormal(o)  { o.processed = true; alert(`${o.store} 발주 반�
     </div>
 
     <!-- Tab Contents -->
-    <HqAutoOrderTable v-if="activeTab === 'auto'" :orders="autoOrders" @open-detail="openDetail" />
+    <HqAutoOrderTable v-if="activeTab === 'auto'" :orders="autoOrders"
+      :current-page="autoPage" :total-pages="autoTotalPages"
+      @open-detail="openDetail" @search="onAutoSearch" @page-change="onAutoPageChange" />
     <div v-if="activeTab === 'confirmed'" class="space-y-4">
       <div class="flex justify-end">
         <button @click="approveAllConfirmed"

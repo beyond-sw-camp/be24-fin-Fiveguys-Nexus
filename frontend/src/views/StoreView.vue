@@ -91,7 +91,7 @@ function handleSearch() {}
 // 가맹점 목록 클릭시 상세 모달창
 async function openDetail(idx) {
   const res = await getStoreDetailList(idx)
-  console.log(res.data.code)
+
   detailTarget.value = res.data.result
   showDetailModal.value = true
 }
@@ -121,7 +121,7 @@ async function handleFileChange(e) {
   const file = e.target.files[0]
 
   const presigned = await getPresignedUrl(file.name)
-  console.log(presigned.data)
+
   // 2. [응답] 백엔드가 "이 주소(uploadUrl)로 올리고, 이름은 이걸(fileKey)로 써!"라고 함[cite: 2]
   const { url, fileName } = presigned.data.result;
 
@@ -150,8 +150,6 @@ async function saveStore() {
   }
   // 등록
   else {
-    console.log("지금은 등록 모드입니다. DB에 저장합니다.");
-
     const storeRegDto = reactive({
       storeName: '',
       ownerEmail: '',
@@ -165,7 +163,6 @@ async function saveStore() {
 
     try {
       const res = await getNewRegister(storeRegDto);
-      console.log(res.data)
 
       if (res.data.code === 2000) {
         alert("가맹점이 등록되었습니다.");

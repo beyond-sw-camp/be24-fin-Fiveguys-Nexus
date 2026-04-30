@@ -82,6 +82,12 @@ public class OrdersController {
         return ResponseEntity.ok(BaseResponse.success("delete success"));
     }
 
+    @PutMapping("/{ordersIdx}/cancel")
+    public ResponseEntity cancel(@PathVariable Long ordersIdx) {
+        orderService.cancelOrder(ordersIdx);
+        return ResponseEntity.ok(BaseResponse.success("update success"));
+    }
+
     @PostMapping("/store/reg/manual")
     public ResponseEntity createStoreManualOrder(@AuthenticationPrincipal AuthUserDetails authUserDetails, @RequestBody OrdersDto.OrdersReq req) {
         if (authUserDetails == null) {

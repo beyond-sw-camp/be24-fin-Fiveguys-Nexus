@@ -1,8 +1,10 @@
-package com.example.Nexus;
+package com.example.nexus;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
+@EnableScheduling
 @SpringBootApplication
 public class NexusApplication {
 

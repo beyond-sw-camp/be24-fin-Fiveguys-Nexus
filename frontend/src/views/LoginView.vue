@@ -21,7 +21,7 @@
         <!-- 데모 계정 -->
         <div class="space-y-2">
           <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">데모 계정</p>
-          <div v-for="demo in demoAccounts" :key="demo.id"
+          <div v-for="demo in demoAccounts" :key="demo.email"
             @click="fillDemo(demo)"
             class="flex items-center gap-3 p-3.5 bg-white border border-gray-200 cursor-pointer hover:border-[#F37321] transition-colors group">
             <div class="w-8 h-8 flex items-center justify-center text-xs font-bold text-white shrink-0"
@@ -32,7 +32,7 @@
                 <span class="ml-1.5 text-[11px] font-bold px-1.5 py-0.5 rounded"
                   :class="demo.badgeClass">{{ demo.roleLabel }}</span>
               </p>
-              <p class="text-xs text-gray-400 mt-0.5 font-mono">{{ demo.id }} / 1234</p>
+              <p class="text-xs text-gray-400 mt-0.5 font-mono">{{ demo.email }} / password123</p>
             </div>
             <span class="text-xs text-gray-300 group-hover:text-[#F37321] transition-colors font-medium">입력 →</span>
           </div>
@@ -50,15 +50,15 @@
 
         <form @submit.prevent="handleLogin" class="space-y-4">
           <div class="space-y-1.5">
-            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">사용자 ID</label>
-            <input v-model="form.id" type="text" placeholder="ex) A001"
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">사용자 email</label>
+            <input v-model="form.email" type="text" placeholder="ex) A001"
               class="w-full px-3 py-2.5 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none transition-all"
               :class="{ 'border-red-400': error }" />
           </div>
 
           <div class="space-y-1.5">
             <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">비밀번호</label>
-            <input v-model="form.password" type="password" placeholder="••••••••"
+            <input v-model="form.password" type="text" placeholder="••••••••"
               class="w-full px-3 py-2.5 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none transition-all"
               :class="{ 'border-red-400': error }" />
           </div>
@@ -92,35 +92,36 @@ import { useAuthStore } from '@/stores/auth'
 const router = useRouter()
 const auth = useAuthStore()
 
-const form = ref({ id: '', password: '' })
+const form = ref({ email: '', password: '' })
 const error = ref('')
 
 const demoAccounts = [
   {
-    id: 'A001', name: '이재혁', avatar: 'HQ', roleLabel: '운영자 (본사)',
+    email: 'admin@theventi.co.kr', name: '이재혁', avatar: 'HQ', roleLabel: '운영자 (본사)',
     colorClass: 'bg-[#F37321]',
     badgeClass: 'bg-orange-50 text-orange-600 border border-orange-200',
   },
   {
-    id: 'S001', name: '김동현', avatar: 'KD', roleLabel: '점주 (가맹점)',
+    email: 'store01@theventi.co.kr', name: '김동현', avatar: 'KD', roleLabel: '점주 (가맹점)',
     colorClass: 'bg-blue-500',
     badgeClass: 'bg-blue-50 text-blue-600 border border-blue-200',
   },
 ]
 
 function fillDemo(demo) {
-  form.value.id = demo.id
-  form.value.password = '1234'
+  form.value.email = demo.email
+  form.value.password = 'password123'
   error.value = ''
 }
 
-function handleLogin() {
+async function handleLogin() {
   error.value = ''
-  const ok = auth.login(form.value.id, form.value.password)
+  const ok = await auth.login(form.value.email, form.value.password)
   if (!ok) {
     error.value = '아이디 또는 비밀번호가 올바르지 않습니다.'
     return
   }
+  
   if (auth.isAdmin) router.push('/dashboard')
   else if (auth.isStoreOwner) router.push('/store-dashboard')
 }

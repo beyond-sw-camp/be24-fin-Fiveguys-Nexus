@@ -1,3 +1,13 @@
 .claude/
 
 .idea/
+.DS_Store
+**/.DS_Store
+
+node_modules
+
+k8s/backend/secret.yaml
+k8s/backend/configmap.yaml
+k8s/db-statefulset.yaml
+k8s/db-service.yaml
+frontend/.env.development

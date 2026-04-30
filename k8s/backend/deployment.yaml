@@ -19,6 +19,11 @@ spec:
           image: deatytim/nexusback:latest
           ports:
             - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: nexus-backend-config
+            - secretRef:
+                name: nexus-backend-secret
           readinessProbe:
             httpGet:
               path: /actuator/health

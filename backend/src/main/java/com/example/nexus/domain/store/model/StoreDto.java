@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class StoreDto {
@@ -89,6 +88,27 @@ public class StoreDto {
                     .idx(entity.getIdx())
                     .storeName(entity.getStoreName())
                     .address(entity.getAddress())
+                    .build();
+        }
+    }
+
+    // 신규 가맹점 등록 req
+    @Getter
+    public static class StoreRegReq{
+        private String storeName;
+        private String ownerEmail;
+        private String address;
+        private String addressDetail;
+        private String business;
+        private String filePath;
+
+        public Store toEntity(){
+            return Store.builder()
+                    .storeName(this.storeName)
+                    .address(this.address)
+                    .addressDetail(this.addressDetail)
+                    .business(this.business)
+                    .filePath(this.filePath)
                     .build();
         }
     }

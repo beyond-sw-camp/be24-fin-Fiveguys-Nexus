@@ -192,20 +192,38 @@ public class OrdersService {
                         .build());
     }
 
+    @Transactional
     public void save(DangerDto.DangerReq req) {
         Danger danger = dangerRepository.findById(1L)
                 .orElse(Danger.builder().build());
+
         danger.update(req.getRatio(), req.getPeriod());
+
         dangerRepository.save(danger);
+
+        // 기존 이상 발주 재평가: 새 기준 미달 시 isDanger 해제
+        List<Orders> dangerOrders = ordersRepository.findAllByIsDangerTrue();
+
+        for (Orders orders : dangerOrders) {
+            int totalQty = orders.getOrdersItemList().stream().mapToInt(OrdersItem::getCount).sum();
+
+            LocalDateTime since = orders.getCreatedAt().minusMonths(req.getPeriod());
+
+            Integer avgQty = ordersRepository.findAvgQtyByStoreAndPeriod(orders.getStore().getIdx(), since);
+
+            int ratio = avgQty > 0 ? (totalQty - avgQty) * 100 / avgQty : 0;
+
+            if (ratio < req.getRatio()) {
+                orders.clearDanger();
+            }
+
+        }
     }
 
     @Transactional
     public void approve(Long ordersIdx) {
         Orders orders = ordersRepository.findById(ordersIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
-        if (orders.isDanger()) {
-            orders.clearDanger();
-        }
         orders.approve();
     }
 
@@ -213,9 +231,6 @@ public class OrdersService {
     public void reject(Long ordersIdx) {
         Orders orders = ordersRepository.findById(ordersIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
-        if (orders.isDanger()) {
-            orders.clearDanger();
-        }
         orders.reject();
     }
 

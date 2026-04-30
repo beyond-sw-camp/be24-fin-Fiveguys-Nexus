@@ -24,6 +24,10 @@ const cancelOrder = (ordersIdx) => {
   return api.put(`/orders/${ordersIdx}/cancel`)
 }
 
+const getOrderHistory = () => {
+  return api.get('/orders/list/history')
+}
+
 const getConfirmedOrders = () => {
   return api.get('/orders/list/confirmed')
 }
@@ -35,6 +39,7 @@ const approveAllConfirmed = () => {
 export default {
   getAutoOrders,
   getOrderDetail,
+  getOrderHistory,
   getDangerSettings,
   updateDangerSettings,
   createStoreManualOrder,

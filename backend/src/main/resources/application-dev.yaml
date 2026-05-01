@@ -10,6 +10,7 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: false
+    defer-datasource-initialization: true
 
   cloud:
     aws:
@@ -21,7 +22,9 @@ spring:
         menu-bucket: ${AWS_S3_MENU_BUCKET}
       region:
         static: ${AWS_S3_STATIC}
-
+  sql:
+    init:
+      mode: always
 
 server:
   port: 8080

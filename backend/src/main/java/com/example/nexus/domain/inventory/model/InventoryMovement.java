@@ -87,4 +87,19 @@ public class InventoryMovement {
                 null
         );
     }
+
+    public static InventoryMovement transferOut(Product product, Long storeIdx, Integer quantity, String memo) {
+        return new InventoryMovement(
+                null,
+                product,
+                MovementType.TRANSFER_OUT,
+                quantity,
+                MovementLocationType.HEAD,
+                null,
+                MovementLocationType.STORE,
+                storeIdx,
+                memo,
+                null
+        );
+    }
 }

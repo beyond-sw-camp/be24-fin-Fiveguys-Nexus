@@ -14,12 +14,6 @@ import com.example.nexus.domain.store.model.StoreInventory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.time.LocalDateTime;
-
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -39,7 +33,7 @@ public class InventoryMovementService {
 
         headInventory.setCount(headInventory.getCount() + req.getQuantity());
 
-        HeadInventory savedHeadInventory = headInventoryRepository.save(headInventory);
+        headInventoryRepository.save(headInventory);
 
         InventoryMovement movement = InventoryMovement.inbound(
                 product,
@@ -48,11 +42,41 @@ public class InventoryMovementService {
         );
         InventoryMovement savedMovement = inventoryMovementRepository.save(movement);
 
-        return InventoryMovementDto.MovementRes.builder()
-                .movementIdx(savedMovement.getIdx())
-                .productIdx(product.getIdx())
-                .quantity(req.getQuantity())
-                .headCount(savedHeadInventory.getCount())
-                .build();
+        return InventoryMovementDto.MovementRes.from(savedMovement);
+    }
+
+    @Transactional
+    public InventoryMovementDto.MovementRes outbound(InventoryMovementDto.OutboundReq req) {
+
+        Product product = productRepository.findById(req.getProductIdx()).orElseThrow();
+
+        Store store = storeRepository.findById(req.getStoreIdx()).orElseThrow();
+
+        HeadInventory headInventory = headInventoryRepository.findByProductIdx(product.getIdx()).orElseThrow();
+
+        headInventory.setCount(headInventory.getCount() - req.getQuantity());
+        headInventoryRepository.save(headInventory);
+
+        StoreInventory storeInventory = new StoreInventory(
+                null,
+                req.getQuantity(),
+                InventoryStatus.NORMAL,
+                headInventory.getManufacturedDate(),
+                req.getQuantity(),
+                store,
+                product
+        );
+
+        storeInventoryRepository.save(storeInventory);
+
+        InventoryMovement movement = InventoryMovement.transferOut(
+                product,
+                store.getIdx(),
+                req.getQuantity(),
+                req.getMemo()
+        );
+        InventoryMovement savedMovement = inventoryMovementRepository.save(movement);
+
+        return InventoryMovementDto.MovementRes.from(savedMovement);
     }
 }

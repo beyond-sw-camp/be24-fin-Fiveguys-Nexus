@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 public class InventoryMovementDto {
 
@@ -13,6 +12,16 @@ public class InventoryMovementDto {
     @AllArgsConstructor
     public static class InboundReq {
         private Long productIdx;
+        private Integer quantity;
+        private String memo;
+    }
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class OutboundReq {
+        private Long productIdx;
+        private Long storeIdx;
         private Integer quantity;
         private String memo;
     }
@@ -28,5 +37,14 @@ public class InventoryMovementDto {
         private Integer headCount;
         private Long storeIdx;
         private Integer storeCount;
+
+        public static MovementRes from(InventoryMovement movement) {
+            return MovementRes.builder()
+                    .movementIdx(movement.getIdx())
+                    .productIdx(movement.getProduct().getIdx())
+                    .quantity(movement.getQuantity())
+                    .storeIdx(movement.getToRefIdx())
+                    .build();
+        }
     }
 }

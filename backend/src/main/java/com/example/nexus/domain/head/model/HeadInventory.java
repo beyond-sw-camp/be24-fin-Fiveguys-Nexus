@@ -23,7 +23,6 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "head_inventory")
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class HeadInventory {
@@ -33,6 +32,7 @@ public class HeadInventory {
     private Long idx;
 
     @Column(name = "count", nullable = false)
+    @Setter
     private Integer count;
 
     @Enumerated(EnumType.STRING)

@@ -314,6 +314,25 @@ public class OrdersService {
         orders.updatePrice(orders.getPrice() + (long) product.getUnitPrice() * req.getCount());
     }
 
+    @Transactional
+    public void rejectStoreOrder(Long userIdx, Long ordersIdx) {
+        Store store = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        Orders orders = ordersRepository.findById(ordersIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        if (!orders.getStore().getIdx().equals(store.getIdx())) {
+            throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
+        }
+
+        if (orders.getOrdersStatus() != OrdersStatus.WAITING) {
+            throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
+        }
+
+        orders.reject();
+    }
+
     public List<OrdersDto.OrdersRes> findByUserIdx(Long userIdx) {
         Store store = storeRepository.findByUserIdx(userIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));

@@ -254,7 +254,7 @@ public class OrdersController {
     }
 
     /**
-     * 가맹점 발주 항목 추가
+     * 가맹점 제안 발주서 항목 추가
      *
      * @param authUserDetails 인증된 사용자 정보
      * @param ordersIdx 항목을 추가할 발주의 고유 ID
@@ -276,7 +276,7 @@ public class OrdersController {
     }
 
     /**
-     * 가맹점 발주 항목 수량 수정
+     * 가맹점 제안 발주서 항목 수량 수정
      *
      * @param authUserDetails 인증된 사용자 정보
      * @param ordersItemIdx 수정할 발주 항목의 고유 ID
@@ -298,7 +298,27 @@ public class OrdersController {
     }
 
     /**
-     * 가맹점 발주 목록 조회
+     * 가맹점 제안 발주서 거절
+     *
+     * @param authUserDetails 인증된 사용자 정보
+     * @param ordersIdx 거절할 발주의 고유 ID
+     * @return ResponseEntity 거절 결과 메시지
+     * @throws ResponseStatusException 로그인하지 않은 경우 (401)
+     */
+    @PutMapping("/store/{ordersIdx}/reject")
+    public ResponseEntity rejectStoreOrder(
+            @AuthenticationPrincipal AuthUserDetails authUserDetails,
+            @PathVariable Long ordersIdx
+    ) {
+        if (authUserDetails == null) {
+            throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+        orderService.rejectStoreOrder(authUserDetails.getIdx(), ordersIdx);
+        return ResponseEntity.ok(BaseResponse.success("update success"));
+    }
+
+    /**
+     * 가맹점 발주 이력 조회
      *
      * @param authUserDetails 인증된 사용자 정보
      * @return ResponseEntity 가맹점 발주 목록
@@ -314,7 +334,7 @@ public class OrdersController {
     }
 
     /**
-     * 가맹점 진행 중인 발주 조회
+     * 가맹점 제안 발주서 조회
      *
      * @param authUserDetails 인증된 사용자 정보
      * @return ResponseEntity 가맹점 진행 중인 발주 목록

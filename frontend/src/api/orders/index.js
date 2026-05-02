@@ -21,7 +21,7 @@ const createStoreManualOrder = (data) => {
 }
 
 const cancelOrder = (ordersIdx) => {
-  return api.put(`/orders/${ordersIdx}/cancel`)
+  return api.put(`/orders/store/${ordersIdx}/cancel`)
 }
 
 const getOrderHistory = (params = {}) => {

@@ -254,6 +254,28 @@ public class OrdersController {
     }
 
     /**
+     * 가맹점 발주 항목 추가
+     *
+     * @param authUserDetails 인증된 사용자 정보
+     * @param ordersIdx 항목을 추가할 발주의 고유 ID
+     * @param req 추가할 발주 항목 요청 데이터
+     * @return ResponseEntity 추가 결과 메시지
+     * @throws ResponseStatusException 로그인하지 않은 경우 (401)
+     */
+    @PostMapping("/store/{ordersIdx}/items")
+    public ResponseEntity addStoreItem(
+            @AuthenticationPrincipal AuthUserDetails authUserDetails,
+            @PathVariable Long ordersIdx,
+            @RequestBody OrdersItemDto.OrdersItemReq req
+    ) {
+        if (authUserDetails == null) {
+            throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+        orderService.addStoreItem(authUserDetails.getIdx(), ordersIdx, req);
+        return ResponseEntity.ok(BaseResponse.success("create success"));
+    }
+
+    /**
      * 가맹점 발주 목록 조회
      *
      * @param authUserDetails 인증된 사용자 정보

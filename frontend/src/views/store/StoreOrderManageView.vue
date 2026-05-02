@@ -74,10 +74,16 @@ async function confirmOrder() {
   }
 }
 
-function rejectOrder(order) {
-  if (confirm('발주서를 거절하시겠습니까?')) {
+async function rejectOrder(order) {
+  if (!confirm('발주서를 거절하시겠습니까?')) return
+  try {
+    await ordersApi.rejectStoreOrder(order.idx)
     const idx = pendingOrders.value.indexOf(order)
-    pendingOrders.value.splice(idx, 1)
+    if (idx > -1) pendingOrders.value.splice(idx, 1)
+    alert('발주서가 거절되었습니다.')
+  } catch (e) {
+    console.error('발주서 거�� 실패', e)
+    alert('발주서 거절에 실패했습니다.')
   }
 }
 

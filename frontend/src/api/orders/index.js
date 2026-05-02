@@ -65,6 +65,10 @@ const addStoreOrderItem = (ordersIdx, data) => {
   return api.post(`/orders/store/${ordersIdx}/items`, data)
 }
 
+const rejectStoreOrder = (ordersIdx) => {
+  return api.put(`/orders/store/${ordersIdx}/reject`)
+}
+
 export default {
   getAutoOrders,
   getOrderDetail,
@@ -82,4 +86,5 @@ export default {
   getStorePendingOrders,
   confirmStoreOrder,
   addStoreOrderItem,
+  rejectStoreOrder,
 }

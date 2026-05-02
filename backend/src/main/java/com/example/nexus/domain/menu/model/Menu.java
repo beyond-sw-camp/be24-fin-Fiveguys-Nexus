@@ -32,4 +32,7 @@ public class Menu {
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted = false;
 
+    @OneToMany(mappedBy = "menu")
+    private List<MenuItem> menuItemList = new ArrayList<>();
+
 }

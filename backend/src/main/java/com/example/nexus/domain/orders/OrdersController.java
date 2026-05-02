@@ -264,6 +264,26 @@ public class OrdersController {
     }
 
     /**
+     * 가맹점 제안 발주서 항목 삭제
+     *
+     * @param authUserDetails 인증된 사용자 정보
+     * @param ordersItemIdx 삭제할 발주 항목의 고유 ID
+     * @return ResponseEntity 삭제 결과 메시지
+     * @throws ResponseStatusException 로그인하지 않은 경우 (401)
+     */
+    @DeleteMapping("/store/{ordersItemIdx}/items")
+    public ResponseEntity deleteStoreItem(
+            @AuthenticationPrincipal AuthUserDetails authUserDetails,
+            @PathVariable Long ordersItemIdx
+    ) {
+        if (authUserDetails == null) {
+            throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+        orderService.deleteStoreItem(authUserDetails.getIdx(), ordersItemIdx);
+        return ResponseEntity.ok(BaseResponse.success("delete success"));
+    }
+
+    /**
      * 가맹점 제안 발주서 거절
      *
      * @param authUserDetails 인증된 사용자 정보

@@ -21,19 +21,19 @@
     </div>
 
     <div v-if="activeTab === 'pending'" class="space-y-4">
-      <div v-for="order in pendingOrders" :key="order.id" class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+      <div v-for="order in pendingOrders" :key="order.idx" class="bg-white border border-gray-200 rounded-lg overflow-hidden">
         <div class="px-5 py-3.5 border-b border-gray-100 flex justify-between items-center bg-gray-50/60">
           <div>
-            <span class="text-xs font-mono text-gray-400">{{ order.id }}</span>
+            <span class="text-xs font-mono text-gray-400">No.{{ order.idx }}</span>
             <p class="font-bold text-gray-900 mt-0.5 text-sm">자동 발주 제안</p>
             <p class="text-[11px] text-gray-400 mt-0.5">생성일시: {{ order.createdAt }}</p>
           </div>
           <div class="flex gap-2">
-            <button @click="openPaymentModal(order)"
+            <button @click="openConfirmModal(order)"
               class="px-4 py-2 bg-blue-500 text-white text-sm font-bold hover:bg-blue-600 rounded-lg transition-colors cursor-pointer">
-              전체 확정
+              확정
             </button>
-            <button @click="openAddItemForm(order)"
+            <button
               class="px-4 py-2 border border-blue-200 text-blue-500 bg-blue-50 text-sm font-semibold hover:bg-blue-100 rounded-lg transition-colors cursor-pointer">
               + 품목 추가
             </button>
@@ -43,132 +43,32 @@
             </button>
           </div>
         </div>
-
-        <!-- AI 추천 이유 배너 -->
-        <div v-if="order.aiReason" class="border-b border-purple-100 bg-purple-50/60">
-          <button
-            class="w-full px-5 py-3 flex items-center justify-between cursor-pointer hover:bg-purple-50 transition-colors"
-            @click="toggleAiReason(order.id)">
-            <div class="flex items-center gap-2.5 min-w-0">
-              <span class="flex items-center justify-center w-6 h-6 rounded-full bg-purple-100 shrink-0">
-                <Sparkles class="w-3.5 h-3.5 text-purple-600" />
-              </span>
-              <span class="text-xs font-bold text-purple-700 shrink-0">AI 추천 이유</span>
-              <span class="text-xs text-purple-600/80 truncate">{{ order.aiReason.summary }}</span>
-            </div>
-            <div class="flex items-center gap-2 shrink-0 ml-2">
-              <div class="flex gap-1.5">
-                <span
-                  v-for="(tag, idx) in order.aiReason.contexts"
-                  :key="`${order.id}-tag-${idx}`"
-                  class="hidden sm:inline text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-100 text-purple-600 border border-purple-200">
-                  {{ tag }}
-                </span>
-              </div>
-              <ChevronDown
-                class="w-4 h-4 text-purple-400 transition-transform duration-200 shrink-0"
-                :class="expandedAiReasons.has(order.id) ? 'rotate-180' : ''" />
-            </div>
-          </button>
-
-          <div v-if="expandedAiReasons.has(order.id)" class="px-5 pb-4 space-y-3">
-            <div class="sm:hidden flex gap-1.5 flex-wrap">
-              <span
-                v-for="(tag, idx) in order.aiReason.contexts"
-                :key="`${order.id}-tag-mobile-${idx}`"
-                class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-100 text-purple-600 border border-purple-200">
-                {{ tag }}
-              </span>
-            </div>
-            <p class="text-xs text-gray-600 leading-relaxed bg-white border border-purple-100 rounded-lg px-4 py-3">
-              {{ order.aiReason.detail }}
-            </p>
-            <div class="grid grid-cols-2 gap-3">
-              <div class="bg-white border border-purple-100 rounded-lg px-4 py-2.5 text-center">
-                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">최소 발주량</p>
-                <p class="text-sm font-bold text-gray-700">{{ minQtyLabel(order) }}</p>
-              </div>
-              <div class="bg-purple-600 rounded-lg px-4 py-2.5 text-center">
-                <p class="text-[10px] font-bold text-purple-200 uppercase tracking-wider mb-1">AI 추천 수량</p>
-                <p class="text-sm font-bold text-white">{{ recommendedQtyLabel(order) }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
         <table class="w-full text-sm">
           <thead>
             <tr class="border-b border-gray-200 bg-gray-50">
               <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">품목명</th>
-              <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">현재 재고</th>
-              <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">최소 재고</th>
-              <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">제안 수량</th>
-              <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">수정 수량</th>
+              <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">수량</th>
+              <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">단가</th>
               <th class="px-5 py-3 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wider">금액</th>
-              <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider"></th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
-            <tr v-for="item in order.items" :key="item.product" class="hover:bg-gray-50/50">
-              <td class="px-5 py-3.5 font-semibold text-gray-900">{{ item.product }}</td>
-              <td class="px-5 py-3.5 font-bold text-red-500">{{ item.current }}<span class="text-xs font-normal ml-0.5">{{ PRODUCT_UNIT[item.product] ?? '' }}</span></td>
-              <td class="px-5 py-3.5 text-gray-500">{{ item.min }}<span class="text-xs ml-0.5">{{ PRODUCT_UNIT[item.product] ?? '' }}</span></td>
-              <td class="px-5 py-3.5 font-semibold text-blue-600">{{ item.suggested }}<span class="text-xs font-normal ml-0.5">{{ PRODUCT_UNIT[item.product] ?? '' }}</span></td>
-              <td class="px-5 py-3.5">
-                <div class="flex items-center gap-1.5">
-                  <input v-model.number="item.adjusted" type="number" min="0"
-                    class="w-20 px-2 py-1.5 rounded-lg border border-gray-200 text-sm focus:border-blue-400 outline-none" />
-                  <span class="text-xs text-gray-400 font-medium">{{ PRODUCT_UNIT[item.product] ?? '' }}</span>
-                </div>
-              </td>
+            <tr v-for="item in order.ordersItemList" :key="item.idx" class="hover:bg-gray-50/50">
+              <td class="px-5 py-3.5 font-semibold text-gray-900">{{ item.productName }}</td>
+              <td class="px-5 py-3.5 font-semibold text-blue-600">{{ item.count }}</td>
+              <td class="px-5 py-3.5 text-gray-500">₩ {{ (item.unitPrice ?? 0).toLocaleString() }}</td>
               <td class="px-5 py-3.5 text-right font-semibold text-gray-700">
-                ₩ {{ ((item.adjusted || 0) * (PRODUCT_PRICES[item.product] ?? 0)).toLocaleString() }}
-              </td>
-              <td class="px-5 py-3.5">
-                <button
-                  @click="removeOrderItem(order, item)"
-                  :disabled="order.items.length <= 1"
-                  class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-red-200 text-red-500 bg-red-50 hover:bg-red-500 hover:text-white hover:cursor-pointer transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
-                  삭제
-                </button>
-              </td>
-            </tr>
-            <tr v-if="addItemForm?.orderId === order.id" class="bg-blue-50/50 border-t border-blue-100">
-              <td class="px-5 py-3" colspan="2">
-                <select v-model="addItemForm.product"
-                  class="w-full px-2 py-1.5 rounded-lg border border-blue-200 text-sm outline-none focus:border-blue-400 bg-white">
-                  <option value="">품목 선택</option>
-                  <option v-for="p in availableProducts(order)" :key="p" :value="p">{{ p }}</option>
-                </select>
-              </td>
-              <td class="px-5 py-3 text-xs text-gray-400">—</td>
-              <td class="px-5 py-3 text-xs text-gray-400">—</td>
-              <td class="px-5 py-3">
-                <input v-model.number="addItemForm.qty" type="number" min="1" placeholder="수량"
-                  class="w-24 px-2 py-1.5 rounded-lg border border-blue-200 text-sm outline-none focus:border-blue-400" />
-              </td>
-              <td class="px-5 py-3 text-xs text-gray-400 text-right">—</td>
-              <td class="px-5 py-3">
-                <div class="flex gap-1.5">
-                  <button @click="confirmAddItem(order)"
-                    class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-blue-300 text-blue-600 bg-white hover:bg-blue-500 hover:text-white hover:cursor-pointer transition-colors">
-                    추가
-                  </button>
-                  <button @click="addItemForm = null"
-                    class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-gray-200 text-gray-500 bg-white hover:bg-gray-100 hover:cursor-pointer transition-colors">
-                    취소
-                  </button>
-                </div>
+                ₩ {{ ((item.count || 0) * (item.unitPrice ?? 0)).toLocaleString() }}
               </td>
             </tr>
           </tbody>
           <tfoot class="border-t border-gray-200 bg-gray-50/60">
             <tr>
               <td class="px-5 py-3 text-left text-xs font-bold text-gray-500">합계</td>
-              <td colspan="4"></td>
+              <td colspan="2"></td>
               <td class="px-5 py-3 text-right font-black text-blue-600">
-                ₩ {{ orderTotal(order).toLocaleString() }}
+                ₩ {{ (order.price ?? 0).toLocaleString() }}
               </td>
-              <td></td>
             </tr>
           </tfoot>
         </table>
@@ -190,52 +90,30 @@
     <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-[2px]">
       <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-modal-up">
         <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-          <h2 class="text-lg font-bold text-gray-900">결제 및 승인</h2>
+          <h2 class="text-lg font-bold text-gray-900">발주서 확정</h2>
           <button @click="isModalOpen = false" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
         </div>
 
-        <div class="p-6 space-y-6">
-          <section>
-            <label class="text-[11px] font-bold text-gray-400 uppercase block mb-3">결제 수단</label>
-            <div class="flex gap-3">
-              <div class="flex-1 border-2 border-blue-500 rounded-lg p-3 bg-blue-50 flex items-center gap-3">
-                <div class="w-10 h-6 bg-slate-800 rounded flex items-center justify-center">
-                   <div class="w-2 h-2 bg-amber-400 rounded-full"></div>
-                </div>
-                <div>
-                  <p class="text-[11px] font-bold text-blue-600 leading-none">등록된 카드</p>
-                  <p class="text-[10px] text-gray-500 mt-1">현대카드 (****-1234)</p>
-                </div>
-              </div>
-              <button class="flex-1 border border-dashed border-gray-300 rounded-lg p-3 text-gray-400 text-xs font-bold hover:bg-gray-50 cursor-pointer">+ 신규 등록</button>
-            </div>
-          </section>
+        <div class="p-6 space-y-4">
+          <p class="text-sm text-gray-500">아래 품목으로 발주서를 확정하시겠습니까?</p>
 
-          <section class="bg-gray-50 rounded-lg p-4">
+          <div class="bg-gray-50 rounded-lg p-4">
             <div class="space-y-2 pb-3 border-b border-gray-200">
-              <div v-for="item in selectedOrder?.items" :key="item.product" class="flex justify-between text-xs">
-                <span class="text-gray-500">{{ item.product }} ({{ item.adjusted }}개 × {{ (PRODUCT_PRICES[item.product] ?? 0).toLocaleString() }}원)</span>
-                <span class="font-medium text-gray-900">₩ {{ ((item.adjusted || 0) * (PRODUCT_PRICES[item.product] ?? 0)).toLocaleString() }}</span>
+              <div v-for="item in selectedOrder?.ordersItemList" :key="item.idx" class="flex justify-between text-xs">
+                <span class="text-gray-500">{{ item.productName }} ({{ item.count }}개 × ₩{{ (item.unitPrice ?? 0).toLocaleString() }})</span>
+                <span class="font-medium text-gray-900">₩ {{ ((item.count || 0) * (item.unitPrice ?? 0)).toLocaleString() }}</span>
               </div>
             </div>
             <div class="flex justify-between items-center pt-3">
-              <span class="text-sm font-bold text-gray-900">총 결제 금액</span>
-              <span class="text-lg font-black text-blue-600">₩ {{totalPrice.toLocaleString() }}</span>
+              <span class="text-sm font-bold text-gray-900">합계</span>
+              <span class="text-lg font-black text-blue-600">₩ {{ (selectedOrder?.price ?? 0).toLocaleString() }}</span>
             </div>
-          </section>
-
-          <section>
-            <label class="text-[11px] font-bold text-gray-400 uppercase block mb-2">승인 요청 메시지</label>
-            <textarea v-model="approvalMessage" placeholder="메모를 입력하세요."
-              class="w-full border border-gray-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-100 outline-none resize-none h-20"></textarea>
-          </section>
+          </div>
         </div>
 
         <div class="px-6 py-4 bg-gray-50 flex gap-2">
           <button @click="isModalOpen = false" class="flex-1 py-3 bg-white border border-gray-200 text-gray-600 font-bold rounded-lg text-sm cursor-pointer">취소</button>
-          <button @click="processPayment" class="flex-2 py-3 bg-blue-600 text-white font-bold rounded-lg text-sm flex items-center justify-center gap-2 cursor-pointer">
-            <CreditCard class="w-4 h-4"/> 결제
-          </button>
+          <button @click="confirmOrder" class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-lg text-sm cursor-pointer">확정</button>
         </div>
       </div>
     </div>
@@ -245,101 +123,29 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive, onMounted } from 'vue'
-import { ClipboardList, CreditCard, Sparkles, ChevronDown, Plus } from 'lucide-vue-next'
+import { ref, computed, onMounted } from 'vue'
+import { ClipboardList, Plus } from 'lucide-vue-next'
 import StoreManualOrderModal from '@/components/orders/StoreManualOrderModal.vue'
 import StoreOrderHistoryTable from '@/components/orders/StoreOrderHistoryTable.vue'
 import StoreOrderDetailModal from '@/components/orders/StoreOrderDetailModal.vue'
 import ordersApi from '@/api/orders'
 
-const PRODUCT_UNIT = {
-  '한우 등심':  'kg',
-  '연어':       'kg',
-  '올리브오일': 'L',
-  '버터':       'kg',
-  '생크림':     'L',
-  '간장':       'L',
-  '양파':       'kg',
-  '생수':       '박스',
-}
-
-const PRODUCT_STOCK = {
-  '한우 등심':  { current: 5, min: 10 },
-  '연어':       { current: 3, min: 8  },
-  '올리브오일': { current: 2, min: 5  },
-  '버터':       { current: 2, min: 5  },
-  '생크림':     { current: 1, min: 4  },
-  '간장':       { current: 3, min: 8  },
-  '양파':       { current: 8, min: 20 },
-  '생수':       { current: 5, min: 15 },
-}
-
-const PRODUCT_PRICES = {
-  '한우 등심':  85000,
-  '연어':       32000,
-  '올리브오일': 12000,
-  '버터':       9000,
-  '생크림':     7000,
-  '간장':       4000,
-  '양파':       1500,
-  '생수':       8000,
-}
-
 const activeTab = ref('pending')
 const isModalOpen = ref(false)
 const selectedOrder = ref(null)
-const approvalMessage = ref('')
 
-const expandedAiReasons = reactive(new Set())
-
-function toggleAiReason(orderId) {
-  if (expandedAiReasons.has(orderId)) {
-    expandedAiReasons.delete(orderId)
-  } else {
-    expandedAiReasons.add(orderId)
-  }
-}
-
-function minQtyLabel(order) {
-  return order.items
-    .map(i => `${i.product} ${i.min}${PRODUCT_UNIT[i.product] ?? ''}`)
-    .join(' · ')
-}
-
-function recommendedQtyLabel(order) {
-  return order.items
-    .map(i => `${i.product} ${i.suggested}${PRODUCT_UNIT[i.product] ?? ''}`)
-    .join(' · ')
-}
-
-const pendingOrders = ref([
-  {
-    id: 'AUTO-20260413-001', createdAt: '2026-04-13 08:00',
-    aiReason: {
-      summary: '갤러리아 봄 기획전 및 주말 한파 예보로 한우 수요 증가 예상',
-      detail: '4월 15~17일 갤러리아 타임월드 봄 기획전이 예정되어 있습니다. 작년 동일 이벤트 기간에 한우 등심 발주량은 평소 대비 38% 증가했습니다. 또한 이번 주말 기온이 5°C 이하로 내려갈 것으로 예보되어 외식 수요가 높아질 것으로 예상됩니다. 이벤트 기간 품절 방지를 위해 최소 발주량 기준보다 높은 수량을 추천합니다.',
-      contexts: ['갤러리아 봄 기획전 (4/15~17)', '주말 기온 5°C 예보', '작년 동기 발주 +38%'],
-    },
-    items: [
-      { product: '한우 등심', current: 5, min: 10, suggested: 20, adjusted: 20 },
-      { product: '버터',      current: 2, min: 5,  suggested: 10, adjusted: 10 },
-    ],
-  },
-  {
-    id: 'AUTO-20260413-002', createdAt: '2026-04-13 08:00',
-    aiReason: {
-      summary: '주말 예약 집중 및 코스 메뉴 소비 증가 패턴 감지',
-      detail: '최근 3주간 올리브오일과 생크림의 주말 소비량이 평일 대비 평균 42% 높게 나타났습니다. 이번 주말은 갤러리아 봄 기획전과 겹쳐 예약이 집중될 것으로 예상되며, 코스 메뉴 레시피 기준 소모량을 고려해 평소보다 높은 수량을 추천합니다. 생크림은 유통기한이 짧으므로 소비 속도에 맞춰 조정하시기 바랍니다.',
-      contexts: ['주말 소비량 평일 대비 +42%', '갤러리아 봄 기획전', '생크림 유통기한 주의'],
-    },
-    items: [
-      { product: '올리브오일', current: 2, min: 5, suggested: 15, adjusted: 15 },
-      { product: '생크림',     current: 1, min: 4, suggested: 12, adjusted: 12 },
-    ],
-  },
-])
+const pendingOrders = ref([])
 
 const orderHistory = ref([])
+
+async function fetchPendingOrders() {
+  try {
+    const res = await ordersApi.getStorePendingOrders()
+    pendingOrders.value = res.data.result || []
+  } catch (e) {
+    console.error('제안 발주서 조회 실패', e)
+  }
+}
 
 async function fetchOrderHistory() {
   try {
@@ -351,6 +157,7 @@ async function fetchOrderHistory() {
 }
 
 onMounted(() => {
+  fetchPendingOrders()
   fetchOrderHistory()
 })
 
@@ -366,64 +173,24 @@ const tabs = computed(() => [
 ])
 
 
-// 모달 열기 함수
-function openPaymentModal(order) {
+function openConfirmModal(order) {
   selectedOrder.value = order
-  approvalMessage.value = ""
   isModalOpen.value = true
 }
 
-const totalPrice = computed(() => {
-  if (!selectedOrder.value) return 0
-  return selectedOrder.value.items.reduce((sum, item) => sum + item.adjusted * (PRODUCT_PRICES[item.product] ?? 0), 0)
-})
-
-// 결제 프로세스 완료
-function processPayment() {
+async function confirmOrder() {
   const order = selectedOrder.value
-  const idx = pendingOrders.value.indexOf(order)
-  if (idx > -1) {
-    orderHistory.value.unshift({
-      id: order.id.replace('AUTO', 'ORD'),
-      type: '자동',
-      date: new Date().toISOString().slice(0, 16).replace('T', ' '),
-      status: '승인대기',
-      items: order.items.map(item => ({ product: item.product, qty: item.adjusted })),
-    })
-    pendingOrders.value.splice(idx, 1)
+  try {
+    await ordersApi.confirmStoreOrder(order.idx)
+    const idx = pendingOrders.value.indexOf(order)
+    if (idx > -1) pendingOrders.value.splice(idx, 1)
     isModalOpen.value = false
-    alert('결제 및 승인 요청이 완료되었습니다.')
-    activeTab.value = 'history'
+    alert('발주서가 확정되었습니다.')
+    fetchOrderHistory()
+  } catch (e) {
+    console.error('발주서 확정 실패', e)
+    alert('발주서 확정에 실패했습니다.')
   }
-}
-
-const addItemForm = ref(null)
-
-function openAddItemForm(order) {
-  addItemForm.value = { orderId: order.id, product: '', qty: 1 }
-}
-
-function availableProducts(order) {
-  const existing = new Set(order.items.map(i => i.product))
-  return Object.keys(PRODUCT_PRICES).filter(p => !existing.has(p))
-}
-
-function confirmAddItem(order) {
-  const form = addItemForm.value
-  if (!form.product) { alert('품목을 선택해주세요.'); return }
-  if (!form.qty || form.qty < 1) { alert('수량을 입력해주세요.'); return }
-  const stock = PRODUCT_STOCK[form.product] ?? { current: '-', min: '-' }
-  order.items.push({ product: form.product, current: stock.current, min: stock.min, suggested: form.qty, adjusted: form.qty })
-  addItemForm.value = null
-}
-
-function removeOrderItem(order, item) {
-  const idx = order.items.indexOf(item)
-  if (idx > -1) order.items.splice(idx, 1)
-}
-
-function orderTotal(order) {
-  return order.items.reduce((s, item) => s + (item.adjusted || 0) * (PRODUCT_PRICES[item.product] ?? 0), 0)
 }
 
 function rejectOrder(order) {

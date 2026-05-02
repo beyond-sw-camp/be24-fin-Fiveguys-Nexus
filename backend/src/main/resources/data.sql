@@ -541,6 +541,11 @@ INSERT INTO orders (store_idx, price, order_type, order_status, is_danger, creat
 INSERT INTO orders (store_idx, price, order_type, order_status, is_danger, created_at) VALUES
 (3, 110500, 'MANUAL', 'APPROVE', false, '2026-04-15 11:00:00');
 
+-- 강남역점 제안 발주서 (WAITING)
+INSERT INTO orders (store_idx, price, order_type, order_status, is_danger, created_at) VALUES
+(1, 280000, 'AUTO', 'WAITING', false, '2026-05-01 07:00:00'),
+(1, 126500, 'AUTO', 'WAITING', false, '2026-05-02 07:00:00');
+
 -- ============================================================
 -- 12. OrdersItem (발주 항목)
 -- ============================================================
@@ -748,6 +753,18 @@ INSERT INTO orders_item (orders_idx, product_idx, count) VALUES
 (34, 7, 5),
 (34, 8, 5),
 (34, 9, 3);
+
+-- 강남역점 제안 발주서 1 (orders 35): 원두+우유+바닐라시럽 = 237000
+INSERT INTO orders_item (orders_idx, product_idx, count) VALUES
+(35, 1, 8),
+(35, 3, 30),
+(35, 7, 10);
+
+-- 강남역점 제안 발주서 2 (orders 36): 카라멜시럽+딸기퓨레+초코파우더 = 149500
+INSERT INTO orders_item (orders_idx, product_idx, count) VALUES
+(36, 8, 5),
+(36, 12, 4),
+(36, 18, 3);
 
 -- ============================================================
 -- 13. Delivery (배송)

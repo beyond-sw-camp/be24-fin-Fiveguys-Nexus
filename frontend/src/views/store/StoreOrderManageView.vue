@@ -197,31 +197,31 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
-            <tr v-for="h in orderHistory" :key="h.id"
+            <tr v-for="h in orderHistory" :key="h.idx"
               class="hover:bg-gray-50/50 transition-colors cursor-pointer"
               @click="openHistoryDetail(h)">
-              <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ h.id }}</td>
+              <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ h.idx }}</td>
               <td class="px-5 py-3.5">
                 <span class="text-xs font-bold px-2 py-0.5 rounded"
-                  :class="h.type === '자동' ? 'bg-blue-50 text-blue-600 border border-blue-200' : 'bg-purple-50 text-purple-600 border border-purple-200'">
-                  {{ h.type }}
+                  :class="h.ordersType === 'AUTO' ? 'bg-blue-50 text-blue-600 border border-blue-200' : 'bg-purple-50 text-purple-600 border border-purple-200'">
+                  {{ ORDER_TYPE_LABEL[h.ordersType] }}
                 </span>
               </td>
               <td class="px-5 py-3.5 font-semibold text-gray-900">
-                {{ h.items[0].product }}
-                <span v-if="h.items.length > 1" class="text-xs text-gray-400 font-normal"> 외 {{ h.items.length - 1 }}건</span>
+                {{ h.ordersItemList[0]?.productName }}
+                <span v-if="h.ordersItemList.length > 1" class="text-xs text-gray-400 font-normal"> 외 {{ h.ordersItemList.length - 1 }}건</span>
               </td>
               <td class="px-5 py-3.5 font-semibold text-gray-700">
-                ₩ {{ h.items.reduce((s, i) => s + (PRODUCT_PRICES[i.product] ?? 0) * i.qty, 0).toLocaleString() }}
+                ₩ {{ h.price?.toLocaleString() }}
               </td>
-              <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ h.date }}</td>
+              <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ h.createdAt?.replace('T', ' ').slice(0, 16) }}</td>
               <td class="px-5 py-3.5">
-                <span class="text-xs font-bold px-2 py-0.5 rounded" :class="historyStatusCls(h.status)">
-                  {{ h.status }}
+                <span class="text-xs font-bold px-2 py-0.5 rounded" :class="historyStatusCls(h.ordersStatus)">
+                  {{ ORDER_STATUS_LABEL[h.ordersStatus] }}
                 </span>
               </td>
               <td class="px-5 py-3.5">
-                <button v-if="h.status === '확정'"
+                <button v-if="h.ordersStatus === 'CONFIRMED'"
                   @click.stop="cancelOrder(h)"
                   class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-red-200 text-red-500 bg-red-50 hover:bg-red-500 hover:text-white hover:cursor-pointer transition-colors">
                   취소
@@ -243,7 +243,7 @@
         <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
           <div>
             <h3 class="font-bold text-gray-900">발주 상세</h3>
-            <p class="text-xs text-gray-400 font-mono mt-0.5">{{ selectedHistory?.id }}</p>
+            <p class="text-xs text-gray-400 font-mono mt-0.5">No. {{ selectedHistory?.idx }}</p>
           </div>
           <button @click="showHistoryDetail = false" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
         </div>
@@ -252,19 +252,19 @@
             <div>
               <p class="text-xs text-gray-400 mb-1">유형</p>
               <span class="text-xs font-bold px-2 py-0.5 rounded border"
-                :class="selectedHistory.type === '자동' ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-purple-50 text-purple-600 border-purple-200'">
-                {{ selectedHistory.type }}
+                :class="selectedHistory.ordersType === 'AUTO' ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-purple-50 text-purple-600 border-purple-200'">
+                {{ ORDER_TYPE_LABEL[selectedHistory.ordersType] }}
               </span>
             </div>
             <div>
               <p class="text-xs text-gray-400 mb-1">상태</p>
-              <span class="text-xs font-bold px-2 py-0.5 rounded" :class="historyStatusCls(selectedHistory.status)">
-                {{ selectedHistory.status }}
+              <span class="text-xs font-bold px-2 py-0.5 rounded" :class="historyStatusCls(selectedHistory.ordersStatus)">
+                {{ ORDER_STATUS_LABEL[selectedHistory.ordersStatus] }}
               </span>
             </div>
             <div class="col-span-2">
               <p class="text-xs text-gray-400 mb-1">발주일시</p>
-              <p class="text-gray-700 font-mono text-xs">{{ selectedHistory.date }}</p>
+              <p class="text-gray-700 font-mono text-xs">{{ selectedHistory.createdAt?.replace('T', ' ').slice(0, 16) }}</p>
             </div>
           </div>
           <div>
@@ -280,18 +280,18 @@
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
-                  <tr v-for="item in selectedHistory.items" :key="item.product">
-                    <td class="px-4 py-2.5 text-gray-800 font-semibold">{{ item.product }}</td>
-                    <td class="px-4 py-2.5 text-right text-gray-600">{{ item.qty.toLocaleString() }}개</td>
-                    <td class="px-4 py-2.5 text-right text-xs text-gray-500">₩ {{ (PRODUCT_PRICES[item.product] ?? 0).toLocaleString() }}</td>
-                    <td class="px-4 py-2.5 text-right font-bold text-blue-600">₩ {{ ((PRODUCT_PRICES[item.product] ?? 0) * item.qty).toLocaleString() }}</td>
+                  <tr v-for="item in selectedHistory.ordersItemList" :key="item.idx">
+                    <td class="px-4 py-2.5 text-gray-800 font-semibold">{{ item.productName }}</td>
+                    <td class="px-4 py-2.5 text-right text-gray-600">{{ item.count.toLocaleString() }}개</td>
+                    <td class="px-4 py-2.5 text-right text-xs text-gray-500">₩ {{ item.unitPrice.toLocaleString() }}</td>
+                    <td class="px-4 py-2.5 text-right font-bold text-blue-600">₩ {{ (item.unitPrice * item.count).toLocaleString() }}</td>
                   </tr>
                 </tbody>
                 <tfoot class="bg-gray-50 border-t border-gray-200">
                   <tr>
                     <td colspan="3" class="px-4 py-2.5 text-right text-xs font-bold text-gray-500">합계</td>
                     <td class="px-4 py-2.5 text-right font-black text-blue-600">
-                      ₩ {{ selectedHistory.items.reduce((s, i) => s + (PRODUCT_PRICES[i.product] ?? 0) * i.qty, 0).toLocaleString() }}
+                      ₩ {{ selectedHistory.price?.toLocaleString() }}
                     </td>
                   </tr>
                 </tfoot>
@@ -364,7 +364,7 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, reactive, onMounted } from 'vue'
 import { ClipboardList, CreditCard, Sparkles, ChevronDown, Plus } from 'lucide-vue-next'
 import StoreManualOrderModal from '@/components/orders/StoreManualOrderModal.vue'
 import ordersApi from '@/api/orders'
@@ -400,6 +400,18 @@ const PRODUCT_PRICES = {
   '간장':       4000,
   '양파':       1500,
   '생수':       8000,
+}
+
+const ORDER_STATUS_LABEL = {
+  CONFIRMED: '확정',
+  APPROVE: '승인',
+  REJECT: '거절',
+  CANCELLED: '취소',
+}
+
+const ORDER_TYPE_LABEL = {
+  AUTO: '자동',
+  MANUAL: '수동',
 }
 
 const activeTab = ref('pending')
@@ -456,14 +468,20 @@ const pendingOrders = ref([
   },
 ])
 
-const orderHistory = ref([
-  { id: 'ORD-20260413-001', type: '자동', date: '2026-04-13 22:00', status: '배송중',
-    items: [{ product: '한우 등심', qty: 20 }, { product: '버터', qty: 5 }] },
-  { id: 'ORD-20260412-002', type: '자동', date: '2026-04-12 22:00', status: '배송중',
-    items: [{ product: '연어', qty: 15 }, { product: '간장', qty: 10 }] },
-  { id: 'ORD-20260411-003', type: '수동', date: '2026-04-11 10:30', status: '입고완료',
-    items: [{ product: '양파', qty: 30 }, { product: '올리브오일', qty: 8 }] },
-])
+const orderHistory = ref([])
+
+async function fetchOrderHistory() {
+  try {
+    const res = await ordersApi.getStoreOrderList()
+    orderHistory.value = res.data.result
+  } catch (e) {
+    console.error('발주 이력 조회 실패', e)
+  }
+}
+
+onMounted(() => {
+  fetchOrderHistory()
+})
 
 const showHistoryDetail = ref(false)
 const selectedHistory = ref(null)
@@ -474,12 +492,10 @@ function openHistoryDetail(h) {
 }
 
 const HISTORY_STATUS_CLS = {
-  '확정':     'bg-green-50 text-green-700 border border-green-200',
-  '승인대기': 'bg-gray-100 text-gray-500 border border-gray-200',
-  '배송중':   'bg-blue-50 text-blue-600 border border-blue-200',
-  '입고완료': 'bg-green-50 text-green-700 border border-green-200',
-  '거절':     'bg-red-50 text-red-600 border border-red-200',
-  '취소':     'bg-red-50 text-red-500 border border-red-200',
+  CONFIRMED:  'bg-green-50 text-green-700 border border-green-200',
+  APPROVE:    'bg-blue-50 text-blue-600 border border-blue-200',
+  REJECT:     'bg-red-50 text-red-600 border border-red-200',
+  CANCELLED:  'bg-red-50 text-red-500 border border-red-200',
 }
 const historyStatusCls = s => HISTORY_STATUS_CLS[s] ?? 'bg-gray-100 text-gray-500 border border-gray-200'
 
@@ -559,8 +575,8 @@ function rejectOrder(order) {
 async function cancelOrder(order) {
   if (!confirm('발주를 취소하시겠습니까?')) return
   try {
-    await ordersApi.cancelOrder(order.id)
-    order.status = '취소'
+    await ordersApi.cancelOrder(order.idx)
+    order.ordersStatus = 'CANCELLED'
     alert('발주가 취소되었습니다.')
   } catch (e) {
     console.error('발주 취소 실패', e)

@@ -33,66 +33,10 @@
               class="px-4 py-2 bg-blue-500 text-white text-sm font-bold hover:bg-blue-600 rounded-lg transition-colors cursor-pointer">
               확정
             </button>
-            <button @click="openAddItemForm(order)"
-              class="px-4 py-2 border border-blue-200 text-blue-500 bg-blue-50 text-sm font-semibold hover:bg-blue-100 rounded-lg transition-colors cursor-pointer">
-              + 품목 추가
-            </button>
             <button @click="rejectOrder(order)"
               class="px-4 py-2 border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 rounded-lg cursor-pointer">
               거절
             </button>
-          </div>
-        </div>
-
-        <!-- AI 추천 이유 배너 -->
-        <div v-if="order.aiReason" class="border-b border-purple-100 bg-purple-50/60">
-          <button
-            class="w-full px-5 py-3 flex items-center justify-between cursor-pointer hover:bg-purple-50 transition-colors"
-            @click="toggleAiReason(order.id)">
-            <div class="flex items-center gap-2.5 min-w-0">
-              <span class="flex items-center justify-center w-6 h-6 rounded-full bg-purple-100 shrink-0">
-                <Sparkles class="w-3.5 h-3.5 text-purple-600" />
-              </span>
-              <span class="text-xs font-bold text-purple-700 shrink-0">AI 추천 이유</span>
-              <span class="text-xs text-purple-600/80 truncate">{{ order.aiReason.summary }}</span>
-            </div>
-            <div class="flex items-center gap-2 shrink-0 ml-2">
-              <div class="flex gap-1.5">
-                <span
-                  v-for="(tag, idx) in order.aiReason.contexts"
-                  :key="`${order.id}-tag-${idx}`"
-                  class="hidden sm:inline text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-100 text-purple-600 border border-purple-200">
-                  {{ tag }}
-                </span>
-              </div>
-              <ChevronDown
-                class="w-4 h-4 text-purple-400 transition-transform duration-200 shrink-0"
-                :class="expandedAiReasons.has(order.id) ? 'rotate-180' : ''" />
-            </div>
-          </button>
-
-          <div v-if="expandedAiReasons.has(order.id)" class="px-5 pb-4 space-y-3">
-            <div class="sm:hidden flex gap-1.5 flex-wrap">
-              <span
-                v-for="(tag, idx) in order.aiReason.contexts"
-                :key="`${order.id}-tag-mobile-${idx}`"
-                class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-100 text-purple-600 border border-purple-200">
-                {{ tag }}
-              </span>
-            </div>
-            <p class="text-xs text-gray-600 leading-relaxed bg-white border border-purple-100 rounded-lg px-4 py-3">
-              {{ order.aiReason.detail }}
-            </p>
-            <div class="grid grid-cols-2 gap-3">
-              <div class="bg-white border border-purple-100 rounded-lg px-4 py-2.5 text-center">
-                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">최소 발주량</p>
-                <p class="text-sm font-bold text-gray-700">{{ minQtyLabel(order) }}</p>
-              </div>
-              <div class="bg-purple-600 rounded-lg px-4 py-2.5 text-center">
-                <p class="text-[10px] font-bold text-purple-200 uppercase tracking-wider mb-1">AI 추천 수량</p>
-                <p class="text-sm font-bold text-white">{{ recommendedQtyLabel(order) }}</p>
-              </div>
-            </div>
           </div>
         </div>
         <table class="w-full text-sm">
@@ -175,8 +119,8 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive, onMounted } from 'vue'
-import { ClipboardList, Sparkles, ChevronDown, Plus } from 'lucide-vue-next'
+import { ref, computed, onMounted } from 'vue'
+import { ClipboardList, Plus } from 'lucide-vue-next'
 import StoreManualOrderModal from '@/components/orders/StoreManualOrderModal.vue'
 import StoreOrderHistoryTable from '@/components/orders/StoreOrderHistoryTable.vue'
 import StoreOrderDetailModal from '@/components/orders/StoreOrderDetailModal.vue'
@@ -185,28 +129,6 @@ import ordersApi from '@/api/orders'
 const activeTab = ref('pending')
 const isModalOpen = ref(false)
 const selectedOrder = ref(null)
-
-const expandedAiReasons = reactive(new Set())
-
-function toggleAiReason(orderId) {
-  if (expandedAiReasons.has(orderId)) {
-    expandedAiReasons.delete(orderId)
-  } else {
-    expandedAiReasons.add(orderId)
-  }
-}
-
-function minQtyLabel(order) {
-  return order.items
-    .map(i => `${i.product} ${i.min}${PRODUCT_UNIT[i.product] ?? ''}`)
-    .join(' · ')
-}
-
-function recommendedQtyLabel(order) {
-  return order.items
-    .map(i => `${i.product} ${i.suggested}${PRODUCT_UNIT[i.product] ?? ''}`)
-    .join(' · ')
-}
 
 const pendingOrders = ref([])
 
@@ -265,31 +187,6 @@ async function confirmOrder() {
     console.error('발주서 확정 실패', e)
     alert('발주서 확정에 실패했습니다.')
   }
-}
-
-const addItemForm = ref(null)
-
-function openAddItemForm(order) {
-  addItemForm.value = { orderId: order.id, product: '', qty: 1 }
-}
-
-function availableProducts(order) {
-  const existing = new Set(order.items.map(i => i.product))
-  return Object.keys(PRODUCT_PRICES).filter(p => !existing.has(p))
-}
-
-function confirmAddItem(order) {
-  const form = addItemForm.value
-  if (!form.product) { alert('품목을 선택해주세요.'); return }
-  if (!form.qty || form.qty < 1) { alert('수량을 입력해주세요.'); return }
-  const stock = PRODUCT_STOCK[form.product] ?? { current: '-', min: '-' }
-  order.items.push({ product: form.product, current: stock.current, min: stock.min, suggested: form.qty, adjusted: form.qty })
-  addItemForm.value = null
-}
-
-function removeOrderItem(order, item) {
-  const idx = order.items.indexOf(item)
-  if (idx > -1) order.items.splice(idx, 1)
 }
 
 function rejectOrder(order) {

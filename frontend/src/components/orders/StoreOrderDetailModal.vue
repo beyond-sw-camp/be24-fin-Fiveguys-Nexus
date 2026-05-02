@@ -1,0 +1,99 @@
+<script setup>
+const ORDER_STATUS_LABEL = {
+  CONFIRMED: '확정',
+  APPROVE: '승인',
+  REJECT: '거절',
+  CANCELLED: '취소',
+}
+
+const ORDER_TYPE_LABEL = {
+  AUTO: '자동',
+  MANUAL: '수동',
+}
+
+const HISTORY_STATUS_CLS = {
+  CONFIRMED: 'bg-green-50 text-green-700 border border-green-200',
+  APPROVE: 'bg-blue-50 text-blue-600 border border-blue-200',
+  REJECT: 'bg-red-50 text-red-600 border border-red-200',
+  CANCELLED: 'bg-red-50 text-red-500 border border-red-200',
+}
+
+const statusCls = s => HISTORY_STATUS_CLS[s] ?? 'bg-gray-100 text-gray-500 border border-gray-200'
+
+defineProps({
+  order: { type: Object, default: null },
+})
+
+defineEmits(['close'])
+</script>
+
+<template>
+  <div v-if="order" class="fixed inset-0 z-50 flex items-center justify-center">
+    <div class="absolute inset-0 bg-black/40" @click="$emit('close')"></div>
+    <div class="relative bg-white rounded-xl w-full max-w-md border border-gray-200 shadow-xl">
+      <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+        <div>
+          <h3 class="font-bold text-gray-900">발주 상세</h3>
+          <p class="text-xs text-gray-400 font-mono mt-0.5">No. {{ order.idx }}</p>
+        </div>
+        <button @click="$emit('close')" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
+      </div>
+      <div class="p-6 space-y-4 text-sm">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <p class="text-xs text-gray-400 mb-1">유형</p>
+            <span class="text-xs font-bold px-2 py-0.5 rounded border"
+              :class="order.ordersType === 'AUTO' ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-purple-50 text-purple-600 border-purple-200'">
+              {{ ORDER_TYPE_LABEL[order.ordersType] }}
+            </span>
+          </div>
+          <div>
+            <p class="text-xs text-gray-400 mb-1">상태</p>
+            <span class="text-xs font-bold px-2 py-0.5 rounded" :class="statusCls(order.ordersStatus)">
+              {{ ORDER_STATUS_LABEL[order.ordersStatus] }}
+            </span>
+          </div>
+          <div class="col-span-2">
+            <p class="text-xs text-gray-400 mb-1">발주일시</p>
+            <p class="text-gray-700 font-mono text-xs">{{ order.createdAt?.replace('T', ' ').slice(0, 16) }}</p>
+          </div>
+        </div>
+        <div>
+          <p class="text-xs text-gray-400 mb-2">품목 목록</p>
+          <div class="border border-gray-100 rounded-lg overflow-hidden">
+            <table class="w-full text-sm">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-4 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase">품목명</th>
+                  <th class="px-4 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase">수량</th>
+                  <th class="px-4 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase">단가</th>
+                  <th class="px-4 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase">금액</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                <tr v-for="item in order.ordersItemList" :key="item.idx">
+                  <td class="px-4 py-2.5 text-gray-800 font-semibold">{{ item.productName }}</td>
+                  <td class="px-4 py-2.5 text-right text-gray-600">{{ item.count.toLocaleString() }}개</td>
+                  <td class="px-4 py-2.5 text-right text-xs text-gray-500">₩ {{ item.unitPrice.toLocaleString() }}</td>
+                  <td class="px-4 py-2.5 text-right font-bold text-blue-600">₩ {{ (item.unitPrice * item.count).toLocaleString() }}</td>
+                </tr>
+              </tbody>
+              <tfoot class="bg-gray-50 border-t border-gray-200">
+                <tr>
+                  <td colspan="3" class="px-4 py-2.5 text-right text-xs font-bold text-gray-500">합계</td>
+                  <td class="px-4 py-2.5 text-right font-black text-blue-600">
+                    ₩ {{ order.price?.toLocaleString() }}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="px-6 py-4 border-t border-gray-100 flex justify-end">
+        <button @click="$emit('close')"
+          class="px-4 py-2 text-sm font-semibold text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">닫기</button>
+      </div>
+    </div>
+  </div>
+</template>

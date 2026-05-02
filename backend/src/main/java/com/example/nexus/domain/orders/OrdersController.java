@@ -220,6 +220,26 @@ public class OrdersController {
     }
 
     /**
+     * 가맹점 제안 발주서 확정
+     *
+     * @param authUserDetails 인증된 사용자 정보
+     * @param ordersIdx 확정할 발주의 고유 ID
+     * @return ResponseEntity 확정 결과 메시지
+     * @throws ResponseStatusException 로그인하지 않은 경우 (401)
+     */
+    @PutMapping("/store/{ordersIdx}/confirm")
+    public ResponseEntity confirmStoreOrder(
+            @AuthenticationPrincipal AuthUserDetails authUserDetails,
+            @PathVariable Long ordersIdx
+    ) {
+        if (authUserDetails == null) {
+            throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+        orderService.confirmStoreOrder(authUserDetails.getIdx(), ordersIdx);
+        return ResponseEntity.ok(BaseResponse.success("update success"));
+    }
+
+    /**
      * 가맹점 제안 발주서 항목 추가
      *
      * @param authUserDetails 인증된 사용자 정보

@@ -229,6 +229,25 @@ public class OrdersService {
     }
 
     @Transactional
+    public void confirmStoreOrder(Long userIdx, Long ordersIdx) {
+        Store store = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        Orders orders = ordersRepository.findById(ordersIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        if (!orders.getStore().getIdx().equals(store.getIdx())) {
+            throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
+        }
+
+        if (orders.getOrdersStatus() != OrdersStatus.WAITING) {
+            throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
+        }
+
+        orders.confirm();
+    }
+
+    @Transactional
     public void addStoreItem(Long userIdx, Long ordersIdx, OrdersItemDto.OrdersItemReq req) {
         Store store = storeRepository.findByUserIdx(userIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));

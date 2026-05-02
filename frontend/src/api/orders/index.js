@@ -49,6 +49,14 @@ const rejectDangerOrder = (ordersIdx) => {
   return api.put(`/orders/${ordersIdx}/reject`)
 }
 
+const getStoreOrderList = () => {
+  return api.get('/orders/store/list')
+}
+
+const getStorePendingOrders = () => {
+  return api.get('/orders/store/find')
+}
+
 export default {
   getAutoOrders,
   getOrderDetail,
@@ -62,4 +70,6 @@ export default {
   approveAllConfirmed,
   approveDangerOrder,
   rejectDangerOrder,
+  getStoreOrderList,
+  getStorePendingOrders,
 }

@@ -182,129 +182,10 @@
     </div>
 
 
-    <div v-if="activeTab === 'history'">
-      <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
-        <table class="w-full text-sm text-left">
-          <thead>
-            <tr class="border-b border-gray-200 bg-gray-50">
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주번호</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">유형</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">품목</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">총 금액</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주일시</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">상태</th>
-              <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">처리</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-100">
-            <tr v-for="h in orderHistory" :key="h.id"
-              class="hover:bg-gray-50/50 transition-colors cursor-pointer"
-              @click="openHistoryDetail(h)">
-              <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ h.id }}</td>
-              <td class="px-5 py-3.5">
-                <span class="text-xs font-bold px-2 py-0.5 rounded"
-                  :class="h.type === '자동' ? 'bg-blue-50 text-blue-600 border border-blue-200' : 'bg-purple-50 text-purple-600 border border-purple-200'">
-                  {{ h.type }}
-                </span>
-              </td>
-              <td class="px-5 py-3.5 font-semibold text-gray-900">
-                {{ h.items[0].product }}
-                <span v-if="h.items.length > 1" class="text-xs text-gray-400 font-normal"> 외 {{ h.items.length - 1 }}건</span>
-              </td>
-              <td class="px-5 py-3.5 font-semibold text-gray-700">
-                ₩ {{ h.items.reduce((s, i) => s + (PRODUCT_PRICES[i.product] ?? 0) * i.qty, 0).toLocaleString() }}
-              </td>
-              <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ h.date }}</td>
-              <td class="px-5 py-3.5">
-                <span class="text-xs font-bold px-2 py-0.5 rounded" :class="historyStatusCls(h.status)">
-                  {{ h.status }}
-                </span>
-              </td>
-              <td class="px-5 py-3.5">
-                <button v-if="h.status === '확정'"
-                  @click.stop="cancelOrder(h)"
-                  class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-red-200 text-red-500 bg-red-50 hover:bg-red-500 hover:text-white hover:cursor-pointer transition-colors">
-                  취소
-                </button>
-              </td>
-            </tr>
-            <tr v-if="orderHistory.length === 0">
-              <td colspan="7" class="px-5 py-10 text-center text-sm text-gray-400">발주 이력이 없습니다.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <StoreOrderHistoryTable v-if="activeTab === 'history'" :orders="orderHistory"
+      @open-detail="openHistoryDetail" @cancel="cancelOrder" />
 
-    <!-- 이력 상세 모달 -->
-    <div v-if="showHistoryDetail" class="fixed inset-0 z-50 flex items-center justify-center">
-      <div class="absolute inset-0 bg-black/40" @click="showHistoryDetail = false"></div>
-      <div class="relative bg-white rounded-xl w-full max-w-md border border-gray-200 shadow-xl">
-        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-          <div>
-            <h3 class="font-bold text-gray-900">발주 상세</h3>
-            <p class="text-xs text-gray-400 font-mono mt-0.5">{{ selectedHistory?.id }}</p>
-          </div>
-          <button @click="showHistoryDetail = false" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
-        </div>
-        <div v-if="selectedHistory" class="p-6 space-y-4 text-sm">
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <p class="text-xs text-gray-400 mb-1">유형</p>
-              <span class="text-xs font-bold px-2 py-0.5 rounded border"
-                :class="selectedHistory.type === '자동' ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-purple-50 text-purple-600 border-purple-200'">
-                {{ selectedHistory.type }}
-              </span>
-            </div>
-            <div>
-              <p class="text-xs text-gray-400 mb-1">상태</p>
-              <span class="text-xs font-bold px-2 py-0.5 rounded" :class="historyStatusCls(selectedHistory.status)">
-                {{ selectedHistory.status }}
-              </span>
-            </div>
-            <div class="col-span-2">
-              <p class="text-xs text-gray-400 mb-1">발주일시</p>
-              <p class="text-gray-700 font-mono text-xs">{{ selectedHistory.date }}</p>
-            </div>
-          </div>
-          <div>
-            <p class="text-xs text-gray-400 mb-2">품목 목록</p>
-            <div class="border border-gray-100 rounded-lg overflow-hidden">
-              <table class="w-full text-sm">
-                <thead class="bg-gray-50">
-                  <tr>
-                    <th class="px-4 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase">품목명</th>
-                    <th class="px-4 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase">수량</th>
-                    <th class="px-4 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase">단가</th>
-                    <th class="px-4 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase">금액</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                  <tr v-for="item in selectedHistory.items" :key="item.product">
-                    <td class="px-4 py-2.5 text-gray-800 font-semibold">{{ item.product }}</td>
-                    <td class="px-4 py-2.5 text-right text-gray-600">{{ item.qty.toLocaleString() }}개</td>
-                    <td class="px-4 py-2.5 text-right text-xs text-gray-500">₩ {{ (PRODUCT_PRICES[item.product] ?? 0).toLocaleString() }}</td>
-                    <td class="px-4 py-2.5 text-right font-bold text-blue-600">₩ {{ ((PRODUCT_PRICES[item.product] ?? 0) * item.qty).toLocaleString() }}</td>
-                  </tr>
-                </tbody>
-                <tfoot class="bg-gray-50 border-t border-gray-200">
-                  <tr>
-                    <td colspan="3" class="px-4 py-2.5 text-right text-xs font-bold text-gray-500">합계</td>
-                    <td class="px-4 py-2.5 text-right font-black text-blue-600">
-                      ₩ {{ selectedHistory.items.reduce((s, i) => s + (PRODUCT_PRICES[i.product] ?? 0) * i.qty, 0).toLocaleString() }}
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-          </div>
-        </div>
-        <div class="px-6 py-4 border-t border-gray-100 flex justify-end">
-          <button @click="showHistoryDetail = false"
-            class="px-4 py-2 text-sm font-semibold text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">닫기</button>
-        </div>
-      </div>
-    </div>
+    <StoreOrderDetailModal :order="selectedHistory" @close="selectedHistory = null" />
 
     <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-[2px]">
       <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-modal-up">
@@ -364,9 +245,11 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, reactive, onMounted } from 'vue'
 import { ClipboardList, CreditCard, Sparkles, ChevronDown, Plus } from 'lucide-vue-next'
 import StoreManualOrderModal from '@/components/orders/StoreManualOrderModal.vue'
+import StoreOrderHistoryTable from '@/components/orders/StoreOrderHistoryTable.vue'
+import StoreOrderDetailModal from '@/components/orders/StoreOrderDetailModal.vue'
 import ordersApi from '@/api/orders'
 
 const PRODUCT_UNIT = {
@@ -456,32 +339,26 @@ const pendingOrders = ref([
   },
 ])
 
-const orderHistory = ref([
-  { id: 'ORD-20260413-001', type: '자동', date: '2026-04-13 22:00', status: '배송중',
-    items: [{ product: '한우 등심', qty: 20 }, { product: '버터', qty: 5 }] },
-  { id: 'ORD-20260412-002', type: '자동', date: '2026-04-12 22:00', status: '배송중',
-    items: [{ product: '연어', qty: 15 }, { product: '간장', qty: 10 }] },
-  { id: 'ORD-20260411-003', type: '수동', date: '2026-04-11 10:30', status: '입고완료',
-    items: [{ product: '양파', qty: 30 }, { product: '올리브오일', qty: 8 }] },
-])
+const orderHistory = ref([])
 
-const showHistoryDetail = ref(false)
+async function fetchOrderHistory() {
+  try {
+    const res = await ordersApi.getStoreOrderList()
+    orderHistory.value = res.data.result
+  } catch (e) {
+    console.error('발주 이력 조회 실패', e)
+  }
+}
+
+onMounted(() => {
+  fetchOrderHistory()
+})
+
 const selectedHistory = ref(null)
 
 function openHistoryDetail(h) {
   selectedHistory.value = h
-  showHistoryDetail.value = true
 }
-
-const HISTORY_STATUS_CLS = {
-  '확정':     'bg-green-50 text-green-700 border border-green-200',
-  '승인대기': 'bg-gray-100 text-gray-500 border border-gray-200',
-  '배송중':   'bg-blue-50 text-blue-600 border border-blue-200',
-  '입고완료': 'bg-green-50 text-green-700 border border-green-200',
-  '거절':     'bg-red-50 text-red-600 border border-red-200',
-  '취소':     'bg-red-50 text-red-500 border border-red-200',
-}
-const historyStatusCls = s => HISTORY_STATUS_CLS[s] ?? 'bg-gray-100 text-gray-500 border border-gray-200'
 
 const tabs = computed(() => [
   { id: 'pending', label: '제안 발주서', count: pendingOrders.value.length },
@@ -559,8 +436,8 @@ function rejectOrder(order) {
 async function cancelOrder(order) {
   if (!confirm('발주를 취소하시겠습니까?')) return
   try {
-    await ordersApi.cancelOrder(order.id)
-    order.status = '취소'
+    await ordersApi.cancelOrder(order.idx)
+    order.ordersStatus = 'CANCELLED'
     alert('발주가 취소되었습니다.')
   } catch (e) {
     console.error('발주 취소 실패', e)

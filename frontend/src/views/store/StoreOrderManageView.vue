@@ -1,3 +1,116 @@
+<script setup>
+import { ref, computed, onMounted, watch } from 'vue'
+import { ClipboardList, Plus } from 'lucide-vue-next'
+import StoreManualOrderModal from '@/components/orders/StoreManualOrderModal.vue'
+import StoreOrderHistoryTable from '@/components/orders/StoreOrderHistoryTable.vue'
+import StoreOrderDetailModal from '@/components/orders/StoreOrderDetailModal.vue'
+import ordersApi from '@/api/orders'
+import { useAddOrderItem } from '@/composables/useAddOrderItem'
+
+const activeTab = ref('pending')
+const isModalOpen = ref(false)
+const selectedOrder = ref(null)
+
+const pendingOrders = ref([])
+
+const orderHistory = ref([])
+
+async function fetchPendingOrders() {
+  try {
+    const res = await ordersApi.getStorePendingOrders()
+    pendingOrders.value = res.data.result || []
+  } catch (e) {
+    console.error('제안 발주서 조회 실패', e)
+  }
+}
+
+async function fetchOrderHistory() {
+  try {
+    const res = await ordersApi.getStoreOrderList()
+    orderHistory.value = res.data.result
+  } catch (e) {
+    console.error('발주 이력 조회 실패', e)
+  }
+}
+
+onMounted(() => {
+  fetchPendingOrders()
+})
+
+watch(activeTab, (tab) => {
+  if (tab === 'history') {
+    fetchOrderHistory()
+  }
+})
+
+const selectedHistory = ref(null)
+
+function openHistoryDetail(h) {
+  selectedHistory.value = h
+}
+
+const tabs = computed(() => [
+  { id: 'pending', label: '제안 발주서', count: pendingOrders.value.length },
+  { id: 'history', label: '발주 이력', count: orderHistory.value.length },
+])
+
+
+function openConfirmModal(order) {
+  selectedOrder.value = order
+  isModalOpen.value = true
+}
+
+async function confirmOrder() {
+  const order = selectedOrder.value
+  try {
+    await ordersApi.confirmStoreOrder(order.idx)
+    const idx = pendingOrders.value.indexOf(order)
+    if (idx > -1) pendingOrders.value.splice(idx, 1)
+    isModalOpen.value = false
+    alert('발주서가 확정되었습니다.')
+    fetchOrderHistory()
+  } catch (e) {
+    console.error('발주서 확정 실패', e)
+    alert('발주서 확정에 실패했습니다.')
+  }
+}
+
+const { addItemForm, openAddItemForm, filteredProducts, selectAddItemProduct, clearAddItemProduct, submitAddItem } = useAddOrderItem(fetchPendingOrders)
+
+function rejectOrder(order) {
+  if (confirm('발주서를 거절하시겠습니까?')) {
+    const idx = pendingOrders.value.indexOf(order)
+    pendingOrders.value.splice(idx, 1)
+  }
+}
+
+async function cancelOrder(order) {
+  if (!confirm('발주를 취소하시겠습니까?')) return
+  try {
+    await ordersApi.cancelOrder(order.idx)
+    order.ordersStatus = 'CANCELLED'
+    alert('발주가 취소되었습니다.')
+  } catch (e) {
+    console.error('발주 취소 실패', e)
+    alert('발주 취소에 실패했습니다.')
+  }
+}
+
+const showManualForm = ref(false)
+
+async function submitManualOrder(data) {
+  try {
+    await ordersApi.createStoreManualOrder(data)
+    alert('발주가 생성되었습니다.')
+    showManualForm.value = false
+    activeTab.value = 'pending'
+  } catch (e) {
+    console.error('수동 발주 생성 실패', e)
+    alert('발주 생성에 실패했습니다.')
+  }
+}
+</script>
+
 <template>
   <div class="p-5 space-y-4">
     <div class="flex justify-between items-start gap-4">
@@ -163,115 +276,6 @@
     <StoreManualOrderModal :visible="showManualForm" @close="showManualForm = false" @submit="submitManualOrder" />
   </div>
 </template>
-
-<script setup>
-import { ref, computed, onMounted } from 'vue'
-import { ClipboardList, Plus } from 'lucide-vue-next'
-import StoreManualOrderModal from '@/components/orders/StoreManualOrderModal.vue'
-import StoreOrderHistoryTable from '@/components/orders/StoreOrderHistoryTable.vue'
-import StoreOrderDetailModal from '@/components/orders/StoreOrderDetailModal.vue'
-import ordersApi from '@/api/orders'
-import { useAddOrderItem } from '@/composables/useAddOrderItem'
-
-const activeTab = ref('pending')
-const isModalOpen = ref(false)
-const selectedOrder = ref(null)
-
-const pendingOrders = ref([])
-
-const orderHistory = ref([])
-
-async function fetchPendingOrders() {
-  try {
-    const res = await ordersApi.getStorePendingOrders()
-    pendingOrders.value = res.data.result || []
-  } catch (e) {
-    console.error('제안 발주서 조회 실패', e)
-  }
-}
-
-async function fetchOrderHistory() {
-  try {
-    const res = await ordersApi.getStoreOrderList()
-    orderHistory.value = res.data.result
-  } catch (e) {
-    console.error('발주 이력 조회 실패', e)
-  }
-}
-
-onMounted(() => {
-  fetchPendingOrders()
-  fetchOrderHistory()
-})
-
-const selectedHistory = ref(null)
-
-function openHistoryDetail(h) {
-  selectedHistory.value = h
-}
-
-const tabs = computed(() => [
-  { id: 'pending', label: '제안 발주서', count: pendingOrders.value.length },
-  { id: 'history', label: '발주 이력', count: orderHistory.value.length },
-])
-
-
-function openConfirmModal(order) {
-  selectedOrder.value = order
-  isModalOpen.value = true
-}
-
-async function confirmOrder() {
-  const order = selectedOrder.value
-  try {
-    await ordersApi.confirmStoreOrder(order.idx)
-    const idx = pendingOrders.value.indexOf(order)
-    if (idx > -1) pendingOrders.value.splice(idx, 1)
-    isModalOpen.value = false
-    alert('발주서가 확정되었습니다.')
-    fetchOrderHistory()
-  } catch (e) {
-    console.error('발주서 확정 실패', e)
-    alert('발주서 확정에 실패했습니다.')
-  }
-}
-
-const { addItemForm, openAddItemForm, filteredProducts, selectAddItemProduct, clearAddItemProduct, submitAddItem } = useAddOrderItem(fetchPendingOrders)
-
-function rejectOrder(order) {
-  if (confirm('발주서를 거절하시겠습니까?')) {
-    const idx = pendingOrders.value.indexOf(order)
-    pendingOrders.value.splice(idx, 1)
-  }
-}
-
-async function cancelOrder(order) {
-  if (!confirm('발주를 취소하시겠습니까?')) return
-  try {
-    await ordersApi.cancelOrder(order.idx)
-    order.ordersStatus = 'CANCELLED'
-    alert('발주가 취소되었습니다.')
-  } catch (e) {
-    console.error('발주 취소 실패', e)
-    alert('발주 취소에 실패했습니다.')
-  }
-}
-
-const showManualForm = ref(false)
-
-async function submitManualOrder(data) {
-  try {
-    await ordersApi.createStoreManualOrder(data)
-    alert('발주가 생성되었습니다.')
-    showManualForm.value = false
-    activeTab.value = 'pending'
-  } catch (e) {
-    console.error('수동 발주 생성 실패', e)
-    alert('발주 생성에 실패했습니다.')
-  }
-}
-
-</script>
 
 <style scoped>
 .animate-modal-up {

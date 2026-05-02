@@ -95,6 +95,17 @@ async function rejectOrder() {
   }
 }
 
+async function deleteItem(order, item) {
+  if (!confirm(`"${item.productName}" 품목을 삭제하시겠습니까?`)) return
+  try {
+    await ordersApi.deleteStoreItem(item.idx)
+    fetchPendingOrders()
+  } catch (e) {
+    console.error('품목 삭제 실패', e)
+    alert('품목 삭제에 실패했습니다.')
+  }
+}
+
 async function cancelOrder(order) {
   if (!confirm('발주를 취소하시겠습니까?')) return
   try {
@@ -145,7 +156,8 @@ async function submitManualOrder(data) {
     </div>
 
     <StorePendingOrderList v-if="activeTab === 'pending'" :orders="pendingOrders"
-      @confirm="openConfirmModal" @reject="openRejectModal" @refresh="fetchPendingOrders" />
+      @confirm="openConfirmModal" @reject="openRejectModal" @refresh="fetchPendingOrders"
+      @delete-item="deleteItem" />
 
     <StoreOrderHistoryTable v-if="activeTab === 'history'" :orders="orderHistory"
       @open-detail="openHistoryDetail" @cancel="cancelOrder" />

@@ -1,14 +1,31 @@
 <script setup>
 import { ClipboardList } from 'lucide-vue-next'
 import { useAddOrderItem } from '@/composables/useAddOrderItem'
+import ordersApi from '@/api/orders'
 
-const props = defineProps({
+defineProps({
   orders: { type: Array, required: true },
 })
 
-const emit = defineEmits(['confirm', 'reject', 'refresh'])
+const emit = defineEmits(['confirm', 'reject', 'refresh', 'delete-item'])
 
 const { addItemForm, openAddItemForm, filteredProducts, selectAddItemProduct, clearAddItemProduct, submitAddItem } = useAddOrderItem(() => emit('refresh'))
+
+let debounceTimer = null
+
+function onCountChange(item) {
+  if (debounceTimer) clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(async () => {
+    if (item.count < 1) { item.count = 1 }
+    try {
+      await ordersApi.updateStoreItemCount(item.idx, { count: item.count })
+    } catch (e) {
+      console.error('수량 수정 실패', e)
+      alert('수량 수정에 실패했습니다.')
+      emit('refresh')
+    }
+  }, 500)
+}
 </script>
 
 <template>
@@ -37,10 +54,11 @@ const { addItemForm, openAddItemForm, filteredProducts, selectAddItemProduct, cl
       </div>
       <table class="w-full text-sm table-fixed">
         <colgroup>
-          <col class="w-[40%]" />
-          <col class="w-[15%]" />
-          <col class="w-[20%]" />
-          <col class="w-[25%]" />
+          <col class="w-[35%]" />
+          <col class="w-[12%]" />
+          <col class="w-[18%]" />
+          <col class="w-[22%]" />
+          <col class="w-[13%]" />
         </colgroup>
         <thead>
           <tr class="border-b border-gray-200 bg-gray-50">
@@ -48,15 +66,26 @@ const { addItemForm, openAddItemForm, filteredProducts, selectAddItemProduct, cl
             <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">수량</th>
             <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">단가</th>
             <th class="px-5 py-3 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wider">금액</th>
+            <th class="px-3 py-3"></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
           <tr v-for="item in order.ordersItemList" :key="item.idx" class="hover:bg-gray-50/50">
             <td class="px-5 py-3.5 font-semibold text-gray-900">{{ item.productName }}</td>
-            <td class="px-5 py-3.5 font-semibold text-blue-600">{{ item.count }}</td>
+            <td class="px-5 py-3.5 font-semibold text-blue-600">
+              <input v-model.number="item.count" type="number" min="1"
+                @input="onCountChange(item)"
+                class="w-16 px-2 py-1 rounded-lg border border-gray-200 text-sm outline-none focus:border-blue-400" />
+            </td>
             <td class="px-5 py-3.5 text-gray-500">₩ {{ (item.unitPrice ?? 0).toLocaleString() }}</td>
             <td class="px-5 py-3.5 text-right font-semibold text-gray-700">
               ₩ {{ ((item.count || 0) * (item.unitPrice ?? 0)).toLocaleString() }}
+            </td>
+            <td class="px-3 py-3.5 text-center">
+              <button @click="emit('delete-item', order, item)"
+                class="px-2 py-1 text-xs font-semibold text-red-500 border border-red-200 bg-red-50 rounded-lg hover:bg-red-100 cursor-pointer">
+                삭제
+              </button>
             </td>
           </tr>
           <tr v-if="addItemForm?.ordersIdx === order.idx" class="bg-blue-50/50 border-t border-blue-100">
@@ -94,6 +123,7 @@ const { addItemForm, openAddItemForm, filteredProducts, selectAddItemProduct, cl
                 </button>
               </div>
             </td>
+            <td></td>
           </tr>
         </tbody>
         <tfoot class="border-t border-gray-200 bg-gray-50/60">
@@ -103,6 +133,7 @@ const { addItemForm, openAddItemForm, filteredProducts, selectAddItemProduct, cl
             <td class="px-5 py-3 text-right font-black text-blue-600">
               ₩ {{ (order.price ?? 0).toLocaleString() }}
             </td>
+            <td></td>
           </tr>
         </tfoot>
       </table>

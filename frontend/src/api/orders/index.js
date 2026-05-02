@@ -57,6 +57,10 @@ const getStorePendingOrders = () => {
   return api.get('/orders/store/find')
 }
 
+const confirmStoreOrder = (ordersIdx) => {
+  return api.put(`/orders/store/${ordersIdx}/confirm`)
+}
+
 export default {
   getAutoOrders,
   getOrderDetail,
@@ -72,4 +76,5 @@ export default {
   rejectDangerOrder,
   getStoreOrderList,
   getStorePendingOrders,
+  confirmStoreOrder,
 }

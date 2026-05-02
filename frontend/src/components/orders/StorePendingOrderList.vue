@@ -3,7 +3,7 @@ import { ClipboardList } from 'lucide-vue-next'
 import { useAddOrderItem } from '@/composables/useAddOrderItem'
 import ordersApi from '@/api/orders'
 
-const props = defineProps({
+defineProps({
   orders: { type: Array, required: true },
 })
 

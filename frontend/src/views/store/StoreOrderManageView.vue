@@ -33,7 +33,7 @@
               class="px-4 py-2 bg-blue-500 text-white text-sm font-bold hover:bg-blue-600 rounded-lg transition-colors cursor-pointer">
               확정
             </button>
-            <button
+            <button @click="openAddItemForm(order)"
               class="px-4 py-2 border border-blue-200 text-blue-500 bg-blue-50 text-sm font-semibold hover:bg-blue-100 rounded-lg transition-colors cursor-pointer">
               + 품목 추가
             </button>
@@ -59,6 +59,32 @@
               <td class="px-5 py-3.5 text-gray-500">₩ {{ (item.unitPrice ?? 0).toLocaleString() }}</td>
               <td class="px-5 py-3.5 text-right font-semibold text-gray-700">
                 ₩ {{ ((item.count || 0) * (item.unitPrice ?? 0)).toLocaleString() }}
+              </td>
+            </tr>
+            <tr v-if="addItemForm?.ordersIdx === order.idx" class="bg-blue-50/50 border-t border-blue-100">
+              <td class="px-5 py-3">
+                <select v-model="addItemForm.productIdx"
+                  class="w-full px-2 py-1.5 rounded-lg border border-blue-200 text-sm outline-none focus:border-blue-400 bg-white">
+                  <option :value="null">품목 선택</option>
+                  <option v-for="p in availableProducts(order)" :key="p.idx" :value="p.idx">{{ p.productName }}</option>
+                </select>
+              </td>
+              <td class="px-5 py-3">
+                <input v-model.number="addItemForm.count" type="number" min="1" placeholder="수량"
+                  class="w-20 px-2 py-1.5 rounded-lg border border-blue-200 text-sm outline-none focus:border-blue-400" />
+              </td>
+              <td class="px-5 py-3 text-xs text-gray-400">—</td>
+              <td class="px-5 py-3">
+                <div class="flex justify-end gap-1.5">
+                  <button @click="submitAddItem(order)"
+                    class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-blue-300 text-blue-600 bg-white hover:bg-blue-500 hover:text-white hover:cursor-pointer transition-colors">
+                    추가
+                  </button>
+                  <button @click="addItemForm = null"
+                    class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-gray-200 text-gray-500 bg-white hover:bg-gray-100 hover:cursor-pointer transition-colors">
+                    취소
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -129,12 +155,14 @@ import StoreManualOrderModal from '@/components/orders/StoreManualOrderModal.vue
 import StoreOrderHistoryTable from '@/components/orders/StoreOrderHistoryTable.vue'
 import StoreOrderDetailModal from '@/components/orders/StoreOrderDetailModal.vue'
 import ordersApi from '@/api/orders'
+import { getProductList } from '@/api/product'
 
 const activeTab = ref('pending')
 const isModalOpen = ref(false)
 const selectedOrder = ref(null)
 
 const pendingOrders = ref([])
+const productList = ref([])
 
 const orderHistory = ref([])
 
@@ -156,9 +184,19 @@ async function fetchOrderHistory() {
   }
 }
 
+async function fetchProductList() {
+  try {
+    const res = await getProductList()
+    productList.value = res.data.result || []
+  } catch (e) {
+    console.error('상품 목록 조회 실패', e)
+  }
+}
+
 onMounted(() => {
   fetchPendingOrders()
   fetchOrderHistory()
+  fetchProductList()
 })
 
 const selectedHistory = ref(null)
@@ -190,6 +228,34 @@ async function confirmOrder() {
   } catch (e) {
     console.error('발주서 확정 실패', e)
     alert('발주서 확정에 실패했습니다.')
+  }
+}
+
+const addItemForm = ref(null)
+
+function openAddItemForm(order) {
+  addItemForm.value = { ordersIdx: order.idx, productIdx: null, count: 1 }
+}
+
+function availableProducts(order) {
+  const existing = new Set(order.ordersItemList.map(i => i.productName))
+  return productList.value.filter(p => !existing.has(p.productName))
+}
+
+async function submitAddItem(order) {
+  const form = addItemForm.value
+  if (!form.productIdx) { alert('품목을 선택해주세요.'); return }
+  if (!form.count || form.count < 1) { alert('수량을 입력해주세요.'); return }
+  try {
+    await ordersApi.addStoreOrderItem(order.idx, {
+      productIdx: form.productIdx,
+      count: form.count,
+    })
+    addItemForm.value = null
+    fetchPendingOrders()
+  } catch (e) {
+    console.error('품목 추가 실패', e)
+    alert('품목 추가에 실패했습니다.')
   }
 }
 

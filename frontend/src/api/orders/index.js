@@ -69,6 +69,14 @@ const rejectStoreOrder = (ordersIdx) => {
   return api.put(`/orders/store/${ordersIdx}/reject`)
 }
 
+const updateStoreItemCount = (ordersItemIdx, data) => {
+  return api.put(`/orders/store/${ordersItemIdx}/items`, data)
+}
+
+const deleteStoreItem = (ordersItemIdx) => {
+  return api.delete(`/orders/store/${ordersItemIdx}/items`)
+}
+
 export default {
   getAutoOrders,
   getOrderDetail,
@@ -87,4 +95,6 @@ export default {
   confirmStoreOrder,
   addStoreOrderItem,
   rejectStoreOrder,
+  updateStoreItemCount,
+  deleteStoreItem,
 }

@@ -29,9 +29,9 @@
             <p class="text-[11px] text-gray-400 mt-0.5">생성일시: {{ order.createdAt }}</p>
           </div>
           <div class="flex gap-2">
-            <button @click="openPaymentModal(order)"
+            <button @click="openConfirmModal(order)"
               class="px-4 py-2 bg-blue-500 text-white text-sm font-bold hover:bg-blue-600 rounded-lg transition-colors cursor-pointer">
-              전체 확정
+              확정
             </button>
             <button @click="openAddItemForm(order)"
               class="px-4 py-2 border border-blue-200 text-blue-500 bg-blue-50 text-sm font-semibold hover:bg-blue-100 rounded-lg transition-colors cursor-pointer">
@@ -142,52 +142,30 @@
     <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-[2px]">
       <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-modal-up">
         <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-          <h2 class="text-lg font-bold text-gray-900">결제 및 승인</h2>
+          <h2 class="text-lg font-bold text-gray-900">발주서 확정</h2>
           <button @click="isModalOpen = false" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
         </div>
 
-        <div class="p-6 space-y-6">
-          <section>
-            <label class="text-[11px] font-bold text-gray-400 uppercase block mb-3">결제 수단</label>
-            <div class="flex gap-3">
-              <div class="flex-1 border-2 border-blue-500 rounded-lg p-3 bg-blue-50 flex items-center gap-3">
-                <div class="w-10 h-6 bg-slate-800 rounded flex items-center justify-center">
-                   <div class="w-2 h-2 bg-amber-400 rounded-full"></div>
-                </div>
-                <div>
-                  <p class="text-[11px] font-bold text-blue-600 leading-none">등록된 카드</p>
-                  <p class="text-[10px] text-gray-500 mt-1">현대카드 (****-1234)</p>
-                </div>
-              </div>
-              <button class="flex-1 border border-dashed border-gray-300 rounded-lg p-3 text-gray-400 text-xs font-bold hover:bg-gray-50 cursor-pointer">+ 신규 등록</button>
-            </div>
-          </section>
+        <div class="p-6 space-y-4">
+          <p class="text-sm text-gray-500">아래 품목으로 발주서를 확정하시겠습니까?</p>
 
-          <section class="bg-gray-50 rounded-lg p-4">
+          <div class="bg-gray-50 rounded-lg p-4">
             <div class="space-y-2 pb-3 border-b border-gray-200">
-              <div v-for="item in selectedOrder?.items" :key="item.product" class="flex justify-between text-xs">
-                <span class="text-gray-500">{{ item.product }} ({{ item.adjusted }}개 × {{ (PRODUCT_PRICES[item.product] ?? 0).toLocaleString() }}원)</span>
-                <span class="font-medium text-gray-900">₩ {{ ((item.adjusted || 0) * (PRODUCT_PRICES[item.product] ?? 0)).toLocaleString() }}</span>
+              <div v-for="item in selectedOrder?.ordersItemList" :key="item.idx" class="flex justify-between text-xs">
+                <span class="text-gray-500">{{ item.productName }} ({{ item.count }}개 × ₩{{ (item.unitPrice ?? 0).toLocaleString() }})</span>
+                <span class="font-medium text-gray-900">₩ {{ ((item.count || 0) * (item.unitPrice ?? 0)).toLocaleString() }}</span>
               </div>
             </div>
             <div class="flex justify-between items-center pt-3">
-              <span class="text-sm font-bold text-gray-900">총 결제 금액</span>
-              <span class="text-lg font-black text-blue-600">₩ {{totalPrice.toLocaleString() }}</span>
+              <span class="text-sm font-bold text-gray-900">합계</span>
+              <span class="text-lg font-black text-blue-600">₩ {{ (selectedOrder?.price ?? 0).toLocaleString() }}</span>
             </div>
-          </section>
-
-          <section>
-            <label class="text-[11px] font-bold text-gray-400 uppercase block mb-2">승인 요청 메시지</label>
-            <textarea v-model="approvalMessage" placeholder="메모를 입력하세요."
-              class="w-full border border-gray-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-100 outline-none resize-none h-20"></textarea>
-          </section>
+          </div>
         </div>
 
         <div class="px-6 py-4 bg-gray-50 flex gap-2">
           <button @click="isModalOpen = false" class="flex-1 py-3 bg-white border border-gray-200 text-gray-600 font-bold rounded-lg text-sm cursor-pointer">취소</button>
-          <button @click="processPayment" class="flex-2 py-3 bg-blue-600 text-white font-bold rounded-lg text-sm flex items-center justify-center gap-2 cursor-pointer">
-            <CreditCard class="w-4 h-4"/> 결제
-          </button>
+          <button @click="confirmOrder" class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-lg text-sm cursor-pointer">확정</button>
         </div>
       </div>
     </div>
@@ -198,7 +176,7 @@
 
 <script setup>
 import { ref, computed, reactive, onMounted } from 'vue'
-import { ClipboardList, CreditCard, Sparkles, ChevronDown, Plus } from 'lucide-vue-next'
+import { ClipboardList, Sparkles, ChevronDown, Plus } from 'lucide-vue-next'
 import StoreManualOrderModal from '@/components/orders/StoreManualOrderModal.vue'
 import StoreOrderHistoryTable from '@/components/orders/StoreOrderHistoryTable.vue'
 import StoreOrderDetailModal from '@/components/orders/StoreOrderDetailModal.vue'
@@ -207,7 +185,6 @@ import ordersApi from '@/api/orders'
 const activeTab = ref('pending')
 const isModalOpen = ref(false)
 const selectedOrder = ref(null)
-const approvalMessage = ref('')
 
 const expandedAiReasons = reactive(new Set())
 
@@ -270,34 +247,23 @@ const tabs = computed(() => [
 ])
 
 
-// 모달 열기 함수
-function openPaymentModal(order) {
+function openConfirmModal(order) {
   selectedOrder.value = order
-  approvalMessage.value = ""
   isModalOpen.value = true
 }
 
-const totalPrice = computed(() => {
-  if (!selectedOrder.value) return 0
-  return selectedOrder.value.items.reduce((sum, item) => sum + item.adjusted * (PRODUCT_PRICES[item.product] ?? 0), 0)
-})
-
-// 결제 프로세스 완료
-function processPayment() {
+async function confirmOrder() {
   const order = selectedOrder.value
-  const idx = pendingOrders.value.indexOf(order)
-  if (idx > -1) {
-    orderHistory.value.unshift({
-      id: order.id.replace('AUTO', 'ORD'),
-      type: '자동',
-      date: new Date().toISOString().slice(0, 16).replace('T', ' '),
-      status: '승인대기',
-      items: order.items.map(item => ({ product: item.product, qty: item.adjusted })),
-    })
-    pendingOrders.value.splice(idx, 1)
+  try {
+    await ordersApi.confirmStoreOrder(order.idx)
+    const idx = pendingOrders.value.indexOf(order)
+    if (idx > -1) pendingOrders.value.splice(idx, 1)
     isModalOpen.value = false
-    alert('결제 및 승인 요청이 완료되었습니다.')
-    activeTab.value = 'history'
+    alert('발주서가 확정되었습니다.')
+    fetchOrderHistory()
+  } catch (e) {
+    console.error('발주서 확정 실패', e)
+    alert('발주서 확정에 실패했습니다.')
   }
 }
 

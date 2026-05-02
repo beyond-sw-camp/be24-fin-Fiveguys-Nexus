@@ -35,3 +35,25 @@ export const productPrices = {
   '양파':        1500,
   '생수':        8000,
 }
+
+export const ORDER_STATUS_LABEL = {
+  CONFIRMED: '확정',
+  APPROVE: '승인',
+  REJECT: '거절',
+  CANCELLED: '취소',
+}
+
+export const ORDER_TYPE_LABEL = {
+  AUTO: '자동',
+  MANUAL: '수동',
+}
+
+export function storeStatusClass(status) {
+  const map = {
+    CONFIRMED: 'bg-green-50 text-green-700 border border-green-200',
+    APPROVE:   'bg-blue-50 text-blue-600 border border-blue-200',
+    REJECT:    'bg-red-50 text-red-600 border border-red-200',
+    CANCELLED: 'bg-red-50 text-red-500 border border-red-200',
+  }
+  return map[status] || 'bg-gray-100 text-gray-500 border border-gray-200'
+}

@@ -1,24 +1,5 @@
 <script setup>
-const ORDER_STATUS_LABEL = {
-  CONFIRMED: '확정',
-  APPROVE: '승인',
-  REJECT: '거절',
-  CANCELLED: '취소',
-}
-
-const ORDER_TYPE_LABEL = {
-  AUTO: '자동',
-  MANUAL: '수동',
-}
-
-const HISTORY_STATUS_CLS = {
-  CONFIRMED: 'bg-green-50 text-green-700 border border-green-200',
-  APPROVE: 'bg-blue-50 text-blue-600 border border-blue-200',
-  REJECT: 'bg-red-50 text-red-600 border border-red-200',
-  CANCELLED: 'bg-red-50 text-red-500 border border-red-200',
-}
-
-const statusCls = s => HISTORY_STATUS_CLS[s] ?? 'bg-gray-100 text-gray-500 border border-gray-200'
+import { ORDER_STATUS_LABEL, ORDER_TYPE_LABEL, storeStatusClass } from './orderUtils'
 
 defineProps({
   order: { type: Object, default: null },
@@ -49,7 +30,7 @@ defineEmits(['close'])
           </div>
           <div>
             <p class="text-xs text-gray-400 mb-1">상태</p>
-            <span class="text-xs font-bold px-2 py-0.5 rounded" :class="statusCls(order.ordersStatus)">
+            <span class="text-xs font-bold px-2 py-0.5 rounded" :class="storeStatusClass(order.ordersStatus)">
               {{ ORDER_STATUS_LABEL[order.ordersStatus] }}
             </span>
           </div>

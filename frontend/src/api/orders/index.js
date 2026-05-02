@@ -61,6 +61,10 @@ const confirmStoreOrder = (ordersIdx) => {
   return api.put(`/orders/store/${ordersIdx}/confirm`)
 }
 
+const addStoreOrderItem = (ordersIdx, data) => {
+  return api.post(`/orders/store/${ordersIdx}/items`, data)
+}
+
 export default {
   getAutoOrders,
   getOrderDetail,
@@ -77,4 +81,5 @@ export default {
   getStoreOrderList,
   getStorePendingOrders,
   confirmStoreOrder,
+  addStoreOrderItem,
 }

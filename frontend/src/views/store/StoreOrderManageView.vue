@@ -33,6 +33,10 @@
               class="px-4 py-2 bg-blue-500 text-white text-sm font-bold hover:bg-blue-600 rounded-lg transition-colors cursor-pointer">
               확정
             </button>
+            <button
+              class="px-4 py-2 border border-blue-200 text-blue-500 bg-blue-50 text-sm font-semibold hover:bg-blue-100 rounded-lg transition-colors cursor-pointer">
+              + 품목 추가
+            </button>
             <button @click="rejectOrder(order)"
               class="px-4 py-2 border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 rounded-lg cursor-pointer">
               거절

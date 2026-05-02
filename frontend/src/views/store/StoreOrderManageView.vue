@@ -21,7 +21,7 @@
     </div>
 
     <div v-if="activeTab === 'pending'" class="space-y-4">
-      <div v-for="order in pendingOrders" :key="order.idx" class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+      <div v-for="order in pendingOrders" :key="order.idx" class="bg-white border border-gray-200 rounded-lg">
         <div class="px-5 py-3.5 border-b border-gray-100 flex justify-between items-center bg-gray-50/60">
           <div>
             <span class="text-xs font-mono text-gray-400">No.{{ order.idx }}</span>
@@ -63,11 +63,21 @@
             </tr>
             <tr v-if="addItemForm?.ordersIdx === order.idx" class="bg-blue-50/50 border-t border-blue-100">
               <td class="px-5 py-3">
-                <select v-model="addItemForm.productIdx"
-                  class="w-full px-2 py-1.5 rounded-lg border border-blue-200 text-sm outline-none focus:border-blue-400 bg-white">
-                  <option :value="null">품목 선택</option>
-                  <option v-for="p in availableProducts(order)" :key="p.idx" :value="p.idx">{{ p.productName }}</option>
-                </select>
+                <div class="relative">
+                  <div v-if="addItemForm.productIdx" class="flex items-center justify-between px-2 py-1.5 rounded-lg border border-blue-400 bg-blue-50 text-sm">
+                    <span class="font-medium text-gray-900">{{ addItemForm.productName }}</span>
+                    <button @click="clearAddItemProduct" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
+                  </div>
+                  <input v-else v-model="addItemForm.keyword" @input="addItemForm.showDropdown = true" @focus="addItemForm.showDropdown = true" placeholder="상품명 검색"
+                    class="w-full px-2 py-1.5 rounded-lg border border-blue-200 text-sm outline-none focus:border-blue-400" />
+                  <ul v-if="!addItemForm.productIdx && addItemForm.showDropdown && filteredProducts(order).length > 0"
+                    class="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    <li v-for="p in filteredProducts(order)" :key="p.idx" @click="selectAddItemProduct(p)"
+                      class="px-3 py-2 text-sm hover:bg-blue-50 cursor-pointer">
+                      {{ p.productName }} <span class="text-gray-400 text-xs">{{ p.productUnit }}</span>
+                    </li>
+                  </ul>
+                </div>
               </td>
               <td class="px-5 py-3">
                 <input v-model.number="addItemForm.count" type="number" min="1" placeholder="수량"
@@ -187,7 +197,7 @@ async function fetchOrderHistory() {
 async function fetchProductList() {
   try {
     const res = await getProductList()
-    productList.value = res.data.result || []
+    productList.value = res.data || []
   } catch (e) {
     console.error('상품 목록 조회 실패', e)
   }
@@ -234,12 +244,25 @@ async function confirmOrder() {
 const addItemForm = ref(null)
 
 function openAddItemForm(order) {
-  addItemForm.value = { ordersIdx: order.idx, productIdx: null, count: 1 }
+  addItemForm.value = { ordersIdx: order.idx, productIdx: null, productName: '', keyword: '', showDropdown: false, count: 1 }
 }
 
-function availableProducts(order) {
+function filteredProducts(order) {
   const existing = new Set(order.ordersItemList.map(i => i.productName))
-  return productList.value.filter(p => !existing.has(p.productName))
+  const keyword = addItemForm.value?.keyword?.trim() || ''
+  return productList.value.filter(p => !existing.has(p.productName) && (keyword === '' || p.productName.includes(keyword)))
+}
+
+function selectAddItemProduct(product) {
+  addItemForm.value.productIdx = product.idx
+  addItemForm.value.productName = product.productName
+  addItemForm.value.showDropdown = false
+}
+
+function clearAddItemProduct() {
+  addItemForm.value.productIdx = null
+  addItemForm.value.productName = ''
+  addItemForm.value.keyword = ''
 }
 
 async function submitAddItem(order) {

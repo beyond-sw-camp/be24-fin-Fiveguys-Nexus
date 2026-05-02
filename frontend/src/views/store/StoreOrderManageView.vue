@@ -312,34 +312,18 @@ function recommendedQtyLabel(order) {
     .join(' · ')
 }
 
-const pendingOrders = ref([
-  {
-    id: 'AUTO-20260413-001', createdAt: '2026-04-13 08:00',
-    aiReason: {
-      summary: '갤러리아 봄 기획전 및 주말 한파 예보로 한우 수요 증가 예상',
-      detail: '4월 15~17일 갤러리아 타임월드 봄 기획전이 예정되어 있습니다. 작년 동일 이벤트 기간에 한우 등심 발주량은 평소 대비 38% 증가했습니다. 또한 이번 주말 기온이 5°C 이하로 내려갈 것으로 예보되어 외식 수요가 높아질 것으로 예상됩니다. 이벤트 기간 품절 방지를 위해 최소 발주량 기준보다 높은 수량을 추천합니다.',
-      contexts: ['갤러리아 봄 기획전 (4/15~17)', '주말 기온 5°C 예보', '작년 동기 발주 +38%'],
-    },
-    items: [
-      { product: '한우 등심', current: 5, min: 10, suggested: 20, adjusted: 20 },
-      { product: '버터',      current: 2, min: 5,  suggested: 10, adjusted: 10 },
-    ],
-  },
-  {
-    id: 'AUTO-20260413-002', createdAt: '2026-04-13 08:00',
-    aiReason: {
-      summary: '주말 예약 집중 및 코스 메뉴 소비 증가 패턴 감지',
-      detail: '최근 3주간 올리브오일과 생크림의 주말 소비량이 평일 대비 평균 42% 높게 나타났습니다. 이번 주말은 갤러리아 봄 기획전과 겹쳐 예약이 집중될 것으로 예상되며, 코스 메뉴 레시피 기준 소모량을 고려해 평소보다 높은 수량을 추천합니다. 생크림은 유통기한이 짧으므로 소비 속도에 맞춰 조정하시기 바랍니다.',
-      contexts: ['주말 소비량 평일 대비 +42%', '갤러리아 봄 기획전', '생크림 유통기한 주의'],
-    },
-    items: [
-      { product: '올리브오일', current: 2, min: 5, suggested: 15, adjusted: 15 },
-      { product: '생크림',     current: 1, min: 4, suggested: 12, adjusted: 12 },
-    ],
-  },
-])
+const pendingOrders = ref([])
 
 const orderHistory = ref([])
+
+async function fetchPendingOrders() {
+  try {
+    const res = await ordersApi.getStorePendingOrders()
+    pendingOrders.value = res.data.result || []
+  } catch (e) {
+    console.error('제안 발주서 조회 실패', e)
+  }
+}
 
 async function fetchOrderHistory() {
   try {
@@ -351,6 +335,7 @@ async function fetchOrderHistory() {
 }
 
 onMounted(() => {
+  fetchPendingOrders()
   fetchOrderHistory()
 })
 

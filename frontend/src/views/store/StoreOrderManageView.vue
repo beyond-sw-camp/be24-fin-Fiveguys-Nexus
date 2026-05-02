@@ -43,7 +43,13 @@
             </button>
           </div>
         </div>
-        <table class="w-full text-sm">
+        <table class="w-full text-sm table-fixed">
+          <colgroup>
+            <col class="w-[40%]" />
+            <col class="w-[15%]" />
+            <col class="w-[20%]" />
+            <col class="w-[25%]" />
+          </colgroup>
           <thead>
             <tr class="border-b border-gray-200 bg-gray-50">
               <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">품목명</th>

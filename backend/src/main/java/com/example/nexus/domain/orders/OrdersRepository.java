@@ -12,6 +12,7 @@ import java.util.List;
 
 public interface OrdersRepository extends JpaRepository<Orders, Long>, JpaSpecificationExecutor<Orders> {
     List<Orders> findAllByStore_IdxAndOrdersStatus(Long storeIdx, OrdersStatus orderStatus);
+    List<Orders> findAllByStore_IdxAndOrdersStatusIn(Long storeIdx, List<OrdersStatus> ordersStatuses);
     List<Orders> findAllByOrdersStatus(OrdersStatus ordersStatus);
     List<Orders> findAllByIsDangerTrue();
 

@@ -162,44 +162,6 @@ public class OrdersService {
     }
 
     @Transactional
-    public void addItem(Long ordersIdx, OrdersItemDto.OrdersItemReq req) {
-        Orders orders = ordersRepository.findById(ordersIdx)
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
-
-        Product product = productRepository.findById(req.getProductIdx())
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
-
-        ordersItemRepository.save(OrdersItem.builder()
-                .count(req.getCount())
-                .product(product)
-                .orders(orders)
-                .build());
-
-        orders.updatePrice(orders.getPrice() + (long) product.getUnitPrice() * req.getCount());
-    }
-
-    @Transactional
-    public void updateItemCount(Long ordersItemIdx, Integer count) {
-        OrdersItem item = ordersItemRepository.findById(ordersItemIdx)
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
-
-        Orders orders = item.getOrders();
-        long priceDiff = (long) item.getProduct().getUnitPrice() * (count - item.getCount());
-        item.updateCount(count);
-        orders.updatePrice(orders.getPrice() + priceDiff);
-    }
-
-    @Transactional
-    public void deleteItem(Long ordersItemIdx) {
-        OrdersItem item = ordersItemRepository.findById(ordersItemIdx)
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
-
-        Orders orders = item.getOrders();
-        orders.updatePrice(orders.getPrice() - (long) item.getProduct().getUnitPrice() * item.getCount());
-        ordersItemRepository.delete(item);
-    }
-
-    @Transactional
     public void approveAllConfirmed() {
         // 1. CONFIRMED 상태의 모든 발주 조회
         List<Orders> confirmedOrders = ordersRepository.findAllByOrdersStatus(OrdersStatus.CONFIRMED);
@@ -208,21 +170,6 @@ public class OrdersService {
         for (Orders orders : confirmedOrders) {
             orders.approve();
         }
-    }
-
-    @Transactional
-    public void cancelOrder(Long ordersIdx) {
-        // 1. 발주 조회
-        Orders orders = ordersRepository.findById(ordersIdx)
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
-
-        // 2. CONFIRMED 상태인 경우에만 취소 가능
-        if (orders.getOrdersStatus() != OrdersStatus.CONFIRMED) {
-            throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
-        }
-
-        // 3. 상태를 CANCELLED로 변경
-        orders.cancel();
     }
 
     @Transactional
@@ -272,6 +219,93 @@ public class OrdersService {
         }
     }
 
+    public List<OrdersDto.OrdersRes> findByUserIdxAndOrdersStatus(Long userIdx) {
+        Store store = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        return ordersRepository.findAllByStore_IdxAndOrdersStatus(store.getIdx(), OrdersStatus.WAITING).stream()
+                .map(OrdersDto.OrdersRes::from)
+                .toList();
+    }
+
+    @Transactional
+    public void addStoreItem(Long userIdx, Long ordersIdx, OrdersItemDto.OrdersItemReq req) {
+        Store store = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        Orders orders = ordersRepository.findById(ordersIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        if (!orders.getStore().getIdx().equals(store.getIdx())) {
+            throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
+        }
+
+        Product product = productRepository.findById(req.getProductIdx())
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        ordersItemRepository.save(OrdersItem.builder()
+                .count(req.getCount())
+                .product(product)
+                .orders(orders)
+                .build());
+
+        orders.updatePrice(orders.getPrice() + (long) product.getUnitPrice() * req.getCount());
+    }
+
+    @Transactional
+    public void updateStoreItemCount(Long userIdx, Long ordersItemIdx, Integer count) {
+        Store store = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        OrdersItem item = ordersItemRepository.findById(ordersItemIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        if (!item.getOrders().getStore().getIdx().equals(store.getIdx())) {
+            throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
+        }
+
+        Orders orders = item.getOrders();
+        long priceDiff = (long) item.getProduct().getUnitPrice() * (count - item.getCount());
+        item.updateCount(count);
+        orders.updatePrice(orders.getPrice() + priceDiff);
+    }
+
+    @Transactional
+    public void deleteStoreItem(Long userIdx, Long ordersItemIdx) {
+        Store store = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        OrdersItem item = ordersItemRepository.findById(ordersItemIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        if (!item.getOrders().getStore().getIdx().equals(store.getIdx())) {
+            throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
+        }
+
+        Orders orders = item.getOrders();
+        orders.updatePrice(orders.getPrice() - (long) item.getProduct().getUnitPrice() * item.getCount());
+        ordersItemRepository.delete(item);
+    }
+
+    @Transactional
+    public void rejectStoreOrder(Long userIdx, Long ordersIdx) {
+        Store store = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        Orders orders = ordersRepository.findById(ordersIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        if (!orders.getStore().getIdx().equals(store.getIdx())) {
+            throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
+        }
+
+        if (orders.getOrdersStatus() != OrdersStatus.WAITING) {
+            throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
+        }
+
+        orders.reject();
+    }
+
     public List<OrdersDto.OrdersRes> findByUserIdx(Long userIdx) {
         Store store = storeRepository.findByUserIdx(userIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
@@ -282,12 +316,22 @@ public class OrdersService {
         ).stream().map(OrdersDto.OrdersRes::from).toList();
     }
 
-    public List<OrdersDto.OrdersRes> findByUserIdxAndOrdersStatus(Long userIdx) {
+    @Transactional
+    public void cancelOrder(Long userIdx, Long ordersIdx) {
         Store store = storeRepository.findByUserIdx(userIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
 
-        return ordersRepository.findAllByStore_IdxAndOrdersStatus(store.getIdx(), OrdersStatus.WAITING).stream()
-                .map(OrdersDto.OrdersRes::from)
-                .toList();
+        Orders orders = ordersRepository.findById(ordersIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        if (!orders.getStore().getIdx().equals(store.getIdx())) {
+            throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
+        }
+
+        if (orders.getOrdersStatus() != OrdersStatus.CONFIRMED) {
+            throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
+        }
+
+        orders.cancel();
     }
 }

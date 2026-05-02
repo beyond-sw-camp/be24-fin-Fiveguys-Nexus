@@ -176,44 +176,6 @@ public class OrdersController {
     }
 
     /**
-     * 발주 항목 추가
-     *
-     * @param ordersIdx 항목을 추가할 발주의 고유 ID
-     * @param req 추가할 발주 항목 요청 데이터
-     * @return ResponseEntity 추가 결과 메시지
-     */
-    @PostMapping("/{ordersIdx}/items")
-    public ResponseEntity addItem(@PathVariable Long ordersIdx, @RequestBody OrdersItemDto.OrdersItemReq req) {
-        orderService.addItem(ordersIdx, req);
-        return ResponseEntity.ok(BaseResponse.success("create success"));
-    }
-
-    /**
-     * 발주 항목 수량 수정
-     *
-     * @param ordersItemIdx 수정할 발주 항목의 고유 ID
-     * @param req 수정할 수량 요청 데이터
-     * @return ResponseEntity 수정 결과 메시지
-     */
-    @PutMapping("/items/{ordersItemIdx}")
-    public ResponseEntity updateItemCount(@PathVariable Long ordersItemIdx, @RequestBody OrdersItemDto.OrdersItemReq req) {
-        orderService.updateItemCount(ordersItemIdx, req.getCount());
-        return ResponseEntity.ok(BaseResponse.success("update success"));
-    }
-
-    /**
-     * 발주 항목 삭제
-     *
-     * @param ordersItemIdx 삭제할 발주 항목의 고유 ID
-     * @return ResponseEntity 삭제 결과 메시지
-     */
-    @DeleteMapping("/items/{ordersItemIdx}")
-    public ResponseEntity deleteItem(@PathVariable Long ordersItemIdx) {
-        orderService.deleteItem(ordersItemIdx);
-        return ResponseEntity.ok(BaseResponse.success("delete success"));
-    }
-
-    /**
      * 확정 발주 일괄 승인
      *
      * @return ResponseEntity 일괄 승인 결과 메시지
@@ -221,18 +183,6 @@ public class OrdersController {
     @PutMapping("/confirmed/approve")
     public ResponseEntity approveAll() {
         orderService.approveAllConfirmed();
-        return ResponseEntity.ok(BaseResponse.success("update success"));
-    }
-
-    /**
-     * 발주 취소
-     *
-     * @param ordersIdx 취소할 발주의 고유 ID
-     * @return ResponseEntity 취소 결과 메시지
-     */
-    @PutMapping("/{ordersIdx}/cancel")
-    public ResponseEntity cancel(@PathVariable Long ordersIdx) {
-        orderService.cancelOrder(ordersIdx);
         return ResponseEntity.ok(BaseResponse.success("update success"));
     }
 
@@ -254,7 +204,107 @@ public class OrdersController {
     }
 
     /**
-     * 가맹점 발주 목록 조회
+     * 가맹점 제안 발주서 조회
+     *
+     * @param authUserDetails 인증된 사용자 정보
+     * @return ResponseEntity 가맹점 진행 중인 발주 목록
+     * @throws ResponseStatusException 로그인하지 않은 경우 (401)
+     */
+    @GetMapping("/store/find")
+    public ResponseEntity storeFind(@AuthenticationPrincipal AuthUserDetails authUserDetails) {
+        if (authUserDetails == null) {
+            throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+        List<OrdersDto.OrdersRes> result = orderService.findByUserIdxAndOrdersStatus(authUserDetails.getIdx());
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
+
+    /**
+     * 가맹점 제안 발주서 항목 추가
+     *
+     * @param authUserDetails 인증된 사용자 정보
+     * @param ordersIdx 항목을 추가할 발주의 고유 ID
+     * @param req 추가할 발주 항목 요청 데이터
+     * @return ResponseEntity 추가 결과 메시지
+     * @throws ResponseStatusException 로그인하지 않은 경우 (401)
+     */
+    @PostMapping("/store/{ordersIdx}/items")
+    public ResponseEntity addStoreItem(
+            @AuthenticationPrincipal AuthUserDetails authUserDetails,
+            @PathVariable Long ordersIdx,
+            @RequestBody OrdersItemDto.OrdersItemReq req
+    ) {
+        if (authUserDetails == null) {
+            throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+        orderService.addStoreItem(authUserDetails.getIdx(), ordersIdx, req);
+        return ResponseEntity.ok(BaseResponse.success("create success"));
+    }
+
+    /**
+     * 가맹점 제안 발주서 항목 수량 수정
+     *
+     * @param authUserDetails 인증된 사용자 정보
+     * @param ordersItemIdx 수정할 발주 항목의 고유 ID
+     * @param req 수정할 수량 요청 데이터
+     * @return ResponseEntity 수정 결과 메시지
+     * @throws ResponseStatusException 로그인하지 않은 경우 (401)
+     */
+    @PutMapping("/store/{ordersItemIdx}/items")
+    public ResponseEntity updateStoreItemCount(
+            @AuthenticationPrincipal AuthUserDetails authUserDetails,
+            @PathVariable Long ordersItemIdx,
+            @RequestBody OrdersItemDto.OrdersItemReq req
+    ) {
+        if (authUserDetails == null) {
+            throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+        orderService.updateStoreItemCount(authUserDetails.getIdx(), ordersItemIdx, req.getCount());
+        return ResponseEntity.ok(BaseResponse.success("update success"));
+    }
+
+    /**
+     * 가맹점 제안 발주서 항목 삭제
+     *
+     * @param authUserDetails 인증된 사용자 정보
+     * @param ordersItemIdx 삭제할 발주 항목의 고유 ID
+     * @return ResponseEntity 삭제 결과 메시지
+     * @throws ResponseStatusException 로그인하지 않은 경우 (401)
+     */
+    @DeleteMapping("/store/{ordersItemIdx}/items")
+    public ResponseEntity deleteStoreItem(
+            @AuthenticationPrincipal AuthUserDetails authUserDetails,
+            @PathVariable Long ordersItemIdx
+    ) {
+        if (authUserDetails == null) {
+            throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+        orderService.deleteStoreItem(authUserDetails.getIdx(), ordersItemIdx);
+        return ResponseEntity.ok(BaseResponse.success("delete success"));
+    }
+
+    /**
+     * 가맹점 제안 발주서 거절
+     *
+     * @param authUserDetails 인증된 사용자 정보
+     * @param ordersIdx 거절할 발주의 고유 ID
+     * @return ResponseEntity 거절 결과 메시지
+     * @throws ResponseStatusException 로그인하지 않은 경우 (401)
+     */
+    @PutMapping("/store/{ordersIdx}/reject")
+    public ResponseEntity rejectStoreOrder(
+            @AuthenticationPrincipal AuthUserDetails authUserDetails,
+            @PathVariable Long ordersIdx
+    ) {
+        if (authUserDetails == null) {
+            throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+        orderService.rejectStoreOrder(authUserDetails.getIdx(), ordersIdx);
+        return ResponseEntity.ok(BaseResponse.success("update success"));
+    }
+
+    /**
+     * 가맹점 발주 이력 조회
      *
      * @param authUserDetails 인증된 사용자 정보
      * @return ResponseEntity 가맹점 발주 목록
@@ -270,19 +320,23 @@ public class OrdersController {
     }
 
     /**
-     * 가맹점 진행 중인 발주 조회
+     * 가맹점 발주 취소
      *
      * @param authUserDetails 인증된 사용자 정보
-     * @return ResponseEntity 가맹점 진행 중인 발주 목록
+     * @param ordersIdx 취소할 발주의 고유 ID
+     * @return ResponseEntity 취소 결과 메시지
      * @throws ResponseStatusException 로그인하지 않은 경우 (401)
      */
-    @GetMapping("/store/find")
-    public ResponseEntity storeFind(@AuthenticationPrincipal AuthUserDetails authUserDetails) {
+    @PutMapping("/store/{ordersIdx}/cancel")
+    public ResponseEntity cancel(
+            @AuthenticationPrincipal AuthUserDetails authUserDetails,
+            @PathVariable Long ordersIdx
+    ) {
         if (authUserDetails == null) {
             throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
         }
-        List<OrdersDto.OrdersRes> result = orderService.findByUserIdxAndOrdersStatus(authUserDetails.getIdx());
-        return ResponseEntity.ok(BaseResponse.success(result));
+        orderService.cancelOrder(authUserDetails.getIdx(), ordersIdx);
+        return ResponseEntity.ok(BaseResponse.success("update success"));
     }
 
 }

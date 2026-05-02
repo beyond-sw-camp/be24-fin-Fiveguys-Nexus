@@ -165,7 +165,6 @@ import StoreManualOrderModal from '@/components/orders/StoreManualOrderModal.vue
 import StoreOrderHistoryTable from '@/components/orders/StoreOrderHistoryTable.vue'
 import StoreOrderDetailModal from '@/components/orders/StoreOrderDetailModal.vue'
 import ordersApi from '@/api/orders'
-import { getProductList } from '@/api/product'
 import { useAddOrderItem } from '@/composables/useAddOrderItem'
 
 const activeTab = ref('pending')
@@ -173,7 +172,6 @@ const isModalOpen = ref(false)
 const selectedOrder = ref(null)
 
 const pendingOrders = ref([])
-const productList = ref([])
 
 const orderHistory = ref([])
 
@@ -195,19 +193,9 @@ async function fetchOrderHistory() {
   }
 }
 
-async function fetchProductList() {
-  try {
-    const res = await getProductList()
-    productList.value = res.data || []
-  } catch (e) {
-    console.error('상품 목록 조회 실패', e)
-  }
-}
-
 onMounted(() => {
   fetchPendingOrders()
   fetchOrderHistory()
-  fetchProductList()
 })
 
 const selectedHistory = ref(null)
@@ -242,7 +230,7 @@ async function confirmOrder() {
   }
 }
 
-const { addItemForm, openAddItemForm, filteredProducts, selectAddItemProduct, clearAddItemProduct, submitAddItem } = useAddOrderItem(productList, fetchPendingOrders)
+const { addItemForm, openAddItemForm, filteredProducts, selectAddItemProduct, clearAddItemProduct, submitAddItem } = useAddOrderItem(fetchPendingOrders)
 
 function rejectOrder(order) {
   if (confirm('발주서를 거절하시겠습니까?')) {

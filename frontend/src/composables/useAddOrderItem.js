@@ -1,11 +1,21 @@
 import { ref } from 'vue'
 import ordersApi from '@/api/orders'
+import { getProductList } from '@/api/product'
 
-export function useAddOrderItem(productList, fetchPendingOrders) {
+export function useAddOrderItem(fetchPendingOrders) {
   const addItemForm = ref(null)
+  const productList = ref([])
 
-  function openAddItemForm(order) {
+  async function openAddItemForm(order) {
     addItemForm.value = { ordersIdx: order.idx, productIdx: null, productName: '', keyword: '', showDropdown: false, count: 1 }
+    if (productList.value.length === 0) {
+      try {
+        const res = await getProductList()
+        productList.value = res.data || []
+      } catch (e) {
+        console.error('상품 목록 조회 실패', e)
+      }
+    }
   }
 
   function filteredProducts(order) {

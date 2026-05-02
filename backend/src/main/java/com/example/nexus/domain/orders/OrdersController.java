@@ -276,6 +276,28 @@ public class OrdersController {
     }
 
     /**
+     * 가맹점 발주 항목 수량 수정
+     *
+     * @param authUserDetails 인증된 사용자 정보
+     * @param ordersItemIdx 수정할 발주 항목의 고유 ID
+     * @param req 수정할 수량 요청 데이터
+     * @return ResponseEntity 수정 결과 메시지
+     * @throws ResponseStatusException 로그인하지 않은 경우 (401)
+     */
+    @PutMapping("/store/{ordersItemIdx}/items")
+    public ResponseEntity updateStoreItemCount(
+            @AuthenticationPrincipal AuthUserDetails authUserDetails,
+            @PathVariable Long ordersItemIdx,
+            @RequestBody OrdersItemDto.OrdersItemReq req
+    ) {
+        if (authUserDetails == null) {
+            throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+        orderService.updateStoreItemCount(authUserDetails.getIdx(), ordersItemIdx, req.getCount());
+        return ResponseEntity.ok(BaseResponse.success("update success"));
+    }
+
+    /**
      * 가맹점 발주 목록 조회
      *
      * @param authUserDetails 인증된 사용자 정보

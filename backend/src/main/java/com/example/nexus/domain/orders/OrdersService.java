@@ -190,6 +190,24 @@ public class OrdersService {
     }
 
     @Transactional
+    public void updateStoreItemCount(Long userIdx, Long ordersItemIdx, Integer count) {
+        Store store = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        OrdersItem item = ordersItemRepository.findById(ordersItemIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        if (!item.getOrders().getStore().getIdx().equals(store.getIdx())) {
+            throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
+        }
+
+        Orders orders = item.getOrders();
+        long priceDiff = (long) item.getProduct().getUnitPrice() * (count - item.getCount());
+        item.updateCount(count);
+        orders.updatePrice(orders.getPrice() + priceDiff);
+    }
+
+    @Transactional
     public void deleteItem(Long ordersItemIdx) {
         OrdersItem item = ordersItemRepository.findById(ordersItemIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));

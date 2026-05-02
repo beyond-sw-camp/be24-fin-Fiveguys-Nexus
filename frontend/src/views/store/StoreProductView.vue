@@ -6,12 +6,6 @@
         <h1 class="text-xl font-bold text-gray-900 tracking-tight">매장 제품 관리</h1>
         <p class="text-xs text-gray-500 mt-1">이 매장에서 사용하는 식자재·소모품을 등록합니다. POS·재고·메뉴(레시피)와 연동됩니다.</p>
       </div>
-      <div class="flex gap-2">
-        <button @click="openModal(null)"
-                class="bg-[#2563eb] text-white px-4 py-2 text-sm font-semibold rounded hover:bg-[#1d4ed8] transition-colors flex items-center gap-2 cursor-pointer">
-          <Plus class="w-4 h-4" /> 제품 등록
-        </button>
-      </div>
     </div>
 
     <!-- Search + Category filter -->
@@ -90,68 +84,6 @@
         </tr>
         </tbody>
       </table>
-    </div>
-
-    <!-- Product Modal -->
-    <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center">
-      <div class="absolute inset-0 bg-black/40" @click="showModal = false"></div>
-      <div class="relative bg-white rounded-lg w-full max-w-lg border border-gray-200 shadow-xl">
-        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-          <h3 class="font-bold text-gray-900">{{ editTarget ? '제품 정보 수정' : '신규 제품 등록' }}</h3>
-          <button @click="showModal = false" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
-        </div>
-        <form @submit.prevent="saveProduct" class="p-6 space-y-4">
-          <div class="grid grid-cols-2 gap-4">
-            <div class="space-y-1.5">
-              <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">제품명</label>
-              <input v-model="form.name" required type="text"
-                     class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/10 outline-none" />
-            </div>
-            <div class="space-y-1.5">
-              <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">카테고리</label>
-              <select v-model="form.category"
-                      class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/10 outline-none">
-                <option v-for="c in categories" :key="c">{{ c }}</option>
-              </select>
-            </div>
-          </div>
-          <div class="grid grid-cols-3 gap-4">
-            <div class="space-y-1.5">
-              <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">단위</label>
-              <input v-model="form.unit" type="text" placeholder="ex) kg, 개, L"
-                     class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/10 outline-none" />
-            </div>
-            <div class="space-y-1.5">
-              <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">최대재고</label>
-              <input v-model.number="form.baseStock" type="number" min="0"
-                     class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/10 outline-none" />
-            </div>
-            <div class="space-y-1.5">
-              <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">최소재고</label>
-              <input v-model.number="form.minStock" type="number" min="0"
-                     class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/10 outline-none" />
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div class="space-y-1.5">
-              <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">단가 (원)</label>
-              <input v-model.number="form.price" type="number" min="0"
-                     class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/10 outline-none" />
-            </div>
-            <div class="space-y-1.5">
-              <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">위험 유통기한 (일)</label>
-              <input v-model.number="form.expiryDays" type="number" min="0" placeholder="예) 7"
-                     class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/10 outline-none" />
-            </div>
-          </div>
-          <div class="flex gap-3 pt-2">
-            <button type="button" @click="showModal = false"
-                    class="flex-1 py-2.5 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 cursor-pointer">취소</button>
-            <button type="submit"
-                    class="flex-1 py-2.5 rounded bg-[#2563eb] text-white text-sm font-bold hover:bg-[#1d4ed8] cursor-pointer">저장</button>
-          </div>
-        </form>
-      </div>
     </div>
   </div>
 </template>

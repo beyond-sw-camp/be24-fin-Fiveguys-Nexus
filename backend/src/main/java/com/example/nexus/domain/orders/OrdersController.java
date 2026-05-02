@@ -302,12 +302,20 @@ public class OrdersController {
     /**
      * 가맹점 발주 취소
      *
+     * @param authUserDetails 인증된 사용자 정보
      * @param ordersIdx 취소할 발주의 고유 ID
      * @return ResponseEntity 취소 결과 메시지
+     * @throws ResponseStatusException 로그인하지 않은 경우 (401)
      */
-    @PutMapping("/{ordersIdx}/cancel")
-    public ResponseEntity cancel(@PathVariable Long ordersIdx) {
-        orderService.cancelOrder(ordersIdx);
+    @PutMapping("/store/{ordersIdx}/cancel")
+    public ResponseEntity cancel(
+            @AuthenticationPrincipal AuthUserDetails authUserDetails,
+            @PathVariable Long ordersIdx
+    ) {
+        if (authUserDetails == null) {
+            throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+        orderService.cancelOrder(authUserDetails.getIdx(), ordersIdx);
         return ResponseEntity.ok(BaseResponse.success("update success"));
     }
 

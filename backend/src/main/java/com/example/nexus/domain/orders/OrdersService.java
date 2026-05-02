@@ -300,17 +300,21 @@ public class OrdersService {
     }
 
     @Transactional
-    public void cancelOrder(Long ordersIdx) {
-        // 1. 발주 조회
+    public void cancelOrder(Long userIdx, Long ordersIdx) {
+        Store store = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
         Orders orders = ordersRepository.findById(ordersIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
 
-        // 2. CONFIRMED 상태인 경우에만 취소 가능
+        if (!orders.getStore().getIdx().equals(store.getIdx())) {
+            throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
+        }
+
         if (orders.getOrdersStatus() != OrdersStatus.CONFIRMED) {
             throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
         }
 
-        // 3. 상태를 CANCELLED로 변경
         orders.cancel();
     }
 }

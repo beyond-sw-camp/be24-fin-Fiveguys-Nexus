@@ -21,10 +21,10 @@
     </div>
 
     <div v-if="activeTab === 'pending'" class="space-y-4">
-      <div v-for="order in pendingOrders" :key="order.id" class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+      <div v-for="order in pendingOrders" :key="order.idx" class="bg-white border border-gray-200 rounded-lg overflow-hidden">
         <div class="px-5 py-3.5 border-b border-gray-100 flex justify-between items-center bg-gray-50/60">
           <div>
-            <span class="text-xs font-mono text-gray-400">{{ order.id }}</span>
+            <span class="text-xs font-mono text-gray-400">No.{{ order.idx }}</span>
             <p class="font-bold text-gray-900 mt-0.5 text-sm">자동 발주 제안</p>
             <p class="text-[11px] text-gray-400 mt-0.5">생성일시: {{ order.createdAt }}</p>
           </div>
@@ -99,76 +99,28 @@
           <thead>
             <tr class="border-b border-gray-200 bg-gray-50">
               <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">품목명</th>
-              <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">현재 재고</th>
-              <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">최소 재고</th>
-              <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">제안 수량</th>
-              <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">수정 수량</th>
+              <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">수량</th>
+              <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">단가</th>
               <th class="px-5 py-3 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wider">금액</th>
-              <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider"></th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
-            <tr v-for="item in order.items" :key="item.product" class="hover:bg-gray-50/50">
-              <td class="px-5 py-3.5 font-semibold text-gray-900">{{ item.product }}</td>
-              <td class="px-5 py-3.5 font-bold text-red-500">{{ item.current }}<span class="text-xs font-normal ml-0.5">{{ PRODUCT_UNIT[item.product] ?? '' }}</span></td>
-              <td class="px-5 py-3.5 text-gray-500">{{ item.min }}<span class="text-xs ml-0.5">{{ PRODUCT_UNIT[item.product] ?? '' }}</span></td>
-              <td class="px-5 py-3.5 font-semibold text-blue-600">{{ item.suggested }}<span class="text-xs font-normal ml-0.5">{{ PRODUCT_UNIT[item.product] ?? '' }}</span></td>
-              <td class="px-5 py-3.5">
-                <div class="flex items-center gap-1.5">
-                  <input v-model.number="item.adjusted" type="number" min="0"
-                    class="w-20 px-2 py-1.5 rounded-lg border border-gray-200 text-sm focus:border-blue-400 outline-none" />
-                  <span class="text-xs text-gray-400 font-medium">{{ PRODUCT_UNIT[item.product] ?? '' }}</span>
-                </div>
-              </td>
+            <tr v-for="item in order.ordersItemList" :key="item.idx" class="hover:bg-gray-50/50">
+              <td class="px-5 py-3.5 font-semibold text-gray-900">{{ item.productName }}</td>
+              <td class="px-5 py-3.5 font-semibold text-blue-600">{{ item.count }}</td>
+              <td class="px-5 py-3.5 text-gray-500">₩ {{ (item.unitPrice ?? 0).toLocaleString() }}</td>
               <td class="px-5 py-3.5 text-right font-semibold text-gray-700">
-                ₩ {{ ((item.adjusted || 0) * (PRODUCT_PRICES[item.product] ?? 0)).toLocaleString() }}
-              </td>
-              <td class="px-5 py-3.5">
-                <button
-                  @click="removeOrderItem(order, item)"
-                  :disabled="order.items.length <= 1"
-                  class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-red-200 text-red-500 bg-red-50 hover:bg-red-500 hover:text-white hover:cursor-pointer transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
-                  삭제
-                </button>
-              </td>
-            </tr>
-            <tr v-if="addItemForm?.orderId === order.id" class="bg-blue-50/50 border-t border-blue-100">
-              <td class="px-5 py-3" colspan="2">
-                <select v-model="addItemForm.product"
-                  class="w-full px-2 py-1.5 rounded-lg border border-blue-200 text-sm outline-none focus:border-blue-400 bg-white">
-                  <option value="">품목 선택</option>
-                  <option v-for="p in availableProducts(order)" :key="p" :value="p">{{ p }}</option>
-                </select>
-              </td>
-              <td class="px-5 py-3 text-xs text-gray-400">—</td>
-              <td class="px-5 py-3 text-xs text-gray-400">—</td>
-              <td class="px-5 py-3">
-                <input v-model.number="addItemForm.qty" type="number" min="1" placeholder="수량"
-                  class="w-24 px-2 py-1.5 rounded-lg border border-blue-200 text-sm outline-none focus:border-blue-400" />
-              </td>
-              <td class="px-5 py-3 text-xs text-gray-400 text-right">—</td>
-              <td class="px-5 py-3">
-                <div class="flex gap-1.5">
-                  <button @click="confirmAddItem(order)"
-                    class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-blue-300 text-blue-600 bg-white hover:bg-blue-500 hover:text-white hover:cursor-pointer transition-colors">
-                    추가
-                  </button>
-                  <button @click="addItemForm = null"
-                    class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-gray-200 text-gray-500 bg-white hover:bg-gray-100 hover:cursor-pointer transition-colors">
-                    취소
-                  </button>
-                </div>
+                ₩ {{ ((item.count || 0) * (item.unitPrice ?? 0)).toLocaleString() }}
               </td>
             </tr>
           </tbody>
           <tfoot class="border-t border-gray-200 bg-gray-50/60">
             <tr>
               <td class="px-5 py-3 text-left text-xs font-bold text-gray-500">합계</td>
-              <td colspan="4"></td>
+              <td colspan="2"></td>
               <td class="px-5 py-3 text-right font-black text-blue-600">
-                ₩ {{ orderTotal(order).toLocaleString() }}
+                ₩ {{ (order.price ?? 0).toLocaleString() }}
               </td>
-              <td></td>
             </tr>
           </tfoot>
         </table>
@@ -251,39 +203,6 @@ import StoreManualOrderModal from '@/components/orders/StoreManualOrderModal.vue
 import StoreOrderHistoryTable from '@/components/orders/StoreOrderHistoryTable.vue'
 import StoreOrderDetailModal from '@/components/orders/StoreOrderDetailModal.vue'
 import ordersApi from '@/api/orders'
-
-const PRODUCT_UNIT = {
-  '한우 등심':  'kg',
-  '연어':       'kg',
-  '올리브오일': 'L',
-  '버터':       'kg',
-  '생크림':     'L',
-  '간장':       'L',
-  '양파':       'kg',
-  '생수':       '박스',
-}
-
-const PRODUCT_STOCK = {
-  '한우 등심':  { current: 5, min: 10 },
-  '연어':       { current: 3, min: 8  },
-  '올리브오일': { current: 2, min: 5  },
-  '버터':       { current: 2, min: 5  },
-  '생크림':     { current: 1, min: 4  },
-  '간장':       { current: 3, min: 8  },
-  '양파':       { current: 8, min: 20 },
-  '생수':       { current: 5, min: 15 },
-}
-
-const PRODUCT_PRICES = {
-  '한우 등심':  85000,
-  '연어':       32000,
-  '올리브오일': 12000,
-  '버터':       9000,
-  '생크림':     7000,
-  '간장':       4000,
-  '양파':       1500,
-  '생수':       8000,
-}
 
 const activeTab = ref('pending')
 const isModalOpen = ref(false)
@@ -405,10 +324,6 @@ function confirmAddItem(order) {
 function removeOrderItem(order, item) {
   const idx = order.items.indexOf(item)
   if (idx > -1) order.items.splice(idx, 1)
-}
-
-function orderTotal(order) {
-  return order.items.reduce((s, item) => s + (item.adjusted || 0) * (PRODUCT_PRICES[item.product] ?? 0), 0)
 }
 
 function rejectOrder(order) {

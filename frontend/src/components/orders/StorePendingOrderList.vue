@@ -30,7 +30,7 @@ const { addItemForm, openAddItemForm, filteredProducts, selectAddItemProduct, cl
             + 품목 추가
           </button>
           <button @click="emit('reject', order)"
-            class="px-4 py-2 border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 rounded-lg cursor-pointer">
+            class="px-4 py-2 border border-red-200 text-red-500 bg-red-50 text-sm font-semibold hover:bg-red-100 rounded-lg cursor-pointer">
             거절
           </button>
         </div>

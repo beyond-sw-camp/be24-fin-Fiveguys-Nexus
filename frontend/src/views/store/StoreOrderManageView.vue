@@ -6,11 +6,13 @@ import StoreOrderHistoryTable from '@/components/orders/StoreOrderHistoryTable.v
 import StoreOrderDetailModal from '@/components/orders/StoreOrderDetailModal.vue'
 import StorePendingOrderList from '@/components/orders/StorePendingOrderList.vue'
 import StoreOrderConfirmModal from '@/components/orders/StoreOrderConfirmModal.vue'
+import StoreOrderRejectModal from '@/components/orders/StoreOrderRejectModal.vue'
 import ordersApi from '@/api/orders'
 
 const activeTab = ref('pending')
 const selectedOrder = ref(null)
 const isConfirmModalOpen = ref(false)
+const isRejectModalOpen = ref(false)
 
 const pendingOrders = ref([])
 const orderHistory = ref([])
@@ -74,10 +76,22 @@ async function confirmOrder() {
   }
 }
 
-function rejectOrder(order) {
-  if (confirm('발주서를 거절하시겠습니까?')) {
+function openRejectModal(order) {
+  selectedOrder.value = order
+  isRejectModalOpen.value = true
+}
+
+async function rejectOrder() {
+  const order = selectedOrder.value
+  try {
+    await ordersApi.rejectStoreOrder(order.idx)
     const idx = pendingOrders.value.indexOf(order)
-    pendingOrders.value.splice(idx, 1)
+    if (idx > -1) pendingOrders.value.splice(idx, 1)
+    isRejectModalOpen.value = false
+    alert('발주서가 거절되었습니다.')
+  } catch (e) {
+    console.error('발주서 거절 실패', e)
+    alert('발주서 거절에 실패했습니다.')
   }
 }
 
@@ -131,7 +145,7 @@ async function submitManualOrder(data) {
     </div>
 
     <StorePendingOrderList v-if="activeTab === 'pending'" :orders="pendingOrders"
-      @confirm="openConfirmModal" @reject="rejectOrder" @refresh="fetchPendingOrders" />
+      @confirm="openConfirmModal" @reject="openRejectModal" @refresh="fetchPendingOrders" />
 
     <StoreOrderHistoryTable v-if="activeTab === 'history'" :orders="orderHistory"
       @open-detail="openHistoryDetail" @cancel="cancelOrder" />
@@ -140,6 +154,9 @@ async function submitManualOrder(data) {
 
     <StoreOrderConfirmModal :order="selectedOrder" :visible="isConfirmModalOpen"
       @close="isConfirmModalOpen = false" @confirm="confirmOrder" />
+
+    <StoreOrderRejectModal :order="selectedOrder" :visible="isRejectModalOpen"
+      @close="isRejectModalOpen = false" @reject="rejectOrder" />
 
     <StoreManualOrderModal :visible="showManualForm" @close="showManualForm = false" @submit="submitManualOrder" />
   </div>

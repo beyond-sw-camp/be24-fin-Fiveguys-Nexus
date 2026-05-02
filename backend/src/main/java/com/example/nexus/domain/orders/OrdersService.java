@@ -43,77 +43,16 @@ public class OrdersService {
         return ordersRepository.findAll(spec, pageable).map(OrdersDto.OrderListRes::from);
     }
 
-    @Transactional
-    public void createStoreManualOrder(Long userIdx, OrdersDto.OrdersReq req) {
-        // 1. 주문 아이템 리스트 검증
-        if (req.getOrdersItemList() == null || req.getOrdersItemList().isEmpty()) {
-            throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
+    // 확정 발주 검색 조회 (CONFIRMED 상태 대상)
+    // 매장명 키워드 검색 + 페이징 처리
+    public Page<OrdersDto.OrderListRes> findAllConfirmed(String keyword, Pageable pageable) {
+        Specification<Orders> spec = OrdersSpecification.statusIn(List.of(OrdersStatus.CONFIRMED));
+
+        if (keyword != null && !keyword.isBlank()) {
+            spec = spec.and(OrdersSpecification.keywordLike(keyword));
         }
 
-        // 2. 인증 정보로 매장 조회
-        Store store = storeRepository.findByUserIdx(userIdx)
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
-
-        // 3. Product 조회 및 총 가격 계산
-        long totalprice = 0;
-        List<OrdersItem> itemList = new ArrayList<>();
-
-        for (OrdersItemDto.OrdersItemReq itemReq : req.getOrdersItemList()) {
-            Product product = productRepository.findById(itemReq.getProductIdx())
-                    .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
-
-            totalprice += (long) product.getUnitPrice() * itemReq.getCount();
-
-            itemList.add(OrdersItem.builder()
-                    .count(itemReq.getCount())
-                    .product(product)
-                    .build());
-        }
-
-        // 4. Orders 저장
-        Orders orders = ordersRepository.save(Orders.builder()
-                .price(totalprice)
-                .ordersType(OrdersType.MANUAL)
-                .ordersStatus(OrdersStatus.CONFIRMED)
-                .isDanger(false)
-                .createdAt(LocalDateTime.now())
-                .store(store)
-                .build());
-
-        // 5. OrdersItem 저장
-        for (OrdersItem item : itemList) {
-            ordersItemRepository.save(OrdersItem.builder()
-                    .count(item.getCount())
-                    .product(item.getProduct())
-                    .orders(orders)
-                    .build());
-        }
-    }
-
-    @Transactional
-    public void cancelOrder(Long ordersIdx) {
-        // 1. 발주 조회
-        Orders orders = ordersRepository.findById(ordersIdx)
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
-
-        // 2. CONFIRMED 상태인 경우에만 취소 가능
-        if (orders.getOrdersStatus() != OrdersStatus.CONFIRMED) {
-            throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
-        }
-
-        // 3. 상태를 CANCELLED로 변경
-        orders.cancel();
-    }
-
-    @Transactional
-    public void approveAllConfirmed() {
-        // 1. CONFIRMED 상태의 모든 발주 조회
-        List<Orders> confirmedOrders = ordersRepository.findAllByOrdersStatus(OrdersStatus.CONFIRMED);
-
-        // 2. 각 발주를 APPROVE 상태로 변경
-        for (Orders orders : confirmedOrders) {
-            orders.approve();
-        }
+        return ordersRepository.findAll(spec, pageable).map(OrdersDto.OrderListRes::from);
     }
 
     // 발주 이력 검색 조회 (APPROVE, REJECT, CANCELLED 상태 대상)
@@ -131,18 +70,6 @@ public class OrdersService {
         if (endDate != null) {
             spec = spec.and(OrdersSpecification.createdBefore(endDate));
         }
-        if (keyword != null && !keyword.isBlank()) {
-            spec = spec.and(OrdersSpecification.keywordLike(keyword));
-        }
-
-        return ordersRepository.findAll(spec, pageable).map(OrdersDto.OrderListRes::from);
-    }
-
-    // 확정 발주 검색 조회 (CONFIRMED 상태 대상)
-    // 매장명 키워드 검색 + 페이징 처리
-    public Page<OrdersDto.OrderListRes> findAllConfirmed(String keyword, Pageable pageable) {
-        Specification<Orders> spec = OrdersSpecification.statusIn(List.of(OrdersStatus.CONFIRMED));
-
         if (keyword != null && !keyword.isBlank()) {
             spec = spec.and(OrdersSpecification.keywordLike(keyword));
         }
@@ -270,6 +197,79 @@ public class OrdersService {
         Orders orders = item.getOrders();
         orders.updatePrice(orders.getPrice() - (long) item.getProduct().getUnitPrice() * item.getCount());
         ordersItemRepository.delete(item);
+    }
+
+    @Transactional
+    public void approveAllConfirmed() {
+        // 1. CONFIRMED 상태의 모든 발주 조회
+        List<Orders> confirmedOrders = ordersRepository.findAllByOrdersStatus(OrdersStatus.CONFIRMED);
+
+        // 2. 각 발주를 APPROVE 상태로 변경
+        for (Orders orders : confirmedOrders) {
+            orders.approve();
+        }
+    }
+
+    @Transactional
+    public void cancelOrder(Long ordersIdx) {
+        // 1. 발주 조회
+        Orders orders = ordersRepository.findById(ordersIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        // 2. CONFIRMED 상태인 경우에만 취소 가능
+        if (orders.getOrdersStatus() != OrdersStatus.CONFIRMED) {
+            throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
+        }
+
+        // 3. 상태를 CANCELLED로 변경
+        orders.cancel();
+    }
+
+    @Transactional
+    public void createStoreManualOrder(Long userIdx, OrdersDto.OrdersReq req) {
+        // 1. 주문 아이템 리스트 검증
+        if (req.getOrdersItemList() == null || req.getOrdersItemList().isEmpty()) {
+            throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
+        }
+
+        // 2. 인증 정보로 매장 조회
+        Store store = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        // 3. Product 조회 및 총 가격 계산
+        long totalprice = 0;
+        List<OrdersItem> itemList = new ArrayList<>();
+
+        for (OrdersItemDto.OrdersItemReq itemReq : req.getOrdersItemList()) {
+            Product product = productRepository.findById(itemReq.getProductIdx())
+                    .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+            totalprice += (long) product.getUnitPrice() * itemReq.getCount();
+
+            itemList.add(OrdersItem.builder()
+                    .count(itemReq.getCount())
+                    .product(product)
+                    .build());
+        }
+
+        // 4. Orders 저장
+        Orders orders = ordersRepository.save(Orders.builder()
+                .price(totalprice)
+                .ordersType(OrdersType.MANUAL)
+                .ordersStatus(OrdersStatus.CONFIRMED)
+                .isDanger(false)
+                .createdAt(LocalDateTime.now())
+                .store(store)
+                .build());
+
+        // 5. OrdersItem 저장
+        for (OrdersItem item : itemList) {
+            ordersItemRepository.save(OrdersItem.builder()
+                    .count(item.getCount())
+                    .product(item.getProduct())
+                    .orders(orders)
+                    .build());
+        }
     }
 
     public List<OrdersDto.OrdersRes> findByUserIdx(Long userIdx) {

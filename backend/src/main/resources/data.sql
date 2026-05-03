@@ -24,6 +24,7 @@ TRUNCATE TABLE menu_item;
 TRUNCATE TABLE menu;
 TRUNCATE TABLE store_inventory;
 TRUNCATE TABLE head_inventory;
+TRUNCATE TABLE inventory_movement;
 TRUNCATE TABLE danger;
 TRUNCATE TABLE product;
 TRUNCATE TABLE category;

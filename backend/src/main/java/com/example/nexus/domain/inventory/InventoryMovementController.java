@@ -20,7 +20,8 @@ public class InventoryMovementController {
 
     // [본사] 제품 입고 (시나리오)
     @PostMapping("/inbound")
-    public ResponseEntity<?> inbound(@RequestBody InventoryMovementDto.InboundReq req) {
+    public ResponseEntity<?> inbound(
+            @RequestBody InventoryMovementDto.InboundReq req) {
 
         InventoryMovementDto.MovementRes result = inventoryMovementService.inbound(req);
 
@@ -29,7 +30,8 @@ public class InventoryMovementController {
 
     // [본사] 제품 출고
     @PostMapping("/outbound")
-    public ResponseEntity<?> outbound(@RequestBody InventoryMovementDto.OutboundReq req) {
+    public ResponseEntity<?> outbound(
+            @RequestBody InventoryMovementDto.OutboundReq req) {
 
         InventoryMovementDto.MovementRes result = inventoryMovementService.outbound(req);
 

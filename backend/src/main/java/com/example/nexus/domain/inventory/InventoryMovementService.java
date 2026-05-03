@@ -86,8 +86,8 @@ public class InventoryMovementService {
     @Transactional(readOnly = true)
     public List<InventoryMovementDto.MovementListRes> findAllMovements() {
 
-        List<InventoryMovement>  result = inventoryMovementRepository.findAll();
+        List<InventoryMovement> inventoryMovementList = inventoryMovementRepository.findAll();
 
-        return result.stream().map(InventoryMovementDto.MovementListRes::from).toList();
+        return inventoryMovementList.stream().map(InventoryMovementDto.MovementListRes::from).toList();
     }
 }

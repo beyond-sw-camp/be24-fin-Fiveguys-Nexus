@@ -1,12 +1,9 @@
 package com.example.nexus.domain.menu.model;
 
-import com.example.nexus.domain.product.model.Product;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import org.springframework.data.domain.Page;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,6 +30,7 @@ public class MenuDto {
         }
     }
 
+    // 메뉴 페이징 조회
     @Getter
     @Builder
     public static class MenuPageRes{
@@ -73,6 +71,7 @@ public class MenuDto {
 
     }
 
+    // 메뉴 재료 조회
     @Getter
     @Builder
     public static class MenuItemListRes{
@@ -93,6 +92,19 @@ public class MenuDto {
                     .menuItemList(entity.getMenuItemList().stream()
                             .map(ItemList::from)
                             .collect(Collectors.toList()))
+                    .build();
+        }
+    }
+
+    // 카테고리 조회
+    @Getter
+    @Builder
+    public static class MenuCategoryRes{
+        private String menuCategoryName;
+
+        public static MenuDto.MenuCategoryRes from(MenuCategory entity){
+            return MenuCategoryRes.builder()
+                    .menuCategoryName(entity.getMenuCategoryName())
                     .build();
         }
     }

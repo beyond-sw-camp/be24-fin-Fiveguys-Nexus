@@ -1,17 +1,22 @@
 package com.example.nexus.domain.menu;
 
 import com.example.nexus.domain.menu.model.Menu;
+import com.example.nexus.domain.menu.model.MenuCategory;
 import com.example.nexus.domain.menu.model.MenuDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class MenuService {
     private final MenuRepository menuRepository;
+    private final MenuCategoryRepository menuCategoryRepository;
 
     public MenuDto.MenuPageRes list(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
@@ -28,5 +33,15 @@ public class MenuService {
             return MenuDto.MenuItemListRes.from(menu);
         }
         return null;
+    }
+
+    public List<MenuDto.MenuCategoryRes> menucategory() {
+        List<MenuCategory> res = menuCategoryRepository.findAll();
+        List<MenuDto.MenuCategoryRes> result = new ArrayList<>();
+
+        for (MenuCategory data: res){
+            result.add(MenuDto.MenuCategoryRes.from(data));
+        }
+        return result;
     }
 }

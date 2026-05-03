@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 @RequestMapping("/menu")
 @RestController
@@ -28,6 +30,14 @@ public class MenuController {
     @GetMapping("/item/list/{menuIdx}")
     public ResponseEntity menuItemList(@PathVariable Long menuIdx){
         MenuDto.MenuItemListRes result = menuService.menuItemList(menuIdx);
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
+
+
+    // 메뉴 카테고리 조회
+    @GetMapping("/category/list")
+    public ResponseEntity menuCategory(){
+        List<MenuDto.MenuCategoryRes> result =  menuService.menucategory();
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 }

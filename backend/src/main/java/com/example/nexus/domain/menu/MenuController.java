@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -18,8 +19,11 @@ public class MenuController {
     private final MenuService menuService;
 
     @GetMapping("/list")
-    public ResponseEntity list(){
-        List<MenuDto.MenuListRes> result =  menuService.list();
+    public ResponseEntity list(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size)
+    {
+        MenuDto.MenuPageRes result =  menuService.list(page, size);
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 }

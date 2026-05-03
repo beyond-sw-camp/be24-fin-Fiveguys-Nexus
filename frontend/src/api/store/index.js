@@ -18,4 +18,6 @@ export const postNewRegister = (storeRegDto)=>
 
 export const readProductList = () => api.get('/product/list')
 
-export const searchProductApi = (productName) => api.get('/product/search', { params: { productName } })
+export const searchProduct = (productName) => api.get('/product/search', { params: { productName } })
+
+export const readCategoryList = () => api.get('/category/list')

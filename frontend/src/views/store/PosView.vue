@@ -168,13 +168,16 @@ function addToCart(menu) {
   }
 }
 
-function increaseQty(item) {
-  item.quantity += 1
+function increaseQty(menuIdx) {
+  const line = cart.value.find((i) => i.menuIdx === menuIdx)
+  if (line) line.quantity += 1
 }
 
-function decreaseQty(item) {
-  if (item.quantity > 1) item.quantity -= 1
-  else removeFromCart(item.menuIdx)
+function decreaseQty(menuIdx) {
+  const line = cart.value.find((i) => i.menuIdx === menuIdx)
+  if (!line) return
+  if (line.quantity > 1) line.quantity -= 1
+  else removeFromCart(menuIdx)
 }
 
 function removeFromCart(menuIdx) {

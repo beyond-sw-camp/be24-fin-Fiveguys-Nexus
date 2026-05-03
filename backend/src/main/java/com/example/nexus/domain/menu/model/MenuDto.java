@@ -11,6 +11,7 @@ public class MenuDto {
         private Long idx;
         private String menuName;
         private Integer price;
+        private String menuCategory;
         private Integer menuItemCount;
 
 
@@ -19,6 +20,7 @@ public class MenuDto {
                     .idx(entity.getIdx())
                     .menuName(entity.getMenuName())
                     .price(entity.getPrice())
+                    .menuCategory(entity.getMenuCategory().getMenuCategoryName())
                     .menuItemCount(entity.getMenuItemList().size())
                     .build();
         }

@@ -31,11 +31,7 @@
         <select v-model="filterStore"
           class="px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none">
           <option value="">전체</option>
-          <option>한우 오마카세</option>
-          <option>이탈리안 키친</option>
-          <option>일식 스시바</option>
-          <option>차이나 가든</option>
-          <option>프렌치 비스트로</option>
+          <option v-for="s in stores" :key="s.idx" :value="s.storeName">{{ s.storeName }}</option>
         </select>
       </div>
       <div class="space-y-1.5">
@@ -54,10 +50,17 @@
       </button>
     </div>
 
+    <p v-if="loadError" class="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-3">
+      {{ loadError }}
+    </p>
+
     <!-- Table -->
     <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
       <div class="px-5 py-3 border-b border-gray-100 bg-gray-50/60 text-xs text-gray-500">
-        총 <span class="font-bold text-gray-900">{{ filtered.length }}</span>건
+        <span v-if="loading">불러오는 중…</span>
+        <template v-else>
+          총 <span class="font-bold text-gray-900">{{ filtered.length }}</span>건
+        </template>
       </div>
       <table class="w-full text-sm text-left">
         <thead>
@@ -75,19 +78,23 @@
           <tr
             v-for="h in filtered"
             :key="h.id"
-            class="hover:bg-gray-50/50 transition-colors"
-            :class="h.type === '출고' ? 'bg-red-50/20' : ''"
+            class="hover:bg-gray-50/80 transition-colors"
           >
-            <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ h.datetime }}</td>
+            <td class="px-5 py-3.5 text-xs text-gray-500 tabular-nums">{{ h.datetime }}</td>
             <td class="px-5 py-3.5">
-              <span class="text-xs font-bold px-2 py-0.5 rounded" :class="typeClass(h.type)">
+              <span
+                class="inline-flex items-center rounded-md px-2 py-1 text-[11px] font-medium leading-none tracking-tight"
+                :class="typeClass(h.type)"
+              >
                 {{ h.type }}
               </span>
             </td>
-            <td class="px-5 py-3.5 font-semibold text-gray-900">{{ h.product }}</td>
+            <td class="px-5 py-3.5 font-medium text-gray-900">{{ h.product }}</td>
             <td class="px-5 py-3.5 text-gray-600">{{ h.store }}</td>
-            <td class="px-5 py-3.5 font-bold"
-              :class="h.type === '입고' ? 'text-blue-600' : h.type === '출고' ? 'text-red-500' : 'text-gray-600'">
+            <td
+              class="px-5 py-3.5 tabular-nums font-semibold"
+              :class="qtyClass(h.type)"
+            >
               {{ h.type === '입고' ? '+' : h.type === '출고' ? '-' : '±' }}{{ h.qty }}
             </td>
             <td class="px-5 py-3.5 text-gray-600 text-xs">{{ h.handler }}</td>
@@ -103,32 +110,87 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ArrowLeft } from 'lucide-vue-next'
 import { RouterLink } from 'vue-router'
+import { getStoreList } from '@/api/store/index.js'
+import { getInventoryMovements } from '@/api/inventory/index.js'
 
 const filterType  = ref('')
 const filterStore = ref('')
 const filterFrom  = ref('')
 const filterTo    = ref('')
 
-const history = ref([
-  { id: 1,  datetime: '2026-04-13 14:23', type: '입고', product: '한우 등심',   store: '한우 오마카세',   qty: 20,  handler: '시스템(자동)', note: '자동발주 ORD-001' },
-  { id: 2,  datetime: '2026-04-13 13:10', type: '출고', product: '올리브오일', store: '이탈리안 키친',   qty: 5,   handler: '시스템(POS)',  note: 'POS 마감 차감'   },
-  { id: 3,  datetime: '2026-04-13 12:45', type: '출고', product: '연어',       store: '일식 스시바',     qty: 10,  handler: '시스템(POS)',  note: 'POS 마감 차감'   },
-  { id: 4,  datetime: '2026-04-13 11:00', type: '입고', product: '버터',       store: '프렌치 비스트로', qty: 15,  handler: '이재혁(운영자)', note: '수동발주 입고'  },
-  { id: 5,  datetime: '2026-04-13 09:30', type: '보정', product: '간장',       store: '차이나 가든',     qty: 8,   handler: '김동현(담당자)', note: '실재고 보정'    },
-  { id: 6,  datetime: '2026-04-12 22:05', type: '출고', product: '한우 안심',  store: '한우 오마카세',   qty: 12,  handler: '시스템(POS)',  note: 'POS 마감 차감'   },
-  { id: 7,  datetime: '2026-04-12 22:05', type: '출고', product: '생크림',     store: '이탈리안 키친',   qty: 8,   handler: '시스템(POS)',  note: 'POS 마감 차감'   },
-  { id: 8,  datetime: '2026-04-12 17:00', type: '입고', product: '참치',       store: '일식 스시바',     qty: 15,  handler: '시스템(자동)', note: '자동발주 입고'   },
-  { id: 9,  datetime: '2026-04-12 10:20', type: '출고', product: '새우',       store: '차이나 가든',     qty: 20,  handler: '시스템(POS)',  note: 'POS 마감 차감'   },
-  { id: 10, datetime: '2026-04-11 22:00', type: '출고', product: '버터',       store: '프렌치 비스트로', qty: 6,   handler: '시스템(POS)',  note: 'POS 마감 차감'   },
-  { id: 11, datetime: '2026-04-11 16:30', type: '입고', product: '양파',       store: '한우 오마카세',   qty: 30,  handler: '이재혁(운영자)', note: '수동발주 입고'  },
-  { id: 12, datetime: '2026-04-11 14:00', type: '보정', product: '마늘',       store: '이탈리안 키친',   qty: 5,   handler: '이재혁(운영자)', note: '유통기한 폐기'  },
-])
+const stores = ref([])
+const history = ref([])
+const loading = ref(false)
+const loadError = ref('')
+
+function movementTypeToLabel(movementType) {
+  if (movementType === 'INBOUND') return '입고'
+  if (movementType === 'TRANSFER_OUT') return '출고'
+  return '기타'
+}
+
+function formatLocalDateTime(iso) {
+  if (!iso) return ''
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return String(iso)
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  const h = String(d.getHours()).padStart(2, '0')
+  const min = String(d.getMinutes()).padStart(2, '0')
+  return `${y}-${m}-${day} ${h}:${min}`
+}
+
+function mapMovementRow(m, storeNameByIdx) {
+  const movementType = m.movementType
+  const type = movementTypeToLabel(movementType)
+  let storeLabel = '—'
+  if (movementType === 'INBOUND') {
+    storeLabel = '본사'
+  } else if (m.toLocationType === 'STORE' && m.toRefIdx != null) {
+    storeLabel = storeNameByIdx.get(Number(m.toRefIdx)) || `매장 #${m.toRefIdx}`
+  }
+
+  return {
+    id: m.movementIdx,
+    datetime: formatLocalDateTime(m.createdAt),
+    type,
+    product: m.productName || '',
+    store: storeLabel,
+    qty: m.quantity ?? 0,
+    handler: '—',
+    note: m.memo || '',
+  }
+}
+
+async function loadData() {
+  loadError.value = ''
+  loading.value = true
+  try {
+    const [storesRes, movRes] = await Promise.all([getStoreList(), getInventoryMovements()])
+    const storeRows = storesRes.data?.result ?? []
+    stores.value = storeRows
+    const storeNameByIdx = new Map(storeRows.map((s) => [Number(s.idx), s.storeName]))
+    const list = movRes.data?.result ?? []
+    history.value = list.map((m) => mapMovementRow(m, storeNameByIdx))
+  } catch (e) {
+    loadError.value =
+      e?.response?.data?.message || e?.message || '입출고 이력을 불러오지 못했습니다.'
+    history.value = []
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  loadData()
+})
 
 function parseHistoryDate(s) {
-  return new Date(s.replace(' ', 'T'))
+  return new Date(String(s).replace(' ', 'T'))
 }
 
 const filtered = computed(() => {
@@ -151,10 +213,16 @@ function resetFilter() {
 
 function typeClass(type) {
   const map = {
-    '입고': 'bg-blue-50 text-blue-600 border border-blue-200',
-    '출고': 'bg-red-50 text-red-500 border border-red-200',
-    '보정': 'bg-amber-50 text-amber-600 border border-amber-200',
+    입고: 'bg-slate-100 text-slate-700',
+    출고: 'bg-orange-50/90 text-orange-950',
+    보정: 'bg-stone-100 text-stone-700',
   }
-  return map[type] || 'bg-gray-100 text-gray-500 border border-gray-200'
+  return map[type] || 'bg-stone-50 text-stone-600'
+}
+
+function qtyClass(type) {
+  if (type === '입고') return 'text-slate-700'
+  if (type === '출고') return 'text-orange-950'
+  return 'text-stone-600'
 }
 </script>

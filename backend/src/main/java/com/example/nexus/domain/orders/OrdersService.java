@@ -4,6 +4,8 @@ import com.example.nexus.common.enums.OrdersStatus;
 import com.example.nexus.common.enums.OrdersType;
 import com.example.nexus.common.exception.BaseException;
 import com.example.nexus.common.model.BaseResponseStatus;
+import com.example.nexus.domain.inventory.InventoryMovementService;
+import com.example.nexus.domain.inventory.model.InventoryMovementDto;
 import com.example.nexus.domain.orders.model.*;
 import com.example.nexus.domain.product.ProductRepository;
 import com.example.nexus.domain.product.model.Product;
@@ -29,6 +31,7 @@ public class OrdersService {
     private final OrdersItemRepository ordersItemRepository;
     private final StoreRepository storeRepository;
     private final ProductRepository productRepository;
+    private final InventoryMovementService inventoryMovementService;
 
     // 자동 발주 제안 검색 조회 (AUTO + WAITING 상태 대상)
     // 매장명 키워드 검색 + 페이징 처리
@@ -151,6 +154,7 @@ public class OrdersService {
     public void approve(Long ordersIdx) {
         Orders orders = ordersRepository.findById(ordersIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+        applyOutboundForOrder(orders, "발주 승인(이상) ordersIdx=");
         orders.approve();
     }
 
@@ -163,12 +167,32 @@ public class OrdersService {
 
     @Transactional
     public void approveAllConfirmed() {
-        // 1. CONFIRMED 상태의 모든 발주 조회
         List<Orders> confirmedOrders = ordersRepository.findAllByOrdersStatus(OrdersStatus.CONFIRMED);
 
-        // 2. 각 발주를 APPROVE 상태로 변경
         for (Orders orders : confirmedOrders) {
+            if (!orders.isDanger()) {
+                continue;
+            }
+            applyOutboundForOrder(orders, "발주 일괄승인(이상) ordersIdx=");
             orders.approve();
+        }
+    }
+
+    private void applyOutboundForOrder(Orders orders, String memoPrefix) {
+        Long storeIdx = orders.getStore().getIdx();
+        List<OrdersItem> items = ordersItemRepository.findByOrdersIdx(orders.getIdx());
+        if (items.isEmpty()) {
+            throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
+        }
+        String memo = memoPrefix + orders.getIdx();
+        for (OrdersItem item : items) {
+            InventoryMovementDto.OutboundReq outboundReq = new InventoryMovementDto.OutboundReq(
+                    item.getProduct().getIdx(),
+                    storeIdx,
+                    item.getCount(),
+                    memo
+            );
+            inventoryMovementService.outbound(outboundReq);
         }
     }
 
@@ -217,6 +241,8 @@ public class OrdersService {
                     .orders(orders)
                     .build());
         }
+
+        applyOutboundForOrder(orders, "수동 발주 등록 ordersIdx=");
     }
 
     public List<OrdersDto.OrdersRes> findByUserIdxAndOrdersStatus(Long userIdx) {
@@ -245,6 +271,11 @@ public class OrdersService {
         }
 
         orders.confirm();
+
+        // 일반 발주: 확정과 동시에 본사→매장 출고(재고 반영). 이상 발주는 본사 승인 시 출고.
+        if (!orders.isDanger()) {
+            applyOutboundForOrder(orders, "발주 확정 ordersIdx=");
+        }
     }
 
     @Transactional
@@ -348,6 +379,10 @@ public class OrdersService {
         }
 
         if (orders.getOrdersStatus() != OrdersStatus.CONFIRMED) {
+            throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
+        }
+
+        if (!orders.isDanger()) {
             throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
         }
 

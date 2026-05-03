@@ -44,7 +44,7 @@ public class MenuDto {
 
         public static MenuPageRes from(Page<Menu> entity){
             return MenuPageRes.builder()
-                    .menuList(entity.get().map(MenuDto.MenuListRes::from).toList())
+                    .menuList(entity.map(MenuDto.MenuListRes::from).getContent())
                     .totalPage(entity.getTotalPages())
                     .totalCount(entity.getTotalElements())
                     .currentPage(entity.getPageable().getPageNumber())

@@ -2,15 +2,12 @@ package com.example.nexus.domain.pos.model;
 
 import com.example.nexus.domain.menu.model.Menu;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Table(name = "pos_orders_item")
 @Getter
-@Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class PosOrdersItem {

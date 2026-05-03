@@ -49,7 +49,7 @@
             <input
               type="text"
               v-model="searchQuery"
-              placeholder="상품명 검색..."
+              placeholder="메뉴명 검색..."
               class="bg-transparent border-none outline-none text-sm w-full text-gray-700" />
             <button v-if="searchQuery" @click="searchQuery = ''" class="text-gray-400 hover:text-gray-600 ml-1 cursor-pointer">
               <XCircle class="w-4 h-4" />
@@ -69,33 +69,35 @@
           </div>
         </div>
 
-        <!-- 상품 그리드 -->
+        <!-- 메뉴 그리드 (서버 `/menu/list`) -->
         <div class="flex-1 overflow-y-auto p-5">
-          <div v-if="filteredProducts.length === 0"
+          <div v-if="loadingMenus"
+            class="h-full flex flex-col items-center justify-center text-gray-400">
+            <p class="text-sm font-medium">메뉴를 불러오는 중…</p>
+          </div>
+          <div v-else-if="filteredMenus.length === 0"
             class="h-full flex flex-col items-center justify-center text-gray-400">
             <Search class="w-10 h-10 mb-3 opacity-30" />
-            <p class="text-sm font-medium">검색된 상품이 없습니다.</p>
+            <p class="text-sm font-medium">검색된 메뉴가 없습니다.</p>
           </div>
 
-          <div class="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
-            <div v-for="product in filteredProducts" :key="product.id"
-              @click="addToCart(product)"
+          <div v-else class="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
+            <div v-for="menu in filteredMenus" :key="menu.idx"
+              @click="addToCart(menu)"
               class="bg-white p-3 border border-gray-200 cursor-pointer flex flex-col h-47.5
                      hover:border-blue-400 transition-all active:scale-[0.97] group relative">
 
-              <!-- 상품 이미지 -->
               <div class="w-full h-28 rounded-lg overflow-hidden mb-3 bg-gray-50 border border-gray-50 relative">
-                <img :src="getProductImage(product)" :alt="product.name"
+                <img :src="resolveMenuImage(menu.imgPath)" :alt="menu.menuName"
                   @error="handleProductImageError"
                   class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                   loading="lazy" />
                 <div class="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors"></div>
               </div>
 
-              <!-- 상품 정보 -->
               <div class="flex-1 flex flex-col justify-between">
-                <h3 class="font-medium text-gray-800 text-sm leading-tight line-clamp-1">{{ product.name }}</h3>
-                <span class="text-gray-900 font-bold text-sm mt-auto pt-1">{{ formatPrice(product.price) }}</span>
+                <h3 class="font-medium text-gray-800 text-sm leading-tight line-clamp-1">{{ menu.menuName }}</h3>
+                <span class="text-gray-900 font-bold text-sm mt-auto pt-1">{{ formatPrice(menu.price) }}</span>
               </div>
             </div>
           </div>
@@ -125,11 +127,11 @@
             <p class="text-sm font-medium text-gray-500">상품을 담아주세요</p>
           </div>
 
-          <div v-for="item in cart" :key="item.id"
+          <div v-for="item in cart" :key="item.menuIdx"
             class="bg-white border border-gray-200 p-4">
             <div class="flex justify-between items-start mb-3">
               <span class="font-semibold text-gray-900 text-sm leading-tight">{{ item.name }}</span>
-              <button @click="removeFromCart(item.id)" class="text-gray-300 hover:text-red-500 transition-colors ml-2 shrink-0 cursor-pointer">
+              <button @click="removeFromCart(item.menuIdx)" class="text-gray-300 hover:text-red-500 transition-colors ml-2 shrink-0 cursor-pointer">
                 <X class="w-4 h-4" />
               </button>
             </div>
@@ -375,6 +377,7 @@ import {
 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
 import defaultMenuImage from '@/assets/store-pos-default-menu.png'
+import { getMenuCategoryList, getMenuListPaged } from '@/api/pos'
 
 const auth = useAuthStore()
 
@@ -386,28 +389,14 @@ const showPaymentModal = ref(false)
 const showCloseModal  = ref(false)
 const currentTime     = ref('')
 const toast           = ref({ show: false, message: '' })
+const loadingMenus    = ref(true)
 
 let timer = null
 let toastTimer = null
 
-// ── 카테고리 ──────────────────────────────────────────
-const categories = ['전체', '한우', '코스요리', '음료', '세트']
-
-// ── 상품 데이터 ───────────────────────────────────────
-const allProducts = ref([
-  { id: 1,  name: '한우 등심 오마카세',  price: 180000, category: '한우',    image: 'https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=500&q=80' },
-  { id: 2,  name: '한우 안심 스테이크', price: 120000, category: '한우',    image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=500&q=80' },
-  { id: 3,  name: '한우 육회',          price: 45000,  category: '한우',    image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=500&q=80' },
-  { id: 4,  name: '계절 채소 샐러드',   price: 18000,  category: '코스요리', image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=500&q=80' },
-  { id: 5,  name: '된장국',             price: 12000,  category: '코스요리', image: 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=500&q=80' },
-  { id: 6,  name: '공기밥',             price: 3000,   category: '코스요리', image: 'https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?auto=format&fit=crop&w=500&q=80' },
-  { id: 7,  name: '생수(2L)',           price: 4000,   category: '음료',    image: 'https://images.unsplash.com/photo-1548839140-29a749e1cf4d?auto=format&fit=crop&w=500&q=80' },
-  { id: 8,  name: '콜라',               price: 5000,   category: '음료',    image: 'https://images.unsplash.com/photo-1581636625402-29b2a704ef13?auto=format&fit=crop&w=500&q=80' },
-  { id: 9,  name: '유자차',             price: 6000,   category: '음료',    image: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&w=500&q=80' },
-  { id: 10, name: '오마카세 런치 세트', price: 150000, category: '세트',    image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=500&q=80' },
-  { id: 11, name: '한우 2인 코스',      price: 220000, category: '세트',    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=500&q=80' },
-  { id: 12, name: '비즈니스 런치',      price: 85000,  category: '세트',    image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=500&q=80' },
-])
+// ── 메뉴 / 카테고리 (GET /menu/list, /menu/category/list) ──
+const categories = ref(['전체'])
+const menus = ref([])
 
 // ── 장바구니 ──────────────────────────────────────────
 const cart = ref([])
@@ -426,13 +415,14 @@ const paymentHistory = ref([
 ])
 
 // ── Computed ──────────────────────────────────────────
-const filteredProducts = computed(() => {
-  let result = allProducts.value
+const filteredMenus = computed(() => {
+  let result = menus.value
   if (selectedCategory.value !== '전체') {
-    result = result.filter(p => p.category === selectedCategory.value)
+    result = result.filter((m) => m.menuCategory === selectedCategory.value)
   }
   if (searchQuery.value.trim()) {
-    result = result.filter(p => p.name.includes(searchQuery.value))
+    const q = searchQuery.value.trim()
+    result = result.filter((m) => m.menuName.includes(q))
   }
   return result
 })
@@ -457,8 +447,44 @@ function updateTime() {
     now.toLocaleTimeString('ko-KR', { hour12: false })
 }
 
-function getProductImage(product) {
-  return product.image || defaultMenuImage
+function resolveMenuImage(imgPath) {
+  if (!imgPath) return defaultMenuImage
+  if (imgPath.startsWith('http://') || imgPath.startsWith('https://')) return imgPath
+  const base = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
+  const path = imgPath.startsWith('/') ? imgPath : `/${imgPath}`
+  return base ? `${base}${path}` : path
+}
+
+async function loadMenusAndCategories() {
+  loadingMenus.value = true
+  try {
+    const [catRes, menuAcc] = await Promise.all([
+      getMenuCategoryList().catch(() => ({ data: { result: [] } })),
+      (async () => {
+        const collected = []
+        let page = 0
+        let totalPages = 1
+        while (page < totalPages) {
+          const res = await getMenuListPaged(page, 80)
+          const pack = res.data?.result
+          if (!pack?.menuList) break
+          collected.push(...pack.menuList)
+          totalPages = pack.totalPage ?? 1
+          page += 1
+        }
+        return collected
+      })(),
+    ])
+    const catNames = (catRes.data?.result || []).map((c) => c.menuCategoryName).filter(Boolean)
+    categories.value = ['전체', ...new Set(catNames)]
+    menus.value = menuAcc
+  } catch (e) {
+    console.error(e)
+    showToastMsg('메뉴를 불러오지 못했습니다. 로그인·API 주소를 확인해 주세요.')
+    menus.value = []
+  } finally {
+    loadingMenus.value = false
+  }
 }
 
 function handleProductImageError(event) {
@@ -468,22 +494,31 @@ function handleProductImageError(event) {
 }
 
 // ── 장바구니 액션 ─────────────────────────────────────
-function addToCart(product) {
+function addToCart(menu) {
   if (salesData.value.isClosed) {
     alert('영업이 마감되어 주문을 추가할 수 없습니다.')
     return
   }
-  const existing = cart.value.find(i => i.id === product.id)
+  const existing = cart.value.find((i) => i.menuIdx === menu.idx)
   if (existing) existing.quantity += 1
-  else cart.value.push({ ...product, quantity: 1 })
+  else {
+    cart.value.push({
+      menuIdx: menu.idx,
+      name: menu.menuName,
+      price: menu.price,
+      quantity: 1,
+    })
+  }
 }
 
 function increaseQty(item) { item.quantity += 1 }
 function decreaseQty(item) {
   if (item.quantity > 1) item.quantity -= 1
-  else removeFromCart(item.id)
+  else removeFromCart(item.menuIdx)
 }
-function removeFromCart(id) { cart.value = cart.value.filter(i => i.id !== id) }
+function removeFromCart(menuIdx) {
+  cart.value = cart.value.filter((i) => i.menuIdx !== menuIdx)
+}
 function clearCart() {
   if (cart.value.length > 0 && confirm('장바구니를 모두 비우시겠습니까?')) cart.value = []
 }
@@ -497,9 +532,10 @@ function openPaymentModal() {
 function processPayment(method) {
   const amount   = totalPrice.value
   const methodKr = method === 'card' ? '신용카드' : '현금'
-  const itemsSummary = cart.value.length > 1
-    ? `${cart.value[0].name} 외 ${totalQuantity.value - cart.value[0].quantity}건`
-    : `${cart.value[0].name} ${cart.value[0].quantity}개`
+  const totalUnits = cart.value.reduce((s, i) => s + i.quantity, 0)
+  const itemsSummary = cart.value.length === 1
+    ? `${cart.value[0].name} ×${cart.value[0].quantity}`
+    : `${cart.value[0].name} 외 ${cart.value.length - 1}종 (${totalUnits}개)`
 
   salesData.value.total += amount
   salesData.value.count += 1
@@ -542,6 +578,7 @@ function confirmClose() {
 onMounted(() => {
   updateTime()
   timer = setInterval(updateTime, 1000)
+  loadMenusAndCategories()
 })
 
 onUnmounted(() => {

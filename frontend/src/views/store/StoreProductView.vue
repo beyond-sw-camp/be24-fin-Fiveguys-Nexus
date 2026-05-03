@@ -50,7 +50,6 @@
           <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">최소재고</th>
           <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">단가</th>
           <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">위험 유통기한</th>
-          <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">관리</th>
         </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
@@ -68,19 +67,9 @@
               :class="p.expiryDays ? 'text-amber-600 font-semibold' : 'text-gray-400'">
             {{ p.expiryDays ? `D-${p.expiryDays}` : '-' }}
           </td>
-          <td class="px-5 py-3.5">
-            <div class="flex justify-center gap-2">
-              <button @click="openModal(p)" class="px-3 py-1.5 text-xs font-semibold text-[#2563eb] border border-[#2563eb] rounded hover:bg-blue-50 transition-colors cursor-pointer">
-                수정
-              </button>
-              <button @click="deleteProduct(p.code)" class="px-3 py-1.5 text-xs font-semibold text-red-500 border border-red-400 rounded hover:bg-red-50 transition-colors cursor-pointer">
-                삭제
-              </button>
-            </div>
-          </td>
         </tr>
         <tr v-if="filteredProducts.length === 0">
-          <td colspan="9" class="px-5 py-12 text-center text-gray-400 text-sm">검색 결과가 없습니다.</td>
+          <td colspan="8" class="px-5 py-12 text-center text-gray-400 text-sm">검색 결과가 없습니다.</td>
         </tr>
         </tbody>
       </table>
@@ -128,7 +117,7 @@ const filteredProducts = computed(() => {
   })
 })
 
-// 제품 CRUD
+// 제품 CRUD (UI에서 버튼은 제거되었으나 로직은 유지)
 const showModal = ref(false)
 const editTarget = ref(null)
 const form = ref({ name: '', category: '원두', unit: '', baseStock: 0, minStock: 0, price: 0, expiryDays: null })

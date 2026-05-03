@@ -4,3 +4,10 @@ export const getPosInventoryList = () => api.get('/pos/inventory/list')
 
 export const changePosInventoryCount = (posStoreInventoryIdx, count) =>
   api.patch(`/pos/inventory/${posStoreInventoryIdx}`, { count })
+
+/** POS 화면용 메뉴 목록 (공통 Menu API, BaseResponse.result = MenuPageRes) */
+export const getMenuListPaged = (page = 0, size = 50) =>
+  api.get('/menu/list', { params: { page, size } })
+
+/** POS 화면용 메뉴 카테고리 (BaseResponse.result = MenuCategoryRes[]) */
+export const getMenuCategoryList = () => api.get('/menu/category/list')

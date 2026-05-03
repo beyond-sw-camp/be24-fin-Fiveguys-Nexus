@@ -59,4 +59,22 @@ public class PosPayDto {
         private Integer unitPrice;
         private Long lineAmount;
     }
+
+    @Getter
+    @Builder
+    public static class TodayPayRes {
+        private Long posPayIdx;
+        private PosPayMethod method;
+        private Long payAmount;
+        private LocalDateTime paidAt;
+        private List<TodayPayLineRes> items;
+    }
+
+    @Getter
+    @Builder
+    public static class TodayPayLineRes {
+        private Long menuIdx;
+        private String menuName;
+        private Integer quantity;
+    }
 }

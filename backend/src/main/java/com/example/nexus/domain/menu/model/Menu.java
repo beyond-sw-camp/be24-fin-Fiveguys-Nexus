@@ -35,4 +35,7 @@ public class Menu {
     @OneToMany(mappedBy = "menu")
     private List<MenuItem> menuItemList = new ArrayList<>();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "menu_category_idx")
+    private MenuCategory menuCategory;
 }

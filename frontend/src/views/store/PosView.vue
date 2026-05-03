@@ -53,7 +53,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { getMenuCategoryList, getMenuListPaged } from '@/api/pos'
+import { getMenuCategoryList, getMenuListPaged, postPosPay } from '@/api/pos'
 import { formatPrice } from '@/utils/formatPrice.js'
 import PosHeaderBar from '@/components/pos/PosHeaderBar.vue'
 import PosMenuBoard from '@/components/pos/PosMenuBoard.vue'
@@ -193,30 +193,43 @@ function openPaymentModal() {
   showPaymentModal.value = true
 }
 
-function processPayment(method) {
-  const amount = totalPrice.value
+async function processPayment(method) {
+  if (cart.value.length === 0) return
+
   const methodKr = method === 'card' ? '신용카드' : '현금'
   const totalUnits = cart.value.reduce((s, i) => s + i.quantity, 0)
   const itemsSummary = cart.value.length === 1
     ? `${cart.value[0].name} ×${cart.value[0].quantity}`
     : `${cart.value[0].name} 외 ${cart.value.length - 1}종 (${totalUnits}개)`
 
-  salesData.value.total += amount
-  salesData.value.count += 1
-  if (method === 'card') salesData.value.card += amount
-  else salesData.value.cash += amount
+  try {
+    const reqBody = {
+      method: method === 'card' ? 'CARD' : 'CASH',
+      items: cart.value.map(({ menuIdx, quantity }) => ({ menuIdx, quantity })),
+    }
+    const { data } = await postPosPay(reqBody)
+    const amount = data?.result?.payAmount ?? totalPrice.value
 
-  paymentHistory.value.unshift({
-    id: Date.now(),
-    time: new Date().toLocaleTimeString('ko-KR', { hour12: false }),
-    method: methodKr,
-    items: itemsSummary,
-    amount,
-  })
+    salesData.value.total += amount
+    salesData.value.count += 1
+    if (method === 'card') salesData.value.card += amount
+    else salesData.value.cash += amount
 
-  showPaymentModal.value = false
-  cart.value = []
-  showToastMsg(`${methodKr} 결제가 완료되었습니다.`)
+    paymentHistory.value.unshift({
+      id: data?.result?.posPayIdx ?? Date.now(),
+      time: new Date().toLocaleTimeString('ko-KR', { hour12: false }),
+      method: methodKr,
+      items: itemsSummary,
+      amount,
+    })
+
+    showPaymentModal.value = false
+    cart.value = []
+    showToastMsg(`${methodKr} 결제가 완료되었습니다.`)
+  } catch (e) {
+    console.error(e)
+    showToastMsg('결제 처리에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+  }
 }
 
 function toggleStoreStatus() {

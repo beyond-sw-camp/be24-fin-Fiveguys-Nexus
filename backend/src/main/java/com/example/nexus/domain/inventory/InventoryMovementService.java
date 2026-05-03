@@ -12,8 +12,11 @@ import com.example.nexus.domain.store.StoreRepository;
 import com.example.nexus.domain.store.model.Store;
 import com.example.nexus.domain.store.model.StoreInventory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -78,5 +81,13 @@ public class InventoryMovementService {
         InventoryMovement savedMovement = inventoryMovementRepository.save(movement);
 
         return InventoryMovementDto.MovementRes.from(savedMovement);
+    }
+
+    @Transactional(readOnly = true)
+    public List<InventoryMovementDto.MovementListRes> findAllMovements() {
+
+        List<InventoryMovement> inventoryMovementList = inventoryMovementRepository.findAll();
+
+        return inventoryMovementList.stream().map(InventoryMovementDto.MovementListRes::from).toList();
     }
 }

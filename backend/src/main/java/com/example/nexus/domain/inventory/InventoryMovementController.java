@@ -4,10 +4,13 @@ import com.example.nexus.common.model.BaseResponse;
 import com.example.nexus.domain.inventory.model.InventoryMovementDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -30,6 +33,13 @@ public class InventoryMovementController {
 
         InventoryMovementDto.MovementRes result = inventoryMovementService.outbound(req);
 
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
+
+    // [본사] 입출고 이력 전체 조회
+    @GetMapping("/movements")
+    public ResponseEntity<?> listMovements() {
+        List<InventoryMovementDto.MovementListRes> result = inventoryMovementService.findAllMovements();
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 }

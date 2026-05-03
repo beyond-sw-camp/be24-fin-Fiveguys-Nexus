@@ -6,9 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -20,5 +18,15 @@ public class MenuService {
         Page<Menu> result = menuRepository.findAll(pageRequest);
 
         return MenuDto.MenuPageRes.from(result);
+    }
+
+    public MenuDto.MenuItemListRes menuItemList(Long menuIdx) {
+        Optional<Menu> res = menuRepository.findById(menuIdx);
+
+        if(res.isPresent()){
+            Menu menu = res.get();
+            return MenuDto.MenuItemListRes.from(menu);
+        }
+        return null;
     }
 }

@@ -1,8 +1,6 @@
 package com.example.nexus.domain.pos;
 
-import com.example.nexus.common.exception.BaseException;
 import com.example.nexus.common.model.BaseResponse;
-import com.example.nexus.common.model.BaseResponseStatus;
 import com.example.nexus.domain.pos.model.PosPayDto;
 import com.example.nexus.domain.pos.model.PosStoreInventoryDto;
 import com.example.nexus.domain.user.model.AuthUserDetails;
@@ -50,6 +48,13 @@ public class PosController {
 
         PosPayDto.PayRes result = posService.pay(userDetails.getIdx(), req);
 
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
+
+    // [가맹점] POS 당일 결제 내역 조회
+    @GetMapping("/pay/today")
+    public ResponseEntity<BaseResponse<List<PosPayDto.TodayPayRes>>> todayPays(@AuthenticationPrincipal AuthUserDetails userDetails) {
+        List<PosPayDto.TodayPayRes> result = posService.listTodayPayHistory(userDetails.getIdx());
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 }

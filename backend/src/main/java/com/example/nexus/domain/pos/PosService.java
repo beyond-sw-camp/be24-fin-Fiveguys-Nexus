@@ -21,11 +21,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -69,19 +72,51 @@ public class PosService {
         return PosStoreInventoryDto.SyncCountRes.from(posSaved, hqSaved);
     }
 
-    /**
-     * POS 결제 시 {@code pos_store_inventory}만 차감한다. 본사/가맹점 공식 재고({@code store_inventory})는 마감 처리 시에만 반영한다.
-     */
+    @Transactional(readOnly = true)
+    public List<PosPayDto.TodayPayRes> listTodayPayHistory(Long userIdx) {
+        Store store = storeRepository.findByUserIdx(userIdx).orElseThrow();
+
+        LocalDateTime from = LocalDate.now().atStartOfDay();
+        LocalDateTime to = from.plusDays(1);
+
+        List<PosPay> pays = posPayRepository.findByStore_IdxAndPaidAtBetweenOrderByPaidAtDesc(store.getIdx(), from, to);
+        if (pays.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> payIdxList = pays.stream().map(PosPay::getIdx).toList();
+        List<PosOrdersItem> rows = posOrdersItemRepository.findByPosPay_IdxIn(payIdxList);
+
+        Map<Long, List<PosPayDto.TodayPayLineRes>> itemsByPayIdx = rows.stream().collect(Collectors.groupingBy(
+                r -> r.getPosPay().getIdx(),
+                Collectors.mapping(
+                        r -> PosPayDto.TodayPayLineRes.builder()
+                                .menuIdx(r.getMenu().getIdx())
+                                .menuName(r.getMenu().getMenuName())
+                                .quantity(r.getQuantity())
+                                .build(),
+                        Collectors.toList()
+                )
+        ));
+
+        return pays.stream().map(pay -> PosPayDto.TodayPayRes.builder()
+                .posPayIdx(pay.getIdx())
+                .method(pay.getMethod())
+                .payAmount(pay.getPayAmount())
+                .paidAt(pay.getPaidAt())
+                .items(itemsByPayIdx.getOrDefault(pay.getIdx(), Collections.emptyList()))
+                .build()).toList();
+    }
+
     @Transactional
     public PosPayDto.PayRes pay(Long userIdx, PosPayDto.PayReq req) {
-        Store store = storeRepository.findByUserIdx(userIdx)
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+        Store store = storeRepository.findByUserIdx(userIdx).orElseThrow();
 
         List<MenuOrderLine> lines = new ArrayList<>();
 
         for (PosPayDto.PayLineReq line : req.getItems()) {
-            Menu menu = menuRepository.findById(line.getMenuIdx())
-                    .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+            Menu menu = menuRepository.findById(line.getMenuIdx()).orElseThrow();
+
             if (menu.isDeleted()) {
                 throw new BaseException(BaseResponseStatus.NOT_FOUND_DATA);
             }

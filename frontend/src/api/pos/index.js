@@ -11,3 +11,6 @@ export const getMenuListPaged = (page = 0, size = 50) =>
 
 /** POS 화면용 메뉴 카테고리 (BaseResponse.result = MenuCategoryRes[]) */
 export const getMenuCategoryList = () => api.get('/menu/category/list')
+
+/** POS 결제 저장 */
+export const postPosPay = (body) => api.post('/pos/pay', body)

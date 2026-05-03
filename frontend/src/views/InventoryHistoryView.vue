@@ -26,6 +26,7 @@ import InventoryHistoryFilters from '@/components/inventory/InventoryHistoryFilt
 import InventoryHistoryTable from '@/components/inventory/InventoryHistoryTable.vue'
 import { getStoreList } from '@/api/store/index.js'
 import { getInventoryMovements } from '@/api/inventory/index.js'
+import { resolveDisplayTypeLabel } from '@/constants/inventoryHistoryDisplay.js'
 
 const filterType = ref('')
 const filterStore = ref('')
@@ -36,12 +37,6 @@ const stores = ref([])
 const history = ref([])
 const loading = ref(false)
 const loadError = ref('')
-
-function movementTypeToLabel(movementType) {
-  if (movementType === 'INBOUND') return '입고'
-  if (movementType === 'TRANSFER_OUT') return '출고'
-  return '기타'
-}
 
 function formatLocalDateTime(iso) {
   if (!iso) return ''
@@ -57,7 +52,7 @@ function formatLocalDateTime(iso) {
 
 function mapMovementRow(m, storeNameByIdx) {
   const movementType = m.movementType
-  const type = movementTypeToLabel(movementType)
+  const type = resolveDisplayTypeLabel(movementType)
   let storeLabel = '—'
   if (movementType === 'INBOUND') {
     storeLabel = '본사'

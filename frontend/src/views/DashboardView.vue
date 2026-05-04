@@ -22,18 +22,18 @@
       <DeliveryKpiCard />
     </div>
 
-    <!-- 중간 행: 라인차트 + 진행중 배송 -->
+    <!-- 중간 행: 라인차트 + 재고위험 -->
     <div class="grid grid-cols-3 gap-4">
       <WeeklyOrderChart />
-      <OngoingDeliveryList />
+      <DangerInventoryList />
     </div>
 
-    <!-- 하단 행: 이상발주 바그래프 + 배송비율 도넛/재고위험 -->
+    <!-- 하단 행: 이상발주 바그래프 + 지연배송/배송비율 -->
     <div class="grid grid-cols-3 gap-4">
       <DangerOrderChart />
       <div class="space-y-4">
+        <OngoingDeliveryList />
         <DeliveryRatioChart />
-        <DangerInventoryList />
       </div>
     </div>
 

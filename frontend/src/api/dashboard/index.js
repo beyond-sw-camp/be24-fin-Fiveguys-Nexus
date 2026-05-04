@@ -16,3 +16,6 @@ export const getDeliveryRatio = () => api.get('/dashboard/delivery/ratio')
 
 export const getDangerInventory = (page = 0, size = 4) =>
   api.get('/dashboard/inventory/danger', { params: { page, size } })
+
+export const getDelayDeliveryList = (page = 0, size = 4) =>
+  api.get('/dashboard/delivery/delay', { params: { page, size } })

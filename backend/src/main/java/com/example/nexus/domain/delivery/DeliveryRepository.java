@@ -2,6 +2,8 @@ package com.example.nexus.domain.delivery;
 
 import com.example.nexus.common.enums.DeliveryStatus;
 import com.example.nexus.domain.delivery.model.Delivery;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;
@@ -18,4 +20,7 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
     long countByDeliveryStatusAndDepartureDateAfter(DeliveryStatus status, LocalDateTime since);
 
     List<Delivery> findAllByDeliveryStatus(DeliveryStatus status);
+
+    // 대시보드용: 지연 배송 목록 Slice 페이징
+    Slice<Delivery> findByDeliveryStatus(DeliveryStatus status, Pageable pageable);
 }

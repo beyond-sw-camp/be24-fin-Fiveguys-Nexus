@@ -73,4 +73,14 @@ public class DashboardDto {
         private List<Long> thisWeek;
         private List<Long> lastWeek;
     }
+
+    @Getter
+    @Builder
+    public static class DeliveryRatioRes {
+        private long ready;
+        private long start;
+        private long delivering;
+        private long delivered;
+        private long delay;
+    }
 }

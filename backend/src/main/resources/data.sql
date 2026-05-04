@@ -22,10 +22,8 @@ TRUNCATE TABLE orders_item;
 TRUNCATE TABLE orders;
 TRUNCATE TABLE menu_item;
 TRUNCATE TABLE menu;
-TRUNCATE TABLE menu_category;
 TRUNCATE TABLE store_inventory;
 TRUNCATE TABLE head_inventory;
-TRUNCATE TABLE inventory_movement;
 TRUNCATE TABLE danger;
 TRUNCATE TABLE product;
 TRUNCATE TABLE category;
@@ -56,6 +54,9 @@ INSERT INTO store (user_idx, store_name, address, address_detail, file_path, bus
 (5, '더벤티 신촌점', '서울특별시 서대문구 신촌로 141', '지하1층 B102호', '/uploads/store/sinchon.jpg', '345-67-89012', 03780, '2023-09-10 09:00:00', NULL, false),
 (6, '더벤티 건대입구점', '서울특별시 광진구 능동로 120', '1층 103호', '/uploads/store/konkuk.jpg', '456-78-90123', 05029, '2024-01-08 09:00:00', '2024-04-20 09:00:00', true),
 (7, '더벤티 잠실점', '서울특별시 송파구 올림픽로 240', '1층', '/uploads/store/jamsil.jpg', '567-89-01234', 05554, '2024-04-20 09:00:00', NULL, false);
+
+
+
 
 
 -- ============================================================
@@ -112,45 +113,27 @@ INSERT INTO product (category_idx, product_name, product_unit, max_stock, min_st
 (7, '연유', 'kg', 10, 2, 8000, '30', false);
 
 -- ============================================================
--- 5. MenuCategoryItem (메뉴별 원자재 레시피)
+-- 5. Menu (더벤티 대표 메뉴)
 -- ============================================================
-INSERT INTO menu_category (menu_category_name, is_deleted) VALUES
-('커피', false),
-('베버리지', false),
-('아이스블렌디드', false),
-('티 & 에이드', false);
-
--- ============================================================
--- 6. Menu (더벤티 대표 메뉴)
--- ============================================================
-INSERT INTO menu (menu_name, price, img_path, is_deleted, menu_category_idx) VALUES
--- 커피 (idx: 1)
-('아메리카노', 1500, '/uploads/menu/americano.jpg', false, 1),
-('카페라떼', 2500, '/uploads/menu/cafelatte.jpg', false, 1),
-('바닐라라떼', 3000, '/uploads/menu/vanillalatte.jpg', false, 1),
-('카라멜마끼아또', 3500, '/uploads/menu/caramelmacchiato.jpg', false, 1),
-('카푸치노', 2500, '/uploads/menu/cappuccino.jpg', false, 1),
-
--- 베버리지 (idx: 2)
-('녹차라떼', 3000, '/uploads/menu/greentealatte.jpg', false, 2),
-('초코라떼', 3000, '/uploads/menu/chocolatte.jpg', false, 2),
-
--- 아이스블렌디드 (idx: 3)
-('딸기스무디', 3500, '/uploads/menu/strawberrysmoothie.jpg', false, 3),
-('망고스무디', 3500, '/uploads/menu/mangosmoothie.jpg', false, 3),
-
--- 티 & 에이드 (idx: 4)
-('복숭아아이스티', 2500, '/uploads/menu/peachicedtea.jpg', false, 4),
-('레몬에이드', 2500, '/uploads/menu/lemonade.jpg', false, 4),
-('자몽에이드', 3000, '/uploads/menu/grapefruitade.jpg', false, 4),
-('얼그레이티', 2000, '/uploads/menu/earlgrey.jpg', false, 4),
-('캐모마일티', 2000, '/uploads/menu/chamomile.jpg', false, 4),
-('히비스커스티', 2000, '/uploads/menu/hibiscus.jpg', false, 4);
-
-
+INSERT INTO menu (menu_name, price, img_path, is_deleted) VALUES
+('아메리카노', 1500, '/uploads/menu/americano.jpg', false),
+('카페라떼', 2500, '/uploads/menu/cafelatte.jpg', false),
+('바닐라라떼', 3000, '/uploads/menu/vanillalatte.jpg', false),
+('카라멜마끼아또', 3500, '/uploads/menu/caramelmacchiato.jpg', false),
+('카푸치노', 2500, '/uploads/menu/cappuccino.jpg', false),
+('딸기스무디', 3500, '/uploads/menu/strawberrysmoothie.jpg', false),
+('망고스무디', 3500, '/uploads/menu/mangosmoothie.jpg', false),
+('복숭아아이스티', 2500, '/uploads/menu/peachicedtea.jpg', false),
+('레몬에이드', 2500, '/uploads/menu/lemonade.jpg', false),
+('자몽에이드', 3000, '/uploads/menu/grapefruitade.jpg', false),
+('녹차라떼', 3000, '/uploads/menu/greentealatte.jpg', false),
+('초코라떼', 3000, '/uploads/menu/chocolatte.jpg', false),
+('얼그레이티', 2000, '/uploads/menu/earlgrey.jpg', false),
+('캐모마일티', 2000, '/uploads/menu/chamomile.jpg', false),
+('히비스커스티', 2000, '/uploads/menu/hibiscus.jpg', false);
 
 -- ============================================================
--- 7. MenuItem (메뉴별 원자재 레시피)
+-- 6. MenuItem (메뉴별 원자재 레시피)
 -- ============================================================
 INSERT INTO menu_item (menu_idx, product_idx, quantity, menu_unit) VALUES
 -- 아메리카노: 원두 20g, 얼음 200g, 라지컵 1개
@@ -226,13 +209,13 @@ INSERT INTO menu_item (menu_idx, product_idx, quantity, menu_unit) VALUES
 (15, 22, 1, 'ea');
 
 -- ============================================================
--- 8. Danger (위험 발주 설정)
+-- 7. Danger (위험 발주 설정)
 -- ============================================================
 INSERT INTO danger (ratio, period) VALUES
 (30, 7);
 
 -- ============================================================
---9. HeadInventory (본사 재고)
+-- 8. HeadInventory (본사 재고)
 -- ============================================================
 INSERT INTO head_inventory (product_idx, count, status, manufactured_date) VALUES
 (1, 500, 'NORMAL', '2026-04-20 08:00:00'),
@@ -266,7 +249,7 @@ INSERT INTO head_inventory (product_idx, count, status, manufactured_date) VALUE
 (29, 50, 'NORMAL', '2026-04-10 08:00:00');
 
 -- ============================================================
--- 10. StoreInventory (가맹점 재고 - 5개 매장)
+-- 9. StoreInventory (가맹점 재고 - 5개 매장)
 -- ============================================================
 -- 강남역점 (store 1) - 재고 넉넉
 INSERT INTO store_inventory (store_idx, product_idx, count, status, manufactured_date, avg_stock) VALUES
@@ -373,7 +356,7 @@ INSERT INTO store_inventory (store_idx, product_idx, count, status, manufactured
 (5, 27, 130, 'NORMAL', '2026-04-29 05:00:00', 110);
 
 -- ============================================================
--- 11. PosStoreInventory (POS 재고 — store_inventory와 동일 행, avg_stock 제외)
+-- 10. PosStoreInventory (POS 재고 — store_inventory와 동일 행, avg_stock 제외)
 -- ============================================================
 INSERT INTO pos_store_inventory (store_idx, product_idx, count, status, manufactured_date) VALUES
 (1, 1, 20, 'NORMAL', '2026-04-25 08:00:00'),
@@ -467,7 +450,7 @@ INSERT INTO pos_store_inventory (store_idx, product_idx, count, status, manufact
 (5, 27, 130, 'NORMAL', '2026-04-29 05:00:00');
 
 -- ============================================================
--- 12. Orders (발주서)
+-- 11. Orders (발주서)
 -- ============================================================
 -- 강남역점 발주 (승인 완료)
 INSERT INTO orders (store_idx, price, order_type, order_status, is_danger, created_at) VALUES
@@ -564,7 +547,7 @@ INSERT INTO orders (store_idx, price, order_type, order_status, is_danger, creat
 (1, 126500, 'AUTO', 'WAITING', false, '2026-05-02 07:00:00');
 
 -- ============================================================
--- 13. OrdersItem (발주 항목)
+-- 12. OrdersItem (발주 항목)
 -- ============================================================
 -- 강남역점 1차 발주 (orders 1): 원두, 우유, 시럽
 INSERT INTO orders_item (orders_idx, product_idx, count) VALUES
@@ -784,7 +767,7 @@ INSERT INTO orders_item (orders_idx, product_idx, count) VALUES
 (36, 18, 3);
 
 -- ============================================================
--- 14. Delivery (배송)
+-- 13. Delivery (배송)
 -- ============================================================
 INSERT INTO delivery (orders_idx, delivery_status, delay_reason, dep_date, est_des_date, deliveryed_date) VALUES
 -- 강남역점 1차: 배송완료
@@ -819,7 +802,7 @@ INSERT INTO delivery (orders_idx, delivery_status, delay_reason, dep_date, est_d
 (34, 'DELIVERED', NULL, '2026-04-15 14:00:00', '2026-04-16 10:00:00', '2026-04-16 10:15:00');
 
 -- ============================================================
--- 15. PosPay (POS 결제 - 최근 매출 데이터)
+-- 14. PosPay (POS 결제 - 최근 매출 데이터)
 -- ============================================================
 -- 강남역점 4/28 매출
 INSERT INTO pos_pay (store_idx, method, paid_at, pay_amount) VALUES
@@ -910,7 +893,7 @@ INSERT INTO pos_pay (store_idx, method, paid_at, pay_amount) VALUES
 (5, 'CARD', '2026-04-28 19:30:00', 3000);
 
 -- ============================================================
--- 16. PosOrdersItem (POS 주문 항목 - 일부 결제건)
+-- 15. PosOrdersItem (POS 주문 항목 - 일부 결제건)
 -- ============================================================
 -- 강남역점 4/28 첫 주문: 아메리카노 1잔
 INSERT INTO pos_orders_item (pos_pay_idx, menu_idx, quantity) VALUES
@@ -969,7 +952,7 @@ INSERT INTO pos_orders_item (pos_pay_idx, menu_idx, quantity) VALUES
 (30, 9, 1);
 
 -- ============================================================
--- 17. WasteLog (폐기 기록)
+-- 16. WasteLog (폐기 기록)
 -- ============================================================
 INSERT INTO waste_log (store_idx, product_idx, quantity, amount_loss, waste_date, waste_reason) VALUES
 -- 강남역점
@@ -994,7 +977,7 @@ INSERT INTO waste_log (store_idx, product_idx, quantity, amount_loss, waste_date
 (5, 5, 2, 9000, '2026-04-26 22:00:00', '유통기한 만료');
 
 -- ============================================================
--- 18. News (뉴스 요약 - AI 생성)
+-- 17. News (뉴스 요약 - AI 생성)
 -- ============================================================
 INSERT INTO news_summary (store_idx, summary_date, target, summary_title, summary_contents, url, category) VALUES
 -- 본사 대상 뉴스 (store_idx NULL)
@@ -1039,7 +1022,7 @@ INSERT INTO news_summary (store_idx, summary_date, target, summary_title, summar
 'https://example.com/news/jamsil-lotteworld', 'LOCAL_EVENT');
 
 -- ============================================================
--- 19. HeadIncome (본사 수익)
+-- 18. HeadIncome (본사 수익)
 -- ============================================================
 INSERT INTO head_income (store_idx, orders_idx, price, status) VALUES
 (1, 1, 310000, true),
@@ -1067,7 +1050,7 @@ INSERT INTO head_income (store_idx, orders_idx, price, status) VALUES
 (3, 34, 110500, true);
 
 -- ============================================================
--- 20. HeadNotification (본사 알림)
+-- 19. HeadNotification (본사 알림)
 -- ============================================================
 INSERT INTO head_notification (type, is_read, created_at) VALUES
 ('CRITICAL', true, '2026-04-22 07:05:00'),
@@ -1079,7 +1062,7 @@ INSERT INTO head_notification (type, is_read, created_at) VALUES
 ('ABNORMAL', false, '2026-04-29 07:05:00');
 
 -- ============================================================
--- 21. StoreNotification (가맹점 알림)
+-- 20. StoreNotification (가맹점 알림)
 -- ============================================================
 INSERT INTO store_notification (store_idx, type, is_read, created_at) VALUES
 -- 강남역점
@@ -1110,7 +1093,7 @@ INSERT INTO store_notification (store_idx, type, is_read, created_at) VALUES
 (5, 'REJECT', true, '2026-04-25 10:00:00');
 
 -- ============================================================
--- 22. Report (리포트)
+-- 21. Report (리포트)
 -- ============================================================
 INSERT INTO report (report_title, report_file_path, created_at) VALUES
 ('2026년 3월 월간 매출 리포트', '/uploads/report/monthly_sales_202603.pdf', '2026-04-01 09:00:00'),

@@ -11,7 +11,6 @@ import java.util.Map;
 import com.example.nexus.common.enums.InventoryStatus;
 import com.example.nexus.domain.dashboard.model.DashboardDto;
 import com.example.nexus.domain.delivery.DeliveryRepository;
-import com.example.nexus.domain.head.HeadIncomeRepository;
 import com.example.nexus.domain.head.HeadInventoryRepository;
 import com.example.nexus.domain.head.model.HeadInventory;
 import com.example.nexus.domain.orders.OrdersRepository;
@@ -29,7 +28,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DashboardService {
     private final StoreRepository storeRepository;
-    private final HeadIncomeRepository headIncomeRepository;
     private final OrdersRepository ordersRepository;
     private final DeliveryRepository deliveryRepository;
     private final HeadInventoryRepository headInventoryRepository;
@@ -53,20 +51,6 @@ public class DashboardService {
                 .build();
     }
 
-    public DashboardDto.RevenueKpiRes getRevenueKpi() {
-        // 이번 달 1일 00:00 기준 월간 매출
-        LocalDateTime monthStart = LocalDate.now().withDayOfMonth(1).atStartOfDay();
-        long monthlyRevenue = headIncomeRepository.sumPriceByOrdersCreatedAtAfter(monthStart);
-
-        // 금일 00:00 기준 오늘 매출
-        LocalDateTime todayStart = LocalDate.now().atStartOfDay();
-        long todayRevenue = headIncomeRepository.sumPriceByOrdersCreatedAtAfter(todayStart);
-
-        return DashboardDto.RevenueKpiRes.builder()
-                .monthlyRevenue(monthlyRevenue)
-                .todayRevenue(todayRevenue)
-                .build();
-    }
 
     public DashboardDto.OrdersKpiRes getOrdersKpi() {
         LocalDateTime todayStart = LocalDate.now().atStartOfDay();
@@ -229,6 +213,17 @@ public class DashboardService {
                 .delivering(delivering)
                 .delivered(delivered)
                 .delay(delay)
+                .build();
+    }
+
+    public DashboardDto.InventoryKpiRes getInventoryKpi() {
+        long lowCount = headInventoryRepository.countByStatus(InventoryStatus.LOW);
+        long criticalCount = headInventoryRepository.countByStatus(InventoryStatus.CRITICAL);
+
+        return DashboardDto.InventoryKpiRes.builder()
+                .lowCount(lowCount)
+                .criticalCount(criticalCount)
+                .totalDangerCount(lowCount + criticalCount)
                 .build();
     }
 

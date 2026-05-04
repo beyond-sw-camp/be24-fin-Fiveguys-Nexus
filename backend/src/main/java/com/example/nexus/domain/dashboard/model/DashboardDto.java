@@ -19,13 +19,6 @@ public class DashboardDto {
 
     @Getter
     @Builder
-    public static class RevenueKpiRes {
-        private long monthlyRevenue;
-        private long todayRevenue;
-    }
-
-    @Getter
-    @Builder
     public static class OrdersKpiRes {
         private long todayAutoCount;
         private long confirmedCount;
@@ -84,6 +77,14 @@ public class DashboardDto {
         private long delivering;
         private long delivered;
         private long delay;
+    }
+
+    @Getter
+    @Builder
+    public static class InventoryKpiRes {
+        private long lowCount;
+        private long criticalCount;
+        private long totalDangerCount;
     }
 
     @Getter

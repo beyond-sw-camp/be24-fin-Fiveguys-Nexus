@@ -2,11 +2,11 @@ import api from '@/plugins/axiosinterceptor'
 
 export const getStoreKpi = () => api.get('/dashboard/store/kpi')
 
-export const getRevenueKpi = () => api.get('/dashboard/revenue/kpi')
-
 export const getOrdersKpi = () => api.get('/dashboard/orders/kpi')
 
 export const getDeliveryKpi = () => api.get('/dashboard/delivery/kpi')
+
+export const getInventoryKpi = () => api.get('/dashboard/inventory/kpi')
 
 export const getDangerStats = () => api.get('/dashboard/orders/danger/stats')
 

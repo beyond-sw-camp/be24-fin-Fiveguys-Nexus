@@ -103,7 +103,7 @@ onMounted(async () => {
         y: {
           min: 0,
           grid: { color: '#f3f4f6' },
-          ticks: { color: '#9ca3af', font: { size: 11 }, stepSize: 2, precision: 0 },
+          ticks: { color: '#9ca3af', font: { size: 11 }, precision: 0 },
           border: { display: false },
         },
       },

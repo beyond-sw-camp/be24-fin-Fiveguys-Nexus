@@ -80,10 +80,14 @@ public class DashboardService {
         // 금일 수동 발주 건수
         long todayManualCount = ordersRepository.countByOrdersTypeAndCreatedAtAfter(OrdersType.MANUAL, todayStart);
 
+        // 이상 발주 건수
+        long dangerCount = ordersRepository.countByIsDangerTrue();
+
         return DashboardDto.OrdersKpiRes.builder()
                 .todayAutoCount(todayAutoCount)
                 .confirmedCount(confirmedCount)
                 .todayManualCount(todayManualCount)
+                .dangerCount(dangerCount)
                 .build();
     }
 

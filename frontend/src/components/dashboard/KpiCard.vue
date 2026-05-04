@@ -10,7 +10,8 @@
     </div>
     <div class="mt-4 flex items-center justify-between">
       <span class="text-xs text-gray-500">{{ sub }}</span>
-      <span class="text-xs font-semibold" :class="delta > 0 ? 'text-emerald-600' : 'text-red-500'">
+      <span v-if="badge" class="text-xs px-2 py-0.5 rounded-full font-medium bg-red-100 text-red-600">{{ badge }}</span>
+      <span v-else-if="delta != null" class="text-xs font-semibold" :class="delta > 0 ? 'text-emerald-600' : 'text-red-500'">
         {{ delta > 0 ? '+' : '' }}{{ delta }}%
       </span>
     </div>
@@ -26,6 +27,7 @@ defineProps({
   unit: String,
   sub: String,
   delta: Number,
+  badge: String,
   to: String,
 })
 </script>

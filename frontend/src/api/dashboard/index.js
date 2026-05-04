@@ -1,0 +1,3 @@
+import api from '@/plugins/axiosinterceptor'
+
+export const getStoreKpi = () => api.get('/dashboard/store/kpi')

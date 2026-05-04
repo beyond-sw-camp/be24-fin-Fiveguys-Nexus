@@ -99,7 +99,7 @@ public class DashboardService {
 
         // 배송 지연 목록
         List<DashboardDto.DeliveryItem> deliveryList = deliveryRepository
-                .findByDeliveryStatus(DeliveryStatus.DELAY).stream()
+                .findAllByDeliveryStatus(DeliveryStatus.DELAY).stream()
                 .map(DashboardDto.DeliveryItem::from)
                 .toList();
 

@@ -42,8 +42,7 @@ const fetchData = async () => {
   if (loading || !hasNext) return
   loading = true
   try {
-    const size = page === 0 ? 4 : 10
-    const { data } = await getDangerInventory(page, size)
+    const { data } = await getDangerInventory(page, 10)
     const result = data.result
     warnings.value.push(...result.items)
     hasNext = result.hasNext

@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col">
+  <div class="bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col max-h-[320px]">
     <div class="px-5 pt-5 pb-4 border-b border-gray-100">
       <h2 class="font-bold text-gray-900">지연 배송</h2>
     </div>
@@ -43,8 +43,7 @@ const fetchData = async () => {
   if (loading || !hasNext) return
   loading = true
   try {
-    const size = page === 0 ? 4 : 10
-    const { data } = await getDelayDeliveryList(page, size)
+    const { data } = await getDelayDeliveryList(page, 10)
     const result = data.result
     deliveries.value.push(...result.items)
     hasNext = result.hasNext

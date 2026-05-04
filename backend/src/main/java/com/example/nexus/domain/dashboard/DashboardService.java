@@ -215,12 +215,13 @@ public class DashboardService {
     }
 
     public DashboardDto.DeliveryRatioRes getDeliveryRatio() {
-        // 배송 상태별 건수 조회
-        long ready = deliveryRepository.countByDeliveryStatus(DeliveryStatus.READY);
-        long start = deliveryRepository.countByDeliveryStatus(DeliveryStatus.START);
-        long delivering = deliveryRepository.countByDeliveryStatus(DeliveryStatus.DELIVERYING);
-        long delivered = deliveryRepository.countByDeliveryStatus(DeliveryStatus.DELIVERED);
-        long delay = deliveryRepository.countByDeliveryStatus(DeliveryStatus.DELAY);
+        // 최근 한달 기준 배송 상태별 건수 조회
+        LocalDateTime monthAgo = LocalDate.now().minusMonths(1).atStartOfDay();
+        long ready = deliveryRepository.countByDeliveryStatusAndDepartureDateAfter(DeliveryStatus.READY, monthAgo);
+        long start = deliveryRepository.countByDeliveryStatusAndDepartureDateAfter(DeliveryStatus.START, monthAgo);
+        long delivering = deliveryRepository.countByDeliveryStatusAndDepartureDateAfter(DeliveryStatus.DELIVERYING, monthAgo);
+        long delivered = deliveryRepository.countByDeliveryStatusAndDepartureDateAfter(DeliveryStatus.DELIVERED, monthAgo);
+        long delay = deliveryRepository.countByDeliveryStatusAndDepartureDateAfter(DeliveryStatus.DELAY, monthAgo);
 
         return DashboardDto.DeliveryRatioRes.builder()
                 .ready(ready)

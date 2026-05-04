@@ -2,7 +2,7 @@
   <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
     <div class="flex items-center justify-between mb-4">
       <h2 class="font-bold text-gray-900">배송 비율</h2>
-      <span class="text-xs text-gray-400">오늘 기준</span>
+      <span class="text-xs text-gray-400">최근 1개월</span>
     </div>
     <div class="relative mx-auto" style="width:140px;height:140px">
       <canvas ref="donutCanvas"></canvas>
@@ -27,19 +27,38 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { Chart } from 'chart.js/auto'
+import { getDeliveryRatio } from '@/api/dashboard'
 
 const donutCanvas = ref(null)
 
 const donutLegend = ref([
-  { label: '배송완료', pct: 65, color: '#f97316' },
-  { label: '배송중', pct: 20, color: '#60a5fa' },
-  { label: '배송지연', pct: 10, color: '#f87171' },
-  { label: '출고대기', pct: 5, color: '#a78bfa' },
+  { label: '배송완료', pct: 0, color: '#f97316' },
+  { label: '배송중', pct: 0, color: '#60a5fa' },
+  { label: '배송지연', pct: 0, color: '#f87171' },
+  { label: '출고대기', pct: 0, color: '#a78bfa' },
+  { label: '출발', pct: 0, color: '#34d399' },
 ])
 
 const deliveryRate = computed(() => donutLegend.value[0].pct)
 
-onMounted(() => {
+onMounted(async () => {
+  try {
+    const { data } = await getDeliveryRatio()
+    const r = data.result
+    const total = r.ready + r.start + r.delivering + r.delivered + r.delay
+
+    if (total > 0) {
+      const pct = (v) => Math.round(v * 1000 / total) / 10
+      donutLegend.value[0].pct = pct(r.delivered)
+      donutLegend.value[1].pct = pct(r.delivering)
+      donutLegend.value[2].pct = pct(r.delay)
+      donutLegend.value[3].pct = pct(r.ready)
+      donutLegend.value[4].pct = pct(r.start)
+    }
+  } catch (e) {
+    console.error('배송 비율 조회 실패', e)
+  }
+
   new Chart(donutCanvas.value, {
     type: 'doughnut',
     data: {

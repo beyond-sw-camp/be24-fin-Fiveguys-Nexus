@@ -228,6 +228,7 @@ function viewPdf() {
 
 // S3 다운로드
 async function downloadPdf() {
+  console.log(detailTarget.value)
   const filePath = detailTarget.value?.filePath;
   if (!filePath) return alert('파일이 없습니다.');
 
@@ -495,19 +496,30 @@ onMounted(() => {
           </div>
 
           <div class="space-y-3 pt-2">
-            <!-- 1. 미리보기 버튼 (보조 동작: 흰색 배경) -->
-            <button @click="viewPdf"
+            <div v-if="detailTarget.closedAt && detailTarget.closedAt !== '운영 중'"
+                 class="flex flex-col items-center p-3 bg-red-50 rounded-lg border border-red-100">
+              <span class="text-xs text-red-600 font-bold">* 폐업 처리된 가맹점입니다. 증빙 용도로만 사용하세요.</span>
+              <span class="text-[11px] text-red-400 mt-0.5">폐업일: {{ detailTarget.closedAt }}</span>
+            </div>
+
+
+            <button
+              @click="viewPdf"
                     type="button"
                     class="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-white border border-gray-200 text-gray-700 text-sm font-bold hover:bg-gray-50 transition-colors shadow-sm cursor-pointer">
               <Search class="w-4 h-4 text-gray-400" />
               사업자 PDF 미리보기
             </button>
 
-            <!-- 2. 다운로드 버튼 (메인 동작: 주황색 배경) -->
             <button @click="downloadPdf"
                     type="button"
-                    class="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d] transition-colors shadow-sm cursor-pointer">
-              <FileText class="w-4 h-4 text-white" /> <!-- 아이콘을 흰색으로 변경 -->
+                    :class="[
+            'w-full flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-bold transition-colors shadow-sm cursor-pointer',
+            detailTarget.closedAt && detailTarget.closedAt !== '운영 중'
+              ? 'bg-white border border-gray-200 text-gray-700 text-sm font-bold hover:bg-gray-50' // 폐업 시: 미리보기와 유사한 연회색 톤
+              : 'bg-[#F37321] text-white hover:bg-[#e0661d]' // 운영 중: 기존 주황색
+          ]">
+              <FileText :class="['w-4 h-4', detailTarget.closedAt && detailTarget.closedAt !== '운영 중' ? 'text-gray-400' : 'text-white']" />
               사업자 PDF 다운로드
             </button>
           </div>

@@ -69,4 +69,16 @@ public class UserService implements UserDetailsService {
         User user = userRepository.findById(storeIdx).orElse(null);
         return UserDto.StoreInfoRes.from(user);
     }
+
+    // 비밀번호 변경
+    public Boolean changePassword(AuthUserDetails authUserDetails, String password) {
+
+        User user = userRepository.findById(authUserDetails.getIdx()).orElse(null);
+
+        user.setPassword(passwordEncoder.encode(password));
+
+        userRepository.save(user);
+
+        return user.getPassword().equals(passwordEncoder.encode(password));
+    }
 }

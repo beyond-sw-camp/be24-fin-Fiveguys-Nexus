@@ -406,10 +406,6 @@ public class OrdersService {
             throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
         }
 
-        if (!orders.isDanger()) {
-            throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
-        }
-
         orders.cancel();
     }
 }

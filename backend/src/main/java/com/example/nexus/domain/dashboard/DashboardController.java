@@ -27,17 +27,6 @@ public class DashboardController {
     }
 
     /**
-     * 총 매출 KPI 조회
-     *
-     * @return ResponseEntity 이번 달 총 매출, 금일 매출
-     */
-    @GetMapping("/revenue/kpi")
-    public ResponseEntity<BaseResponse> getRevenueKpi() {
-        DashboardDto.RevenueKpiRes result = dashboardService.getRevenueKpi();
-        return ResponseEntity.ok(BaseResponse.success(result));
-    }
-
-    /**
      * 발주 현황 KPI 조회
      *
      * @return ResponseEntity 금일 자동 발주 건수, 확정 발주 건수, 금일 수동 발주 건수

@@ -19,4 +19,12 @@ public class DashboardDto {
         private long monthlyRevenue;
         private long todayRevenue;
     }
+
+    @Getter
+    @Builder
+    public static class OrdersKpiRes {
+        private long todayAutoCount;
+        private long confirmedCount;
+        private long todayManualCount;
+    }
 }

@@ -35,4 +35,15 @@ public class DashboardController {
         DashboardDto.RevenueKpiRes result = dashboardService.getRevenueKpi();
         return ResponseEntity.ok(BaseResponse.success(result));
     }
+
+    /**
+     * 발주 현황 KPI 조회
+     *
+     * @return ResponseEntity 금일 자동 발주 건수, 확정 발주 건수, 금일 수동 발주 건수
+     */
+    @GetMapping("/orders/kpi")
+    public ResponseEntity<BaseResponse> getOrdersKpi() {
+        DashboardDto.OrdersKpiRes result = dashboardService.getOrdersKpi();
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
 }

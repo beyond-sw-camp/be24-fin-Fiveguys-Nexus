@@ -65,4 +65,12 @@ public class DashboardDto {
         private List<Long> approved;
         private List<Long> rejected;
     }
+
+    @Getter
+    @Builder
+    public static class WeeklyOrderStatsRes {
+        private List<String> labels;
+        private List<Long> thisWeek;
+        private List<Long> lastWeek;
+    }
 }

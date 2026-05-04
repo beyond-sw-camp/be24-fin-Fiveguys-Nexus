@@ -163,4 +163,44 @@ public class DashboardService {
                 .rejected(rejected)
                 .build();
     }
+
+    public DashboardDto.WeeklyOrderStatsRes getWeeklyOrderStats() {
+        // 이번 주 월요일 00:00 기준으로 이번 주 / 지난 주 범위 계산
+        // 예: 오늘 2026-05-04(일) → 이번 주 월요일 04-28, 지난 주 월요일 04-21
+        LocalDate today = LocalDate.now();
+        LocalDate thisMonday = today.with(java.time.DayOfWeek.MONDAY);
+        LocalDate lastMonday = thisMonday.minusWeeks(1);
+        LocalDateTime since = lastMonday.atStartOfDay();
+
+        // 요일 라벨 (월~일)
+        List<String> labels = List.of("월", "화", "수", "목", "금", "토", "일");
+
+        // 지난 주, 이번 주 각각 7일치 카운트 초기화
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd");
+        Map<String, Long> lastWeekMap = new LinkedHashMap<>();
+        Map<String, Long> thisWeekMap = new LinkedHashMap<>();
+        for (int i = 0; i < 7; i++) {
+            lastWeekMap.put(lastMonday.plusDays(i).format(formatter), 0L);
+            thisWeekMap.put(thisMonday.plusDays(i).format(formatter), 0L);
+        }
+
+        // DB에서 2주치 일별 발주 건수 조회 후 각 주에 매핑
+        List<Object[]> rows = ordersRepository.findWeeklyOrderStats(since);
+        for (Object[] row : rows) {
+            String day = (String) row[0];
+            long count = (Long) row[1];
+
+            if (lastWeekMap.containsKey(day)) {
+                lastWeekMap.put(day, count);
+            } else if (thisWeekMap.containsKey(day)) {
+                thisWeekMap.put(day, count);
+            }
+        }
+
+        return DashboardDto.WeeklyOrderStatsRes.builder()
+                .labels(labels)
+                .thisWeek(new ArrayList<>(thisWeekMap.values()))
+                .lastWeek(new ArrayList<>(lastWeekMap.values()))
+                .build();
+    }
 }

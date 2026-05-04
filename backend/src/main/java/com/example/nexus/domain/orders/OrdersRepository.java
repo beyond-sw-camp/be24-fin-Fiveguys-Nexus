@@ -31,4 +31,10 @@ public interface OrdersRepository extends JpaRepository<Orders, Long>, JpaSpecif
             "GROUP BY FUNCTION('DATE_FORMAT', o.createdAt, '%Y-%m'), o.ordersStatus " +
             "ORDER BY FUNCTION('DATE_FORMAT', o.createdAt, '%Y-%m')")
     List<Object[]> findDangerStatsByMonth(@Param("since") LocalDateTime since);
+
+    @Query("SELECT FUNCTION('DATE_FORMAT', o.createdAt, '%m-%d'), COUNT(o) " +
+            "FROM Orders o WHERE o.createdAt >= :since " +
+            "GROUP BY FUNCTION('DATE_FORMAT', o.createdAt, '%m-%d') " +
+            "ORDER BY FUNCTION('DATE_FORMAT', o.createdAt, '%m-%d')")
+    List<Object[]> findWeeklyOrderStats(@Param("since") LocalDateTime since);
 }

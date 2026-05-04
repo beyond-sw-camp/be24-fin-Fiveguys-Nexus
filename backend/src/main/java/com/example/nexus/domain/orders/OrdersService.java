@@ -281,11 +281,6 @@ public class OrdersService {
         }
 
         orders.confirm();
-
-        // 일반 발주: 확정과 동시에 본사→매장 출고(재고 반영). 이상 발주는 본사 승인 시 출고.
-        if (!orders.isDanger()) {
-            applyOutboundForOrder(orders, "발주 확정 ordersIdx=");
-        }
     }
 
     @Transactional

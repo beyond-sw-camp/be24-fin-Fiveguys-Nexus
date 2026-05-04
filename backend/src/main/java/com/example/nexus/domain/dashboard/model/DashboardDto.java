@@ -12,4 +12,11 @@ public class DashboardDto {
         private long newStoreCountThisMonth;
         private double deltaPercent;
     }
+
+    @Getter
+    @Builder
+    public static class RevenueKpiRes {
+        private long monthlyRevenue;
+        private long todayRevenue;
+    }
 }

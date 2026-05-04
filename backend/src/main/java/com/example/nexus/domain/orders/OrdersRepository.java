@@ -25,4 +25,10 @@ public interface OrdersRepository extends JpaRepository<Orders, Long>, JpaSpecif
     long countByOrdersTypeAndCreatedAtAfter(com.example.nexus.common.enums.OrdersType ordersType, LocalDateTime since);
 
     long countByOrdersStatus(OrdersStatus ordersStatus);
+
+    @Query("SELECT FUNCTION('DATE_FORMAT', o.createdAt, '%Y-%m'), o.ordersStatus, COUNT(o) " +
+            "FROM Orders o WHERE o.isDanger = true AND o.createdAt >= :since " +
+            "GROUP BY FUNCTION('DATE_FORMAT', o.createdAt, '%Y-%m'), o.ordersStatus " +
+            "ORDER BY FUNCTION('DATE_FORMAT', o.createdAt, '%Y-%m')")
+    List<Object[]> findDangerStatsByMonth(@Param("since") LocalDateTime since);
 }

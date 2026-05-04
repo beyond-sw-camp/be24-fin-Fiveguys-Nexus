@@ -102,7 +102,7 @@ public class OrdersService {
         return ordersRepository.findAll(spec, pageable).map(orders -> {
             LocalDateTime since = orders.getCreatedAt().minusMonths(period);
             Integer avgQty = ordersRepository.findAvgQtyByStoreAndPeriod(
-                    orders.getStore().getIdx(), since);
+                    orders.getStore().getIdx(), since, orders.getIdx());
             return DangerDto.DangerListRes.from(orders, avgQty);
         });
     }
@@ -139,7 +139,7 @@ public class OrdersService {
 
             LocalDateTime since = orders.getCreatedAt().minusMonths(req.getPeriod());
 
-            Integer avgQty = ordersRepository.findAvgQtyByStoreAndPeriod(orders.getStore().getIdx(), since);
+            Integer avgQty = ordersRepository.findAvgQtyByStoreAndPeriod(orders.getStore().getIdx(), since, orders.getIdx());
 
             int ratio = avgQty > 0 ? (totalQty - avgQty) * 100 / avgQty : 0;
 
@@ -209,13 +209,13 @@ public class OrdersService {
      * 주문 수량의 초과 비율이 기준 이상이면 이상 발주로 판정
      * 예: 평균 10개, 이번 30개, 기준 200% → (30-10)*100/10 = 200% → 이상 발주
      */
-    private boolean evaluateDanger(Long storeIdx, int totalQty, LocalDateTime baseTime) {
+    private boolean evaluateDanger(Long storeIdx, int totalQty, LocalDateTime baseTime, Long excludeIdx) {
         Danger danger = dangerRepository.findById(1L).orElse(null);
         int dangerRatio = danger != null ? danger.getRatio() : 200;
         int period = danger != null ? danger.getPeriod() : 3;
 
         LocalDateTime since = baseTime.minusMonths(period);
-        Integer avgQty = ordersRepository.findAvgQtyByStoreAndPeriod(storeIdx, since);
+        Integer avgQty = ordersRepository.findAvgQtyByStoreAndPeriod(storeIdx, since, excludeIdx);
         return avgQty > 0 && (totalQty - avgQty) * 100 / avgQty >= dangerRatio;
     }
 
@@ -248,7 +248,7 @@ public class OrdersService {
 
         // 4. 이상 발주 판정
         int totalQty = itemList.stream().mapToInt(OrdersItem::getCount).sum();
-        boolean isDanger = evaluateDanger(store.getIdx(), totalQty, LocalDateTime.now());
+        boolean isDanger = evaluateDanger(store.getIdx(), totalQty, LocalDateTime.now(), null);
 
         // 5. Orders 저장
         Orders orders = ordersRepository.save(Orders.builder()
@@ -297,7 +297,7 @@ public class OrdersService {
 
         // 이상 발주 재판정: 점주가 아이템을 수정했을 수 있으므로 확정 시점에 재평가
         int totalQty = orders.getOrdersItemList().stream().mapToInt(OrdersItem::getCount).sum();
-        orders.markDanger(evaluateDanger(store.getIdx(), totalQty, orders.getCreatedAt()));
+        orders.markDanger(evaluateDanger(store.getIdx(), totalQty, orders.getCreatedAt(), orders.getIdx()));
 
         orders.confirm();
     }

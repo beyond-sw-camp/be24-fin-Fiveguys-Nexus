@@ -102,7 +102,7 @@ public class OrdersService {
         return ordersRepository.findAll(spec, pageable).map(orders -> {
             LocalDateTime since = orders.getCreatedAt().minusMonths(period);
             Integer avgQty = ordersRepository.findAvgQtyByStoreAndPeriod(
-                    orders.getStore().getIdx(), since);
+                    orders.getStore().getIdx(), since, orders.getIdx());
             return DangerDto.DangerListRes.from(orders, avgQty);
         });
     }
@@ -139,12 +139,12 @@ public class OrdersService {
 
             LocalDateTime since = orders.getCreatedAt().minusMonths(req.getPeriod());
 
-            Integer avgQty = ordersRepository.findAvgQtyByStoreAndPeriod(orders.getStore().getIdx(), since);
+            Integer avgQty = ordersRepository.findAvgQtyByStoreAndPeriod(orders.getStore().getIdx(), since, orders.getIdx());
 
             int ratio = avgQty > 0 ? (totalQty - avgQty) * 100 / avgQty : 0;
 
             if (ratio < req.getRatio()) {
-                orders.clearDanger();
+                orders.markDanger(false);
             }
 
         }
@@ -154,6 +154,11 @@ public class OrdersService {
     public void approve(Long ordersIdx) {
         Orders orders = ordersRepository.findById(ordersIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        if (orders.getOrdersStatus() != OrdersStatus.CONFIRMED) {
+            throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
+        }
+
         applyOutboundForOrder(orders, "발주 승인(이상) ordersIdx=");
         orders.approve();
     }
@@ -162,6 +167,11 @@ public class OrdersService {
     public void reject(Long ordersIdx) {
         Orders orders = ordersRepository.findById(ordersIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        if (orders.getOrdersStatus() != OrdersStatus.CONFIRMED) {
+            throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
+        }
+
         orders.reject();
     }
 
@@ -170,10 +180,7 @@ public class OrdersService {
         List<Orders> confirmedOrders = ordersRepository.findAllByOrdersStatus(OrdersStatus.CONFIRMED);
 
         for (Orders orders : confirmedOrders) {
-            if (!orders.isDanger()) {
-                continue;
-            }
-            applyOutboundForOrder(orders, "발주 일괄승인(이상) ordersIdx=");
+            applyOutboundForOrder(orders, "발주 일괄승인 ordersIdx=");
             orders.approve();
         }
     }
@@ -194,6 +201,22 @@ public class OrdersService {
             );
             inventoryMovementService.outbound(outboundReq);
         }
+    }
+
+    /**
+     * 이상 발주 판정
+     * 해당 매장의 최근 N개월 발주 건당 평균 수량 대비
+     * 주문 수량의 초과 비율이 기준 이상이면 이상 발주로 판정
+     * 예: 평균 10개, 이번 30개, 기준 200% → (30-10)*100/10 = 200% → 이상 발주
+     */
+    private boolean evaluateDanger(Long storeIdx, int totalQty, LocalDateTime baseTime, Long excludeIdx) {
+        Danger danger = dangerRepository.findById(1L).orElse(null);
+        int dangerRatio = danger != null ? danger.getRatio() : 200;
+        int period = danger != null ? danger.getPeriod() : 3;
+
+        LocalDateTime since = baseTime.minusMonths(period);
+        Integer avgQty = ordersRepository.findAvgQtyByStoreAndPeriod(storeIdx, since, excludeIdx);
+        return avgQty > 0 && (totalQty - avgQty) * 100 / avgQty >= dangerRatio;
     }
 
     @Transactional
@@ -223,17 +246,21 @@ public class OrdersService {
                     .build());
         }
 
-        // 4. Orders 저장
+        // 4. 이상 발주 판정
+        int totalQty = itemList.stream().mapToInt(OrdersItem::getCount).sum();
+        boolean isDanger = evaluateDanger(store.getIdx(), totalQty, LocalDateTime.now(), null);
+
+        // 5. Orders 저장
         Orders orders = ordersRepository.save(Orders.builder()
                 .price(totalprice)
                 .ordersType(OrdersType.MANUAL)
                 .ordersStatus(OrdersStatus.CONFIRMED)
-                .isDanger(false)
+                .isDanger(isDanger)
                 .createdAt(LocalDateTime.now())
                 .store(store)
                 .build());
 
-        // 5. OrdersItem 저장
+        // 6. OrdersItem 저장
         for (OrdersItem item : itemList) {
             ordersItemRepository.save(OrdersItem.builder()
                     .count(item.getCount())
@@ -241,8 +268,6 @@ public class OrdersService {
                     .orders(orders)
                     .build());
         }
-
-        applyOutboundForOrder(orders, "수동 발주 등록 ordersIdx=");
     }
 
     public List<OrdersDto.OrdersRes> findByUserIdxAndOrdersStatus(Long userIdx) {
@@ -270,12 +295,11 @@ public class OrdersService {
             throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
         }
 
-        orders.confirm();
+        // 이상 발주 재판정: 점주가 아이템을 수정했을 수 있으므로 확정 시점에 재평가
+        int totalQty = orders.getOrdersItemList().stream().mapToInt(OrdersItem::getCount).sum();
+        orders.markDanger(evaluateDanger(store.getIdx(), totalQty, orders.getCreatedAt(), orders.getIdx()));
 
-        // 일반 발주: 확정과 동시에 본사→매장 출고(재고 반영). 이상 발주는 본사 승인 시 출고.
-        if (!orders.isDanger()) {
-            applyOutboundForOrder(orders, "발주 확정 ordersIdx=");
-        }
+        orders.confirm();
     }
 
     @Transactional
@@ -379,10 +403,6 @@ public class OrdersService {
         }
 
         if (orders.getOrdersStatus() != OrdersStatus.CONFIRMED) {
-            throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
-        }
-
-        if (!orders.isDanger()) {
             throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
         }
 

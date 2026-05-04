@@ -18,6 +18,6 @@ public interface OrdersRepository extends JpaRepository<Orders, Long>, JpaSpecif
 
     @Query("SELECT COALESCE(SUM(i.count), 0) / GREATEST(COUNT(DISTINCT o.idx), 1) " +
             "FROM Orders o JOIN o.ordersItemList i " +
-            "WHERE o.store.idx = :storeIdx AND o.createdAt >= :since")
-    Integer findAvgQtyByStoreAndPeriod(@Param("storeIdx") Long storeIdx, @Param("since") LocalDateTime since);
+            "WHERE o.store.idx = :storeIdx AND o.createdAt >= :since AND (:excludeIdx IS NULL OR o.idx <> :excludeIdx)")
+    Integer findAvgQtyByStoreAndPeriod(@Param("storeIdx") Long storeIdx, @Param("since") LocalDateTime since, @Param("excludeIdx") Long excludeIdx);
 }

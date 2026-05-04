@@ -66,8 +66,8 @@ public class Orders {
         this.ordersStatus = OrdersStatus.REJECT;
     }
 
-    public void clearDanger() {
-        this.isDanger = false;
+    public void markDanger(boolean isDanger) {
+        this.isDanger = isDanger;
     }
 
     public void updatePrice(Long price) {

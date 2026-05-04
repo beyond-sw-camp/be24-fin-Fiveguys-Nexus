@@ -203,6 +203,22 @@ public class OrdersService {
         }
     }
 
+    /**
+     * 이상 발주 판정
+     * 해당 매장의 최근 N개월 발주 건당 평균 수량 대비
+     * 주문 수량의 초과 비율이 기준 이상이면 이상 발주로 판정
+     * 예: 평균 10개, 이번 30개, 기준 200% → (30-10)*100/10 = 200% → 이상 발주
+     */
+    private boolean evaluateDanger(Long storeIdx, int totalQty, LocalDateTime baseTime) {
+        Danger danger = dangerRepository.findById(1L).orElse(null);
+        int dangerRatio = danger != null ? danger.getRatio() : 200;
+        int period = danger != null ? danger.getPeriod() : 3;
+
+        LocalDateTime since = baseTime.minusMonths(period);
+        Integer avgQty = ordersRepository.findAvgQtyByStoreAndPeriod(storeIdx, since);
+        return avgQty > 0 && (totalQty - avgQty) * 100 / avgQty >= dangerRatio;
+    }
+
     @Transactional
     public void createStoreManualOrder(Long userIdx, OrdersDto.OrdersReq req) {
         // 1. 주문 아이템 리스트 검증
@@ -231,20 +247,8 @@ public class OrdersService {
         }
 
         // 4. 이상 발주 판정
-        // 이번 수동 발주의 총 주문 수량 계산
         int totalQty = itemList.stream().mapToInt(OrdersItem::getCount).sum();
-
-        // DB에서 이상 발주 기준 조회 (기본값: 비율 200%, 기간 3개월)
-        Danger danger = dangerRepository.findById(1L).orElse(null);
-        int dangerRatio = danger != null ? danger.getRatio() : 200;
-        int period = danger != null ? danger.getPeriod() : 3;
-
-        // 해당 매장의 최근 N개월간 발주 건당 평균 수량 조회
-        LocalDateTime since = LocalDateTime.now().minusMonths(period);
-        Integer avgQty = ordersRepository.findAvgQtyByStoreAndPeriod(store.getIdx(), since);
-
-        // (이번 주문량 - 평균) / 평균 × 100 >= 기준 비율이면 이상 발주
-        boolean isDanger = avgQty > 0 && (totalQty - avgQty) * 100 / avgQty >= dangerRatio;
+        boolean isDanger = evaluateDanger(store.getIdx(), totalQty, LocalDateTime.now());
 
         // 5. Orders 저장
         Orders orders = ordersRepository.save(Orders.builder()
@@ -290,6 +294,10 @@ public class OrdersService {
         if (orders.getOrdersStatus() != OrdersStatus.WAITING) {
             throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
         }
+
+        // 이상 발주 재판정: 점주가 아이템을 수정했을 수 있으므로 확정 시점에 재평가
+        int totalQty = orders.getOrdersItemList().stream().mapToInt(OrdersItem::getCount).sum();
+        orders.markDanger(evaluateDanger(store.getIdx(), totalQty, orders.getCreatedAt()));
 
         orders.confirm();
     }

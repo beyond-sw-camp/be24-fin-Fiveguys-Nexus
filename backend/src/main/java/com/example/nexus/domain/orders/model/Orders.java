@@ -70,6 +70,10 @@ public class Orders {
         this.isDanger = false;
     }
 
+    public void markDanger(boolean isDanger) {
+        this.isDanger = isDanger;
+    }
+
     public void updatePrice(Long price) {
         this.price = price;
     }

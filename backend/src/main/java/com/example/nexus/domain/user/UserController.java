@@ -1,5 +1,6 @@
 package com.example.nexus.domain.user;
 
+import com.example.nexus.common.model.BaseResponseStatus;
 import com.example.nexus.domain.user.model.AuthUserDetails;
 import com.example.nexus.domain.user.model.UserDto;
 import lombok.RequiredArgsConstructor;
@@ -53,5 +54,15 @@ public class UserController {
         return ResponseEntity.ok(userService.getStoreInfo(authUserDetails.getIdx()));
     }
 
+    // 비밀번호 변경
+    @PostMapping("/user/password")
+    public ResponseEntity changePassword(@AuthenticationPrincipal AuthUserDetails authUserDetails, @RequestBody UserDto.ChangePasswordDto dto) {
+
+        if (userService.changePassword(authUserDetails, dto.getPassword())) {
+           return ResponseEntity.ok("Password Change Success");
+        } else {
+            return ResponseEntity.status(500).body("Password Change Failed");
+        }
+    }
 
 }

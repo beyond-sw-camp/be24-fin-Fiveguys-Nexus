@@ -180,6 +180,7 @@
 import { computed, ref, onMounted } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { Chart } from 'chart.js/auto'
+import { getStoreKpi } from '@/api/dashboard'
 
 const periodTabs = ['일간', '주간', '월간']
 const router = useRouter()
@@ -209,7 +210,18 @@ const donutLegend = [
 
 const deliveryRate = computed(() => donutLegend[0].pct)
 
-onMounted(() => {
+onMounted(async () => {
+  // 가맹점 현황 KPI
+  try {
+    const { data } = await getStoreKpi()
+    const store = data.result
+    kpis.value[1].value = store.totalStoreCount.toLocaleString()
+    kpis.value[1].sub = `이번 달 신규 ${store.newStoreCountThisMonth}개`
+    kpis.value[1].delta = store.deltaPercent
+  } catch (e) {
+    console.error('가맹점 KPI 조회 실패', e)
+  }
+
   // 라인차트
   new Chart(lineCanvas.value, {
     type: 'line',
@@ -375,7 +387,7 @@ onMounted(() => {
 
 const kpis = ref([
   { title: '총 매출', value: '89.2', unit: '백만', sub: '전일 대비', delta: 12.4, to: '/settlement' },
-  { title: '입점 매장', value: '142', unit: '개', sub: '활성 매장 비율 96%', delta: 2.1, to: '/store' },
+  { title: '입점 매장', value: '-', unit: '개', sub: '이번 달 신규 -개', delta: 0, to: '/store' },
   { title: '금일 자동 발주', value: '85', unit: '건', sub: '확정 62건', delta: 8.7, to: '/order' },
   { title: '배송 지연', value: '4', unit: '건', sub: '즉시 확인 필요', delta: -1.8, to: '/delivery' },
 ])

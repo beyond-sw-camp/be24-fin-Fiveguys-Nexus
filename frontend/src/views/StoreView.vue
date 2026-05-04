@@ -139,71 +139,130 @@ async function openModal(idx =! null) {
   showModal.value = true;
 }
 
+const selectedFile = ref(null);
 // 파일 선택 감지
 async function handleFileChange(e) {
   const file = e.target.files[0]
 
-  const presigned = await getPresignedUrl(file.name)
-
-  // 2. [응답] 백엔드가 "이 주소(uploadUrl)로 올리고, 이름은 이걸(fileKey)로 써!"라고 함[cite: 2]
-  const { url, fileName } = presigned.data.result;
-
-  // 3. [업로드] 받은 주소로 실제 파일 전송[cite: 2]
-  await axios.put(url, fileName, {
-    headers: { 'Content-Type': fileName.type }
-  });
-
-  form.fileName = file.name;
-  if (file) form.filePath = fileName
+  if (file) {
+    selectedFile.value = file; // 선택한 파일 보관
+    form.fileName = file.name; // 화면 표시용
+  }
 }
 
 
-async function saveStore() {
-  // 수정
-  if (editTarget.value) {
-    // 1. 변경 사항이 있는지 간단히 체크
-    const isNoChange = JSON.stringify(editTarget.value) === JSON.stringify(form.value);
+// [추가] S3 업로드 로직만 담당하는 공통 함수
+async function uploadFileToS3() {
+  // 선택된 파일이 없으면 업로드 과정을 건너뛰고 null 반환
+  if (!selectedFile.value) return null;
 
-    if (isNoChange) {
-      alert("수정된 내용이 없습니다.");
-      showModal.value = false;
-      return; // 함수 종료 (백엔드 요청 안 함)
+  try {
+    // 1. 백엔드에 Presigned URL 요청
+    const presigned = await getPresignedUrl(selectedFile.value.name);
+    const { url, fileName: s3Path } = presigned.data.result;
+
+    // 2. S3에 실제 파일 업로드 (PUT 방식)
+    await axios.put(url, selectedFile.value, {
+      headers: { 'Content-Type': 'application/pdf' }
+    });
+
+    return s3Path; // 업로드된 S3 파일 경로(DB 저장용) 반환
+  } catch (error) {
+    console.error("S3 업로드 실패:", error);
+    throw new Error("파일 업로드 중 오류가 발생했습니다.");
+  }
+}
+
+async function saveStore() {
+  try {
+    // [핵심 추가] 파일을 선택했다면 등록/수정 전에 S3에 먼저 올립니다.
+    const newFilePath = await uploadFileToS3();
+    if (newFilePath) {
+      form.filePath = newFilePath; // 업로드된 경로를 form에 세팅
     }
 
-  }
-  // 등록
-  else {
-    const storeRegDto = reactive({
-      storeName: '',
-      ownerEmail: '',
-      postcode: '',
-      address: '',
-      addressDetail: '',
-      business: '',
-      filePath: '',
-    })
-    Object.assign(storeRegDto, form);
+    // --- 수정 로직 ---
+    if (editTarget.value) {
+      // form.value가 아니라 reactive 객체인 form 자체를 비교해야 합니다.
+      const isNoChange = JSON.stringify(editTarget.value) === JSON.stringify(form);
 
-    try {
+      if (isNoChange) {
+        alert("수정된 내용이 없습니다.");
+        showModal.value = false;
+        return;
+      }
+
+      // TODO: 수정 API가 준비되면 여기에 호출 로직 추가
+      alert("수정 완료 (API 연동 필요)");
+    }
+    // --- 등록 로직 ---
+    else {
+      // form 내용을 복사하여 전송용 DTO 생성
+      const storeRegDto = { ...form };
+
       const res = await postNewRegister(storeRegDto);
 
       if (res.data.code === 2000) {
         alert("가맹점이 등록되었습니다.");
-
-        // [추가] 목록을 비우고 다시 서버에서 받아옵니다.
         storesList.length = 0;
         await storeListRes();
       }
-    } catch (error) {
-
-      alert("등록 실패: " + error.message);
     }
+
+    showModal.value = false; // 성공 시에만 모달 닫기
+    selectedFile.value = null; // 파일 변수 초기화
+
+  } catch (error) {
+    alert("처리 중 오류 발생: " + error.message);
   }
-  showModal.value = false;
 }
 
-function downloadPdf() {
-  alert('사업자 등록증 PDF를 다운로드합니다.')
+// S3 미리보기 (뷰어)
+function viewPdf() {
+  const filePath = detailTarget.value?.filePath;
+  if (!filePath) return alert('파일이 없습니다.');
+
+  const s3BaseUrl = 'https://nexus-store-archive.s3.ap-northeast-2.amazonaws.com/';
+  window.open(s3BaseUrl + filePath, '_blank'); // 새 탭에서 열기
+}
+
+// S3 다운로드
+async function downloadPdf() {
+  console.log(detailTarget.value)
+  const filePath = detailTarget.value?.filePath;
+  if (!filePath) return alert('파일이 없습니다.');
+
+  const s3BaseUrl = 'https://nexus-store-archive.s3.ap-northeast-2.amazonaws.com/';
+  const fileUrl = s3BaseUrl + filePath;
+
+  try {
+    // 1. fetch로 파일을 가져옵니다.
+    const response = await fetch(fileUrl);
+    if (!response.ok) throw new Error('파일을 가져오는데 실패했습니다.');
+
+    // 2. 파일 데이터를 Blob(Binary Large Object)으로 변환합니다.
+    const blob = await response.blob();
+
+    // 3. Blob 데이터를 위한 임시 URL을 생성합니다.
+    const url = window.URL.createObjectURL(blob);
+
+    // 4. 가상의 링크를 생성하여 클릭을 유도합니다.
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${detailTarget.value.storeName}_사업자등록증.pdf`; // 저장될 파일명
+    document.body.appendChild(link);
+    link.click();
+
+    // 5. 사용이 끝난 임시 URL과 링크를 제거합니다.
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+
+  } catch (error) {
+    console.error('다운로드 중 오류 발생:', error);
+    // 만약 CORS 에러가 난다면, 가장 단순한 방법인 window.open을 백업으로 사용합니다.
+    alert('브라우저 보안 정책으로 인해 직접 다운로드가 제한되었습니다. 새 탭에서 파일을 엽니다.');
+    window.open(fileUrl, '_blank');
+  }
 }
 
 // 카카오 주소 API
@@ -336,7 +395,9 @@ onMounted(() => {
           </td>
           <td class="px-5 py-3.5 text-gray-600">{{ store.ownerName }}</td>
           <td class="px-5 py-3.5 text-gray-500 text-xs truncate max-w-[150px]">{{ store.ownerEmail }}</td>
-          <td class="px-5 py-3.5 text-gray-500 text-xs">{{ store.address }}</td>
+          <td class="px-5 py-3.5 text-gray-500 text-xs truncate max-w-[250px]" :title="store.address">
+            {{ store.address }}
+          </td>
           <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ store.business }}</td>
           <td class="px-5 py-3.5 text-center">
               <span class="text-[11px] font-bold px-2 py-0.5 rounded-lg"
@@ -436,10 +497,31 @@ onMounted(() => {
             </div>
           </div>
 
-          <div class="pt-2">
+          <div class="space-y-3 pt-2">
+            <div v-if="detailTarget.closedAt && detailTarget.closedAt !== '운영 중'"
+                 class="flex flex-col items-center p-3 bg-red-50 rounded-lg border border-red-100">
+              <span class="text-xs text-red-600 font-bold">* 폐업 처리된 가맹점입니다. 증빙 용도로만 사용하세요.</span>
+              <span class="text-[11px] text-red-400 mt-0.5">폐업일: {{ detailTarget.closedAt }}</span>
+            </div>
+
+
+            <button
+              @click="viewPdf"
+                    type="button"
+                    class="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-white border border-gray-200 text-gray-700 text-sm font-bold hover:bg-gray-50 transition-colors shadow-sm cursor-pointer">
+              <Search class="w-4 h-4 text-gray-400" />
+              사업자 PDF 미리보기
+            </button>
+
             <button @click="downloadPdf"
-                    class="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d] transition-colors shadow-sm cursor-pointer">
-              <FileText class="w-4 h-4 text-white" />
+                    type="button"
+                    :class="[
+            'w-full flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-bold transition-colors shadow-sm cursor-pointer',
+            detailTarget.closedAt && detailTarget.closedAt !== '운영 중'
+              ? 'bg-white border border-gray-200 text-gray-700 text-sm font-bold hover:bg-gray-50' // 폐업 시: 미리보기와 유사한 연회색 톤
+              : 'bg-[#F37321] text-white hover:bg-[#e0661d]' // 운영 중: 기존 주황색
+          ]">
+              <FileText :class="['w-4 h-4', detailTarget.closedAt && detailTarget.closedAt !== '운영 중' ? 'text-gray-400' : 'text-white']" />
               사업자 PDF 다운로드
             </button>
           </div>

@@ -86,4 +86,26 @@ public class UserDto {
         }
     }
 
+    @Getter
+    @Builder
+    public static class StoreInfoRes {
+        private Long idx;
+        private String email;
+        private String userName;
+        private String tel;
+        private Role role;
+
+        public static StoreInfoRes from(User entity) {
+            return StoreInfoRes.builder()
+                    .idx(entity.getIdx())
+                    .email(entity.getEmail())
+                    .userName(entity.getUserName())
+                    .tel(entity.getTel())
+                    .role(entity.getRole())
+                    .build();
+        }
+    }
+
+
+
 }

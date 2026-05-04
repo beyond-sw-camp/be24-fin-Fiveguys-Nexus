@@ -63,9 +63,20 @@ public class DashboardController {
      *
      * @return ResponseEntity 최근 6개월 월별 이상 발주 상태별 건수
      */
-    @GetMapping("/orders/danger-stats")
+    @GetMapping("/orders/danger/stats")
     public ResponseEntity<BaseResponse> getDangerStats() {
         DashboardDto.DangerStatsRes result = dashboardService.getDangerStats();
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
+
+    /**
+     * 주간 발주 통계 조회
+     *
+     * @return ResponseEntity 최근 7일 일별 자동/수동 발주 건수
+     */
+    @GetMapping("/orders/weekly/stats")
+    public ResponseEntity<BaseResponse> getWeeklyOrderStats() {
+        DashboardDto.WeeklyOrderStatsRes result = dashboardService.getWeeklyOrderStats();
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 }

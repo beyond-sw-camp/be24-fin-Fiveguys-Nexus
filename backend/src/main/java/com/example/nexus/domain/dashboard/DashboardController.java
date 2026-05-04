@@ -50,11 +50,22 @@ public class DashboardController {
     /**
      * 배송 현황 KPI 조회
      *
-     * @return ResponseEntity 진행중 배송 건수, 지연 건수, 진행중 배송 목록
+     * @return ResponseEntity 진행중 배송 건수, 지연 건수, 지연 배송 목록
      */
     @GetMapping("/delivery/kpi")
     public ResponseEntity<BaseResponse> getDeliveryKpi() {
         DashboardDto.DeliveryKpiRes result = dashboardService.getDeliveryKpi();
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
+
+    /**
+     * 이상 발주 통계 조회
+     *
+     * @return ResponseEntity 최근 6개월 월별 이상 발주 상태별 건수
+     */
+    @GetMapping("/orders/danger-stats")
+    public ResponseEntity<BaseResponse> getDangerStats() {
+        DashboardDto.DangerStatsRes result = dashboardService.getDangerStats();
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 }

@@ -56,4 +56,13 @@ public class DashboardDto {
                     .build();
         }
     }
+
+    @Getter
+    @Builder
+    public static class DangerStatsRes {
+        private List<String> labels;
+        private List<Long> confirmed;
+        private List<Long> approved;
+        private List<Long> rejected;
+    }
 }

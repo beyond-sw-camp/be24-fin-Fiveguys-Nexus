@@ -1,5 +1,5 @@
 <template>
-  <KpiCard title="총 매출" :value="value" unit="백만" :sub="sub" :delta="delta" to="/settlement" />
+  <KpiCard title="총 매출" :value="value" unit="원" :sub="sub" :delta="delta" to="/settlement" />
 </template>
 
 <script setup>
@@ -18,9 +18,8 @@ onMounted(async () => {
     const monthly = result.monthlyRevenue
     const today = result.todayRevenue
 
-    // 백만 단위로 변환
-    value.value = (monthly / 1000000).toFixed(1)
-    sub.value = `금일 ${(today / 1000000).toFixed(1)}백만`
+    value.value = monthly.toLocaleString()
+    sub.value = `금일 ${today.toLocaleString()}원`
 
     // 금일 매출 / 월간 매출 비율로 delta 표시
     delta.value = monthly > 0 ? Math.round(today * 1000 / monthly) / 10 : 0

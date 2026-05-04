@@ -3,6 +3,8 @@ package com.example.nexus.domain.dashboard.model;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.List;
+
 public class DashboardDto {
 
     @Getter
@@ -26,5 +28,22 @@ public class DashboardDto {
         private long todayAutoCount;
         private long confirmedCount;
         private long todayManualCount;
+    }
+
+    @Getter
+    @Builder
+    public static class DeliveryKpiRes {
+        private long ongoingCount;
+        private long delayCount;
+        private List<DeliveryItem> deliveryList;
+    }
+
+    @Getter
+    @Builder
+    public static class DeliveryItem {
+        private Long deliveryIdx;
+        private Long ordersIdx;
+        private String storeName;
+        private String status;
     }
 }

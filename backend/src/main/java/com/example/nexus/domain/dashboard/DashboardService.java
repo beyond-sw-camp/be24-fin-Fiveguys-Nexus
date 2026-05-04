@@ -1,8 +1,11 @@
 package com.example.nexus.domain.dashboard;
 
+import com.example.nexus.common.enums.DeliveryStatus;
 import com.example.nexus.common.enums.OrdersStatus;
 import com.example.nexus.common.enums.OrdersType;
 import com.example.nexus.domain.dashboard.model.DashboardDto;
+import com.example.nexus.domain.delivery.DeliveryRepository;
+import com.example.nexus.domain.delivery.model.Delivery;
 import com.example.nexus.domain.head.HeadIncomeRepository;
 import com.example.nexus.domain.orders.OrdersRepository;
 import com.example.nexus.domain.store.StoreRepository;
@@ -11,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +22,7 @@ public class DashboardService {
     private final StoreRepository storeRepository;
     private final HeadIncomeRepository headIncomeRepository;
     private final OrdersRepository ordersRepository;
+    private final DeliveryRepository deliveryRepository;
 
     public DashboardDto.StoreKpiRes getStoreKpi() {
         long totalCount = storeRepository.countByIsDeletedFalse();
@@ -69,6 +74,34 @@ public class DashboardService {
                 .todayAutoCount(todayAutoCount)
                 .confirmedCount(confirmedCount)
                 .todayManualCount(todayManualCount)
+                .build();
+    }
+
+    public DashboardDto.DeliveryKpiRes getDeliveryKpi() {
+        List<DeliveryStatus> ongoingStatuses = List.of(
+                DeliveryStatus.READY, DeliveryStatus.START, DeliveryStatus.DELIVERYING);
+
+        // 진행중 배송 건수
+        long ongoingCount = deliveryRepository.countByDeliveryStatusIn(ongoingStatuses);
+
+        // 배송 지연 건수
+        long delayCount = deliveryRepository.countByDeliveryStatus(DeliveryStatus.DELAY);
+
+        // 배송 지연 목록
+        List<Delivery> deliveries = deliveryRepository.findByDeliveryStatus(DeliveryStatus.DELAY);
+        List<DashboardDto.DeliveryItem> deliveryList = deliveries.stream()
+                .map(d -> DashboardDto.DeliveryItem.builder()
+                        .deliveryIdx(d.getIdx())
+                        .ordersIdx(d.getOrders().getIdx())
+                        .storeName(d.getOrders().getStore().getStoreName())
+                        .status(d.getDeliveryStatus().name())
+                        .build())
+                .toList();
+
+        return DashboardDto.DeliveryKpiRes.builder()
+                .ongoingCount(ongoingCount)
+                .delayCount(delayCount)
+                .deliveryList(deliveryList)
                 .build();
     }
 }

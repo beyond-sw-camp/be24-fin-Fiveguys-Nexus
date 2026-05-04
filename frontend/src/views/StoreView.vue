@@ -87,6 +87,7 @@ const getInitialForm = () => ({
   postcode: '',
   address: '',
   addressDetail: '',
+  totalAddress:'',
   business: '',
   createdAt: '',
   closedAt: '',
@@ -469,7 +470,7 @@ onMounted(() => {
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">가맹점 위치</label>
             <div class="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm text-gray-600">
-              {{ detailTarget?.address }}
+              {{ detailTarget?.totalAddress }}
             </div>
           </div>
 
@@ -507,8 +508,8 @@ onMounted(() => {
 
             <button
               @click="viewPdf"
-                    type="button"
-                    class="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-white border border-gray-200 text-gray-700 text-sm font-bold hover:bg-gray-50 transition-colors shadow-sm cursor-pointer">
+              type="button"
+              class="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-white border border-gray-200 text-gray-700 text-sm font-bold hover:bg-gray-50 transition-colors shadow-sm cursor-pointer">
               <Search class="w-4 h-4 text-gray-400" />
               사업자 PDF 미리보기
             </button>

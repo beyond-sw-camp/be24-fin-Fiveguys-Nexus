@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -88,6 +89,21 @@ public class DashboardController {
     @GetMapping("/delivery/ratio")
     public ResponseEntity<BaseResponse> getDeliveryRatio() {
         DashboardDto.DeliveryRatioRes result = dashboardService.getDeliveryRatio();
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
+
+    /**
+     * 위험 재고 목록 조회
+     *
+     * @param page 페이지 번호 (0부터 시작, 기본값 0)
+     * @param size 페이지 크기 (기본값 4)
+     * @return ResponseEntity LOW/CRITICAL 상태 본사 재고 목록 (Slice 페이징)
+     */
+    @GetMapping("/inventory/danger")
+    public ResponseEntity<BaseResponse> getDangerInventoryList(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "4") int size) {
+        DashboardDto.DangerInventoryRes result = dashboardService.getDangerInventoryList(page, size);
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 }

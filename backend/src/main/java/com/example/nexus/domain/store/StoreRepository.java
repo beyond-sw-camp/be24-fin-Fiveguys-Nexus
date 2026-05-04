@@ -19,7 +19,10 @@ public interface StoreRepository extends JpaRepository<Store,Long> {
 
     Optional<Store> findByBusiness(String business);
 
+    // 아래 3개는 대시보드 사용
     long countByIsDeletedFalse();
 
     long countByIsDeletedFalseAndCreatedAtAfter(LocalDateTime since);
+
+    long countByIsDeletedFalseAndCreatedAtBefore(LocalDateTime until);
 }

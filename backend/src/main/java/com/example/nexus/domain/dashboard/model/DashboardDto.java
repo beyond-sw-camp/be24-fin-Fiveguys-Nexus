@@ -1,7 +1,10 @@
 package com.example.nexus.domain.dashboard.model;
 
+import com.example.nexus.domain.delivery.model.Delivery;
 import lombok.Builder;
 import lombok.Getter;
+
+import java.util.List;
 
 public class DashboardDto {
 
@@ -26,5 +29,31 @@ public class DashboardDto {
         private long todayAutoCount;
         private long confirmedCount;
         private long todayManualCount;
+    }
+
+    @Getter
+    @Builder
+    public static class DeliveryKpiRes {
+        private long ongoingCount;
+        private long delayCount;
+        private List<DeliveryItem> deliveryList;
+    }
+
+    @Getter
+    @Builder
+    public static class DeliveryItem {
+        private Long deliveryIdx;
+        private Long ordersIdx;
+        private String storeName;
+        private String status;
+
+        public static DeliveryItem from(Delivery entity) {
+            return DeliveryItem.builder()
+                    .deliveryIdx(entity.getIdx())
+                    .ordersIdx(entity.getOrders().getIdx())
+                    .storeName(entity.getOrders().getStore().getStoreName())
+                    .status(entity.getDeliveryStatus().name())
+                    .build();
+        }
     }
 }

@@ -13,3 +13,6 @@ export const getDangerStats = () => api.get('/dashboard/orders/danger/stats')
 export const getWeeklyOrderStats = () => api.get('/dashboard/orders/weekly/stats')
 
 export const getDeliveryRatio = () => api.get('/dashboard/delivery/ratio')
+
+export const getDangerInventory = (page = 0, size = 4) =>
+  api.get('/dashboard/inventory/danger', { params: { page, size } })

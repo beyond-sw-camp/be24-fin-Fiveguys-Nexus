@@ -395,7 +395,9 @@ onMounted(() => {
           </td>
           <td class="px-5 py-3.5 text-gray-600">{{ store.ownerName }}</td>
           <td class="px-5 py-3.5 text-gray-500 text-xs truncate max-w-[150px]">{{ store.ownerEmail }}</td>
-          <td class="px-5 py-3.5 text-gray-500 text-xs">{{ store.address }}</td>
+          <td class="px-5 py-3.5 text-gray-500 text-xs truncate max-w-[250px]" :title="store.address">
+            {{ store.address }}
+          </td>
           <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ store.business }}</td>
           <td class="px-5 py-3.5 text-center">
               <span class="text-[11px] font-bold px-2 py-0.5 rounded-lg"

@@ -13,8 +13,11 @@ import com.example.nexus.domain.dashboard.model.DashboardDto;
 import com.example.nexus.domain.delivery.DeliveryRepository;
 import com.example.nexus.domain.head.HeadIncomeRepository;
 import com.example.nexus.domain.head.HeadInventoryRepository;
+import com.example.nexus.domain.head.model.HeadInventory;
 import com.example.nexus.domain.orders.OrdersRepository;
 import com.example.nexus.domain.store.StoreRepository;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -224,12 +227,20 @@ public class DashboardService {
                 .build();
     }
 
-    public List<DashboardDto.DangerInventoryItem> getDangerInventoryList() {
+    public DashboardDto.DangerInventoryRes getDangerInventoryList(int page, int size) {
         // 위험 재고: status가 LOW 또는 CRITICAL인 본사 재고 목록
         List<InventoryStatus> dangerStatuses = List.of(InventoryStatus.LOW, InventoryStatus.CRITICAL);
 
-        return headInventoryRepository.findByStatusIn(dangerStatuses).stream()
+        Slice<HeadInventory> slice =
+                headInventoryRepository.findByStatusIn(dangerStatuses, PageRequest.of(page, size));
+
+        List<DashboardDto.DangerInventoryItem> items = slice.getContent().stream()
                 .map(DashboardDto.DangerInventoryItem::from)
                 .toList();
+
+        return DashboardDto.DangerInventoryRes.builder()
+                .items(items)
+                .hasNext(slice.hasNext())
+                .build();
     }
 }

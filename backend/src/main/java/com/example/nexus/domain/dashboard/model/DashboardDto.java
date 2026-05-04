@@ -104,4 +104,11 @@ public class DashboardDto {
                     .build();
         }
     }
+
+    @Getter
+    @Builder
+    public static class DangerInventoryRes {
+        private List<DangerInventoryItem> items;
+        private boolean hasNext;
+    }
 }

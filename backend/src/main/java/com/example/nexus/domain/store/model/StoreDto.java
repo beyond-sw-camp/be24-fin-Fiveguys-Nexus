@@ -65,7 +65,10 @@ public class StoreDto {
                     .postcode(entity.getPostcode())
                     .address(entity.getAddress())
                     .addressDetail(entity.getAddressDetail())
-                    .totalAddress("["+entity.getPostcode()+"] "+ entity.getAddress()+" "+entity.getAddressDetail())
+                    .totalAddress(String.format("[%05d] %s %s",
+                            entity.getPostcode(),
+                            entity.getAddress(),
+                            entity.getAddressDetail()).trim())
                     .business(entity.getBusiness())
                     .createdAt(entity.getCreatedAt().format(formatter))
                     .closedAt(

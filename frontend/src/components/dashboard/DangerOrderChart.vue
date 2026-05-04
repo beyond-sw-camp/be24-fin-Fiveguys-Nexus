@@ -24,37 +24,49 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Chart } from 'chart.js/auto'
+import { getDangerStats } from '@/api/dashboard'
 
 const barCanvas = ref(null)
 
-const abnormalLabels = ['11월', '12월', '1월', '2월', '3월', '4월']
-const abnormalDanger = [3, 5, 2, 7, 4, 2]
-const abnormalApprove = [2, 4, 2, 5, 3, 1]
-const abnormalReject = [1, 1, 0, 2, 1, 1]
+onMounted(async () => {
+  let labels = []
+  let confirmed = []
+  let approved = []
+  let rejected = []
 
-onMounted(() => {
+  try {
+    const { data } = await getDangerStats()
+    const result = data.result
+    labels = result.labels
+    confirmed = result.confirmed
+    approved = result.approved
+    rejected = result.rejected
+  } catch (e) {
+    console.error('이상 발주 통계 조회 실패', e)
+  }
+
   new Chart(barCanvas.value, {
     type: 'bar',
     data: {
-      labels: abnormalLabels,
+      labels,
       datasets: [
         {
           label: '승인 대기',
-          data: abnormalDanger,
+          data: confirmed,
           backgroundColor: '#f87171',
           borderRadius: 4,
           borderSkipped: false,
         },
         {
           label: '승인',
-          data: abnormalApprove,
+          data: approved,
           backgroundColor: '#4ade80',
           borderRadius: 4,
           borderSkipped: false,
         },
         {
           label: '반려',
-          data: abnormalReject,
+          data: rejected,
           backgroundColor: '#d1d5db',
           borderRadius: 4,
           borderSkipped: false,

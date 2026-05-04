@@ -203,4 +203,21 @@ public class DashboardService {
                 .lastWeek(new ArrayList<>(lastWeekMap.values()))
                 .build();
     }
+
+    public DashboardDto.DeliveryRatioRes getDeliveryRatio() {
+        // 배송 상태별 건수 조회
+        long ready = deliveryRepository.countByDeliveryStatus(DeliveryStatus.READY);
+        long start = deliveryRepository.countByDeliveryStatus(DeliveryStatus.START);
+        long delivering = deliveryRepository.countByDeliveryStatus(DeliveryStatus.DELIVERYING);
+        long delivered = deliveryRepository.countByDeliveryStatus(DeliveryStatus.DELIVERED);
+        long delay = deliveryRepository.countByDeliveryStatus(DeliveryStatus.DELAY);
+
+        return DashboardDto.DeliveryRatioRes.builder()
+                .ready(ready)
+                .start(start)
+                .delivering(delivering)
+                .delivered(delivered)
+                .delay(delay)
+                .build();
+    }
 }

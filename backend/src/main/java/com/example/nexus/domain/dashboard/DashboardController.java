@@ -79,4 +79,15 @@ public class DashboardController {
         DashboardDto.WeeklyOrderStatsRes result = dashboardService.getWeeklyOrderStats();
         return ResponseEntity.ok(BaseResponse.success(result));
     }
+
+    /**
+     * 배송 비율 조회
+     *
+     * @return ResponseEntity 배송 상태별 건수
+     */
+    @GetMapping("/delivery/ratio")
+    public ResponseEntity<BaseResponse> getDeliveryRatio() {
+        DashboardDto.DeliveryRatioRes result = dashboardService.getDeliveryRatio();
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
 }

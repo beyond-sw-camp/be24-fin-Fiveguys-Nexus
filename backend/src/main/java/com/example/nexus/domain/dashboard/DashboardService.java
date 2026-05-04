@@ -1,7 +1,10 @@
 package com.example.nexus.domain.dashboard;
 
+import com.example.nexus.common.enums.OrdersStatus;
+import com.example.nexus.common.enums.OrdersType;
 import com.example.nexus.domain.dashboard.model.DashboardDto;
 import com.example.nexus.domain.head.HeadIncomeRepository;
+import com.example.nexus.domain.orders.OrdersRepository;
 import com.example.nexus.domain.store.StoreRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,6 +17,7 @@ import java.time.LocalDateTime;
 public class DashboardService {
     private final StoreRepository storeRepository;
     private final HeadIncomeRepository headIncomeRepository;
+    private final OrdersRepository ordersRepository;
 
     public DashboardDto.StoreKpiRes getStoreKpi() {
         long totalCount = storeRepository.countByIsDeletedFalse();
@@ -46,6 +50,25 @@ public class DashboardService {
         return DashboardDto.RevenueKpiRes.builder()
                 .monthlyRevenue(monthlyRevenue)
                 .todayRevenue(todayRevenue)
+                .build();
+    }
+
+    public DashboardDto.OrdersKpiRes getOrdersKpi() {
+        LocalDateTime todayStart = LocalDate.now().atStartOfDay();
+
+        // 금일 자동 발주 건수
+        long todayAutoCount = ordersRepository.countByOrdersTypeAndCreatedAtAfter(OrdersType.AUTO, todayStart);
+
+        // 현재 확정 상태 발주 건수
+        long confirmedCount = ordersRepository.countByOrdersStatus(OrdersStatus.CONFIRMED);
+
+        // 금일 수동 발주 건수
+        long todayManualCount = ordersRepository.countByOrdersTypeAndCreatedAtAfter(OrdersType.MANUAL, todayStart);
+
+        return DashboardDto.OrdersKpiRes.builder()
+                .todayAutoCount(todayAutoCount)
+                .confirmedCount(confirmedCount)
+                .todayManualCount(todayManualCount)
                 .build();
     }
 }

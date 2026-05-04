@@ -20,4 +20,9 @@ public interface OrdersRepository extends JpaRepository<Orders, Long>, JpaSpecif
             "FROM Orders o JOIN o.ordersItemList i " +
             "WHERE o.store.idx = :storeIdx AND o.createdAt >= :since AND (:excludeIdx IS NULL OR o.idx <> :excludeIdx)")
     Integer findAvgQtyByStoreAndPeriod(@Param("storeIdx") Long storeIdx, @Param("since") LocalDateTime since, @Param("excludeIdx") Long excludeIdx);
+
+    // 대시보드용
+    long countByOrdersTypeAndCreatedAtAfter(com.example.nexus.common.enums.OrdersType ordersType, LocalDateTime since);
+
+    long countByOrdersStatus(OrdersStatus ordersStatus);
 }

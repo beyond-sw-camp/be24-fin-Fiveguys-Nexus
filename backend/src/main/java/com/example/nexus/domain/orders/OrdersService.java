@@ -230,17 +230,33 @@ public class OrdersService {
                     .build());
         }
 
-        // 4. Orders 저장
+        // 4. 이상 발주 판정
+        // 이번 수동 발주의 총 주문 수량 계산
+        int totalQty = itemList.stream().mapToInt(OrdersItem::getCount).sum();
+
+        // DB에서 이상 발주 기준 조회 (기본값: 비율 200%, 기간 3개월)
+        Danger danger = dangerRepository.findById(1L).orElse(null);
+        int dangerRatio = danger != null ? danger.getRatio() : 200;
+        int period = danger != null ? danger.getPeriod() : 3;
+
+        // 해당 매장의 최근 N개월간 발주 건당 평균 수량 조회
+        LocalDateTime since = LocalDateTime.now().minusMonths(period);
+        Integer avgQty = ordersRepository.findAvgQtyByStoreAndPeriod(store.getIdx(), since);
+
+        // (이번 주문량 - 평균) / 평균 × 100 >= 기준 비율이면 이상 발주
+        boolean isDanger = avgQty > 0 && (totalQty - avgQty) * 100 / avgQty >= dangerRatio;
+
+        // 5. Orders 저장
         Orders orders = ordersRepository.save(Orders.builder()
                 .price(totalprice)
                 .ordersType(OrdersType.MANUAL)
                 .ordersStatus(OrdersStatus.CONFIRMED)
-                .isDanger(false)
+                .isDanger(isDanger)
                 .createdAt(LocalDateTime.now())
                 .store(store)
                 .build());
 
-        // 5. OrdersItem 저장
+        // 6. OrdersItem 저장
         for (OrdersItem item : itemList) {
             ordersItemRepository.save(OrdersItem.builder()
                     .count(item.getCount())

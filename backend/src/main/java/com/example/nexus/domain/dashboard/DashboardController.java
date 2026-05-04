@@ -19,9 +19,20 @@ public class DashboardController {
      *
      * @return ResponseEntity 총 매장 수, 이번 달 신규 매장 수, 전일 대비 증감률
      */
-    @GetMapping("/store-kpi")
+    @GetMapping("/store/kpi")
     public ResponseEntity<BaseResponse> getStoreKpi() {
         DashboardDto.StoreKpiRes result = dashboardService.getStoreKpi();
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
+
+    /**
+     * 총 매출 KPI 조회
+     *
+     * @return ResponseEntity 이번 달 총 매출, 금일 매출
+     */
+    @GetMapping("/revenue/kpi")
+    public ResponseEntity<BaseResponse> getRevenueKpi() {
+        DashboardDto.RevenueKpiRes result = dashboardService.getRevenueKpi();
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 }

@@ -1,6 +1,7 @@
 package com.example.nexus.domain.dashboard;
 
 import com.example.nexus.domain.dashboard.model.DashboardDto;
+import com.example.nexus.domain.head.HeadIncomeRepository;
 import com.example.nexus.domain.store.StoreRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class DashboardService {
     private final StoreRepository storeRepository;
+    private final HeadIncomeRepository headIncomeRepository;
 
     public DashboardDto.StoreKpiRes getStoreKpi() {
         long totalCount = storeRepository.countByIsDeletedFalse();
@@ -29,6 +31,21 @@ public class DashboardService {
                 .totalStoreCount(totalCount)
                 .newStoreCountThisMonth(newThisMonth)
                 .deltaPercent(Math.round(delta * 10) / 10.0)
+                .build();
+    }
+
+    public DashboardDto.RevenueKpiRes getRevenueKpi() {
+        // 이번 달 1일 00:00 기준 월간 매출
+        LocalDateTime monthStart = LocalDate.now().withDayOfMonth(1).atStartOfDay();
+        long monthlyRevenue = headIncomeRepository.sumPriceByOrdersCreatedAtAfter(monthStart);
+
+        // 금일 00:00 기준 오늘 매출
+        LocalDateTime todayStart = LocalDate.now().atStartOfDay();
+        long todayRevenue = headIncomeRepository.sumPriceByOrdersCreatedAtAfter(todayStart);
+
+        return DashboardDto.RevenueKpiRes.builder()
+                .monthlyRevenue(monthlyRevenue)
+                .todayRevenue(todayRevenue)
                 .build();
     }
 }

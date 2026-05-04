@@ -180,10 +180,7 @@ public class OrdersService {
         List<Orders> confirmedOrders = ordersRepository.findAllByOrdersStatus(OrdersStatus.CONFIRMED);
 
         for (Orders orders : confirmedOrders) {
-            if (!orders.isDanger()) {
-                continue;
-            }
-            applyOutboundForOrder(orders, "발주 일괄승인(이상) ordersIdx=");
+            applyOutboundForOrder(orders, "발주 일괄승인 ordersIdx=");
             orders.approve();
         }
     }

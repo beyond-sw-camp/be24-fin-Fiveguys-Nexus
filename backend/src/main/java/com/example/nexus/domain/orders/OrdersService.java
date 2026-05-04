@@ -251,8 +251,6 @@ public class OrdersService {
                     .orders(orders)
                     .build());
         }
-
-        applyOutboundForOrder(orders, "수동 발주 등록 ordersIdx=");
     }
 
     public List<OrdersDto.OrdersRes> findByUserIdxAndOrdersStatus(Long userIdx) {

@@ -22,18 +22,29 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Chart } from 'chart.js/auto'
+import { getWeeklyOrderStats } from '@/api/dashboard'
 
 const lineCanvas = ref(null)
 
-const thisWeek = [32, 48, 38, 65, 52, 78, 58]
-const lastWeek = [22, 38, 42, 48, 58, 52, 48]
-const weekLabels = ['일', '월', '화', '수', '목', '금', '토']
+onMounted(async () => {
+  let labels = []
+  let thisWeek = []
+  let lastWeek = []
 
-onMounted(() => {
+  try {
+    const { data } = await getWeeklyOrderStats()
+    const result = data.result
+    labels = result.labels
+    thisWeek = result.thisWeek
+    lastWeek = result.lastWeek
+  } catch (e) {
+    console.error('주간 발주 통계 조회 실패', e)
+  }
+
   new Chart(lineCanvas.value, {
     type: 'line',
     data: {
-      labels: weekLabels,
+      labels,
       datasets: [
         {
           label: '이번 주',
@@ -90,9 +101,9 @@ onMounted(() => {
           border: { display: false },
         },
         y: {
-          min: 10, max: 90,
+          min: 0,
           grid: { color: '#f3f4f6' },
-          ticks: { color: '#9ca3af', font: { size: 11 }, stepSize: 20 },
+          ticks: { color: '#9ca3af', font: { size: 11 }, stepSize: 2, precision: 0 },
           border: { display: false },
         },
       },

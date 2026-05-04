@@ -30,6 +30,7 @@ public class DashboardDto {
         private long todayAutoCount;
         private long confirmedCount;
         private long todayManualCount;
+        private long dangerCount;
     }
 
     @Getter

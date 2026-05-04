@@ -26,6 +26,8 @@ public interface OrdersRepository extends JpaRepository<Orders, Long>, JpaSpecif
 
     long countByOrdersStatus(OrdersStatus ordersStatus);
 
+    long countByIsDangerTrue();
+
     @Query("SELECT FUNCTION('DATE_FORMAT', o.createdAt, '%Y-%m'), o.ordersStatus, COUNT(o) " +
             "FROM Orders o WHERE o.isDanger = true AND o.createdAt >= :since " +
             "GROUP BY FUNCTION('DATE_FORMAT', o.createdAt, '%Y-%m'), o.ordersStatus " +

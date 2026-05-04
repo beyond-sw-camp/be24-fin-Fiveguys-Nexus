@@ -4,6 +4,7 @@ import com.example.nexus.common.enums.DeliveryStatus;
 import com.example.nexus.domain.delivery.model.Delivery;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
@@ -12,6 +13,9 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
     long countByDeliveryStatusIn(List<DeliveryStatus> statuses);
 
     long countByDeliveryStatus(DeliveryStatus status);
+
+    // 배송 비율용: 최근 한달 상태별 건수
+    long countByDeliveryStatusAndDepartureDateAfter(DeliveryStatus status, LocalDateTime since);
 
     List<Delivery> findAllByDeliveryStatus(DeliveryStatus status);
 }

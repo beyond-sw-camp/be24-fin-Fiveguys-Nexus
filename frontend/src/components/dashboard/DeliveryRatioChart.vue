@@ -2,7 +2,7 @@
   <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
     <div class="flex items-center justify-between mb-4">
       <h2 class="font-bold text-gray-900">배송 비율</h2>
-      <span class="text-xs text-gray-400">오늘 기준</span>
+      <span class="text-xs text-gray-400">최근 1개월</span>
     </div>
     <div class="relative mx-auto" style="width:140px;height:140px">
       <canvas ref="donutCanvas"></canvas>

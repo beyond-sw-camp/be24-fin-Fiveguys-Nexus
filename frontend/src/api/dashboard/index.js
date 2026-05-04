@@ -9,3 +9,5 @@ export const getOrdersKpi = () => api.get('/dashboard/orders/kpi')
 export const getDeliveryKpi = () => api.get('/dashboard/delivery/kpi')
 
 export const getDangerStats = () => api.get('/dashboard/orders/danger/stats')
+
+export const getWeeklyOrderStats = () => api.get('/dashboard/orders/weekly/stats')

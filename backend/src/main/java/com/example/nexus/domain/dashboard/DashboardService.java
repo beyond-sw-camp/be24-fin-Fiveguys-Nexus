@@ -248,4 +248,19 @@ public class DashboardService {
                 .hasNext(slice.hasNext())
                 .build();
     }
+
+    public DashboardDto.DelayDeliveryRes getDelayDeliveryList(int page, int size) {
+        // 지연 배송 목록: status가 DELAY인 배송
+        Slice<com.example.nexus.domain.delivery.model.Delivery> slice =
+                deliveryRepository.findByDeliveryStatus(DeliveryStatus.DELAY, PageRequest.of(page, size));
+
+        List<DashboardDto.DeliveryItem> items = slice.getContent().stream()
+                .map(DashboardDto.DeliveryItem::from)
+                .toList();
+
+        return DashboardDto.DelayDeliveryRes.builder()
+                .items(items)
+                .hasNext(slice.hasNext())
+                .build();
+    }
 }

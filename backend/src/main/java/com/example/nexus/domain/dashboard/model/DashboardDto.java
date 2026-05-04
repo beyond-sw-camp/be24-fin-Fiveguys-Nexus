@@ -112,4 +112,11 @@ public class DashboardDto {
         private List<DangerInventoryItem> items;
         private boolean hasNext;
     }
+
+    @Getter
+    @Builder
+    public static class DelayDeliveryRes {
+        private List<DeliveryItem> items;
+        private boolean hasNext;
+    }
 }

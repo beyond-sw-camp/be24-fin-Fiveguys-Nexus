@@ -106,4 +106,19 @@ public class DashboardController {
         DashboardDto.DangerInventoryRes result = dashboardService.getDangerInventoryList(page, size);
         return ResponseEntity.ok(BaseResponse.success(result));
     }
+
+    /**
+     * 지연 배송 목록 조회
+     *
+     * @param page 페이지 번호 (0부터 시작, 기본값 0)
+     * @param size 페이지 크기 (기본값 4)
+     * @return ResponseEntity 지연 배송 목록 (Slice 페이징)
+     */
+    @GetMapping("/delivery/delay")
+    public ResponseEntity<BaseResponse> getDelayDeliveryList(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "4") int size) {
+        DashboardDto.DelayDeliveryRes result = dashboardService.getDelayDeliveryList(page, size);
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
 }

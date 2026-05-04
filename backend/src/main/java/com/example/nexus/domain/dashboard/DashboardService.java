@@ -20,13 +20,10 @@ public class DashboardService {
         LocalDateTime monthStart = LocalDate.now().withDayOfMonth(1).atStartOfDay();
         long newThisMonth = storeRepository.countByIsDeletedFalseAndCreatedAtAfter(monthStart);
 
-        // 전일 대비 증감률: 어제 매장 수 대비 오늘 매장 수
+        // 전일 대비 증감률: 어제까지 총 매장 수 vs 오늘까지 총 매장 수
         LocalDateTime todayStart = LocalDate.now().atStartOfDay();
-        LocalDateTime yesterdayStart = todayStart.minusDays(1);
-        long newToday = storeRepository.countByIsDeletedFalseAndCreatedAtAfter(todayStart);
-        long newYesterday = storeRepository.countByIsDeletedFalseAndCreatedAtAfter(yesterdayStart) - newToday;
-
-        double delta = newYesterday > 0 ? (double) (newToday - newYesterday) * 100 / newYesterday : 0;
+        long yesterdayTotal = storeRepository.countByIsDeletedFalseAndCreatedAtBefore(todayStart);
+        double delta = yesterdayTotal > 0 ? (double) (totalCount - yesterdayTotal) * 100 / yesterdayTotal : 0;
 
         return DashboardDto.StoreKpiRes.builder()
                 .totalStoreCount(totalCount)

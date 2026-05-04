@@ -144,7 +144,7 @@ public class OrdersService {
             int ratio = avgQty > 0 ? (totalQty - avgQty) * 100 / avgQty : 0;
 
             if (ratio < req.getRatio()) {
-                orders.clearDanger();
+                orders.markDanger(false);
             }
 
         }

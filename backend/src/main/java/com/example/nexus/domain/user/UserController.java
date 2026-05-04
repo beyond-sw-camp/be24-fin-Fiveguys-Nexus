@@ -2,13 +2,12 @@ package com.example.nexus.domain.user;
 
 import com.example.nexus.domain.user.model.AuthUserDetails;
 import com.example.nexus.domain.user.model.UserDto;
-import com.example.nexus.utils.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -46,5 +45,13 @@ public class UserController {
 //        return ResponseEntity.ok("로그인 실패");
 //
 //    }
+
+
+    // 마이페이지 조회
+    @GetMapping("/user/mypage")
+    public ResponseEntity<UserDto.StoreInfoRes> mypage(@AuthenticationPrincipal AuthUserDetails authUserDetails) {
+        return ResponseEntity.ok(userService.getStoreInfo(authUserDetails.getIdx()));
+    }
+
 
 }

@@ -12,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -61,5 +62,11 @@ public class UserService implements UserDetailsService {
         User user = userRepository.findByEmail(username).orElseThrow();
 
         return AuthUserDetails.from(user);
+    }
+
+    public UserDto.StoreInfoRes getStoreInfo(Long storeIdx) {
+
+        User user = userRepository.findById(storeIdx).orElse(null);
+        return UserDto.StoreInfoRes.from(user);
     }
 }

@@ -154,6 +154,11 @@ public class OrdersService {
     public void approve(Long ordersIdx) {
         Orders orders = ordersRepository.findById(ordersIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        if (orders.getOrdersStatus() != OrdersStatus.CONFIRMED) {
+            throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
+        }
+
         applyOutboundForOrder(orders, "발주 승인(이상) ordersIdx=");
         orders.approve();
     }
@@ -162,6 +167,11 @@ public class OrdersService {
     public void reject(Long ordersIdx) {
         Orders orders = ordersRepository.findById(ordersIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        if (orders.getOrdersStatus() != OrdersStatus.CONFIRMED) {
+            throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
+        }
+
         orders.reject();
     }
 

@@ -232,6 +232,17 @@ public class DashboardService {
                 .build();
     }
 
+    public DashboardDto.InventoryKpiRes getInventoryKpi() {
+        long lowCount = headInventoryRepository.countByStatus(InventoryStatus.LOW);
+        long criticalCount = headInventoryRepository.countByStatus(InventoryStatus.CRITICAL);
+
+        return DashboardDto.InventoryKpiRes.builder()
+                .lowCount(lowCount)
+                .criticalCount(criticalCount)
+                .totalDangerCount(lowCount + criticalCount)
+                .build();
+    }
+
     public DashboardDto.DangerInventoryRes getDangerInventoryList(int page, int size) {
         // 위험 재고: status가 LOW 또는 CRITICAL인 본사 재고 목록
         List<InventoryStatus> dangerStatuses = List.of(InventoryStatus.LOW, InventoryStatus.CRITICAL);

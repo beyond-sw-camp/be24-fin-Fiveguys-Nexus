@@ -88,6 +88,14 @@ public class DashboardDto {
 
     @Getter
     @Builder
+    public static class InventoryKpiRes {
+        private long lowCount;
+        private long criticalCount;
+        private long totalDangerCount;
+    }
+
+    @Getter
+    @Builder
     public static class DangerInventoryItem {
         private Long inventoryIdx;
         private String productName;

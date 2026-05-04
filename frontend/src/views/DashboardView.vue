@@ -18,6 +18,7 @@
     <div class="grid grid-cols-4 gap-4">
       <StoreKpiCard />
       <OrdersKpiCard />
+      <InventoryKpiCard />
       <DeliveryKpiCard />
     </div>
 
@@ -43,6 +44,7 @@
 import { computed, ref } from 'vue'
 import StoreKpiCard from '@/components/dashboard/StoreKpiCard.vue'
 import OrdersKpiCard from '@/components/dashboard/OrdersKpiCard.vue'
+import InventoryKpiCard from '@/components/dashboard/InventoryKpiCard.vue'
 import DeliveryKpiCard from '@/components/dashboard/DeliveryKpiCard.vue'
 import WeeklyOrderChart from '@/components/dashboard/WeeklyOrderChart.vue'
 import OngoingDeliveryList from '@/components/dashboard/OngoingDeliveryList.vue'

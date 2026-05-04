@@ -93,6 +93,17 @@ public class DashboardController {
     }
 
     /**
+     * 재고 위험 KPI 조회
+     *
+     * @return ResponseEntity LOW/CRITICAL 상태 품목 수
+     */
+    @GetMapping("/inventory/kpi")
+    public ResponseEntity<BaseResponse> getInventoryKpi() {
+        DashboardDto.InventoryKpiRes result = dashboardService.getInventoryKpi();
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
+
+    /**
      * 위험 재고 목록 조회
      *
      * @param page 페이지 번호 (0부터 시작, 기본값 0)

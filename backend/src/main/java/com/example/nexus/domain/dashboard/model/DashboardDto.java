@@ -1,5 +1,6 @@
 package com.example.nexus.domain.dashboard.model;
 
+import com.example.nexus.domain.delivery.model.Delivery;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -45,5 +46,14 @@ public class DashboardDto {
         private Long ordersIdx;
         private String storeName;
         private String status;
+
+        public static DeliveryItem from(Delivery entity) {
+            return DeliveryItem.builder()
+                    .deliveryIdx(entity.getIdx())
+                    .ordersIdx(entity.getOrders().getIdx())
+                    .storeName(entity.getOrders().getStore().getStoreName())
+                    .status(entity.getDeliveryStatus().name())
+                    .build();
+        }
     }
 }

@@ -5,7 +5,6 @@ import com.example.nexus.common.enums.OrdersStatus;
 import com.example.nexus.common.enums.OrdersType;
 import com.example.nexus.domain.dashboard.model.DashboardDto;
 import com.example.nexus.domain.delivery.DeliveryRepository;
-import com.example.nexus.domain.delivery.model.Delivery;
 import com.example.nexus.domain.head.HeadIncomeRepository;
 import com.example.nexus.domain.orders.OrdersRepository;
 import com.example.nexus.domain.store.StoreRepository;
@@ -88,14 +87,9 @@ public class DashboardService {
         long delayCount = deliveryRepository.countByDeliveryStatus(DeliveryStatus.DELAY);
 
         // 배송 지연 목록
-        List<Delivery> deliveries = deliveryRepository.findByDeliveryStatus(DeliveryStatus.DELAY);
-        List<DashboardDto.DeliveryItem> deliveryList = deliveries.stream()
-                .map(d -> DashboardDto.DeliveryItem.builder()
-                        .deliveryIdx(d.getIdx())
-                        .ordersIdx(d.getOrders().getIdx())
-                        .storeName(d.getOrders().getStore().getStoreName())
-                        .status(d.getDeliveryStatus().name())
-                        .build())
+        List<DashboardDto.DeliveryItem> deliveryList = deliveryRepository
+                .findByDeliveryStatus(DeliveryStatus.DELAY).stream()
+                .map(DashboardDto.DeliveryItem::from)
                 .toList();
 
         return DashboardDto.DeliveryKpiRes.builder()

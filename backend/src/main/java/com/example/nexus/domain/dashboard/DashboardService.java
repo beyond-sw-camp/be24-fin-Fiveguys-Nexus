@@ -8,9 +8,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import com.example.nexus.common.enums.InventoryStatus;
 import com.example.nexus.domain.dashboard.model.DashboardDto;
 import com.example.nexus.domain.delivery.DeliveryRepository;
 import com.example.nexus.domain.head.HeadIncomeRepository;
+import com.example.nexus.domain.head.HeadInventoryRepository;
 import com.example.nexus.domain.orders.OrdersRepository;
 import com.example.nexus.domain.store.StoreRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ public class DashboardService {
     private final HeadIncomeRepository headIncomeRepository;
     private final OrdersRepository ordersRepository;
     private final DeliveryRepository deliveryRepository;
+    private final HeadInventoryRepository headInventoryRepository;
 
     public DashboardDto.StoreKpiRes getStoreKpi() {
         long totalCount = storeRepository.countByIsDeletedFalse();
@@ -219,5 +222,14 @@ public class DashboardService {
                 .delivered(delivered)
                 .delay(delay)
                 .build();
+    }
+
+    public List<DashboardDto.DangerInventoryItem> getDangerInventoryList() {
+        // 위험 재고: status가 LOW 또는 CRITICAL인 본사 재고 목록
+        List<InventoryStatus> dangerStatuses = List.of(InventoryStatus.LOW, InventoryStatus.CRITICAL);
+
+        return headInventoryRepository.findByStatusIn(dangerStatuses).stream()
+                .map(DashboardDto.DangerInventoryItem::from)
+                .toList();
     }
 }

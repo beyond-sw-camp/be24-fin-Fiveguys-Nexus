@@ -1,6 +1,7 @@
 package com.example.nexus.domain.dashboard.model;
 
 import com.example.nexus.domain.delivery.model.Delivery;
+import com.example.nexus.domain.head.model.HeadInventory;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -82,5 +83,25 @@ public class DashboardDto {
         private long delivering;
         private long delivered;
         private long delay;
+    }
+
+    @Getter
+    @Builder
+    public static class DangerInventoryItem {
+        private Long inventoryIdx;
+        private String productName;
+        private int count;
+        private int minStock;
+        private String status;
+
+        public static DangerInventoryItem from(HeadInventory entity) {
+            return DangerInventoryItem.builder()
+                    .inventoryIdx(entity.getIdx())
+                    .productName(entity.getProduct().getProductName())
+                    .count(entity.getCount())
+                    .minStock(entity.getProduct().getMinStock())
+                    .status(entity.getStatus().name())
+                    .build();
+        }
     }
 }

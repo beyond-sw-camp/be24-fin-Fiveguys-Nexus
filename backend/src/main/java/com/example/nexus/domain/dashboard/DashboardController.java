@@ -2,6 +2,7 @@ package com.example.nexus.domain.dashboard;
 
 import com.example.nexus.common.model.BaseResponse;
 import com.example.nexus.domain.dashboard.model.DashboardDto;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -88,6 +89,17 @@ public class DashboardController {
     @GetMapping("/delivery/ratio")
     public ResponseEntity<BaseResponse> getDeliveryRatio() {
         DashboardDto.DeliveryRatioRes result = dashboardService.getDeliveryRatio();
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
+
+    /**
+     * 위험 재고 목록 조회
+     *
+     * @return ResponseEntity LOW/CRITICAL 상태 본사 재고 목록
+     */
+    @GetMapping("/inventory/danger")
+    public ResponseEntity<BaseResponse> getDangerInventoryList() {
+        List<DashboardDto.DangerInventoryItem> result = dashboardService.getDangerInventoryList();
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 }

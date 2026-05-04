@@ -16,7 +16,6 @@
 
     <!-- KPI 카드 4개 -->
     <div class="grid grid-cols-4 gap-4">
-      <RevenueKpiCard />
       <StoreKpiCard />
       <OrdersKpiCard />
       <DeliveryKpiCard />
@@ -42,7 +41,6 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import RevenueKpiCard from '@/components/dashboard/RevenueKpiCard.vue'
 import StoreKpiCard from '@/components/dashboard/StoreKpiCard.vue'
 import OrdersKpiCard from '@/components/dashboard/OrdersKpiCard.vue'
 import DeliveryKpiCard from '@/components/dashboard/DeliveryKpiCard.vue'

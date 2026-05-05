@@ -35,14 +35,14 @@ public class StoreController {
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 
-    // 가맹점 목록 조회
+    // 가맹점 목록 조회 및 검색 조건
     @GetMapping("/list")
     public ResponseEntity storeList(
-            @RequestParam(defaultValue = "ALL") String status,
+            StoreDto.StoreSearchPagingReq searchReq,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ){
-        StoreDto.StorePageRes result = storeService.storeList(status, page,size);
+        StoreDto.StorePageRes result = storeService.storeList(searchReq, page,size);
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 

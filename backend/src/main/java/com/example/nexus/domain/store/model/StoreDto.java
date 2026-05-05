@@ -114,6 +114,16 @@ public class StoreDto {
         private String keyword;
     }
 
+    // 가맹점 검색
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class StoreSearchPagingReq {
+        private String keyword;
+        private String status;
+    }
+
     @Builder
     @Getter
     public static class StoreSearchRes {

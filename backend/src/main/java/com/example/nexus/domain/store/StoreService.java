@@ -42,16 +42,26 @@ public class StoreService {
     }
 
     @Transactional(readOnly = true)
-    public StoreDto.StorePageRes storeList(String status, int page, int size) {
+    public StoreDto.StorePageRes storeList(StoreDto.StoreSearchPagingReq req, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<Store> result;
 
+        String status = (req.getStatus() != null) ? req.getStatus().trim(): "";
+        String keyword = (req.getKeyword() != null) ? req.getKeyword().trim() : "";
+        boolean hasKeyword = !keyword.isEmpty();
+
         if ("ACTIVE".equals(status)) {
-            result = storeRepository.findByIsDeletedFalse(pageRequest);
+            result = hasKeyword
+                    ? storeRepository.findByStatusAndKeyword(false, keyword, pageRequest)
+                    : storeRepository.findByIsDeletedFalse(pageRequest);
         } else if ("CLOSED".equals(status)) {
-            result = storeRepository.findByIsDeletedTrue(pageRequest);
+            result = hasKeyword
+                    ? storeRepository.findByStatusAndKeyword(true, keyword, pageRequest)
+                    : storeRepository.findByIsDeletedTrue(pageRequest);
         } else {
-            result = storeRepository.findAll(pageRequest); // ALL인 경우
+            result = hasKeyword
+                    ? storeRepository.findByKeywordAll(keyword,pageRequest)
+                    : storeRepository.findAll(pageRequest);
         }
         return StoreDto.StorePageRes.from(result);
     }

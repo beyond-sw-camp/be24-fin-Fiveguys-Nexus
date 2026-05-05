@@ -324,22 +324,6 @@ public class OrdersController {
     }
 
     /**
-     * 가맹점 발주 이력 조회
-     *
-     * @param authUserDetails 인증된 사용자 정보
-     * @return ResponseEntity 가맹점 발주 목록
-     * @throws ResponseStatusException 로그인하지 않은 경우 (401)
-     */
-    @GetMapping("/store/list")
-    public ResponseEntity storeList(@AuthenticationPrincipal AuthUserDetails authUserDetails) {
-        if (authUserDetails == null) {
-            throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
-        }
-        List<OrdersDto.OrdersRes> result = orderService.findByUserIdx(authUserDetails.getIdx());
-        return ResponseEntity.ok(BaseResponse.success(result));
-    }
-
-    /**
      * 가맹점 발주 이력 조회 (페이징)
      *
      * @param authUserDetails 인증된 사용자 정보

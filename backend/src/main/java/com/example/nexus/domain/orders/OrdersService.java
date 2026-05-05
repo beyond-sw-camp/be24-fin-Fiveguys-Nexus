@@ -112,12 +112,14 @@ public class OrdersService {
         });
     }
 
+    // 발주 상세 조회 (단건)
     public OrdersDto.OrdersRes findById(Long ordersIdx) {
         Orders orders = ordersRepository.findById(ordersIdx).orElseThrow(
                 () -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
         return OrdersDto.OrdersRes.from(orders);
     }
 
+    // 이상 발주 기준 설정 조회
     public DangerDto.DangerRes find() {
         return dangerRepository.findById(1L)
                 .map(DangerDto.DangerRes::from)
@@ -127,6 +129,7 @@ public class OrdersService {
                         .build());
     }
 
+    // 이상 발주 기준 설정 저장 및 기존 이상 발주 재평가
     @Transactional
     public void save(DangerDto.DangerReq req) {
         Danger danger = dangerRepository.findById(1L)
@@ -155,6 +158,7 @@ public class OrdersService {
         }
     }
 
+    // 본사 - 이상 발주 개별 승인 (출고 처리 포함)
     @Transactional
     public void approve(Long ordersIdx) {
         Orders orders = ordersRepository.findById(ordersIdx)
@@ -168,6 +172,7 @@ public class OrdersService {
         orders.approve();
     }
 
+    // 본사 - 이상 발주 개별 반려
     @Transactional
     public void reject(Long ordersIdx) {
         Orders orders = ordersRepository.findById(ordersIdx)
@@ -180,6 +185,7 @@ public class OrdersService {
         orders.reject();
     }
 
+    // 본사 - 확정 발주 일괄 승인 (출고 처리 포함)
     @Transactional
     public void approveAllConfirmed() {
         List<Orders> confirmedOrders = ordersRepository.findAllByOrdersStatus(OrdersStatus.CONFIRMED);
@@ -190,6 +196,7 @@ public class OrdersService {
         }
     }
 
+    // 발주 승인 시 품목별 출고 처리 (재고 차감)
     private void applyOutboundForOrder(Orders orders, String memoPrefix) {
         Long storeIdx = orders.getStore().getIdx();
         List<OrdersItem> items = ordersItemRepository.findByOrdersIdx(orders.getIdx());
@@ -275,6 +282,7 @@ public class OrdersService {
         }
     }
 
+    // 점주 - 제안 발주서 목록 조회 (WAITING 상태, 현재 재고 포함)
     public List<OrdersDto.OrdersRes> findByUserIdxAndOrdersStatus(Long userIdx) {
         Store store = storeRepository.findByUserIdx(userIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
@@ -288,6 +296,7 @@ public class OrdersService {
                 .toList();
     }
 
+    // 점주 - 제안 발주서 확정 (이상 발주 재판정 포함)
     @Transactional
     public void confirmStoreOrder(Long userIdx, Long ordersIdx) {
         Store store = storeRepository.findByUserIdx(userIdx)
@@ -311,6 +320,7 @@ public class OrdersService {
         orders.confirm();
     }
 
+    // 점주 - 제안 발주서에 품목 추가 (가격 자동 반영)
     @Transactional
     public void addStoreItem(Long userIdx, Long ordersIdx, OrdersItemDto.OrdersItemReq req) {
         Store store = storeRepository.findByUserIdx(userIdx)
@@ -335,6 +345,7 @@ public class OrdersService {
         orders.updatePrice(orders.getPrice() + (long) product.getUnitPrice() * req.getCount());
     }
 
+    // 점주 - 제안 발주서 품목 수량 변경 (가격 차액 자동 반영)
     @Transactional
     public void updateStoreItemCount(Long userIdx, Long ordersItemIdx, Integer count) {
         Store store = storeRepository.findByUserIdx(userIdx)
@@ -353,6 +364,7 @@ public class OrdersService {
         orders.updatePrice(orders.getPrice() + priceDiff);
     }
 
+    // 점주 - 제안 발주서 품목 삭제 (가격 자동 차감)
     @Transactional
     public void deleteStoreItem(Long userIdx, Long ordersItemIdx) {
         Store store = storeRepository.findByUserIdx(userIdx)
@@ -370,6 +382,7 @@ public class OrdersService {
         ordersItemRepository.delete(item);
     }
 
+    // 점주 - 제안 발주서 거절
     @Transactional
     public void rejectStoreOrder(Long userIdx, Long ordersIdx) {
         Store store = storeRepository.findByUserIdx(userIdx)
@@ -389,16 +402,7 @@ public class OrdersService {
         orders.reject();
     }
 
-    public List<OrdersDto.OrdersRes> findByUserIdx(Long userIdx) {
-        Store store = storeRepository.findByUserIdx(userIdx)
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
-
-        return ordersRepository.findAllByStore_IdxAndOrdersStatusIn(
-                store.getIdx(),
-                List.of(OrdersStatus.CONFIRMED, OrdersStatus.APPROVE, OrdersStatus.REJECT, OrdersStatus.CANCELLED)
-        ).stream().map(OrdersDto.OrdersRes::from).toList();
-    }
-
+    // 점주 - 발주 이력 페이징 조회 (확정/승인/반려/취소)
     public Page<OrdersDto.OrdersRes> findByUserIdxPaged(Long userIdx, Pageable pageable) {
         Store store = storeRepository.findByUserIdx(userIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
@@ -410,6 +414,7 @@ public class OrdersService {
         ).map(OrdersDto.OrdersRes::from);
     }
 
+    // 점주 - 확정 발주 취소
     @Transactional
     public void cancelOrder(Long userIdx, Long ordersIdx) {
         Store store = storeRepository.findByUserIdx(userIdx)

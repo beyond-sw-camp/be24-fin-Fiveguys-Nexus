@@ -1,7 +1,3 @@
-<template>
-  <KpiCard title="정산 현황" :value="value" unit="원" :sub="sub" :delta="delta" to="/store-settlement" />
-</template>
-
 <script setup>
 import { ref, onMounted } from 'vue'
 import KpiCard from '../KpiCard.vue'
@@ -23,3 +19,7 @@ onMounted(async () => {
   }
 })
 </script>
+
+<template>
+  <KpiCard title="정산 현황" :value="value" unit="원" :sub="sub" :delta="delta" to="/store-settlement" />
+</template>

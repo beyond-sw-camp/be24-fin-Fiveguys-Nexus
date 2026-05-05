@@ -1,3 +1,18 @@
+<script setup>
+import { computed } from 'vue'
+import StoreKpiCard from '@/components/dashboard/hq/StoreKpiCard.vue'
+import OrdersKpiCard from '@/components/dashboard/hq/OrdersKpiCard.vue'
+import InventoryKpiCard from '@/components/dashboard/hq/InventoryKpiCard.vue'
+import DeliveryKpiCard from '@/components/dashboard/hq/DeliveryKpiCard.vue'
+import WeeklyOrderChart from '@/components/dashboard/hq/WeeklyOrderChart.vue'
+import OngoingDeliveryList from '@/components/dashboard/hq/OngoingDeliveryList.vue'
+import DangerOrderChart from '@/components/dashboard/hq/DangerOrderChart.vue'
+import DeliveryRatioChart from '@/components/dashboard/hq/DeliveryRatioChart.vue'
+import DangerInventoryList from '@/components/dashboard/hq/DangerInventoryList.vue'
+
+const today = computed(() => new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' }))
+</script>
+
 <template>
   <div class="flex-1 overflow-auto p-5 space-y-4">
     <div class="flex items-start justify-between gap-4">
@@ -32,18 +47,3 @@
 
   </div>
 </template>
-
-<script setup>
-import { computed } from 'vue'
-import StoreKpiCard from '@/components/dashboard/hq/StoreKpiCard.vue'
-import OrdersKpiCard from '@/components/dashboard/hq/OrdersKpiCard.vue'
-import InventoryKpiCard from '@/components/dashboard/hq/InventoryKpiCard.vue'
-import DeliveryKpiCard from '@/components/dashboard/hq/DeliveryKpiCard.vue'
-import WeeklyOrderChart from '@/components/dashboard/hq/WeeklyOrderChart.vue'
-import OngoingDeliveryList from '@/components/dashboard/hq/OngoingDeliveryList.vue'
-import DangerOrderChart from '@/components/dashboard/hq/DangerOrderChart.vue'
-import DeliveryRatioChart from '@/components/dashboard/hq/DeliveryRatioChart.vue'
-import DangerInventoryList from '@/components/dashboard/hq/DangerInventoryList.vue'
-
-const today = computed(() => new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' }))
-</script>

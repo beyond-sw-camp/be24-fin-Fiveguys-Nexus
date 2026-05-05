@@ -30,12 +30,27 @@ public class DeliveryController {
     @GetMapping("/store/{storeIdx}")
     public ResponseEntity<List<DeliveryDto>> getStoreDeliveries(
             @PathVariable Long storeIdx,
-            @RequestParam(required = false) Long orderIdx, // 발주 번호 검색용
+            @RequestParam(required = false) Long orderIdx,
             @RequestParam(required = false) DeliveryStatus status,
             @RequestParam(required = false) Integer year,
             @RequestParam(required = false) Integer month,
             @RequestParam(required = false) Integer day) {
         List<DeliveryDto> response = deliveryService.getDeliveriesForStore(storeIdx, orderIdx, status, year, month, day);
         return ResponseEntity.ok(response);
+    }
+
+    // 본사 배송 지연 사유 입력
+    @PatchMapping("/head/{deliveryIdx}/delayreason")
+    public ResponseEntity<String> updateDelayReason(
+            @PathVariable Long deliveryIdx,
+            @RequestBody DeliveryDto.DelayReasonRequest request) {
+
+        boolean isSuccess = deliveryService.updateDelayReason(deliveryIdx, request.getDelayReason());
+
+        if (isSuccess) {
+            return ResponseEntity.ok("배송 지연 사유가 성공적으로 등록되었습니다.");
+        } else {
+            return ResponseEntity.badRequest().body("존재하지 않는 배송 정보입니다.");
+        }
     }
 }

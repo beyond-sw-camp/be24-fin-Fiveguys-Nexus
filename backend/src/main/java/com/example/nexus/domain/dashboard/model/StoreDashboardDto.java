@@ -1,6 +1,8 @@
 package com.example.nexus.domain.dashboard.model;
 
 import com.example.nexus.domain.delivery.model.Delivery;
+import com.example.nexus.domain.orders.model.Orders;
+import com.example.nexus.domain.orders.model.OrdersItem;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -43,6 +45,34 @@ public class StoreDashboardDto {
         private List<String> labels;
         private List<Long> thisWeek;
         private List<Long> lastWeek;
+    }
+
+    @Getter
+    @Builder
+    public static class PendingOrderItem {
+        private Long ordersIdx;
+        private String productName;
+        private int quantity;
+        private long price;
+        private String status;
+
+        public static PendingOrderItem from(Orders orders) {
+            // 첫 번째 품목명 + 외 N건 형태
+            List<OrdersItem> items = orders.getOrdersItemList();
+            String productName = items.isEmpty() ? "-" : items.get(0).getProduct().getProductName();
+            if (items.size() > 1) {
+                productName += " 외 " + (items.size() - 1) + "건";
+            }
+            int totalQty = items.stream().mapToInt(OrdersItem::getCount).sum();
+
+            return PendingOrderItem.builder()
+                    .ordersIdx(orders.getIdx())
+                    .productName(productName)
+                    .quantity(totalQty)
+                    .price(orders.getPrice())
+                    .status(orders.getOrdersStatus().name())
+                    .build();
+        }
     }
 
     @Getter

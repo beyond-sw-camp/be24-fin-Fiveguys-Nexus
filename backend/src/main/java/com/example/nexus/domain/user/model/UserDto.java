@@ -111,5 +111,9 @@ public class UserDto {
         private String currentPassword;
         private String newPassword;
     }
-    
+
+    @Getter
+    public static class ChangeTelDto {
+        private String tel;
+    }
 }

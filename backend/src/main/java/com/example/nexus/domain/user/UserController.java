@@ -69,4 +69,12 @@ public class UserController {
         }
     }
 
+    // 전화번호 변경
+    @PostMapping("/user/tel")
+    public ResponseEntity changeTel(@AuthenticationPrincipal AuthUserDetails authUserDetails, @RequestBody UserDto.ChangeTelDto dto) {
+
+        userService.changeTel(authUserDetails, dto.getTel());
+        return ResponseEntity.ok("Tel Change Success");
+    }
+
 }

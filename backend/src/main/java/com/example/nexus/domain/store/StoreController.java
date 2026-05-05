@@ -67,4 +67,10 @@ public class StoreController {
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 
+    // 가맹점 수정
+    @PutMapping("/update/{storeIdx}")
+    public ResponseEntity storeUpdate(@PathVariable(name = "storeIdx") Long storeIdx, @RequestBody StoreDto.StoreUpdateReq dto){
+        storeService.storeUpdate(storeIdx, dto);
+        return ResponseEntity.ok(BaseResponse.success("성공"));
+    }
 }

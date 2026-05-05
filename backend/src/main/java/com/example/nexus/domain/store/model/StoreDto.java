@@ -1,11 +1,14 @@
 package com.example.nexus.domain.store.model;
 
+import com.example.nexus.domain.user.model.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class StoreDto {
@@ -127,5 +130,20 @@ public class StoreDto {
                     .filePath(this.filePath)
                     .build();
         }
+    }
+
+    // 가맹점 수정
+    @Getter
+    @Builder
+    public static class StoreUpdateReq{
+        private String storeName;
+        private String ownerName;
+        private String ownerEmail;
+        private Integer postcode;
+        private String address;
+        private String addressDetail;
+        private LocalDateTime closedAt;
+        private String filePath;
+
     }
 }

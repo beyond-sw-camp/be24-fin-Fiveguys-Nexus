@@ -36,6 +36,7 @@ function onCountChange(item) {
           <span class="text-xs font-mono text-gray-400">No.{{ order.idx }}</span>
           <p class="font-bold text-gray-900 mt-0.5 text-sm">자동 발주 제안</p>
           <p class="text-[11px] text-gray-400 mt-0.5">생성일시: {{ order.createdAt }}</p>
+          <p v-if="order.reason" class="text-xs text-blue-600 mt-1 font-medium">AI 추천 사유: {{ order.reason }}</p>
         </div>
         <div class="flex gap-2">
           <button @click="emit('confirm', order)"

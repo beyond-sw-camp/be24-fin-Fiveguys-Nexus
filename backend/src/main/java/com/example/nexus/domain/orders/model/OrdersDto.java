@@ -26,6 +26,7 @@ public class OrdersDto {
         private OrdersType ordersType;
         private OrdersStatus ordersStatus;
         private boolean isDanger;
+        private String reason;
         private LocalDateTime createdAt;
         private String storeName;
         private List<OrdersItemDto.OrdersItemRes> ordersItemList;
@@ -38,6 +39,7 @@ public class OrdersDto {
                     .ordersType(entity.getOrdersType())
                     .ordersStatus(entity.getOrdersStatus())
                     .isDanger(entity.isDanger())
+                    .reason(entity.getReason())
                     .createdAt(entity.getCreatedAt())
                     .storeName(entity.getStore().getStoreName())
                     .ordersItemList(entity.getOrdersItemList().stream()

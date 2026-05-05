@@ -17,4 +17,12 @@ public class StoreDashboardDto {
     public static class PendingOrderKpiRes {
         private long pendingCount;
     }
+
+    @Getter
+    @Builder
+    public static class InventoryRiskKpiRes {
+        private long lowCount;
+        private long criticalCount;
+        private long totalDangerCount;
+    }
 }

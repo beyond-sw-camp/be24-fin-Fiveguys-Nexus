@@ -178,7 +178,7 @@ async function submitManualOrder(data) {
       @confirm="openConfirmModal" @reject="openRejectModal" @refresh="fetchPendingOrders"
       @delete-item="deleteItem" />
 
-    <StoreOrderHistoryTable v-show="activeTab === 'history'" :orders="orderHistory"
+    <StoreOrderHistoryTable v-if="activeTab === 'history'" :orders="orderHistory"
       :current-page="historyPage" :total-pages="historyTotalPages"
       @open-detail="openHistoryDetail" @cancel="cancelOrder" @page-change="fetchOrderHistory" />
 

@@ -1,6 +1,7 @@
 package com.example.nexus.domain.delivery;
 
 import com.example.nexus.common.enums.DeliveryStatus;
+import com.example.nexus.domain.delivery.model.Delivery;
 import com.example.nexus.domain.delivery.model.DeliveryDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,10 +24,28 @@ public class DeliveryService {
                 .collect(Collectors.toList());
     }
 
-    public List<DeliveryDto> getDeliveriesForStore(Long storeIdx) {
-        return deliveryRepository.findAllByOrdersStoreIdx(storeIdx)
+    // 가맹점 배송 현황 조회
+    public List<DeliveryDto> getDeliveriesForStore(
+            Long storeIdx, Long orderIdx, DeliveryStatus status, Integer year, Integer month, Integer day) {
+        return deliveryRepository.findAllByStoreFilters(storeIdx, orderIdx, status, year, month, day)
                 .stream()
-                .map(DeliveryDto::from)
+                .map(delivery -> DeliveryDto.from(delivery))
                 .collect(Collectors.toList());
+    }
+
+    // 본사 배송 지연 사유 입력 로직 (throw/Optional 제거 및 boolean 흐름 제어 적용)
+    @Transactional
+    public boolean updateDelayReason(Long deliveryIdx, String delayReason) {
+        // Optional을 사용하지 않고 직접 Entity를 조회하여 null 체크
+        Delivery delivery = deliveryRepository.findByIdx(deliveryIdx);
+
+        if (delivery == null) {
+            return false;
+        }
+
+        // 상태를 지연으로 변경
+        delivery.setDelayReason(delayReason);
+        delivery.setDeliveryStatus(DeliveryStatus.DELAY);
+        return true;
     }
 }

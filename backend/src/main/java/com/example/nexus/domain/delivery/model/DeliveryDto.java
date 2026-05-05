@@ -1,5 +1,6 @@
 package com.example.nexus.domain.delivery.model;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 public class DeliveryDto {
 
     private Long deliveryIdx;
+    private Long orderIdx;
     private String storeName;
     private String deliveryStatus;
     private String delayReason;
@@ -21,6 +23,7 @@ public class DeliveryDto {
     public static DeliveryDto from(Delivery delivery) {
         return DeliveryDto.builder()
                 .deliveryIdx(delivery.getIdx())
+                .orderIdx(delivery.getOrders().getIdx())
                 .storeName(delivery.getOrders().getStore().getStoreName())
                 .deliveryStatus(delivery.getDeliveryStatus().name())
                 .delayReason(delivery.getDelayReason())
@@ -28,5 +31,12 @@ public class DeliveryDto {
                 .estimatedArrivalAt(delivery.getEstimatedArrivalAt())
                 .deliveredDate(delivery.getDeliveredDate())
                 .build();
+    }
+
+    // 본사 지연 사유 입력시 Request Body로 받을 정적 내부 클래스 추가
+    @Getter
+    @NoArgsConstructor
+    public static class DelayReasonRequest {
+        private String delayReason;
     }
 }

@@ -33,6 +33,8 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
 
     List<Delivery> findByDeliveryStatus(DeliveryStatus status);
 
+    Delivery findByIdx(Long deliveryIdx);
+
     // 본사 배송 조회용
     @Query("SELECT d FROM Delivery d " +
             "JOIN FETCH d.orders o " +
@@ -52,4 +54,23 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
     // 본인 가맹점 배송 현황 조회
     @Query("SELECT d FROM Delivery d JOIN FETCH d.orders o JOIN FETCH o.store s WHERE s.idx = :storeIdx")
     List<Delivery> findAllByOrdersStoreIdx(@Param("storeIdx") Long storeIdx);
+
+    // 가맹점 배송 현황 필터 및 발주번호 검색 조회
+    @Query("SELECT d FROM Delivery d " +
+            "JOIN FETCH d.orders o " +
+            "JOIN FETCH o.store s " +
+            "WHERE s.idx = :storeIdx " +
+            "AND (:orderIdx IS NULL OR o.idx = :orderIdx) " +
+            "AND (:status IS NULL OR d.deliveryStatus = :status) " +
+            "AND (:year IS NULL OR FUNCTION('YEAR', d.departureDate) = :year) " +
+            "AND (:month IS NULL OR FUNCTION('MONTH', d.departureDate) = :month) " +
+            "AND (:day IS NULL OR FUNCTION('DAY', d.departureDate) = :day)")
+    List<Delivery> findAllByStoreFilters(
+            @Param("storeIdx") Long storeIdx,
+            @Param("orderIdx") Long orderIdx,
+            @Param("status") DeliveryStatus status,
+            @Param("year") Integer year,
+            @Param("month") Integer month,
+            @Param("day") Integer day);
 }
+

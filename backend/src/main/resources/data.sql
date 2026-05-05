@@ -21,6 +21,7 @@ TRUNCATE TABLE delivery;
 TRUNCATE TABLE orders_item;
 TRUNCATE TABLE orders;
 TRUNCATE TABLE menu_item;
+TRUNCATE TABLE menu_category;
 TRUNCATE TABLE menu;
 TRUNCATE TABLE store_inventory;
 TRUNCATE TABLE head_inventory;
@@ -134,24 +135,41 @@ INSERT INTO product (category_idx, product_name, product_unit, max_stock, min_st
 (7, '연유', 'kg', 10, 2, 8000, '30', false);
 
 -- ============================================================
+-- 5. MenuCategoryItem (메뉴별 원자재 레시피)
+-- ============================================================
+INSERT INTO menu_category (menu_category_name, is_deleted) VALUES
+('커피', false),
+('베버리지', false),
+('아이스블렌디드', false),
+('티 & 에이드', false);
+
+-- ============================================================
 -- 5. Menu (더벤티 대표 메뉴)
 -- ============================================================
-INSERT INTO menu (menu_name, price, img_path, is_deleted) VALUES
-('아메리카노', 1500, '/uploads/menu/americano.jpg', false),
-('카페라떼', 2500, '/uploads/menu/cafelatte.jpg', false),
-('바닐라라떼', 3000, '/uploads/menu/vanillalatte.jpg', false),
-('카라멜마끼아또', 3500, '/uploads/menu/caramelmacchiato.jpg', false),
-('카푸치노', 2500, '/uploads/menu/cappuccino.jpg', false),
-('딸기스무디', 3500, '/uploads/menu/strawberrysmoothie.jpg', false),
-('망고스무디', 3500, '/uploads/menu/mangosmoothie.jpg', false),
-('복숭아아이스티', 2500, '/uploads/menu/peachicedtea.jpg', false),
-('레몬에이드', 2500, '/uploads/menu/lemonade.jpg', false),
-('자몽에이드', 3000, '/uploads/menu/grapefruitade.jpg', false),
-('녹차라떼', 3000, '/uploads/menu/greentealatte.jpg', false),
-('초코라떼', 3000, '/uploads/menu/chocolatte.jpg', false),
-('얼그레이티', 2000, '/uploads/menu/earlgrey.jpg', false),
-('캐모마일티', 2000, '/uploads/menu/chamomile.jpg', false),
-('히비스커스티', 2000, '/uploads/menu/hibiscus.jpg', false);
+INSERT INTO menu (menu_name, price, img_path, is_deleted, menu_category_idx) VALUES
+-- 커피 (idx: 1)
+('아메리카노', 1500, '/uploads/menu/americano.jpg', false, 1),
+('카페라떼', 2500, '/uploads/menu/cafelatte.jpg', false, 1),
+('바닐라라떼', 3000, '/uploads/menu/vanillalatte.jpg', false, 1),
+('카라멜마끼아또', 3500, '/uploads/menu/caramelmacchiato.jpg', false, 1),
+('카푸치노', 2500, '/uploads/menu/cappuccino.jpg', false, 1),
+
+-- 베버리지 (idx: 2)
+('녹차라떼', 3000, '/uploads/menu/greentealatte.jpg', false, 2),
+('초코라떼', 3000, '/uploads/menu/chocolatte.jpg', false, 2),
+
+-- 아이스블렌디드 (idx: 3)
+('딸기스무디', 3500, '/uploads/menu/strawberrysmoothie.jpg', false, 3),
+('망고스무디', 3500, '/uploads/menu/mangosmoothie.jpg', false, 3),
+
+-- 티 & 에이드 (idx: 4)
+('복숭아아이스티', 2500, '/uploads/menu/peachicedtea.jpg', false, 4),
+('레몬에이드', 2500, '/uploads/menu/lemonade.jpg', false, 4),
+('자몽에이드', 3000, '/uploads/menu/grapefruitade.jpg', false, 4),
+('얼그레이티', 2000, '/uploads/menu/earlgrey.jpg', false, 4),
+('캐모마일티', 2000, '/uploads/menu/chamomile.jpg', false, 4),
+('히비스커스티', 2000, '/uploads/menu/hibiscus.jpg', false, 4);
+
 
 -- ============================================================
 -- 6. MenuItem (메뉴별 원자재 레시피)

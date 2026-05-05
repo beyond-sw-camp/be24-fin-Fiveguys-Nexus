@@ -38,7 +38,7 @@ onMounted(async () => {
     <div class="px-5 pt-5 pb-4 border-b border-gray-100">
       <h2 class="font-bold text-gray-900">나의 배송 현황</h2>
     </div>
-    <div class="flex-1 divide-y divide-gray-50 overflow-y-auto">
+    <div class="flex-1 divide-y divide-gray-50 overflow-y-auto max-h-[240px]">
       <div v-if="deliveries.length === 0" class="px-5 py-8 text-center text-sm text-gray-400">
         진행중인 배송이 없습니다
       </div>

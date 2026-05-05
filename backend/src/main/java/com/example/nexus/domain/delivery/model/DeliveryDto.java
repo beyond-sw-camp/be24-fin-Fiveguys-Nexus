@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 public class DeliveryDto {
 
     private Long deliveryIdx;
+    private Long orderIdx;
     private String storeName;
     private String deliveryStatus;
     private String delayReason;

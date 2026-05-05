@@ -25,4 +25,12 @@ public class StoreDashboardDto {
         private long criticalCount;
         private long totalDangerCount;
     }
+
+    @Getter
+    @Builder
+    public static class SettlementKpiRes {
+        private long currentAmount;
+        private String currentPeriod;
+        private double deltaPercent;
+    }
 }

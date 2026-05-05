@@ -4,7 +4,6 @@
     <div class="flex justify-between items-center">
       <div>
         <h1 class="text-xl font-bold text-gray-900 tracking-tight">매장 제품 관리</h1>
-        <p class="text-xs text-gray-500 mt-1">이 매장에서 사용하는 식자재·소모품을 등록합니다. POS·재고·메뉴(레시피)와 연동됩니다.</p>
       </div>
     </div>
 
@@ -16,6 +15,7 @@
           v-model="searchQuery"
           type="text"
           placeholder="제품명 검색..."
+          @input="handleSearch"
           class="pl-10 pr-4 py-2 rounded-lg border border-gray-200 text-sm w-52
              bg-white shadow-sm
              focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb]
@@ -24,15 +24,24 @@
       </div>
       <div class="flex gap-1.5 flex-wrap">
         <button
-          v-for="cat in ['전체', ...categories]"
-          :key="cat"
-          @click="selectedCategory = cat"
+          @click="selectedCategory = '전체'"
           class="px-3 py-1.5 text-sm font-semibold border rounded-lg
                 transition-colors shadow-sm cursor-pointer"
-          :class="selectedCategory === cat
+          :class="selectedCategory === '전체'
             ? 'bg-[#2563eb] text-white border-[#2563eb]'
             : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'">
-          {{ cat }}
+          전체
+        </button>
+        <button
+          v-for="cat in categories"
+          :key="cat.idx"
+          @click="selectedCategory = cat.categoryName"
+          class="px-3 py-1.5 text-sm font-semibold border rounded-lg
+                transition-colors shadow-sm cursor-pointer"
+          :class="selectedCategory === cat.categoryName
+            ? 'bg-[#2563eb] text-white border-[#2563eb]'
+            : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'">
+          {{ cat.categoryName }}
         </button>
       </div>
     </div>
@@ -53,23 +62,23 @@
         </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
-        <tr v-for="p in filteredProducts" :key="p.code" class="hover:bg-gray-50/50 transition-colors">
-          <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ p.code }}</td>
-          <td class="px-5 py-3.5 font-semibold text-gray-900">{{ p.name }}</td>
+        <tr v-for="p in filteredProducts" :key="p.idx" class="hover:bg-gray-50/50 transition-colors">
+          <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ p.idx }}</td>
+          <td class="px-5 py-3.5 font-semibold text-gray-900">{{ p.productName }}</td>
           <td class="px-5 py-3.5">
-            <span class="text-xs font-semibold px-2 py-0.5 bg-gray-100 text-gray-600 border border-gray-200 rounded">{{ p.category }}</span>
+            <span class="text-xs font-semibold px-2 py-0.5 bg-gray-100 text-gray-600 border border-gray-200 rounded">{{ p.categoryName }}</span>
           </td>
-          <td class="px-5 py-3.5 text-gray-600">{{ p.unit }}</td>
-          <td class="px-5 py-3.5 font-medium text-gray-900">{{ p.baseStock.toLocaleString() }}</td>
-          <td class="px-5 py-3.5 font-semibold text-[#2563eb]">{{ p.minStock.toLocaleString() }}</td>
-          <td class="px-5 py-3.5 font-medium text-gray-900">₩ {{ p.price.toLocaleString() }}</td>
+          <td class="px-5 py-3.5 text-gray-600">{{ p.productUnit }}</td>
+          <td class="px-5 py-3.5 font-medium text-gray-900">{{ p.maxStock?.toLocaleString() }}</td>
+          <td class="px-5 py-3.5 font-semibold text-[#2563eb]">{{ p.minStock?.toLocaleString() }}</td>
+          <td class="px-5 py-3.5 font-medium text-gray-900">₩ {{ p.unitPrice?.toLocaleString() }}</td>
           <td class="px-5 py-3.5 text-xs font-mono"
-              :class="p.expiryDays ? 'text-amber-600 font-semibold' : 'text-gray-400'">
-            {{ p.expiryDays ? `D-${p.expiryDays}` : '-' }}
+              :class="p.dangerDays ? 'text-amber-600 font-semibold' : 'text-gray-400'">
+            {{ p.dangerDays ? `D-${p.dangerDays}` : '-' }}
           </td>
         </tr>
         <tr v-if="filteredProducts.length === 0">
-          <td colspan="8" class="px-5 py-12 text-center text-gray-400 text-sm">검색 결과가 없습니다.</td>
+          <td colspan="8" class="px-5 py-12 text-center text-gray-400 text-sm">등록된 제품이 없거나 검색 결과가 없습니다.</td>
         </tr>
         </tbody>
       </table>
@@ -78,71 +87,55 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { Plus, Search } from 'lucide-vue-next'
+import { ref, computed, onMounted } from 'vue'
+import { Search } from 'lucide-vue-next'
+import { getProductList, searchProduct } from '@/api/product'
+import { readCategoryList } from '@/api/category'
 
-const categories = ref(['육류', '어류', '채소', '소스류', '오일/유제품', '음료'])
+const categories = ref([])
+const products = ref([])
 const selectedCategory = ref('전체')
 const searchQuery = ref('')
 
-const products = ref([
-  { code: 'P100', name: '한우 등심',  category: '육류',        unit: 'kg',   baseStock: 50,  minStock: 10, price: 85000, expiryDays: 5  },
-  { code: 'P101', name: '한우 안심',  category: '육류',        unit: 'kg',   baseStock: 30,  minStock: 8,  price: 95000, expiryDays: 5  },
-  { code: 'P102', name: '한우 채끝',  category: '육류',        unit: 'kg',   baseStock: 20,  minStock: 5,  price: 78000, expiryDays: 5  },
+// 데이터 로드: 페이지가 열릴 때 카테고리와 제품 목록을 가져옵니다.
+const loadData = async () => {
+  try {
+    const [catRes, prodRes] = await Promise.all([
+      readCategoryList(),
+      getProductList()
+    ])
+    categories.value = catRes.data
+    products.value = prodRes.data
+  } catch (error) {
+    console.error('데이터 호출 중 오류 발생:', error)
+  }
+}
 
-  { code: 'P200', name: '연어 필렛',  category: '어류',        unit: 'kg',   baseStock: 30,  minStock: 8,  price: 32000, expiryDays: 2  },
-  { code: 'P201', name: '참치 블록',  category: '어류',        unit: 'kg',   baseStock: 20,  minStock: 5,  price: 45000, expiryDays: 2  },
-  { code: 'P202', name: '새우',       category: '어류',        unit: 'kg',   baseStock: 20,  minStock: 5,  price: 28000, expiryDays: 3  },
+// 검색 핸들러: 입력 시 searchProduct API 호출
+const handleSearch = async () => {
+  // 검색어가 없으면 전체 목록 다시 로드
+  if (!searchQuery.value.trim()) {
+    const response = await getProductList()
+    products.value = response.data
+    return
+  }
 
-  { code: 'P300', name: '양파',       category: '채소',        unit: 'kg',   baseStock: 100, minStock: 20, price: 1500,  expiryDays: 14 },
-  { code: 'P301', name: '마늘',       category: '채소',        unit: 'kg',   baseStock: 50,  minStock: 10, price: 8000,  expiryDays: 14 },
-  { code: 'P302', name: '대파',       category: '채소',        unit: 'kg',   baseStock: 30,  minStock: 8,  price: 3000,  expiryDays: 7  },
+  try {
+    const response = await searchProduct(searchQuery.value)
+    products.value = response.data
+  } catch (error) {
+    console.error('검색 실패:', error)
+  }
+}
 
-  { code: 'P400', name: '간장',       category: '소스류',      unit: 'L',    baseStock: 30,  minStock: 8,  price: 4000,  expiryDays: null },
-  { code: 'P401', name: '고추장',     category: '소스류',      unit: 'kg',   baseStock: 20,  minStock: 5,  price: 5500,  expiryDays: null },
-
-  { code: 'P500', name: '올리브오일', category: '오일/유제품', unit: 'L',    baseStock: 20,  minStock: 5,  price: 12000, expiryDays: null },
-  { code: 'P501', name: '버터',       category: '오일/유제품', unit: 'kg',   baseStock: 20,  minStock: 5,  price: 9000,  expiryDays: 14 },
-  { code: 'P502', name: '생크림',     category: '오일/유제품', unit: 'L',    baseStock: 20,  minStock: 5,  price: 7000,  expiryDays: 7  },
-
-  { code: 'P600', name: '콜라',       category: '음료',        unit: '박스', baseStock: 100, minStock: 20, price: 15000, expiryDays: null },
-  { code: 'P601', name: '생수',       category: '음료',        unit: '박스', baseStock: 80,  minStock: 20, price: 8000,  expiryDays: null },
-])
-
-const filteredProducts = computed(() => {
-  return products.value.filter(p => {
-    const matchCat = selectedCategory.value === '전체' || p.category === selectedCategory.value
-    const matchSearch = !searchQuery.value || p.name.includes(searchQuery.value) || p.code.includes(searchQuery.value)
-    return matchCat && matchSearch
-  })
+onMounted(() => {
+  loadData()
 })
 
-// 제품 CRUD (UI에서 버튼은 제거되었으나 로직은 유지)
-const showModal = ref(false)
-const editTarget = ref(null)
-const form = ref({ name: '', category: '원두', unit: '', baseStock: 0, minStock: 0, price: 0, expiryDays: null })
-
-function openModal(product) {
-  editTarget.value = product
-  form.value = product
-    ? { ...product }
-    : { name: '', category: categories.value[0] || '', unit: '', baseStock: 0, minStock: 0, price: 0, expiryDays: null }
-  showModal.value = true
-}
-
-function saveProduct() {
-  if (editTarget.value) {
-    Object.assign(editTarget.value, form.value)
-  } else {
-    const newCode = 'P' + String((products.value.length + 1) * 100)
-    products.value.push({ code: newCode, ...form.value })
-  }
-  showModal.value = false
-}
-
-function deleteProduct(code) {
-  if (confirm('제품을 삭제하시겠습니까?')) {
-    products.value = products.value.filter(p => p.code !== code)
-  }
-}
+// 카테고리 필터링 (클라이언트 사이드)
+const filteredProducts = computed(() => {
+  return products.value.filter(p => {
+    return selectedCategory.value === '전체' || p.categoryName === selectedCategory.value
+  })
+})
 </script>

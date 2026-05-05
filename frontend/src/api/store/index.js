@@ -15,9 +15,3 @@ export const getPresignedUrl = (fileName) =>
 
 export const postNewRegister = (storeRegDto)=>
   api.post('/store/new/register',storeRegDto)
-
-export const readProductList = () => api.get('/product/list')
-
-export const searchProduct = (productName) => api.get('/product/search', { params: { productName } })
-
-export const readCategoryList = () => api.get('/category/list')

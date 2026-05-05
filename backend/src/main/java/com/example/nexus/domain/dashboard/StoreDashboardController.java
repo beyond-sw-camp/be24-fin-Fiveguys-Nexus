@@ -63,4 +63,16 @@ public class StoreDashboardController {
         StoreDashboardDto.SettlementKpiRes result = storeDashboardService.getSettlementKpi(authUserDetails.getIdx());
         return ResponseEntity.ok(BaseResponse.success(result));
     }
+
+    /**
+     * 일별 매출 추이 차트 조회
+     *
+     * @param authUserDetails 인증된 사용자 정보
+     * @return ResponseEntity 이번 주/지난 주 요일별 매출 데이터
+     */
+    @GetMapping("/sales/daily")
+    public ResponseEntity<BaseResponse> getDailySalesChart(@AuthenticationPrincipal AuthUserDetails authUserDetails) {
+        StoreDashboardDto.DailySalesChartRes result = storeDashboardService.getDailySalesChart(authUserDetails.getIdx());
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
 }

@@ -3,6 +3,8 @@ package com.example.nexus.domain.dashboard.model;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.List;
+
 public class StoreDashboardDto {
 
     @Getter
@@ -32,5 +34,13 @@ public class StoreDashboardDto {
         private long currentAmount;
         private String currentPeriod;
         private double deltaPercent;
+    }
+
+    @Getter
+    @Builder
+    public static class DailySalesChartRes {
+        private List<String> labels;
+        private List<Long> thisWeek;
+        private List<Long> lastWeek;
     }
 }

@@ -14,8 +14,13 @@ import com.example.nexus.domain.store.model.Store;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.TemporalAdjusters;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -147,5 +152,58 @@ public class StoreDashboardService {
                 .currentPeriod(currentPeriod)
                 .deltaPercent(deltaPercent)
                 .build();
+    }
+
+    /**
+     * 일별 매출 추이 차트 조회
+     * - 이번 주(일~토)와 지난 주의 일별 POS 매출을 비교
+     * - 단위: 원 (프론트에서 만원 변환)
+     */
+    public StoreDashboardDto.DailySalesChartRes getDailySalesChart(Long userIdx) {
+        // 점주의 매장 조회
+        Store store = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        // 이번 주 일요일 ~ 토요일 구간 계산
+        LocalDate today = LocalDate.now();
+        LocalDate thisWeekSunday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY));
+        LocalDate lastWeekSunday = thisWeekSunday.minusWeeks(1);
+
+        LocalDateTime thisWeekStart = thisWeekSunday.atStartOfDay();
+        LocalDateTime thisWeekEnd = thisWeekSunday.plusWeeks(1).atStartOfDay();
+        LocalDateTime lastWeekStart = lastWeekSunday.atStartOfDay();
+        LocalDateTime lastWeekEnd = thisWeekStart;
+
+        // 일별 매출 조회
+        Map<LocalDate, Long> thisWeekMap = toDailySalesMap(
+                posPayRepository.findDailySalesByStoreAndPeriod(store.getIdx(), thisWeekStart, thisWeekEnd));
+        Map<LocalDate, Long> lastWeekMap = toDailySalesMap(
+                posPayRepository.findDailySalesByStoreAndPeriod(store.getIdx(), lastWeekStart, lastWeekEnd));
+
+        // 요일별 데이터 배열 생성 (일~토)
+        List<String> labels = Arrays.asList("일", "월", "화", "수", "목", "금", "토");
+        Long[] thisWeekData = new Long[7];
+        Long[] lastWeekData = new Long[7];
+
+        for (int i = 0; i < 7; i++) {
+            thisWeekData[i] = thisWeekMap.getOrDefault(thisWeekSunday.plusDays(i), 0L);
+            lastWeekData[i] = lastWeekMap.getOrDefault(lastWeekSunday.plusDays(i), 0L);
+        }
+
+        return StoreDashboardDto.DailySalesChartRes.builder()
+                .labels(labels)
+                .thisWeek(Arrays.asList(thisWeekData))
+                .lastWeek(Arrays.asList(lastWeekData))
+                .build();
+    }
+
+    private Map<LocalDate, Long> toDailySalesMap(List<Object[]> rows) {
+        Map<LocalDate, Long> map = new java.util.HashMap<>();
+        for (Object[] row : rows) {
+            LocalDate date = ((java.sql.Date) row[0]).toLocalDate();
+            Long amount = (Long) row[1];
+            map.put(date, amount);
+        }
+        return map;
     }
 }

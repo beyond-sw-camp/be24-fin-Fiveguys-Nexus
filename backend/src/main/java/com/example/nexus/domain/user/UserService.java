@@ -89,4 +89,10 @@ public class UserService implements UserDetailsService {
         return passwordEncoder.matches(currentPassword, user.getPassword());
     }
 
+    public void changeTel(AuthUserDetails authUserDetails, String tel) {
+        User user = userRepository.findById(authUserDetails.getIdx()).orElse(null);
+        user.setTel(tel);
+        userRepository.save(user);
+    }
+
 }

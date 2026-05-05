@@ -59,8 +59,12 @@ public class Store {
         this.postcode = dto.getPostcode();
         this.address = dto.getAddress();
         this.addressDetail = dto.getAddressDetail();
-        this.closedAt = dto.getClosedAt();
         this.filePath = dto.getFilePath();
+
+        if (dto.getClosedAt() != null) {
+            this.closedAt = dto.getClosedAt();
+            this.isDeleted = true;
+        }
     }
 
 }

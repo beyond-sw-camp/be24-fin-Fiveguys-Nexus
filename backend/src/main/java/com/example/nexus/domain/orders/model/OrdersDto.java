@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 public class OrdersDto {
 
@@ -44,6 +45,23 @@ public class OrdersDto {
                     .storeName(entity.getStore().getStoreName())
                     .ordersItemList(entity.getOrdersItemList().stream()
                             .map(OrdersItemDto.OrdersItemRes::from).toList())
+                    .deliveryIdx(entity.getDelivery() != null ? entity.getDelivery().getIdx() : null)
+                    .build();
+        }
+
+        public static OrdersRes fromWithStock(Orders entity, Map<Long, Integer> stockMap) {
+            return OrdersRes.builder()
+                    .idx(entity.getIdx())
+                    .price(entity.getPrice())
+                    .ordersType(entity.getOrdersType())
+                    .ordersStatus(entity.getOrdersStatus())
+                    .isDanger(entity.isDanger())
+                    .reason(entity.getReason())
+                    .createdAt(entity.getCreatedAt())
+                    .storeName(entity.getStore().getStoreName())
+                    .ordersItemList(entity.getOrdersItemList().stream()
+                            .map(item -> OrdersItemDto.OrdersItemRes.from(item, stockMap.get(item.getProduct().getIdx())))
+                            .toList())
                     .deliveryIdx(entity.getDelivery() != null ? entity.getDelivery().getIdx() : null)
                     .build();
         }

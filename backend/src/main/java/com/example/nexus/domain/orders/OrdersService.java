@@ -9,8 +9,10 @@ import com.example.nexus.domain.inventory.model.InventoryMovementDto;
 import com.example.nexus.domain.orders.model.*;
 import com.example.nexus.domain.product.ProductRepository;
 import com.example.nexus.domain.product.model.Product;
+import com.example.nexus.domain.store.StoreInventoryRepository;
 import com.example.nexus.domain.store.StoreRepository;
 import com.example.nexus.domain.store.model.Store;
+import com.example.nexus.domain.store.model.StoreInventory;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,6 +24,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +34,7 @@ public class OrdersService {
     private final OrdersRepository ordersRepository;
     private final OrdersItemRepository ordersItemRepository;
     private final StoreRepository storeRepository;
+    private final StoreInventoryRepository storeInventoryRepository;
     private final ProductRepository productRepository;
     private final InventoryMovementService inventoryMovementService;
 
@@ -274,8 +279,12 @@ public class OrdersService {
         Store store = storeRepository.findByUserIdx(userIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
 
+        List<StoreInventory> inventoryList = storeInventoryRepository.findByStoreIdx(store.getIdx());
+        Map<Long, Integer> stockMap = inventoryList.stream()
+                .collect(Collectors.toMap(inv -> inv.getProduct().getIdx(), StoreInventory::getCount, Integer::sum));
+
         return ordersRepository.findAllByStore_IdxAndOrdersStatus(store.getIdx(), OrdersStatus.WAITING).stream()
-                .map(OrdersDto.OrdersRes::from)
+                .map(order -> OrdersDto.OrdersRes.fromWithStock(order, stockMap))
                 .toList();
     }
 

@@ -55,15 +55,17 @@ function onCountChange(item) {
       </div>
       <table class="w-full text-sm table-fixed">
         <colgroup>
-          <col class="w-[35%]" />
+          <col class="w-[28%]" />
           <col class="w-[12%]" />
-          <col class="w-[18%]" />
-          <col class="w-[22%]" />
-          <col class="w-[13%]" />
+          <col class="w-[12%]" />
+          <col class="w-[16%]" />
+          <col class="w-[20%]" />
+          <col class="w-[12%]" />
         </colgroup>
         <thead>
           <tr class="border-b border-gray-200 bg-gray-50">
             <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">품목명</th>
+            <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">현재재고</th>
             <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">수량</th>
             <th class="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">단가</th>
             <th class="px-5 py-3 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wider">금액</th>
@@ -73,6 +75,7 @@ function onCountChange(item) {
         <tbody class="divide-y divide-gray-100">
           <tr v-for="item in order.ordersItemList" :key="item.idx" class="hover:bg-gray-50/50">
             <td class="px-5 py-3.5 font-semibold text-gray-900">{{ item.productName }}</td>
+            <td class="px-5 py-3.5 text-gray-500">{{ item.currentStock != null ? item.currentStock + '개' : '-' }}</td>
             <td class="px-5 py-3.5 font-semibold text-blue-600">
               <input v-model.number="item.count" type="number" min="1"
                 @input="onCountChange(item)"
@@ -107,6 +110,7 @@ function onCountChange(item) {
                 </ul>
               </div>
             </td>
+            <td class="px-5 py-3"></td>
             <td class="px-5 py-3">
               <input v-model.number="addItemForm.count" type="number" min="1" placeholder="수량"
                 class="w-20 px-2 py-1.5 rounded-lg border border-blue-200 text-sm outline-none focus:border-blue-400" />
@@ -130,7 +134,7 @@ function onCountChange(item) {
         <tfoot class="border-t border-gray-200 bg-gray-50/60">
           <tr>
             <td class="px-5 py-3 text-left text-xs font-bold text-gray-500">합계</td>
-            <td colspan="2"></td>
+            <td colspan="3"></td>
             <td class="px-5 py-3 text-right font-black text-blue-600">
               ₩ {{ (order.price ?? 0).toLocaleString() }}
             </td>

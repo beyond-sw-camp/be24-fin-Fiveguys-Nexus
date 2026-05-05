@@ -20,6 +20,7 @@ public class OrdersItemDto {
         private Long orderIdx;
         private String productName;
         private Integer unitPrice;
+        private Integer currentStock;
 
         public static OrdersItemRes from(OrdersItem entity) {
             return OrdersItemRes.builder()
@@ -28,6 +29,17 @@ public class OrdersItemDto {
                     .orderIdx(entity.getOrders().getIdx())
                     .productName(entity.getProduct().getProductName())
                     .unitPrice(entity.getProduct().getUnitPrice())
+                    .build();
+        }
+
+        public static OrdersItemRes from(OrdersItem entity, Integer currentStock) {
+            return OrdersItemRes.builder()
+                    .idx(entity.getIdx())
+                    .count(entity.getCount())
+                    .orderIdx(entity.getOrders().getIdx())
+                    .productName(entity.getProduct().getProductName())
+                    .unitPrice(entity.getProduct().getUnitPrice())
+                    .currentStock(currentStock)
                     .build();
         }
     }

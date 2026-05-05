@@ -42,6 +42,10 @@ defineEmits(['close'])
             <p class="text-xs text-gray-400 mb-1">발주 일시</p>
             <p class="text-gray-700 font-mono text-xs">{{ order.date }}</p>
           </div>
+          <div v-if="order.reason" class="col-span-2">
+            <p class="text-xs text-gray-400 mb-1">AI 추천 사유</p>
+            <p class="text-sm text-blue-600 font-medium">{{ order.reason }}</p>
+          </div>
         </div>
         <div>
           <p class="text-xs text-gray-400 mb-2">품목 목록</p>

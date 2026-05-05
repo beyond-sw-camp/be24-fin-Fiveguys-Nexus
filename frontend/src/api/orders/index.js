@@ -53,6 +53,10 @@ const getStoreOrderList = () => {
   return api.get('/orders/store/list')
 }
 
+const getStoreOrderListPaged = (page = 0, size = 10) => {
+  return api.get('/orders/store/list/paged', { params: { page, size } })
+}
+
 const getStorePendingOrders = () => {
   return api.get('/orders/store/find')
 }
@@ -91,6 +95,7 @@ export default {
   approveDangerOrder,
   rejectDangerOrder,
   getStoreOrderList,
+  getStoreOrderListPaged,
   getStorePendingOrders,
   confirmStoreOrder,
   addStoreOrderItem,

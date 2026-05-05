@@ -16,6 +16,9 @@ const isRejectModalOpen = ref(false)
 
 const pendingOrders = ref([])
 const orderHistory = ref([])
+const historyPage = ref(0)
+const historyTotalPages = ref(0)
+const historyTotalElements = ref(0)
 
 async function fetchPendingOrders() {
   try {
@@ -26,10 +29,14 @@ async function fetchPendingOrders() {
   }
 }
 
-async function fetchOrderHistory() {
+async function fetchOrderHistory(page = 0) {
   try {
-    const res = await ordersApi.getStoreOrderList()
-    orderHistory.value = res.data.result
+    const res = await ordersApi.getStoreOrderListPaged(page, 10)
+    const data = res.data.result
+    orderHistory.value = data.content
+    historyPage.value = data.number
+    historyTotalPages.value = data.totalPages
+    historyTotalElements.value = data.totalElements
   } catch (e) {
     console.error('발주 이력 조회 실패', e)
   }
@@ -53,7 +60,7 @@ function openHistoryDetail(h) {
 
 const tabs = computed(() => [
   { id: 'pending', label: '제안 발주서', count: pendingOrders.value.length },
-  { id: 'history', label: '발주 이력', count: orderHistory.value.length },
+  { id: 'history', label: '발주 이력', count: historyTotalElements.value },
 ])
 
 function openConfirmModal(order) {
@@ -161,6 +168,18 @@ async function submitManualOrder(data) {
 
     <StoreOrderHistoryTable v-if="activeTab === 'history'" :orders="orderHistory"
       @open-detail="openHistoryDetail" @cancel="cancelOrder" />
+
+    <div v-if="activeTab === 'history' && historyTotalPages > 1" class="flex justify-center items-center gap-2 pt-2">
+      <button @click="fetchOrderHistory(historyPage - 1)" :disabled="historyPage === 0"
+        class="px-3 py-1.5 text-sm border border-gray-200 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 cursor-pointer">
+        이전
+      </button>
+      <span class="text-sm text-gray-500">{{ historyPage + 1 }} / {{ historyTotalPages }}</span>
+      <button @click="fetchOrderHistory(historyPage + 1)" :disabled="historyPage >= historyTotalPages - 1"
+        class="px-3 py-1.5 text-sm border border-gray-200 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 cursor-pointer">
+        다음
+      </button>
+    </div>
 
     <StoreOrderDetailModal :order="selectedHistory" @close="selectedHistory = null" />
 

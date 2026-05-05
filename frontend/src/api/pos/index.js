@@ -17,3 +17,6 @@ export const postPosPay = (body) => api.post('/pos/pay', body)
 
 /** 당일 결제 내역 (BaseResponse.result = TodayPayRes[]) */
 export const getPosPayToday = () => api.get('/pos/pay/today')
+
+/** POS 영업 마감 → AI 자동 발주서 생성 */
+export const postPosClose = () => api.post('/pos/close')

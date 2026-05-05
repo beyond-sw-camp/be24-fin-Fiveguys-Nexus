@@ -43,7 +43,7 @@ public class StoreDto {
     @Getter
     @Builder
     public static class StorePageRes{
-        private List<StoreDto.StoreListRes> menuList;
+        private List<StoreDto.StoreListRes> storeList;
         private int totalPage;
         private long totalCount;
         private int currentPage;
@@ -51,7 +51,7 @@ public class StoreDto {
 
         public static StoreDto.StorePageRes from(Page<Store> entity){
             return StorePageRes.builder()
-                    .menuList(entity.map(StoreDto.StoreListRes::from).getContent())
+                    .storeList(entity.map(StoreDto.StoreListRes::from).getContent())
                     .totalPage(entity.getTotalPages())
                     .totalCount(entity.getTotalElements())
                     .currentPage(entity.getPageable().getPageNumber())

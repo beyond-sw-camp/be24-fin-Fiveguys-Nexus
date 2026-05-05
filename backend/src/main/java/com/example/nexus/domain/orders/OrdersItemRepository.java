@@ -7,5 +7,6 @@ import java.util.List;
 
 public interface OrdersItemRepository extends JpaRepository<OrdersItem, Long> {
 
+    // 발주용 - 특정 발주서의 품목 목록 조회
     List<OrdersItem> findByOrdersIdx(Long ordersIdx);
 }

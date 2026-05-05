@@ -15,12 +15,22 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface OrdersRepository extends JpaRepository<Orders, Long>, JpaSpecificationExecutor<Orders> {
+    // 발주용 - 점주 제안 발주서 조회 (매장별 특정 상태)
     List<Orders> findAllByStore_IdxAndOrdersStatus(Long storeIdx, OrdersStatus orderStatus);
+
+    // 발주용 - 점주 발주 이력 조회 (매장별 여러 상태)
     List<Orders> findAllByStore_IdxAndOrdersStatusIn(Long storeIdx, List<OrdersStatus> ordersStatuses);
+
+    // 발주용 - 점주 발주 이력 페이징 조회
     Page<Orders> findAllByStore_IdxAndOrdersStatusIn(Long storeIdx, List<OrdersStatus> ordersStatuses, Pageable pageable);
+
+    // 발주용 - 본사 확정 발주 일괄 승인 대상 조회
     List<Orders> findAllByOrdersStatus(OrdersStatus ordersStatus);
+
+    // 발주용 - 이상 발주 목록 조회 (위험 플래그 기준)
     List<Orders> findAllByIsDangerTrue();
 
+    // 발주용 - 이상 발주 판별을 위한 매장별 평균 발주 수량 계산
     @Query("SELECT COALESCE(SUM(i.count), 0) / GREATEST(COUNT(DISTINCT o.idx), 1) " +
             "FROM Orders o JOIN o.ordersItemList i " +
             "WHERE o.store.idx = :storeIdx AND o.createdAt >= :since AND (:excludeIdx IS NULL OR o.idx <> :excludeIdx)")

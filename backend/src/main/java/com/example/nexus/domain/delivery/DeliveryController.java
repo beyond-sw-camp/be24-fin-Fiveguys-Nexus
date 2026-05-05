@@ -26,10 +26,16 @@ public class DeliveryController {
         return ResponseEntity.ok(deliveryService.getDeliveriesByHead(storeName, status, year, month, day));
     }
 
-    // 본인 가맹점 배송 현황 조회
+    // 본인 가맹점 배송 현황 조회 (발주 번호 및 날짜/상태 필터 추가)
     @GetMapping("/store/{storeIdx}")
-    public ResponseEntity<List<DeliveryDto>> getStoreDeliveries(@PathVariable Long storeIdx) {
-        List<DeliveryDto> response = deliveryService.getDeliveriesForStore(storeIdx);
+    public ResponseEntity<List<DeliveryDto>> getStoreDeliveries(
+            @PathVariable Long storeIdx,
+            @RequestParam(required = false) Long orderIdx, // 발주 번호 검색용
+            @RequestParam(required = false) DeliveryStatus status,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Integer month,
+            @RequestParam(required = false) Integer day) {
+        List<DeliveryDto> response = deliveryService.getDeliveriesForStore(storeIdx, orderIdx, status, year, month, day);
         return ResponseEntity.ok(response);
     }
 }

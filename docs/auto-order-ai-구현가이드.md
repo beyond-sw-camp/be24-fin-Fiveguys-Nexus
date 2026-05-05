@@ -82,15 +82,57 @@ OPENAI_API_KEY=your-openai-api-key-here
 
 ---
 
-### 3단계: 마감 API (`POST /pos/close`)
+### 3단계: 마감 API + AI 자동 발주서 생성
 
-> (구현 후 업데이트 예정)
+#### 추가/수정한 파일
 
----
+| 파일 | 작업 |
+|------|------|
+| `PosController.java` | `POST /pos/close` 엔드포인트 추가 |
+| `AutoOrderService.java` | **신규** — AI 자동 발주서 생성 전담 서비스 |
 
-### 4단계: AI 발주서 생성 Service
+#### PosController — 마감 엔드포인트
 
-> (구현 후 업데이트 예정)
+```java
+@PostMapping("/close")
+public ResponseEntity<BaseResponse<String>> close(@AuthenticationPrincipal AuthUserDetails userDetails) {
+    autoOrderService.generateAutoOrder(userDetails.getIdx());
+    return ResponseEntity.ok(BaseResponse.success("자동 발주서가 생성되었습니다."));
+}
+```
+
+- 점주가 POS에서 영업 마감 버튼을 누르면 호출
+- 인증된 유저의 `userIdx`를 넘겨서 해당 매장의 발주서 생성
+
+#### AutoOrderService — 핵심 로직
+
+```
+generateAutoOrder(userIdx)
+  ├─ 1. 매장 조회 (userIdx → Store)
+  ├─ 2. 현재 재고 조회 (StoreInventory)
+  ├─ 3. 프롬프트 생성 (buildPrompt)
+  ├─ 4. OpenAI GPT-4o 호출 (Spring AI ChatClient)
+  └─ 5. 응답 파싱 → Orders(AUTO/WAITING) + OrdersItem 저장
+```
+
+#### 왜 이렇게 구성했는가
+
+| 결정 | 이유 |
+|------|------|
+| `AutoOrderService`를 별도 클래스로 분리 | PosService는 결제/재고 로직 전담. AI 발주는 관심사가 다르므로 분리 |
+| `ChatClient.Builder`를 주입받아 사용 | Spring AI가 자동 등록하는 Bean. 매 요청마다 `build()`해서 사용 |
+| 프롬프트에 최소재고/최대재고 포함 | AI가 "얼마나 주문해야 하는지" 판단할 근거 제공 |
+| 금요일/토요일 마감 시 추가 안내 | 주말 배송 불가 → 월요일까지 버틸 양 고려 |
+| JSON만 응답하도록 프롬프트 제약 | 파싱 안정성 확보. `extractJson()`으로 혹시 모를 부가 텍스트 제거 |
+| `ordersType=AUTO`, `ordersStatus=WAITING` | 기존 프론트 대시보드가 AUTO+WAITING 목록을 조회하고 있으므로 자동 연동됨 |
+
+#### temperature를 0.3으로 낮춘 이유
+
+발주서는 "정확한 수량"이 중요한 비즈니스 문서. temperature가 높으면:
+- 같은 재고 상태에서도 매번 다른 수량 추천
+- 가끔 엉뚱한 품목 추천
+
+0.3이면 안정적이면서도 상황(요일, 재고량)에 따른 유연한 판단은 가능.
 
 ---
 

@@ -7,3 +7,5 @@ export const getPendingOrderKpi = () => api.get('/store/dashboard/orders/pending
 export const getInventoryRiskKpi = () => api.get('/store/dashboard/inventory/risk/kpi')
 
 export const getSettlementKpi = () => api.get('/store/dashboard/settlement/kpi')
+
+export const getDailySalesChart = () => api.get('/store/dashboard/sales/daily')

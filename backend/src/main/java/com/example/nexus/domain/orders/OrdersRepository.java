@@ -18,9 +18,6 @@ public interface OrdersRepository extends JpaRepository<Orders, Long>, JpaSpecif
     // 발주용 - 점주 제안 발주서 조회 (매장별 특정 상태)
     List<Orders> findAllByStore_IdxAndOrdersStatus(Long storeIdx, OrdersStatus orderStatus);
 
-    // 발주용 - 점주 발주 이력 조회 (매장별 여러 상태)
-    List<Orders> findAllByStore_IdxAndOrdersStatusIn(Long storeIdx, List<OrdersStatus> ordersStatuses);
-
     // 발주용 - 점주 발주 이력 페이징 조회
     Page<Orders> findAllByStore_IdxAndOrdersStatusIn(Long storeIdx, List<OrdersStatus> ordersStatuses, Pageable pageable);
 

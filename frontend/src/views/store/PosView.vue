@@ -53,7 +53,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { getMenuCategoryList, getMenuListPaged, getPosPayToday, postPosPay } from '@/api/pos'
+import { getMenuCategoryList, getMenuListPaged, getPosPayToday, postPosPay, postPosClose } from '@/api/pos'
 import { formatPrice } from '@/utils/formatPrice.js'
 import PosHeaderBar from '@/components/pos/PosHeaderBar.vue'
 import PosMenuBoard from '@/components/pos/PosMenuBoard.vue'
@@ -279,10 +279,17 @@ function toggleStoreStatus() {
   }
 }
 
-function confirmClose() {
-  salesData.value.isClosed = true
-  showCloseModal.value = false
-  showToastMsg('성공적으로 영업이 마감되었습니다. 데이터가 본사로 전송됩니다.')
+async function confirmClose() {
+  try {
+    await postPosClose()
+    salesData.value.isClosed = true
+    showCloseModal.value = false
+    showToastMsg('영업이 마감되었습니다. AI 자동 발주서가 생성되었습니다.')
+  } catch (e) {
+    console.error(e)
+    showCloseModal.value = false
+    showToastMsg('영업 마감 처리에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+  }
 }
 
 watch(

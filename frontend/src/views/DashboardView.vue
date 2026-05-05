@@ -35,15 +35,15 @@
 
 <script setup>
 import { computed } from 'vue'
-import StoreKpiCard from '@/components/dashboard/StoreKpiCard.vue'
-import OrdersKpiCard from '@/components/dashboard/OrdersKpiCard.vue'
-import InventoryKpiCard from '@/components/dashboard/InventoryKpiCard.vue'
-import DeliveryKpiCard from '@/components/dashboard/DeliveryKpiCard.vue'
-import WeeklyOrderChart from '@/components/dashboard/WeeklyOrderChart.vue'
-import OngoingDeliveryList from '@/components/dashboard/OngoingDeliveryList.vue'
-import DangerOrderChart from '@/components/dashboard/DangerOrderChart.vue'
-import DeliveryRatioChart from '@/components/dashboard/DeliveryRatioChart.vue'
-import DangerInventoryList from '@/components/dashboard/DangerInventoryList.vue'
+import StoreKpiCard from '@/components/dashboard/hq/StoreKpiCard.vue'
+import OrdersKpiCard from '@/components/dashboard/hq/OrdersKpiCard.vue'
+import InventoryKpiCard from '@/components/dashboard/hq/InventoryKpiCard.vue'
+import DeliveryKpiCard from '@/components/dashboard/hq/DeliveryKpiCard.vue'
+import WeeklyOrderChart from '@/components/dashboard/hq/WeeklyOrderChart.vue'
+import OngoingDeliveryList from '@/components/dashboard/hq/OngoingDeliveryList.vue'
+import DangerOrderChart from '@/components/dashboard/hq/DangerOrderChart.vue'
+import DeliveryRatioChart from '@/components/dashboard/hq/DeliveryRatioChart.vue'
+import DangerInventoryList from '@/components/dashboard/hq/DangerInventoryList.vue'
 
 const today = computed(() => new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' }))
 </script>

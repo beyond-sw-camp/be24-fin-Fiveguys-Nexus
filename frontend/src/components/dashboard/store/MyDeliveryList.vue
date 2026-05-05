@@ -38,7 +38,7 @@ onMounted(async () => {
     <div class="px-5 pt-5 pb-4 border-b border-gray-100">
       <h2 class="font-bold text-gray-900">나의 배송 현황</h2>
     </div>
-    <div class="flex-1 divide-y divide-gray-50 overflow-y-auto">
+    <div class="flex-1 divide-y divide-gray-50 overflow-y-auto max-h-[240px]">
       <div v-if="deliveries.length === 0" class="px-5 py-8 text-center text-sm text-gray-400">
         진행중인 배송이 없습니다
       </div>
@@ -46,7 +46,8 @@ onMounted(async () => {
         class="px-5 py-4 hover:bg-gray-50 transition-colors cursor-pointer"
         role="button" tabindex="0"
         @click="router.push('/store-delivery')"
-        @keydown.enter="router.push('/store-delivery')">
+        @keydown.enter="router.push('/store-delivery')"
+        @keydown.space.prevent="router.push('/store-delivery')">
         <div class="flex items-center justify-between gap-3">
           <div class="flex-1 min-w-0">
             <p class="text-sm font-bold text-gray-900 font-mono">발주 #{{ d.ordersIdx }}</p>

@@ -11,11 +11,16 @@ const emit = defineEmits(['confirm', 'reject', 'refresh', 'delete-item'])
 
 const { addItemForm, openAddItemForm, filteredProducts, selectAddItemProduct, clearAddItemProduct, submitAddItem } = useAddOrderItem(() => emit('refresh'))
 
-let debounceTimer = null
+function sortedItems(order) {
+  return [...(order.ordersItemList || [])].sort((a, b) => b.idx - a.idx)
+}
+
+const debounceTimers = new Map()
 
 function onCountChange(item) {
-  if (debounceTimer) clearTimeout(debounceTimer)
-  debounceTimer = setTimeout(async () => {
+  if (debounceTimers.has(item.idx)) clearTimeout(debounceTimers.get(item.idx))
+  debounceTimers.set(item.idx, setTimeout(async () => {
+    debounceTimers.delete(item.idx)
     if (item.count < 1) { item.count = 1 }
     try {
       await ordersApi.updateStoreItemCount(item.idx, { count: item.count })
@@ -24,7 +29,7 @@ function onCountChange(item) {
       alert('수량 수정에 실패했습니다.')
       emit('refresh')
     }
-  }, 500)
+  }, 500))
 }
 </script>
 
@@ -136,7 +141,7 @@ function onCountChange(item) {
             <col class="w-[12%]" />
           </colgroup>
           <tbody class="divide-y divide-gray-100">
-            <tr v-for="item in [...order.ordersItemList].sort((a, b) => b.idx - a.idx)" :key="item.idx" class="hover:bg-gray-50/50">
+            <tr v-for="item in sortedItems(order)" :key="item.idx" class="hover:bg-gray-50/50">
               <td class="px-5 py-3.5 font-semibold text-gray-900">{{ item.productName }}</td>
               <td class="px-5 py-3.5 text-gray-500">{{ item.currentStock != null ? item.currentStock + '개' : '-' }}</td>
               <td class="px-5 py-3.5 font-semibold text-blue-600">

@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 
 @RequestMapping("/menu")
@@ -40,4 +41,15 @@ public class MenuController {
         List<MenuDto.MenuCategoryRes> result =  menuService.menucategory();
         return ResponseEntity.ok(BaseResponse.success(result));
     }
+
+    // S3 Pre-signed URL 요청
+    @GetMapping("/presignedUrl/{fileName}")
+    public ResponseEntity presignedUrl(@PathVariable(name = "fileName") String fileName){
+        // 1. 서비스를 호출하여 URL과 고유 파일명을 받아옵니다.
+        Map<String, String> result = menuService.getPresignedUrl(fileName);
+
+        // 2. BaseResponse.success에 결과 Map을 담아 반환합니다.
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
+
 }

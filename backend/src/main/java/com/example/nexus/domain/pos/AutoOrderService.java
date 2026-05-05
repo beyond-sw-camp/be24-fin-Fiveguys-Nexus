@@ -25,6 +25,8 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -121,10 +123,17 @@ public class AutoOrderService {
                 return;
             }
 
+            // Product 일괄 조회 (중복 DB 호출 방지)
+            List<Long> productIds = response.items().stream()
+                    .map(AutoOrderItem::productIdx)
+                    .toList();
+            Map<Long, Product> productMap = productRepository.findAllById(productIds).stream()
+                    .collect(Collectors.toMap(Product::getIdx, p -> p));
+
             // 총 가격 계산
             long totalPrice = 0;
             for (AutoOrderItem item : response.items()) {
-                Product product = productRepository.findById(item.productIdx()).orElse(null);
+                Product product = productMap.get(item.productIdx());
                 if (product != null) {
                     totalPrice += (long) product.getUnitPrice() * item.quantity();
                 }
@@ -143,7 +152,7 @@ public class AutoOrderService {
 
             // OrdersItem 저장
             for (AutoOrderItem item : response.items()) {
-                Product product = productRepository.findById(item.productIdx()).orElse(null);
+                Product product = productMap.get(item.productIdx());
                 if (product != null) {
                     ordersItemRepository.save(OrdersItem.builder()
                             .count(item.quantity())

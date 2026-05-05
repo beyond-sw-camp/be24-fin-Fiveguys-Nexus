@@ -11,11 +11,12 @@ const emit = defineEmits(['confirm', 'reject', 'refresh', 'delete-item'])
 
 const { addItemForm, openAddItemForm, filteredProducts, selectAddItemProduct, clearAddItemProduct, submitAddItem } = useAddOrderItem(() => emit('refresh'))
 
-let debounceTimer = null
+const debounceTimers = new Map()
 
 function onCountChange(item) {
-  if (debounceTimer) clearTimeout(debounceTimer)
-  debounceTimer = setTimeout(async () => {
+  if (debounceTimers.has(item.idx)) clearTimeout(debounceTimers.get(item.idx))
+  debounceTimers.set(item.idx, setTimeout(async () => {
+    debounceTimers.delete(item.idx)
     if (item.count < 1) { item.count = 1 }
     try {
       await ordersApi.updateStoreItemCount(item.idx, { count: item.count })
@@ -24,7 +25,7 @@ function onCountChange(item) {
       alert('수량 수정에 실패했습니다.')
       emit('refresh')
     }
-  }, 500)
+  }, 500))
 }
 </script>
 

@@ -51,4 +51,16 @@ public class StoreDashboardController {
         StoreDashboardDto.InventoryRiskKpiRes result = storeDashboardService.getInventoryRiskKpi(authUserDetails.getIdx());
         return ResponseEntity.ok(BaseResponse.success(result));
     }
+
+    /**
+     * 정산 현황 KPI 조회
+     *
+     * @param authUserDetails 인증된 사용자 정보
+     * @return ResponseEntity 현재 반월 구간 정산 금액, 구간명, 직전 구간 대비 증감률
+     */
+    @GetMapping("/settlement/kpi")
+    public ResponseEntity<BaseResponse> getSettlementKpi(@AuthenticationPrincipal AuthUserDetails authUserDetails) {
+        StoreDashboardDto.SettlementKpiRes result = storeDashboardService.getSettlementKpi(authUserDetails.getIdx());
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
 }

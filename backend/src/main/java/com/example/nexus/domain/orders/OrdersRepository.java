@@ -44,4 +44,6 @@ public interface OrdersRepository extends JpaRepository<Orders, Long>, JpaSpecif
     // 점주 대시보드용
     long countByStore_IdxAndOrdersStatusAndOrdersType(Long storeIdx, OrdersStatus ordersStatus, OrdersType ordersType);
 
+    @Query("SELECT COALESCE(SUM(o.price), 0) FROM Orders o WHERE o.store.idx = :storeIdx AND o.ordersStatus = 'APPROVE' AND o.createdAt >= :from AND o.createdAt < :to")
+    long sumApprovedPriceByStoreAndPeriod(@Param("storeIdx") Long storeIdx, @Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 }

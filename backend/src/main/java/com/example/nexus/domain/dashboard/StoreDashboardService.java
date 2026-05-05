@@ -94,4 +94,58 @@ public class StoreDashboardService {
                 .totalDangerCount(lowCount + criticalCount)
                 .build();
     }
+
+    /**
+     * 정산 현황 KPI 조회
+     * - 반월 단위(1~15일, 16~말일) 구간의 APPROVE 상태 발주 금액 합산
+     * - 직전 구간 대비 증감률(%) 계산
+     */
+    public StoreDashboardDto.SettlementKpiRes getSettlementKpi(Long userIdx) {
+        // 점주의 매장 조회
+        Store store = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        // 현재/직전 반월 구간 계산
+        LocalDate today = LocalDate.now();
+        LocalDateTime currentStart;
+        LocalDateTime currentEnd;
+        LocalDateTime prevStart;
+        LocalDateTime prevEnd;
+        String currentPeriod;
+
+        if (today.getDayOfMonth() <= 15) {
+            // 현재 구간: 이번 달 1~15일
+            currentStart = today.withDayOfMonth(1).atStartOfDay();
+            currentEnd = today.withDayOfMonth(16).atStartOfDay();
+            // 직전 구간: 지난 달 16~말일
+            LocalDate prevMonth = today.minusMonths(1);
+            prevStart = prevMonth.withDayOfMonth(16).atStartOfDay();
+            prevEnd = prevMonth.plusMonths(1).withDayOfMonth(1).atStartOfDay();
+            currentPeriod = today.getYear() + "-" + String.format("%02d", today.getMonthValue()) + " 상반기";
+        } else {
+            // 현재 구간: 이번 달 16~말일
+            currentStart = today.withDayOfMonth(16).atStartOfDay();
+            currentEnd = today.plusMonths(1).withDayOfMonth(1).atStartOfDay();
+            // 직전 구간: 이번 달 1~15일
+            prevStart = today.withDayOfMonth(1).atStartOfDay();
+            prevEnd = today.withDayOfMonth(16).atStartOfDay();
+            currentPeriod = today.getYear() + "-" + String.format("%02d", today.getMonthValue()) + " 하반기";
+        }
+
+        // APPROVE 상태 발주 금액 합산
+        long currentAmount = ordersRepository.sumApprovedPriceByStoreAndPeriod(store.getIdx(), currentStart, currentEnd);
+        long prevAmount = ordersRepository.sumApprovedPriceByStoreAndPeriod(store.getIdx(), prevStart, prevEnd);
+
+        // 직전 구간 대비 증감률 계산
+        double deltaPercent = 0.0;
+        if (prevAmount > 0) {
+            deltaPercent = Math.round((currentAmount - prevAmount) * 1000.0 / prevAmount) / 10.0;
+        }
+
+        return StoreDashboardDto.SettlementKpiRes.builder()
+                .currentAmount(currentAmount)
+                .currentPeriod(currentPeriod)
+                .deltaPercent(deltaPercent)
+                .build();
+    }
 }

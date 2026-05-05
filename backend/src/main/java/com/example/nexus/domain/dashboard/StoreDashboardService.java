@@ -35,8 +35,8 @@ public class StoreDashboardService {
         LocalDateTime yesterdayStart = today.minusDays(1).atStartOfDay();
 
         // POS 매출 합산
-        long todaySales = posPayRepository.sumPayAmountByStoreAndPaidAtBetween(store.getIdx(), todayStart, todayEnd);
-        long yesterdaySales = posPayRepository.sumPayAmountByStoreAndPaidAtBetween(store.getIdx(), yesterdayStart, todayStart);
+        long todaySales = posPayRepository.sumPayAmountByStoreAndPeriod(store.getIdx(), todayStart, todayEnd);
+        long yesterdaySales = posPayRepository.sumPayAmountByStoreAndPeriod(store.getIdx(), yesterdayStart, todayStart);
 
         // 전일 대비 증감률 계산 (전일 매출이 0이면 0.0%)
         double deltaPercent = 0.0;

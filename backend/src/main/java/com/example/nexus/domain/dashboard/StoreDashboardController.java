@@ -1,0 +1,30 @@
+package com.example.nexus.domain.dashboard;
+
+import com.example.nexus.common.model.BaseResponse;
+import com.example.nexus.domain.dashboard.model.StoreDashboardDto;
+import com.example.nexus.domain.user.model.AuthUserDetails;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/store/dashboard")
+@RequiredArgsConstructor
+public class StoreDashboardController {
+    private final StoreDashboardService storeDashboardService;
+
+    /**
+     * 금일 매출 KPI 조회
+     *
+     * @param authUserDetails 인증된 사용자 정보
+     * @return ResponseEntity 금일 매출 총액, 전일 대비 증감률
+     */
+    @GetMapping("/sales/kpi")
+    public ResponseEntity<BaseResponse> getSalesKpi(@AuthenticationPrincipal AuthUserDetails authUserDetails) {
+        StoreDashboardDto.SalesKpiRes result = storeDashboardService.getSalesKpi(authUserDetails.getIdx());
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
+}

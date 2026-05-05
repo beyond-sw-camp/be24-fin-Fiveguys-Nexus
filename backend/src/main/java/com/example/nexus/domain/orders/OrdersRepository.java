@@ -1,6 +1,7 @@
 package com.example.nexus.domain.orders;
 
 import com.example.nexus.common.enums.OrdersStatus;
+import com.example.nexus.common.enums.OrdersType;
 import com.example.nexus.domain.orders.model.Orders;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -21,8 +22,8 @@ public interface OrdersRepository extends JpaRepository<Orders, Long>, JpaSpecif
             "WHERE o.store.idx = :storeIdx AND o.createdAt >= :since AND (:excludeIdx IS NULL OR o.idx <> :excludeIdx)")
     Integer findAvgQtyByStoreAndPeriod(@Param("storeIdx") Long storeIdx, @Param("since") LocalDateTime since, @Param("excludeIdx") Long excludeIdx);
 
-    // 대시보드용
-    long countByOrdersTypeAndCreatedAtAfter(com.example.nexus.common.enums.OrdersType ordersType, LocalDateTime since);
+    // 본사 대시보드용
+    long countByOrdersTypeAndCreatedAtAfter(OrdersType ordersType, LocalDateTime since);
 
     long countByOrdersStatus(OrdersStatus ordersStatus);
 
@@ -39,4 +40,8 @@ public interface OrdersRepository extends JpaRepository<Orders, Long>, JpaSpecif
             "GROUP BY FUNCTION('DATE_FORMAT', o.createdAt, '%m-%d') " +
             "ORDER BY FUNCTION('DATE_FORMAT', o.createdAt, '%m-%d')")
     List<Object[]> findWeeklyOrderStats(@Param("since") LocalDateTime since);
+
+    // 점주 대시보드용
+    long countByStore_IdxAndOrdersStatusAndOrdersType(Long storeIdx, OrdersStatus ordersStatus, OrdersType ordersType);
+
 }

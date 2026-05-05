@@ -324,19 +324,24 @@ public class OrdersController {
     }
 
     /**
-     * 가맹점 발주 이력 조회
+     * 가맹점 발주 이력 조회 (페이징)
      *
      * @param authUserDetails 인증된 사용자 정보
-     * @return ResponseEntity 가맹점 발주 목록
-     * @throws ResponseStatusException 로그인하지 않은 경우 (401)
+     * @param page 페이지 번호 (기본값: 0)
+     * @param size 페이지 크기 (기본값: 10)
+     * @return ResponseEntity 가맹점 발주 목록 (페이징)
      */
-    @GetMapping("/store/list")
-    public ResponseEntity storeList(@AuthenticationPrincipal AuthUserDetails authUserDetails) {
+    @GetMapping("/store/list/paged")
+    public ResponseEntity storeListPaged(
+            @AuthenticationPrincipal AuthUserDetails authUserDetails,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
         if (authUserDetails == null) {
             throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
         }
-        List<OrdersDto.OrdersRes> result = orderService.findByUserIdx(authUserDetails.getIdx());
-        return ResponseEntity.ok(BaseResponse.success(result));
+        Page<OrdersDto.OrdersRes> result = orderService.findByUserIdxPaged(authUserDetails.getIdx(), PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+        return ResponseEntity.ok(BaseResponse.success(PageResponse.from(result)));
     }
 
     /**

@@ -19,10 +19,12 @@ public interface StoreRepository extends JpaRepository<Store,Long> {
 
     Optional<Store> findByBusiness(String business);
 
-    // 아래 3개는 대시보드 사용
+    // 대시보드용 - 본사 대시보드 전체 매장 수 KPI 카드
     long countByIsDeletedFalse();
 
+    // 대시보드용 - 본사 대시보드 신규 매장 수 (기준일 이후 생성)
     long countByIsDeletedFalseAndCreatedAtAfter(LocalDateTime since);
 
+    // 대시보드용 - 본사 대시보드 이전 기간 매장 수 (증감률 계산)
     long countByIsDeletedFalseAndCreatedAtBefore(LocalDateTime until);
 }

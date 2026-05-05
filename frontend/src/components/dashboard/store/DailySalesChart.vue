@@ -1,26 +1,38 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { Chart } from 'chart.js/auto'
+import { getDailySalesChart } from '@/api/store-dashboard'
 
 const lineCanvas = ref(null)
 let lineChart = null
-
-const thisWeek = [72, 85, 68, 91, 84, 96, 80]
-const lastWeek = [65, 78, 74, 82, 79, 88, 71]
-const allValues = computed(() => [...thisWeek, ...lastWeek].filter(v => typeof v === 'number'))
-const yMin = computed(() => allValues.value.length ? Math.floor(Math.min(...allValues.value) / 10) * 10 - 10 : 0)
-const yMax = computed(() => allValues.value.length ? Math.ceil(Math.max(...allValues.value) / 10) * 10 + 10 : 100)
-const weekLabels = ['일', '월', '화', '수', '목', '금', '토']
 
 onUnmounted(() => {
   lineChart?.destroy()
 })
 
-onMounted(() => {
+onMounted(async () => {
+  let labels = ['일', '월', '화', '수', '목', '금', '토']
+  let thisWeek = [0, 0, 0, 0, 0, 0, 0]
+  let lastWeek = [0, 0, 0, 0, 0, 0, 0]
+
+  try {
+    const { data } = await getDailySalesChart()
+    const result = data.result
+    labels = result.labels
+    thisWeek = result.thisWeek.map(v => Math.round(v / 10000))
+    lastWeek = result.lastWeek.map(v => Math.round(v / 10000))
+  } catch (e) {
+    console.error('일별 매출 차트 조회 실패', e)
+  }
+
+  const allValues = [...thisWeek, ...lastWeek]
+  const yMin = allValues.length ? Math.floor(Math.min(...allValues) / 10) * 10 - 10 : 0
+  const yMax = allValues.length ? Math.ceil(Math.max(...allValues) / 10) * 10 + 10 : 100
+
   lineChart = new Chart(lineCanvas.value, {
     type: 'line',
     data: {
-      labels: weekLabels,
+      labels,
       datasets: [
         {
           label: '이번 주',
@@ -77,7 +89,7 @@ onMounted(() => {
           border: { display: false },
         },
         y: {
-          min: yMin.value, max: yMax.value,
+          min: yMin, max: yMax,
           grid: { color: '#f3f4f6' },
           ticks: { color: '#9ca3af', font: { size: 11 }, stepSize: 20 },
           border: { display: false },

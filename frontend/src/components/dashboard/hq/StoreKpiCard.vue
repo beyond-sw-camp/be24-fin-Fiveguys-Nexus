@@ -4,7 +4,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import KpiCard from './KpiCard.vue'
+import KpiCard from '../KpiCard.vue'
 import { getStoreKpi } from '@/api/dashboard'
 
 const value = ref('-')

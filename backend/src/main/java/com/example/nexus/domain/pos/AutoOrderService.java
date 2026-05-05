@@ -14,7 +14,6 @@ import com.example.nexus.domain.store.StoreInventoryRepository;
 import com.example.nexus.domain.store.StoreRepository;
 import com.example.nexus.domain.store.model.Store;
 import com.example.nexus.domain.store.model.StoreInventory;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -100,9 +99,12 @@ public class AutoOrderService {
         sb.append("- 현재수량이 최소재고 이하인 품목은 반드시 발주에 포함\n");
         sb.append("- 발주수량은 최대재고 - 현재수량을 기본으로 하되, 상황에 맞게 조정\n");
         sb.append("- 현재수량이 충분한 품목은 발주하지 마세요\n");
-        sb.append("\n[응답 형식] 반드시 아래 JSON 배열만 출력하세요. 다른 텍스트 없이 JSON만:\n");
-        sb.append("[{\"productIdx\": 숫자, \"productName\": \"상품명\", \"quantity\": 숫자}]\n");
-        sb.append("발주할 품목이 없으면 빈 배열 []을 반환하세요.\n");
+        sb.append("\n[응답 형식] 반드시 아래 JSON만 출력하세요. 다른 텍스트 없이 JSON만:\n");
+        sb.append("{\n");
+        sb.append("  \"reason\": \"발주 추천 이유 한 줄 요약\",\n");
+        sb.append("  \"items\": [{\"productIdx\": 숫자, \"productName\": \"상품명\", \"quantity\": 숫자}]\n");
+        sb.append("}\n");
+        sb.append("발주할 품목이 없으면 {\"reason\": \"\", \"items\": []}을 반환하세요.\n");
 
         return sb.toString();
     }
@@ -112,33 +114,35 @@ public class AutoOrderService {
         try {
             // JSON 파싱
             String json = extractJson(aiResponse);
-            List<AutoOrderItem> items = objectMapper.readValue(json, new TypeReference<>() {});
+            AutoOrderResponse response = objectMapper.readValue(json, AutoOrderResponse.class);
 
-            if (items.isEmpty()) {
+            if (response.items() == null || response.items().isEmpty()) {
                 log.info("AI 판단: 발주 필요 품목 없음 (store={})", store.getStoreName());
                 return;
             }
 
-            // 총 가격 계산 + Orders 생성
+            // 총 가격 계산
             long totalPrice = 0;
-            for (AutoOrderItem item : items) {
+            for (AutoOrderItem item : response.items()) {
                 Product product = productRepository.findById(item.productIdx()).orElse(null);
                 if (product != null) {
                     totalPrice += (long) product.getUnitPrice() * item.quantity();
                 }
             }
 
+            // Orders 생성 (reason 포함)
             Orders orders = ordersRepository.save(Orders.builder()
                     .price(totalPrice)
                     .ordersType(OrdersType.AUTO)
                     .ordersStatus(OrdersStatus.WAITING)
                     .isDanger(false)
+                    .reason(response.reason())
                     .createdAt(LocalDateTime.now())
                     .store(store)
                     .build());
 
             // OrdersItem 저장
-            for (AutoOrderItem item : items) {
+            for (AutoOrderItem item : response.items()) {
                 Product product = productRepository.findById(item.productIdx()).orElse(null);
                 if (product != null) {
                     ordersItemRepository.save(OrdersItem.builder()
@@ -149,7 +153,8 @@ public class AutoOrderService {
                 }
             }
 
-            log.info("AI 자동 발주서 생성 완료: store={}, items={}", store.getStoreName(), items.size());
+            log.info("AI 자동 발주서 생성 완료: store={}, reason={}, items={}",
+                    store.getStoreName(), response.reason(), response.items().size());
 
         } catch (Exception e) {
             log.error("AI 응답 파싱 실패: {}", aiResponse, e);
@@ -158,14 +163,16 @@ public class AutoOrderService {
     }
 
     private String extractJson(String response) {
-        // AI 응답에서 JSON 배열 부분만 추출
-        int start = response.indexOf('[');
-        int end = response.lastIndexOf(']');
+        // AI 응답에서 JSON 객체 부분만 추출
+        int start = response.indexOf('{');
+        int end = response.lastIndexOf('}');
         if (start == -1 || end == -1) {
-            return "[]";
+            return "{\"reason\": \"\", \"items\": []}";
         }
         return response.substring(start, end + 1);
     }
+
+    private record AutoOrderResponse(String reason, List<AutoOrderItem> items) {}
 
     private record AutoOrderItem(Long productIdx, String productName, int quantity) {}
 }

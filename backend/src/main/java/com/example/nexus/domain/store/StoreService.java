@@ -9,6 +9,8 @@ import com.example.nexus.domain.user.UserRepository;
 import com.example.nexus.domain.user.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
@@ -40,14 +42,10 @@ public class StoreService {
     }
 
     @Transactional(readOnly = true)
-    public List<StoreDto.StoreListRes> storeList() {
-        List<Store> res = storeRepository.findAll();
-        List<StoreDto.StoreListRes> result = new ArrayList<>();
-
-        for(Store data: res){
-            result.add(StoreDto.StoreListRes.from(data));
-        }
-        return result;
+    public StoreDto.StoerPageRes storeList(int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<Store> result = storeRepository.findAll(pageRequest);
+        return StoreDto.StoerPageRes.from(result);
     }
 
     public List<StoreDto.StoreSearchRes> searchByStoreName(StoreDto.StoreSearchReq reqDto) {

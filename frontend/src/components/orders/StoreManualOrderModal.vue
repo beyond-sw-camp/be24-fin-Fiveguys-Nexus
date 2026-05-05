@@ -27,12 +27,9 @@ function addItem() {
 }
 
 function filterProducts(item) {
-  if (item.productKeyword.trim().length === 0) {
-    item.showDropdown = false
-    return []
-  }
-  item.showDropdown = true
-  return products.value.filter(p => p.productName.includes(item.productKeyword))
+  const keyword = item.productKeyword?.trim() || ''
+  const selectedIds = new Set(form.items.filter(i => i.product).map(i => i.product))
+  return products.value.filter(p => !selectedIds.has(p.idx) && (keyword === '' || p.productName.includes(keyword)))
 }
 
 function selectProduct(item, product) {
@@ -68,7 +65,7 @@ function submit() {
 <template>
   <div v-if="visible" class="fixed inset-0 z-50 flex items-center justify-center">
     <div class="absolute inset-0 bg-black/40" @click="$emit('close')"></div>
-    <div class="relative bg-white rounded-xl w-full max-w-lg border border-gray-200 shadow-xl">
+    <div class="relative bg-white rounded-xl w-full max-w-2xl border border-gray-200 shadow-xl">
       <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
         <h3 class="font-bold text-gray-900">수동 발주 생성</h3>
         <button @click="$emit('close')" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
@@ -87,11 +84,11 @@ function submit() {
                 <span class="font-medium text-gray-900">{{ item.productKeyword }}</span>
                 <button @click="clearProduct(item)" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
               </div>
-              <input v-else v-model="item.productKeyword" @input="filterProducts(item)" placeholder="상품명 검색"
+              <input v-else v-model="item.productKeyword" @input="item.showDropdown = true" @focus="item.showDropdown = true" @blur="item.showDropdown = false" placeholder="상품명 검색"
                 class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none" />
-              <ul v-if="item.showDropdown && filterProducts(item).length > 0"
-                class="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded shadow-lg max-h-32 overflow-y-auto">
-                <li v-for="p in filterProducts(item)" :key="p.idx" @click="selectProduct(item, p)"
+              <ul v-if="!item.product && item.showDropdown && filterProducts(item).length > 0"
+                class="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded shadow-lg max-h-60 overflow-y-auto">
+                <li v-for="p in filterProducts(item)" :key="p.idx" @mousedown.prevent @click="selectProduct(item, p)"
                   class="px-3 py-2 text-sm hover:bg-blue-50 cursor-pointer">
                   {{ p.productName }} <span class="text-gray-400 text-xs">{{ p.productUnit }}</span>
                 </li>

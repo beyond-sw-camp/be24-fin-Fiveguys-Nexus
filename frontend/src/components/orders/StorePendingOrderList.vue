@@ -73,26 +73,7 @@ function onCountChange(item) {
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
-          <tr v-for="item in order.ordersItemList" :key="item.idx" class="hover:bg-gray-50/50">
-            <td class="px-5 py-3.5 font-semibold text-gray-900">{{ item.productName }}</td>
-            <td class="px-5 py-3.5 text-gray-500">{{ item.currentStock != null ? item.currentStock + '개' : '-' }}</td>
-            <td class="px-5 py-3.5 font-semibold text-blue-600">
-              <input v-model.number="item.count" type="number" min="1"
-                @input="onCountChange(item)"
-                class="w-16 px-2 py-1 rounded-lg border border-gray-200 text-sm outline-none focus:border-blue-400" />
-            </td>
-            <td class="px-5 py-3.5 text-gray-500">₩ {{ (item.unitPrice ?? 0).toLocaleString() }}</td>
-            <td class="px-5 py-3.5 text-right font-semibold text-gray-700">
-              ₩ {{ ((item.count || 0) * (item.unitPrice ?? 0)).toLocaleString() }}
-            </td>
-            <td class="px-3 py-3.5 text-center">
-              <button @click="emit('delete-item', order, item)"
-                class="px-2 py-1 text-xs font-semibold text-red-500 border border-red-200 bg-red-50 rounded-lg hover:bg-red-100 cursor-pointer">
-                삭제
-              </button>
-            </td>
-          </tr>
-          <tr v-if="addItemForm?.ordersIdx === order.idx" class="bg-blue-50/50 border-t border-blue-100">
+          <tr v-if="addItemForm?.ordersIdx === order.idx" class="bg-blue-50/50 border-b border-blue-100">
             <td class="px-5 py-3">
               <div class="relative">
                 <div v-if="addItemForm.productIdx" class="flex items-center justify-between px-2 py-1.5 rounded-lg border border-blue-400 bg-blue-50 text-sm">
@@ -129,6 +110,25 @@ function onCountChange(item) {
               </div>
             </td>
             <td></td>
+          </tr>
+          <tr v-for="item in [...order.ordersItemList].sort((a, b) => b.idx - a.idx)" :key="item.idx" class="hover:bg-gray-50/50">
+            <td class="px-5 py-3.5 font-semibold text-gray-900">{{ item.productName }}</td>
+            <td class="px-5 py-3.5 text-gray-500">{{ item.currentStock != null ? item.currentStock + '개' : '-' }}</td>
+            <td class="px-5 py-3.5 font-semibold text-blue-600">
+              <input v-model.number="item.count" type="number" min="1"
+                @input="onCountChange(item)"
+                class="w-16 px-2 py-1 rounded-lg border border-gray-200 text-sm outline-none focus:border-blue-400" />
+            </td>
+            <td class="px-5 py-3.5 text-gray-500">₩ {{ (item.unitPrice ?? 0).toLocaleString() }}</td>
+            <td class="px-5 py-3.5 text-right font-semibold text-gray-700">
+              ₩ {{ ((item.count || 0) * (item.unitPrice ?? 0)).toLocaleString() }}
+            </td>
+            <td class="px-3 py-3.5 text-center">
+              <button @click="emit('delete-item', order, item)"
+                class="px-2 py-1 text-xs font-semibold text-red-500 border border-red-200 bg-red-50 rounded-lg hover:bg-red-100 cursor-pointer">
+                삭제
+              </button>
+            </td>
           </tr>
         </tbody>
         <tfoot class="border-t border-gray-200 bg-gray-50/60">

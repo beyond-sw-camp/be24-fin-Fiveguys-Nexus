@@ -49,7 +49,7 @@ const emit = defineEmits(['open-detail', 'cancel', 'page-change'])
               {{ ORDER_STATUS_LABEL[h.ordersStatus] }}
             </span>
           </td>
-          <td class="px-5 py-3.5">
+          <td class="px-5 py-3.5 h-[52px]">
             <button v-if="h.ordersStatus === 'CONFIRMED'"
               @click.stop="emit('cancel', h)"
               class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-red-200 text-red-500 bg-red-50 hover:bg-red-500 hover:text-white hover:cursor-pointer transition-colors">

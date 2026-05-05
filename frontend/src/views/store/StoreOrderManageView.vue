@@ -7,12 +7,15 @@ import StoreOrderDetailModal from '@/components/orders/StoreOrderDetailModal.vue
 import StorePendingOrderList from '@/components/orders/StorePendingOrderList.vue'
 import StoreOrderConfirmModal from '@/components/orders/StoreOrderConfirmModal.vue'
 import StoreOrderRejectModal from '@/components/orders/StoreOrderRejectModal.vue'
+import StoreItemDeleteModal from '@/components/orders/StoreItemDeleteModal.vue'
 import ordersApi from '@/api/orders'
 
 const activeTab = ref('pending')
 const selectedOrder = ref(null)
 const isConfirmModalOpen = ref(false)
 const isRejectModalOpen = ref(false)
+const isDeleteModalOpen = ref(false)
+const deleteTarget = ref({ order: null, item: null })
 
 const pendingOrders = ref([])
 const orderHistory = ref([])
@@ -102,10 +105,16 @@ async function rejectOrder() {
   }
 }
 
-async function deleteItem(order, item) {
-  if (!confirm(`"${item.productName}" 품목을 삭제하시겠습니까?`)) return
+function deleteItem(order, item) {
+  deleteTarget.value = { order, item }
+  isDeleteModalOpen.value = true
+}
+
+async function confirmDeleteItem() {
+  const { item } = deleteTarget.value
   try {
     await ordersApi.deleteStoreItem(item.idx)
+    isDeleteModalOpen.value = false
     fetchPendingOrders()
   } catch (e) {
     console.error('품목 삭제 실패', e)
@@ -179,5 +188,8 @@ async function submitManualOrder(data) {
       @close="isRejectModalOpen = false" @reject="rejectOrder" />
 
     <StoreManualOrderModal :visible="showManualForm" @close="showManualForm = false" @submit="submitManualOrder" />
+
+    <StoreItemDeleteModal :item="deleteTarget.item" :visible="isDeleteModalOpen"
+      @close="isDeleteModalOpen = false" @confirm="confirmDeleteItem" />
   </div>
 </template>

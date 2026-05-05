@@ -11,3 +11,5 @@ export const getSettlementKpi = () => api.get('/store/dashboard/settlement/kpi')
 export const getDailySalesChart = () => api.get('/store/dashboard/sales/daily')
 
 export const getMyDeliveryList = () => api.get('/store/dashboard/delivery/list')
+
+export const getPendingOrderList = () => api.get('/store/dashboard/orders/pending/list')

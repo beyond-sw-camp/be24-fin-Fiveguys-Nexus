@@ -43,7 +43,18 @@ INSERT INTO user (email, password, user_name, tel, role, is_deleted) VALUES
 ('store02@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '최유진', '010-4567-8901', 'STORE', false),
 ('store03@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '정수아', '010-5678-9012', 'STORE', false),
 ('store04@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '한지민', '010-6789-0123', 'STORE', false),
-('store05@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '윤서준', '010-7890-1234', 'STORE', false);
+('store05@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '윤서준', '010-7890-1234', 'STORE', false),
+('store06@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '강도훈', '010-8901-2345', 'STORE', false),
+('store07@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '조예은', '010-9012-3456', 'STORE', false),
+('store08@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '임지우', '010-0123-4567', 'STORE', false),
+('store09@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '서현우', '010-1122-3344', 'STORE', false),
+('store10@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '오지현', '010-5566-7788', 'STORE', false),
+('store11@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '권태윤', '010-9988-7766', 'STORE', false),
+('store12@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '송민경', '010-4433-2211', 'STORE', false),
+('store13@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '백승호', '010-6677-8899', 'STORE', false),
+('store14@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '신아름', '010-2233-4455', 'STORE', false),
+('store15@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '유재혁', '010-8877-6655', 'STORE', false);
+
 
 -- ============================================================
 -- 2. Store (가맹점 5개)
@@ -53,7 +64,17 @@ INSERT INTO store (user_idx, store_name, address, address_detail, file_path, bus
 (4, '더벤티 홍대입구점', '서울특별시 마포구 양화로 160', '1층', '/uploads/store/hongdae.jpg', '234-56-78901', 04051, '2023-06-01 09:00:00', '2023-09-10 09:00:00', true),
 (5, '더벤티 신촌점', '서울특별시 서대문구 신촌로 141', '지하1층 B102호', '/uploads/store/sinchon.jpg', '345-67-89012', 03780, '2023-09-10 09:00:00', NULL, false),
 (6, '더벤티 건대입구점', '서울특별시 광진구 능동로 120', '1층 103호', '/uploads/store/konkuk.jpg', '456-78-90123', 05029, '2024-01-08 09:00:00', '2024-04-20 09:00:00', true),
-(7, '더벤티 잠실점', '서울특별시 송파구 올림픽로 240', '1층', '/uploads/store/jamsil.jpg', '567-89-01234', 05554, '2024-04-20 09:00:00', NULL, false);
+(7, '더벤티 잠실점', '서울특별시 송파구 올림픽로 240', '1층', '/uploads/store/jamsil.jpg', '567-89-01234', 05554, '2024-04-20 09:00:00', NULL, false),
+(8, '더벤티 부산역점', '부산광역시 동구 중앙대로 206', '1층', '/uploads/store/busan.jpg', '678-90-12345', 48733, '2024-05-01 09:00:00', NULL, false),
+(9, '더벤티 대구중앙로점', '대구광역시 중구 국채보상로 585', '1층 105호', '/uploads/store/daegu.jpg', '789-01-23456', 41907, '2024-05-02 10:00:00', NULL, false),
+(10, '더벤티 광주상무점', '광주광역시 서구 상무중앙로 80', '1층', '/uploads/store/gwangju.jpg', '890-12-34567', 61947, '2024-05-03 09:30:00', '2024-06-10 18:00:00', true),
+(11, '더벤티 대전복합터미널점', '대전광역시 동구 동서대로 1689', '터미널 내부 1층', '/uploads/store/daejeon.jpg', '901-23-45678', 34504, '2024-05-05 08:00:00', NULL, false),
+(12, '더벤티 울산현대백화점점', '울산광역시 남구 삼산로 261', '본관 1층', '/uploads/store/ulsan.jpg', '012-34-56789', 44705, '2024-05-10 11:00:00', NULL, false),
+(13, '더벤티 인천구월점', '인천광역시 남동구 인하로 497', '1층 102호', '/uploads/store/incheon.jpg', '123-45-67891', 21556, '2024-05-12 09:00:00', NULL, false),
+(14, '더벤티 수원인계점', '경기도 수원시 팔달구 인계로 138', '1층', '/uploads/store/suwon.jpg', '234-56-78902', 16488, '2024-05-15 09:00:00', '2024-07-01 09:00:00', true),
+(15, '더벤티 성남모란점', '경기도 성남시 수정구 성남대로 1187', '1층 101호', '/uploads/store/seongnam.jpg', '345-67-89013', 13320, '2024-05-20 08:30:00', NULL, false),
+(16, '더벤티 일산라페스타점', '경기도 고양시 일산동구 무궁화로 32', 'C동 1층', '/uploads/store/ilsan.jpg', '456-78-90124', 10358, '2024-05-22 09:00:00', NULL, false),
+(17, '더벤티 천안터미널점', '충청남도 천안시 동남구 만남로 43', '1층 106호', '/uploads/store/cheonan.jpg', '567-89-01235', 31120, '2024-05-25 09:00:00', '2024-05-30 09:00:00', true);
 
 
 

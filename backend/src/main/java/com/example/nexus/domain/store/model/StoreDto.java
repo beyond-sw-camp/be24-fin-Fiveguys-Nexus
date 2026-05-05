@@ -1,15 +1,14 @@
 package com.example.nexus.domain.store.model;
 
-import com.example.nexus.domain.user.model.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.time.LocalDate;
+import org.springframework.data.domain.Page;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 public class StoreDto {
 
@@ -35,6 +34,28 @@ public class StoreDto {
                     .address(entity.getAddress())
                     .business(entity.getBusiness())
                     .status(entity.isDeleted() ? "폐점":"입점")
+                    .build();
+        }
+    }
+
+    // 가맹점 조회 페이징 처리
+    // 메뉴 페이징 조회
+    @Getter
+    @Builder
+    public static class StorePageRes{
+        private List<StoreDto.StoreListRes> storeList;
+        private int totalPage;
+        private long totalCount;
+        private int currentPage;
+        private int currentSize;
+
+        public static StoreDto.StorePageRes from(Page<Store> entity){
+            return StorePageRes.builder()
+                    .storeList(entity.map(StoreDto.StoreListRes::from).getContent())
+                    .totalPage(entity.getTotalPages())
+                    .totalCount(entity.getTotalElements())
+                    .currentPage(entity.getPageable().getPageNumber())
+                    .currentSize(entity.getPageable().getPageSize())
                     .build();
         }
     }
@@ -91,6 +112,16 @@ public class StoreDto {
     @AllArgsConstructor
     public static class StoreSearchReq {
         private String keyword;
+    }
+
+    // 가맹점 검색
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class StoreSearchPagingReq {
+        private String keyword;
+        private String status;
     }
 
     @Builder

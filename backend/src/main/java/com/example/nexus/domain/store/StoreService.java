@@ -9,6 +9,8 @@ import com.example.nexus.domain.user.UserRepository;
 import com.example.nexus.domain.user.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
@@ -40,14 +42,28 @@ public class StoreService {
     }
 
     @Transactional(readOnly = true)
-    public List<StoreDto.StoreListRes> storeList() {
-        List<Store> res = storeRepository.findAll();
-        List<StoreDto.StoreListRes> result = new ArrayList<>();
+    public StoreDto.StorePageRes storeList(StoreDto.StoreSearchPagingReq req, int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<Store> result;
 
-        for(Store data: res){
-            result.add(StoreDto.StoreListRes.from(data));
+        String status = (req.getStatus() != null) ? req.getStatus().trim(): "";
+        String keyword = (req.getKeyword() != null) ? req.getKeyword().trim() : "";
+        boolean hasKeyword = !keyword.isEmpty();
+
+        if ("ACTIVE".equals(status)) {
+            result = hasKeyword
+                    ? storeRepository.findByStatusAndKeyword(false, keyword, pageRequest)
+                    : storeRepository.findByIsDeletedFalse(pageRequest);
+        } else if ("CLOSED".equals(status)) {
+            result = hasKeyword
+                    ? storeRepository.findByStatusAndKeyword(true, keyword, pageRequest)
+                    : storeRepository.findByIsDeletedTrue(pageRequest);
+        } else {
+            result = hasKeyword
+                    ? storeRepository.findByKeywordAll(keyword,pageRequest)
+                    : storeRepository.findAll(pageRequest);
         }
-        return result;
+        return StoreDto.StorePageRes.from(result);
     }
 
     public List<StoreDto.StoreSearchRes> searchByStoreName(StoreDto.StoreSearchReq reqDto) {

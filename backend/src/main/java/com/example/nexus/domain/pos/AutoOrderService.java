@@ -71,7 +71,12 @@ public class AutoOrderService {
         StringBuilder sb = new StringBuilder();
 
         sb.append("당신은 프랜차이즈 매장의 재고 관리 전문가입니다.\n");
-        sb.append("아래 매장의 현재 재고를 분석하여 발주가 필요한 품목과 적정 수량을 추천해주세요.\n\n");
+        sb.append("아래 매장의 현재 재고를 분석하여 발주가 필요한 품목과 적정 수량을 추천해주세요.\n");
+        sb.append("추천 시 다음 요소도 함께 고려하세요:\n");
+        sb.append("- 매장 지역의 계절/시즌 특성 (여름철 음료 수요 증가, 겨울철 따뜻한 메뉴 등)\n");
+        sb.append("- 해당 시기의 이벤트/행사 가능성 (명절, 시험기간, 축제, 연휴 등)\n");
+        sb.append("- 신메뉴/트렌드 품목의 수요 변화 가능성\n");
+        sb.append("- 요일별 매출 패턴 (주말 vs 평일 수요 차이)\n\n");
 
         // 요일 정보
         LocalDate today = LocalDate.now();
@@ -84,6 +89,7 @@ public class AutoOrderService {
         }
 
         sb.append(String.format("\n[매장명] %s\n", store.getStoreName()));
+        sb.append(String.format("[매장 위치] %s\n", store.getAddress()));
         sb.append("\n[현재 재고 현황]\n");
         sb.append("상품명 | 현재수량 | 최소재고 | 최대재고 | 단위\n");
 
@@ -103,7 +109,7 @@ public class AutoOrderService {
         sb.append("- 현재수량이 충분한 품목은 발주하지 마세요\n");
         sb.append("\n[응답 형식] 반드시 아래 JSON만 출력하세요. 다른 텍스트 없이 JSON만:\n");
         sb.append("{\n");
-        sb.append("  \"reason\": \"발주 추천 이유 한 줄 요약\",\n");
+        sb.append("  \"reason\": \"발주 추천 사유 (2~3문장으로 구체적으로: 어떤 품목이 왜 부족한지, 요일/주말 고려사항 등 포함)\",\n");
         sb.append("  \"items\": [{\"productIdx\": 숫자, \"productName\": \"상품명\", \"quantity\": 숫자}]\n");
         sb.append("}\n");
         sb.append("발주할 품목이 없으면 {\"reason\": \"\", \"items\": []}을 반환하세요.\n");

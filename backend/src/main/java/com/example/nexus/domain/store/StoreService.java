@@ -10,10 +10,10 @@ import com.example.nexus.domain.user.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
-
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -39,7 +39,7 @@ public class StoreService {
         return inventoryList.stream().map(StoreInventoryDto.ListRes::from).toList();
     }
 
-
+    @Transactional(readOnly = true)
     public List<StoreDto.StoreListRes> storeList() {
         List<Store> res = storeRepository.findAll();
         List<StoreDto.StoreListRes> result = new ArrayList<>();
@@ -57,7 +57,8 @@ public class StoreService {
 
         return res.stream().map(StoreDto.StoreSearchRes::from).toList();
     }
-      
+
+    @Transactional(readOnly = true)
     public StoreDto.StoreDetailListRes storeDetailList(Long storeIdx) {
         Optional<Store> res = storeRepository.findById(storeIdx);
 
@@ -68,6 +69,7 @@ public class StoreService {
         return null;
     }
 
+    @Transactional
     public void storeReg(StoreDto.StoreRegReq dto) {
         // 이메일을 통한 가맹점 점주 체크
         User owner = userRepository.findByEmail(dto.getOwnerEmail()).orElseThrow(
@@ -107,6 +109,7 @@ public class StoreService {
     }
 
     // Presigned URL을 발급 받는 로직
+    @Transactional
     public Map<String, String> getPresignedUrl(String fileName) {
 
         // 1. 경로 및 고유 파일명 생성 (기존 로직 유지)
@@ -135,5 +138,42 @@ public class StoreService {
 
     private String createPath(String fileName) {
         return UUID.randomUUID().toString() + "-nexus-" + fileName;
+    }
+
+    @Transactional
+    public void storeUpdate(Long storeIdx, StoreDto.StoreUpdateReq dto) {
+        // 가맹점 존재 여부
+        Store store = storeRepository.findById(storeIdx)
+                .orElseThrow(() ->{throw new BaseException(STORE_NOT_FOUND);
+        });
+
+        // 가맹점 폐업 여부
+        if(store.isDeleted()){
+            throw new BaseException(STORE_ALREADY_CLOSED);
+        }
+
+        // 가맹점 이름 중복 여부
+        if(!store.getStoreName().equals(dto.getStoreName())){
+            storeRepository.findByStoreName(dto.getStoreName())
+                    .ifPresent(s ->{
+                        throw new BaseException(STORE_NAME_ALREADY_EXISTS);
+                    });
+        }
+
+        // 가맹점 업데이트
+        store.update(dto);
+
+        User owner = store.getUser();
+
+        // 점주 탈퇴 여부 확인
+        if(owner == null || owner.isDeleted()){
+            throw new BaseException(NOT_FOUND_USER);
+        }
+
+
+        // 점주 이름, 이메일 업데이트
+        if(owner != null){
+            owner.updateOwner(dto.getOwnerName(),dto.getOwnerEmail());
+        }
     }
 }

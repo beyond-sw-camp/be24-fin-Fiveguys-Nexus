@@ -54,4 +54,13 @@ public class Store {
     @JoinColumn(name = "user_idx", nullable = false)
     private User user;
 
+    public void update(StoreDto.StoreUpdateReq dto) {
+        this.storeName = dto.getStoreName();
+        this.postcode = dto.getPostcode();
+        this.address = dto.getAddress();
+        this.addressDetail = dto.getAddressDetail();
+        this.closedAt = dto.getClosedAt();
+        this.filePath = dto.getFilePath();
+    }
+
 }

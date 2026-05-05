@@ -167,19 +167,8 @@ async function submitManualOrder(data) {
       @delete-item="deleteItem" />
 
     <StoreOrderHistoryTable v-if="activeTab === 'history'" :orders="orderHistory"
-      @open-detail="openHistoryDetail" @cancel="cancelOrder" />
-
-    <div v-if="activeTab === 'history' && historyTotalPages > 1" class="flex justify-center items-center gap-2 pt-2">
-      <button @click="fetchOrderHistory(historyPage - 1)" :disabled="historyPage === 0"
-        class="px-3 py-1.5 text-sm border border-gray-200 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 cursor-pointer">
-        이전
-      </button>
-      <span class="text-sm text-gray-500">{{ historyPage + 1 }} / {{ historyTotalPages }}</span>
-      <button @click="fetchOrderHistory(historyPage + 1)" :disabled="historyPage >= historyTotalPages - 1"
-        class="px-3 py-1.5 text-sm border border-gray-200 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 cursor-pointer">
-        다음
-      </button>
-    </div>
+      :current-page="historyPage" :total-pages="historyTotalPages"
+      @open-detail="openHistoryDetail" @cancel="cancelOrder" @page-change="fetchOrderHistory" />
 
     <StoreOrderDetailModal :order="selectedHistory" @close="selectedHistory = null" />
 

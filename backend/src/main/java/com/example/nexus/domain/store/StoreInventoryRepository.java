@@ -13,4 +13,6 @@ public interface StoreInventoryRepository extends JpaRepository<StoreInventory, 
 
     // 점주 대시보드용
     long countByStore_IdxAndStatus(Long storeIdx, InventoryStatus status);
+
+    List<StoreInventory> findByStore_IdxAndStatusInOrderByStatusDesc(Long storeIdx, List<InventoryStatus> statuses);
 }

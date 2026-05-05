@@ -3,6 +3,7 @@ package com.example.nexus.domain.dashboard.model;
 import com.example.nexus.domain.delivery.model.Delivery;
 import com.example.nexus.domain.orders.model.Orders;
 import com.example.nexus.domain.orders.model.OrdersItem;
+import com.example.nexus.domain.store.model.StoreInventory;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -93,4 +94,25 @@ public class StoreDashboardDto {
         }
     }
 
+    @Getter
+    @Builder
+    public static class InventoryWarningItem {
+        private Long inventoryIdx;
+        private String productName;
+        private int currentStock;
+        private int minStock;
+        private String unit;
+        private String status;
+
+        public static InventoryWarningItem from(StoreInventory entity) {
+            return InventoryWarningItem.builder()
+                    .inventoryIdx(entity.getIdx())
+                    .productName(entity.getProduct().getProductName())
+                    .currentStock(entity.getCount())
+                    .minStock(entity.getProduct().getMinStock())
+                    .unit(entity.getProduct().getProductUnit())
+                    .status(entity.getStatus().name())
+                    .build();
+        }
+    }
 }

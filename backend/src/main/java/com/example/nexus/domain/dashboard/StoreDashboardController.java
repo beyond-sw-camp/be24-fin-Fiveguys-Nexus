@@ -101,4 +101,16 @@ public class StoreDashboardController {
         List<StoreDashboardDto.PendingOrderItem> result = storeDashboardService.getPendingOrderList(authUserDetails.getIdx());
         return ResponseEntity.ok(BaseResponse.success(result));
     }
+
+    /**
+     * 재고 위험 품목 목록 조회
+     *
+     * @param authUserDetails 인증된 사용자 정보
+     * @return ResponseEntity LOW/CRITICAL 상태 재고 품목 목록
+     */
+    @GetMapping("/inventory/risk/list")
+    public ResponseEntity<BaseResponse> getInventoryWarningList(@AuthenticationPrincipal AuthUserDetails authUserDetails) {
+        List<StoreDashboardDto.InventoryWarningItem> result = storeDashboardService.getInventoryWarningList(authUserDetails.getIdx());
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
 }

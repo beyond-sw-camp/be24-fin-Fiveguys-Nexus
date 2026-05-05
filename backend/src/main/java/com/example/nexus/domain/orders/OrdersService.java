@@ -413,16 +413,6 @@ public class OrdersService {
                 pageable
         ).map(OrdersDto.OrdersRes::from);
     }
-    public Page<OrdersDto.OrdersRes> findByUserIdxPaged(Long userIdx, Pageable pageable) {
-        Store store = storeRepository.findByUserIdx(userIdx)
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
-
-        return ordersRepository.findAllByStore_IdxAndOrdersStatusIn(
-                store.getIdx(),
-                List.of(OrdersStatus.CONFIRMED, OrdersStatus.APPROVE, OrdersStatus.REJECT, OrdersStatus.CANCELLED),
-                pageable
-        ).map(OrdersDto.OrdersRes::from);
-    }
 
     // 점주 - 확정 발주 취소
     @Transactional

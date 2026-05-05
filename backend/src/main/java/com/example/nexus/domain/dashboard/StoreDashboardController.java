@@ -89,4 +89,16 @@ public class StoreDashboardController {
         List<StoreDashboardDto.MyDeliveryItem> result = storeDashboardService.getMyDeliveryList(authUserDetails.getIdx());
         return ResponseEntity.ok(BaseResponse.success(result));
     }
+
+    /**
+     * 제안 발주서 목록 조회
+     *
+     * @param authUserDetails 인증된 사용자 정보
+     * @return ResponseEntity 승인 대기 상태의 자동 발주서 목록
+     */
+    @GetMapping("/orders/pending/list")
+    public ResponseEntity<BaseResponse> getPendingOrderList(@AuthenticationPrincipal AuthUserDetails authUserDetails) {
+        List<StoreDashboardDto.PendingOrderItem> result = storeDashboardService.getPendingOrderList(authUserDetails.getIdx());
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
 }

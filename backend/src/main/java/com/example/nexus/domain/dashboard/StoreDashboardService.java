@@ -202,6 +202,21 @@ public class StoreDashboardService {
     }
 
     /**
+     * 제안 발주서 목록 조회
+     * - 점주 매장에 대해 본사가 자동 생성한 발주서 중 승인 대기(WAITING) 상태 목록 반환
+     */
+    public List<StoreDashboardDto.PendingOrderItem> getPendingOrderList(Long userIdx) {
+        // 점주의 매장 조회
+        Store store = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        // WAITING + AUTO 발주서 목록 조회
+        return ordersRepository
+                .findAllByStore_IdxAndOrdersStatusAndOrdersTypeOrderByCreatedAtDesc(store.getIdx(), OrdersStatus.WAITING, OrdersType.AUTO)
+                .stream().map(StoreDashboardDto.PendingOrderItem::from).toList();
+    }
+
+    /**
      * 나의 배송 현황 목록 조회
      * - 점주 매장으로 배송 중인 건의 상태 목록 반환 (배송완료 제외)
      */

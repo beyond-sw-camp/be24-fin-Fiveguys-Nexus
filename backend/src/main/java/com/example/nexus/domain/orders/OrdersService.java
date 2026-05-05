@@ -389,16 +389,6 @@ public class OrdersService {
         orders.reject();
     }
 
-    public List<OrdersDto.OrdersRes> findByUserIdx(Long userIdx) {
-        Store store = storeRepository.findByUserIdx(userIdx)
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
-
-        return ordersRepository.findAllByStore_IdxAndOrdersStatusIn(
-                store.getIdx(),
-                List.of(OrdersStatus.CONFIRMED, OrdersStatus.APPROVE, OrdersStatus.REJECT, OrdersStatus.CANCELLED)
-        ).stream().map(OrdersDto.OrdersRes::from).toList();
-    }
-
     public Page<OrdersDto.OrdersRes> findByUserIdxPaged(Long userIdx, Pageable pageable) {
         Store store = storeRepository.findByUserIdx(userIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));

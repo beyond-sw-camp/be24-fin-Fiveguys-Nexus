@@ -1,7 +1,3 @@
-<template>
-  <KpiCard title="재고 위험 품목" :value="value" unit="종" :sub="sub" :badge="badge" :badge-danger="badgeDanger" to="/store-inventory" />
-</template>
-
 <script setup>
 import { ref, onMounted } from 'vue'
 import KpiCard from '../KpiCard.vue'
@@ -28,3 +24,7 @@ onMounted(async () => {
   }
 })
 </script>
+
+<template>
+  <KpiCard title="재고 위험 품목" :value="value" unit="종" :sub="sub" :badge="badge" :badge-danger="badgeDanger" to="/store-inventory" />
+</template>

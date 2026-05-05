@@ -9,4 +9,5 @@ import java.util.List;
 public interface PosStoreInventoryRepository extends JpaRepository<PosStoreInventory, Long> {
     List<PosStoreInventory> findByStoreIdx(Long storeIdx);
 
+    List<PosStoreInventory> findByStore_IdxAndProduct_IdxOrderByManufacturedDateAsc(Long storeIdx, Long productIdx);
 }

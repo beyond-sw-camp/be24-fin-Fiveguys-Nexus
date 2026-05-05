@@ -37,6 +37,9 @@ public class Orders {
     @Column(name = "is_danger", nullable = false)
     private boolean isDanger;
 
+    @Column(name = "reason", length = 500)
+    private String reason;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -66,8 +69,8 @@ public class Orders {
         this.ordersStatus = OrdersStatus.REJECT;
     }
 
-    public void clearDanger() {
-        this.isDanger = false;
+    public void markDanger(boolean isDanger) {
+        this.isDanger = isDanger;
     }
 
     public void updatePrice(Long price) {

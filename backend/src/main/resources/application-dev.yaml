@@ -12,6 +12,14 @@ spring:
     show-sql: false
     defer-datasource-initialization: true
 
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: gpt-4o
+          temperature: 0.3
+
   cloud:
     aws:
       credentials:

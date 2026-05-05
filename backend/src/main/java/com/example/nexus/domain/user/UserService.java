@@ -12,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -27,36 +28,32 @@ public class UserService implements UserDetailsService {
 
     // store 회원가입
     public UserDto.StoreSignupRes storeSignup(UserDto.StoreSignupReq dto) {
-
-
-        int length = 12;
-        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
-        StringBuilder sb = new StringBuilder();
-        SecureRandom secureRandom = new SecureRandom();
-        for (int i = 0; i < length; i++) {
-            int index = secureRandom.nextInt(characters.length());
-            sb.append(characters.charAt(index));
+        // 프론트에서 password를 보내는 경우, 그대로 사용한다.
+        // (password가 비어있는 경우에만) 임시 비밀번호를 생성한다.
+        String rawPassword = dto.getPassword();
+        if (rawPassword == null || rawPassword.isBlank()) {
+            int length = 12;
+            String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+            StringBuilder sb = new StringBuilder();
+            SecureRandom secureRandom = new SecureRandom();
+            for (int i = 0; i < length; i++) {
+                int index = secureRandom.nextInt(characters.length());
+                sb.append(characters.charAt(index));
+            }
+            rawPassword = sb.toString();
         }
-
-        String randomPassword = sb.toString();
 
         UserDto.StoreSignupReq storeSignupReq = UserDto.StoreSignupReq.builder()
                 .email(dto.getEmail())
                 .name(dto.getName())
-                .password(randomPassword)
+                .password(rawPassword)
                 .build();
 
         User user = storeSignupReq.toEntity();
-        System.out.println(user.getPassword());
         user.setPassword(passwordEncoder.encode(storeSignupReq.getPassword()));
-        System.out.println("암호화 후 비밀번호 : " + user.getPassword());
         userRepository.save(user);
 
-        UserDto.StoreSignupRes storeSignupRes = UserDto.StoreSignupRes.from(storeSignupReq.toEntity(), randomPassword);
-        
-
-
-        return storeSignupRes;
+        return UserDto.StoreSignupRes.from(user, rawPassword);
 
     }
 
@@ -66,4 +63,36 @@ public class UserService implements UserDetailsService {
 
         return AuthUserDetails.from(user);
     }
+
+    public UserDto.StoreInfoRes getStoreInfo(Long storeIdx) {
+
+        User user = userRepository.findById(storeIdx).orElse(null);
+        return UserDto.StoreInfoRes.from(user);
+    }
+
+    // 비밀번호 변경
+    public Boolean changePassword(AuthUserDetails authUserDetails, String password) {
+
+        User user = userRepository.findById(authUserDetails.getIdx()).orElse(null);
+
+        String encodedPassword = passwordEncoder.encode(password);
+        user.setPassword(encodedPassword);
+
+        userRepository.save(user);
+
+        return user.getPassword().equals(encodedPassword);
+
+    }
+
+    public Boolean verifyPassword(AuthUserDetails authUserDetails, String currentPassword) {
+        User user = userRepository.findById(authUserDetails.getIdx()).orElse(null);
+        return passwordEncoder.matches(currentPassword, user.getPassword());
+    }
+
+    public void changeTel(AuthUserDetails authUserDetails, String tel) {
+        User user = userRepository.findById(authUserDetails.getIdx()).orElse(null);
+        user.setTel(tel);
+        userRepository.save(user);
+    }
+
 }

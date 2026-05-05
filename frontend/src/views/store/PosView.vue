@@ -51,9 +51,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { getMenuCategoryList, getMenuListPaged } from '@/api/pos'
+import { getMenuCategoryList, getMenuListPaged, getPosPayToday, postPosPay, postPosClose } from '@/api/pos'
 import { formatPrice } from '@/utils/formatPrice.js'
 import PosHeaderBar from '@/components/pos/PosHeaderBar.vue'
 import PosMenuBoard from '@/components/pos/PosMenuBoard.vue'
@@ -82,16 +82,70 @@ const menus = ref([])
 const cart = ref([])
 
 const salesData = ref({
-  total: 124800, card: 92800, cash: 32000, count: 5, isClosed: false,
+  total: 0,
+  card: 0,
+  cash: 0,
+  count: 0,
+  isClosed: false,
 })
 
-const paymentHistory = ref([
-  { id: 5, time: '20:42:17', method: '신용카드', items: '한우 등심 오마카세 외 1건', amount: 200000 },
-  { id: 4, time: '19:58:03', method: '현금', items: '한우 안심 스테이크 1인', amount: 120000 },
-  { id: 3, time: '18:26:44', method: '신용카드', items: '오마카세 런치 세트 외 1건', amount: 156000 },
-  { id: 2, time: '17:11:20', method: '신용카드', items: '한우 2인 코스', amount: 220000 },
-  { id: 1, time: '16:40:09', method: '현금', items: '계절 채소 샐러드 외 2건', amount: 36000 },
-])
+const paymentHistory = ref([])
+
+function formatPaidAtTime(iso) {
+  if (!iso) return ''
+  return new Date(iso).toLocaleTimeString('ko-KR', { hour12: false })
+}
+
+function itemsSummaryFromApi(items) {
+  if (!items?.length) return '—'
+  if (items.length === 1) return `${items[0].menuName} ×${items[0].quantity}`
+  const units = items.reduce((s, i) => s + i.quantity, 0)
+  return `${items[0].menuName} 외 ${items.length - 1}종 (${units}개)`
+}
+
+function mapPayToHistoryRow(p) {
+  const methodKr = p.method === 'CARD' ? '신용카드' : '현금'
+  return {
+    id: p.posPayIdx,
+    time: formatPaidAtTime(p.paidAt),
+    method: methodKr,
+    items: itemsSummaryFromApi(p.items),
+    amount: Number(p.payAmount),
+  }
+}
+
+function computeSalesFromPays(pays) {
+  let total = 0
+  let card = 0
+  let cash = 0
+  for (const p of pays) {
+    const amt = Number(p.payAmount)
+    total += amt
+    if (p.method === 'CARD') card += amt
+    else if (p.method === 'CASH') cash += amt
+  }
+  return { total, card, cash, count: pays.length }
+}
+
+async function loadTodaySettlement() {
+  try {
+    const { data } = await getPosPayToday()
+    const pays = data?.result ?? []
+    paymentHistory.value = pays.map(mapPayToHistoryRow)
+    const agg = computeSalesFromPays(pays)
+    salesData.value.total = agg.total
+    salesData.value.card = agg.card
+    salesData.value.cash = agg.cash
+    salesData.value.count = agg.count
+  } catch (e) {
+    console.error(e)
+    paymentHistory.value = []
+    salesData.value.total = 0
+    salesData.value.card = 0
+    salesData.value.cash = 0
+    salesData.value.count = 0
+  }
+}
 
 const filteredMenus = computed(() => {
   let result = menus.value
@@ -193,30 +247,26 @@ function openPaymentModal() {
   showPaymentModal.value = true
 }
 
-function processPayment(method) {
-  const amount = totalPrice.value
+async function processPayment(method) {
+  if (cart.value.length === 0) return
+
   const methodKr = method === 'card' ? '신용카드' : '현금'
-  const totalUnits = cart.value.reduce((s, i) => s + i.quantity, 0)
-  const itemsSummary = cart.value.length === 1
-    ? `${cart.value[0].name} ×${cart.value[0].quantity}`
-    : `${cart.value[0].name} 외 ${cart.value.length - 1}종 (${totalUnits}개)`
 
-  salesData.value.total += amount
-  salesData.value.count += 1
-  if (method === 'card') salesData.value.card += amount
-  else salesData.value.cash += amount
+  try {
+    const reqBody = {
+      method: method === 'card' ? 'CARD' : 'CASH',
+      items: cart.value.map(({ menuIdx, quantity }) => ({ menuIdx, quantity })),
+    }
+    await postPosPay(reqBody)
 
-  paymentHistory.value.unshift({
-    id: Date.now(),
-    time: new Date().toLocaleTimeString('ko-KR', { hour12: false }),
-    method: methodKr,
-    items: itemsSummary,
-    amount,
-  })
-
-  showPaymentModal.value = false
-  cart.value = []
-  showToastMsg(`${methodKr} 결제가 완료되었습니다.`)
+    showPaymentModal.value = false
+    cart.value = []
+    await loadTodaySettlement()
+    showToastMsg(`${methodKr} 결제가 완료되었습니다.`)
+  } catch (e) {
+    console.error(e)
+    showToastMsg('결제 처리에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+  }
 }
 
 function toggleStoreStatus() {
@@ -229,16 +279,31 @@ function toggleStoreStatus() {
   }
 }
 
-function confirmClose() {
-  salesData.value.isClosed = true
-  showCloseModal.value = false
-  showToastMsg('성공적으로 영업이 마감되었습니다. 데이터가 본사로 전송됩니다.')
+async function confirmClose() {
+  try {
+    await postPosClose()
+    salesData.value.isClosed = true
+    showCloseModal.value = false
+    showToastMsg('영업이 마감되었습니다. AI 자동 발주서가 생성되었습니다.')
+  } catch (e) {
+    console.error(e)
+    showCloseModal.value = false
+    showToastMsg('영업 마감 처리에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+  }
 }
+
+watch(
+  () => activeTab.value,
+  (tab) => {
+    if (tab === 'settlement') loadTodaySettlement()
+  },
+)
 
 onMounted(() => {
   updateTime()
   timer = setInterval(updateTime, 1000)
   loadMenusAndCategories()
+  loadTodaySettlement()
 })
 
 onUnmounted(() => {

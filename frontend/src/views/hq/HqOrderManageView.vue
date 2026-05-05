@@ -209,6 +209,7 @@ async function openDetail(ordersIdx) {
       store: o.storeName,
       date: o.createdAt?.replace('T', ' ').slice(0, 16) ?? '-',
       status: o.ordersStatus === 'WAITING' ? '제안중' : o.ordersStatus === 'APPROVE' ? '승인' : o.ordersStatus === 'CONFIRMED' ? '확정' : o.ordersStatus === 'CANCELLED' ? '취소' : '거절',
+      reason: o.reason,
       items: o.ordersItemList.map(i => ({
         product: i.productName,
         qty: i.count,

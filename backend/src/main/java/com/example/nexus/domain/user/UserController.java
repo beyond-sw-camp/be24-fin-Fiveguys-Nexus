@@ -1,14 +1,14 @@
 package com.example.nexus.domain.user;
 
+import com.example.nexus.common.model.BaseResponseStatus;
 import com.example.nexus.domain.user.model.AuthUserDetails;
 import com.example.nexus.domain.user.model.UserDto;
-import com.example.nexus.utils.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -46,5 +46,35 @@ public class UserController {
 //        return ResponseEntity.ok("로그인 실패");
 //
 //    }
+
+
+    // 마이페이지 조회
+    @GetMapping("/user/mypage")
+    public ResponseEntity<UserDto.StoreInfoRes> mypage(@AuthenticationPrincipal AuthUserDetails authUserDetails) {
+        return ResponseEntity.ok(userService.getStoreInfo(authUserDetails.getIdx()));
+    }
+
+    // 비밀번호 변경
+    @PostMapping("/user/password")
+    public ResponseEntity changePassword(@AuthenticationPrincipal AuthUserDetails authUserDetails, @RequestBody UserDto.ChangePasswordDto dto) {
+
+        if (!userService.verifyPassword(authUserDetails, dto.getCurrentPassword())) {
+            return ResponseEntity.status(400).body("Password Incorrect");
+        }
+
+        if (userService.changePassword(authUserDetails, dto.getNewPassword())) {
+           return ResponseEntity.ok("Password Change Success");
+        } else {
+            return ResponseEntity.status(400).body("Password Change Failed");
+        }
+    }
+
+    // 전화번호 변경
+    @PostMapping("/user/tel")
+    public ResponseEntity changeTel(@AuthenticationPrincipal AuthUserDetails authUserDetails, @RequestBody UserDto.ChangeTelDto dto) {
+
+        userService.changeTel(authUserDetails, dto.getTel());
+        return ResponseEntity.ok("Tel Change Success");
+    }
 
 }

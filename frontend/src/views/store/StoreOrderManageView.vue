@@ -49,9 +49,12 @@ onMounted(() => {
   fetchPendingOrders()
 })
 
+const historyLoaded = ref(false)
+
 watch(activeTab, (tab) => {
-  if (tab === 'history') {
+  if (tab === 'history' && !historyLoaded.value) {
     fetchOrderHistory()
+    historyLoaded.value = true
   }
 })
 
@@ -171,11 +174,11 @@ async function submitManualOrder(data) {
       </button>
     </div>
 
-    <StorePendingOrderList v-if="activeTab === 'pending'" :orders="pendingOrders"
+    <StorePendingOrderList v-show="activeTab === 'pending'" :orders="pendingOrders"
       @confirm="openConfirmModal" @reject="openRejectModal" @refresh="fetchPendingOrders"
       @delete-item="deleteItem" />
 
-    <StoreOrderHistoryTable v-if="activeTab === 'history'" :orders="orderHistory"
+    <StoreOrderHistoryTable v-show="activeTab === 'history'" :orders="orderHistory"
       :current-page="historyPage" :total-pages="historyTotalPages"
       @open-detail="openHistoryDetail" @cancel="cancelOrder" @page-change="fetchOrderHistory" />
 

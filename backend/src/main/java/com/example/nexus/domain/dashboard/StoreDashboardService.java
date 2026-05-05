@@ -231,6 +231,21 @@ public class StoreDashboardService {
                 .stream().map(StoreDashboardDto.MyDeliveryItem::from).toList();
     }
 
+    /**
+     * 재고 위험 품목 목록 조회
+     * - 점주 매장의 LOW/CRITICAL 상태 재고를 품목명, 현재 재고, 최소 재고, 상태와 함께 반환
+     */
+    public List<StoreDashboardDto.InventoryWarningItem> getInventoryWarningList(Long userIdx) {
+        // 점주의 매장 조회
+        Store store = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        // LOW/CRITICAL 상태 재고 목록 조회 (CRITICAL 우선 정렬)
+        return storeInventoryRepository
+                .findByStore_IdxAndStatusInOrderByStatusDesc(store.getIdx(), List.of(InventoryStatus.CRITICAL, InventoryStatus.LOW))
+                .stream().map(StoreDashboardDto.InventoryWarningItem::from).toList();
+    }
+
     private Map<LocalDate, Long> toDailySalesMap(List<Object[]> rows) {
         Map<LocalDate, Long> map = new java.util.HashMap<>();
         for (Object[] row : rows) {

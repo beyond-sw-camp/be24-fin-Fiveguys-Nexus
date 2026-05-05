@@ -3,9 +3,19 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import KpiCard from '../KpiCard.vue'
+import { getPendingOrderKpi } from '@/api/store-dashboard'
 
-const value = ref('3')
+const value = ref('-')
 const sub = ref('자동 발주 승인 대기')
+
+onMounted(async () => {
+  try {
+    const { data } = await getPendingOrderKpi()
+    value.value = data.result.pendingCount.toLocaleString()
+  } catch (e) {
+    console.error('제안 발주서 KPI 조회 실패', e)
+  }
+})
 </script>

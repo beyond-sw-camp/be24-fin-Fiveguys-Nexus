@@ -1,11 +1,14 @@
 package com.example.nexus.domain.dashboard;
 
+import com.example.nexus.common.enums.DeliveryStatus;
 import com.example.nexus.common.enums.InventoryStatus;
 import com.example.nexus.common.enums.OrdersStatus;
 import com.example.nexus.common.enums.OrdersType;
 import com.example.nexus.common.exception.BaseException;
 import com.example.nexus.common.model.BaseResponseStatus;
 import com.example.nexus.domain.dashboard.model.StoreDashboardDto;
+import com.example.nexus.domain.delivery.DeliveryRepository;
+import com.example.nexus.domain.delivery.model.Delivery;
 import com.example.nexus.domain.orders.OrdersRepository;
 import com.example.nexus.domain.pos.PosPayRepository;
 import com.example.nexus.domain.store.StoreInventoryRepository;
@@ -27,6 +30,7 @@ import java.util.Map;
 public class StoreDashboardService {
     private final PosPayRepository posPayRepository;
     private final OrdersRepository ordersRepository;
+    private final DeliveryRepository deliveryRepository;
     private final StoreInventoryRepository storeInventoryRepository;
     private final StoreRepository storeRepository;
 
@@ -195,6 +199,21 @@ public class StoreDashboardService {
                 .thisWeek(Arrays.asList(thisWeekData))
                 .lastWeek(Arrays.asList(lastWeekData))
                 .build();
+    }
+
+    /**
+     * 나의 배송 현황 목록 조회
+     * - 점주 매장으로 배송 중인 건의 상태 목록 반환 (배송완료 제외)
+     */
+    public List<StoreDashboardDto.MyDeliveryItem> getMyDeliveryList(Long userIdx) {
+        // 점주의 매장 조회
+        Store store = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        // 배송완료(DELIVERED) 제외한 배송 목록 조회
+        return deliveryRepository
+                .findByOrders_Store_IdxAndDeliveryStatusNotOrderByDepartureDateDesc(store.getIdx(), DeliveryStatus.DELIVERED)
+                .stream().map(StoreDashboardDto.MyDeliveryItem::from).toList();
     }
 
     private Map<LocalDate, Long> toDailySalesMap(List<Object[]> rows) {

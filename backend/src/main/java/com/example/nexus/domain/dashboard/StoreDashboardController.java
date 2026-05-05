@@ -4,6 +4,8 @@ import com.example.nexus.common.model.BaseResponse;
 import com.example.nexus.domain.dashboard.model.StoreDashboardDto;
 import com.example.nexus.domain.user.model.AuthUserDetails;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -73,6 +75,18 @@ public class StoreDashboardController {
     @GetMapping("/sales/daily")
     public ResponseEntity<BaseResponse> getDailySalesChart(@AuthenticationPrincipal AuthUserDetails authUserDetails) {
         StoreDashboardDto.DailySalesChartRes result = storeDashboardService.getDailySalesChart(authUserDetails.getIdx());
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
+
+    /**
+     * 나의 배송 현황 목록 조회
+     *
+     * @param authUserDetails 인증된 사용자 정보
+     * @return ResponseEntity 배송 진행중인 건의 상태 목록
+     */
+    @GetMapping("/delivery/list")
+    public ResponseEntity<BaseResponse> getMyDeliveryList(@AuthenticationPrincipal AuthUserDetails authUserDetails) {
+        List<StoreDashboardDto.MyDeliveryItem> result = storeDashboardService.getMyDeliveryList(authUserDetails.getIdx());
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 }

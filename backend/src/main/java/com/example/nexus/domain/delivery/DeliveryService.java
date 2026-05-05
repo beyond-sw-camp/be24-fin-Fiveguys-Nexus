@@ -22,4 +22,11 @@ public class DeliveryService {
                 .map(DeliveryDto::from)
                 .collect(Collectors.toList());
     }
+
+    public List<DeliveryDto> getDeliveriesForStore(Long storeIdx) {
+        return deliveryRepository.findAllByOrdersStoreIdx(storeIdx)
+                .stream()
+                .map(DeliveryDto::from)
+                .collect(Collectors.toList());
+    }
 }

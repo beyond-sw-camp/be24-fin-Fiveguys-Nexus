@@ -48,4 +48,8 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
             @Param("year") Integer year,
             @Param("month") Integer month,
             @Param("day") Integer day);
+
+    // 본인 가맹점 배송 현황 조회
+    @Query("SELECT d FROM Delivery d JOIN FETCH d.orders o JOIN FETCH o.store s WHERE s.idx = :storeIdx")
+    List<Delivery> findAllByOrdersStoreIdx(@Param("storeIdx") Long storeIdx);
 }

@@ -37,6 +37,9 @@ public class Orders {
     @Column(name = "is_danger", nullable = false)
     private boolean isDanger;
 
+    @Column(name = "reason")
+    private String reason;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 

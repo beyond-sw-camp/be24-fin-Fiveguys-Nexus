@@ -23,6 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PosController {
     private final PosService posService;
+    private final AutoOrderService autoOrderService;
 
     // [가맹점] 로그인한 가맹점주(STORE)의 user_idx로 해당 매장 재고 조회
     @GetMapping("/inventory/list")
@@ -56,5 +57,17 @@ public class PosController {
     public ResponseEntity<BaseResponse<List<PosPayDto.TodayPayRes>>> todayPays(@AuthenticationPrincipal AuthUserDetails userDetails) {
         List<PosPayDto.TodayPayRes> result = posService.listTodayPayHistory(userDetails.getIdx());
         return ResponseEntity.ok(BaseResponse.success(result));
+    }
+
+    /**
+     * POS 영업 마감 및 AI 자동 발주서 생성
+     *
+     * @param userDetails 인증된 가맹점주 정보
+     * @return ResponseEntity 자동 발주서 생성 결과 메시지
+     */
+    @PostMapping("/close")
+    public ResponseEntity<BaseResponse<String>> close(@AuthenticationPrincipal AuthUserDetails userDetails) {
+        autoOrderService.generateAutoOrder(userDetails.getIdx());
+        return ResponseEntity.ok(BaseResponse.success("자동 발주서가 생성되었습니다."));
     }
 }

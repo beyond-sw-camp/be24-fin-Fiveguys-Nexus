@@ -769,7 +769,7 @@ INSERT INTO orders_item (orders_idx, product_idx, count) VALUES
 -- ============================================================
 -- 13. Delivery (배송)
 -- ============================================================
-INSERT INTO delivery (orders_idx, delivery_status, delay_reason, dep_date, est_des_date, deliveryed_date) VALUES
+INSERT INTO delivery (orders_idx, delivery_status, delay_reason, dep_date, est_des_date, delivered_date) VALUES
 -- 강남역점 1차: 배송완료
 (1, 'DELIVERED', NULL, '2026-04-10 14:00:00', '2026-04-11 10:00:00', '2026-04-11 09:30:00'),
 -- 강남역점 2차: 배송완료

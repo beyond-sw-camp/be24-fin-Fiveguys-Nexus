@@ -37,8 +37,8 @@ public class Delivery {
     @Column(name = "est_des_date", nullable = false)
     private LocalDateTime estimatedArrivalAt;
 
-    @Column(name = "deliveryed_date", nullable = false)
-    private LocalDateTime deliveryedDate;
+    @Column(name = "delivered_date", nullable = false)
+    private LocalDateTime deliveredDate;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "orders_idx", nullable = false)

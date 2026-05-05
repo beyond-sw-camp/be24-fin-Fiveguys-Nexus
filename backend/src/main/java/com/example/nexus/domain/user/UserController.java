@@ -58,10 +58,14 @@ public class UserController {
     @PostMapping("/user/password")
     public ResponseEntity changePassword(@AuthenticationPrincipal AuthUserDetails authUserDetails, @RequestBody UserDto.ChangePasswordDto dto) {
 
-        if (userService.changePassword(authUserDetails, dto.getPassword())) {
+        if (!userService.verifyPassword(authUserDetails, dto.getCurrentPassword())) {
+            return ResponseEntity.status(400).body("Password Incorrect");
+        }
+
+        if (userService.changePassword(authUserDetails, dto.getNewPassword())) {
            return ResponseEntity.ok("Password Change Success");
         } else {
-            return ResponseEntity.status(500).body("Password Change Failed");
+            return ResponseEntity.status(400).body("Password Change Failed");
         }
     }
 

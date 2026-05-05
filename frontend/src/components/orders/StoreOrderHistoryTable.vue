@@ -1,11 +1,14 @@
 <script setup>
+import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import { ORDER_STATUS_LABEL, ORDER_TYPE_LABEL, storeStatusClass } from './orderUtils'
 
 defineProps({
   orders: { type: Array, required: true },
+  currentPage: { type: Number, default: 0 },
+  totalPages: { type: Number, default: 0 },
 })
 
-const emit = defineEmits(['open-detail', 'cancel'])
+const emit = defineEmits(['open-detail', 'cancel', 'page-change'])
 </script>
 
 <template>
@@ -46,7 +49,7 @@ const emit = defineEmits(['open-detail', 'cancel'])
               {{ ORDER_STATUS_LABEL[h.ordersStatus] }}
             </span>
           </td>
-          <td class="px-5 py-3.5">
+          <td class="px-5 py-3.5 h-[52px]">
             <button v-if="h.ordersStatus === 'CONFIRMED'"
               @click.stop="emit('cancel', h)"
               class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-red-200 text-red-500 bg-red-50 hover:bg-red-500 hover:text-white hover:cursor-pointer transition-colors">
@@ -59,5 +62,29 @@ const emit = defineEmits(['open-detail', 'cancel'])
         </tr>
       </tbody>
     </table>
+  </div>
+
+  <!-- Pagination -->
+  <div v-if="totalPages > 1" class="flex justify-center items-center gap-2 pt-2">
+    <button
+      class="p-2 rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+      :disabled="currentPage === 0"
+      @click="emit('page-change', currentPage - 1)">
+      <ChevronLeft class="w-4 h-4" />
+    </button>
+    <button v-for="page in totalPages" :key="page"
+      class="w-8 h-8 rounded text-sm font-semibold cursor-pointer"
+      :class="currentPage === page - 1
+        ? 'bg-[#F37321] text-white'
+        : 'text-gray-500 hover:bg-gray-50'"
+      @click="emit('page-change', page - 1)">
+      {{ page }}
+    </button>
+    <button
+      class="p-2 rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+      :disabled="currentPage === totalPages - 1"
+      @click="emit('page-change', currentPage + 1)">
+      <ChevronRight class="w-4 h-4" />
+    </button>
   </div>
 </template>

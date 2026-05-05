@@ -37,7 +37,7 @@ public class Orders {
     @Column(name = "is_danger", nullable = false)
     private boolean isDanger;
 
-    @Column(name = "reason")
+    @Column(name = "reason", length = 500)
     private String reason;
 
     @Column(name = "created_at", nullable = false)

@@ -1,7 +1,3 @@
-<template>
-  <KpiCard title="미확정 발주" :value="value" unit="건" :sub="sub" to="/store-order" />
-</template>
-
 <script setup>
 import { ref, onMounted } from 'vue'
 import KpiCard from '../KpiCard.vue'
@@ -19,3 +15,7 @@ onMounted(async () => {
   }
 })
 </script>
+
+<template>
+  <KpiCard title="미확정 발주" :value="value" unit="건" :sub="sub" to="/store-order" />
+</template>

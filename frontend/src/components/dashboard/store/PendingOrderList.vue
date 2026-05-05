@@ -42,7 +42,8 @@ onMounted(async () => {
               class="hover:bg-gray-50/50 cursor-pointer"
               role="button" tabindex="0"
               @click="router.push('/store-order')"
-              @keydown.enter="router.push('/store-order')">
+              @keydown.enter="router.push('/store-order')"
+            @keydown.space.prevent="router.push('/store-order')">
               <td class="px-5 py-3.5 font-semibold text-gray-800">{{ o.productName }}</td>
               <td class="px-5 py-3.5 text-right text-gray-600">{{ o.quantity.toLocaleString() }}개</td>
               <td class="px-5 py-3.5 text-right font-semibold text-gray-700">₩ {{ o.price.toLocaleString() }}</td>

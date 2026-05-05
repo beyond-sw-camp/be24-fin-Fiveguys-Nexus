@@ -46,7 +46,8 @@ onMounted(async () => {
         class="px-5 py-4 hover:bg-gray-50 transition-colors cursor-pointer"
         role="button" tabindex="0"
         @click="router.push('/store-delivery')"
-        @keydown.enter="router.push('/store-delivery')">
+        @keydown.enter="router.push('/store-delivery')"
+        @keydown.space.prevent="router.push('/store-delivery')">
         <div class="flex items-center justify-between gap-3">
           <div class="flex-1 min-w-0">
             <p class="text-sm font-bold text-gray-900 font-mono">발주 #{{ d.ordersIdx }}</p>

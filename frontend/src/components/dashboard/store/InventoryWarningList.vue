@@ -44,7 +44,8 @@ onMounted(async () => {
               class="hover:bg-gray-50/50 cursor-pointer"
               role="button" tabindex="0"
               @click="router.push('/store-inventory')"
-              @keydown.enter="router.push('/store-inventory')">
+              @keydown.enter="router.push('/store-inventory')"
+            @keydown.space.prevent="router.push('/store-inventory')">
               <td class="px-5 py-3.5 font-semibold text-gray-800">{{ w.productName }}</td>
               <td class="px-5 py-3.5 text-right font-bold text-red-600">{{ w.currentStock }}{{ w.unit }}</td>
               <td class="px-5 py-3.5 text-right text-gray-400">{{ w.minStock }}{{ w.unit }}</td>

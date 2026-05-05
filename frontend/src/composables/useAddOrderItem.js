@@ -19,7 +19,7 @@ export function useAddOrderItem(fetchPendingOrders) {
   }
 
   function filteredProducts(order) {
-    const existing = new Set(order.ordersItemList.map(i => i.productName))
+    const existing = new Set((order.ordersItemList || []).map(i => i.productName))
     const keyword = addItemForm.value?.keyword?.trim() || ''
     return productList.value.filter(p => !existing.has(p.productName) && (keyword === '' || p.productName.includes(keyword)))
   }

@@ -11,6 +11,10 @@ const emit = defineEmits(['confirm', 'reject', 'refresh', 'delete-item'])
 
 const { addItemForm, openAddItemForm, filteredProducts, selectAddItemProduct, clearAddItemProduct, submitAddItem } = useAddOrderItem(() => emit('refresh'))
 
+function sortedItems(order) {
+  return [...(order.ordersItemList || [])].sort((a, b) => b.idx - a.idx)
+}
+
 const debounceTimers = new Map()
 
 function onCountChange(item) {
@@ -137,7 +141,7 @@ function onCountChange(item) {
             <col class="w-[12%]" />
           </colgroup>
           <tbody class="divide-y divide-gray-100">
-            <tr v-for="item in [...(order.ordersItemList || [])].sort((a, b) => b.idx - a.idx)" :key="item.idx" class="hover:bg-gray-50/50">
+            <tr v-for="item in sortedItems(order)" :key="item.idx" class="hover:bg-gray-50/50">
               <td class="px-5 py-3.5 font-semibold text-gray-900">{{ item.productName }}</td>
               <td class="px-5 py-3.5 text-gray-500">{{ item.currentStock != null ? item.currentStock + '개' : '-' }}</td>
               <td class="px-5 py-3.5 font-semibold text-blue-600">

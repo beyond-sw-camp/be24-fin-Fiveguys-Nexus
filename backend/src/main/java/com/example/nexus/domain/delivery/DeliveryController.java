@@ -4,10 +4,7 @@ import com.example.nexus.common.enums.DeliveryStatus;
 import com.example.nexus.domain.delivery.model.DeliveryDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -27,5 +24,12 @@ public class DeliveryController {
             @RequestParam(required = false) Integer month,
             @RequestParam(required = false) Integer day) {
         return ResponseEntity.ok(deliveryService.getDeliveriesByHead(storeName, status, year, month, day));
+    }
+
+    // 본인 가맹점 배송 현황 조회
+    @GetMapping("/store/{storeIdx}")
+    public ResponseEntity<List<DeliveryDto>> getStoreDeliveries(@PathVariable Long storeIdx) {
+        List<DeliveryDto> response = deliveryService.getDeliveriesForStore(storeIdx);
+        return ResponseEntity.ok(response);
     }
 }

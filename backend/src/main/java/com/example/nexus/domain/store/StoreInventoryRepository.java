@@ -11,8 +11,9 @@ public interface StoreInventoryRepository extends JpaRepository<StoreInventory, 
     List<StoreInventory> findByStoreIdx(Long storeIdx);
     Optional<StoreInventory> findByStoreIdxAndProductIdx(Long storeIdx, Long productIdx);
 
-    // 점주 대시보드용
+    // 점주 대시보드용 - 재고 위험 품목 KPI 카드 (상태별 개수)
     long countByStore_IdxAndStatus(Long storeIdx, InventoryStatus status);
 
+    // 점주 대시보드용 - 재고 위험 품목 목록 (CRITICAL/LOW 상태 조회)
     List<StoreInventory> findByStore_IdxAndStatusInOrderByStatusDesc(Long storeIdx, List<InventoryStatus> statuses);
 }

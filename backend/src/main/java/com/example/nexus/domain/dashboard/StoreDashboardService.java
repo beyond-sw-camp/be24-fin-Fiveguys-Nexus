@@ -1,5 +1,6 @@
 package com.example.nexus.domain.dashboard;
 
+import com.example.nexus.common.enums.InventoryStatus;
 import com.example.nexus.common.enums.OrdersStatus;
 import com.example.nexus.common.enums.OrdersType;
 import com.example.nexus.common.exception.BaseException;
@@ -7,6 +8,7 @@ import com.example.nexus.common.model.BaseResponseStatus;
 import com.example.nexus.domain.dashboard.model.StoreDashboardDto;
 import com.example.nexus.domain.orders.OrdersRepository;
 import com.example.nexus.domain.pos.PosPayRepository;
+import com.example.nexus.domain.store.StoreInventoryRepository;
 import com.example.nexus.domain.store.StoreRepository;
 import com.example.nexus.domain.store.model.Store;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ import java.time.LocalDateTime;
 public class StoreDashboardService {
     private final PosPayRepository posPayRepository;
     private final OrdersRepository ordersRepository;
+    private final StoreInventoryRepository storeInventoryRepository;
     private final StoreRepository storeRepository;
 
     /**
@@ -69,6 +72,26 @@ public class StoreDashboardService {
 
         return StoreDashboardDto.PendingOrderKpiRes.builder()
                 .pendingCount(pendingCount)
+                .build();
+    }
+
+    /**
+     * 재고 위험 품목 KPI 조회
+     * - 점주 매장의 재고 중 LOW(주의)/CRITICAL(위험) 상태인 품목 수 반환
+     */
+    public StoreDashboardDto.InventoryRiskKpiRes getInventoryRiskKpi(Long userIdx) {
+        // 점주의 매장 조회
+        Store store = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        // 상태별 위험 재고 건수 조회
+        long lowCount = storeInventoryRepository.countByStore_IdxAndStatus(store.getIdx(), InventoryStatus.LOW);
+        long criticalCount = storeInventoryRepository.countByStore_IdxAndStatus(store.getIdx(), InventoryStatus.CRITICAL);
+
+        return StoreDashboardDto.InventoryRiskKpiRes.builder()
+                .lowCount(lowCount)
+                .criticalCount(criticalCount)
+                .totalDangerCount(lowCount + criticalCount)
                 .build();
     }
 }

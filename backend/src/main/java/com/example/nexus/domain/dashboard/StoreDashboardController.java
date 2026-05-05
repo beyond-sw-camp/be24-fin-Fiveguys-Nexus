@@ -39,4 +39,16 @@ public class StoreDashboardController {
         StoreDashboardDto.PendingOrderKpiRes result = storeDashboardService.getPendingOrderKpi(authUserDetails.getIdx());
         return ResponseEntity.ok(BaseResponse.success(result));
     }
+
+    /**
+     * 재고 위험 품목 KPI 조회
+     *
+     * @param authUserDetails 인증된 사용자 정보
+     * @return ResponseEntity LOW(주의)/CRITICAL(위험) 상태 품목 수
+     */
+    @GetMapping("/inventory/risk/kpi")
+    public ResponseEntity<BaseResponse> getInventoryRiskKpi(@AuthenticationPrincipal AuthUserDetails authUserDetails) {
+        StoreDashboardDto.InventoryRiskKpiRes result = storeDashboardService.getInventoryRiskKpi(authUserDetails.getIdx());
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
 }

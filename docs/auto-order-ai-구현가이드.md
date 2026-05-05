@@ -45,9 +45,40 @@ dependencies {
 
 ---
 
-### 2단계: OpenAI 설정 (`application.yml`)
+### 2단계: OpenAI 설정 (`application-dev.yaml` + `.env`)
 
-> (구현 후 업데이트 예정)
+#### 추가한 코드
+
+**application-dev.yaml:**
+```yaml
+spring:
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: gpt-4o
+          temperature: 0.3
+```
+
+**.env:**
+```
+OPENAI_API_KEY=your-openai-api-key-here
+```
+
+#### 왜 이렇게 설정했는가
+
+| 설정 | 역할 | 이유 |
+|------|------|------|
+| `api-key: ${OPENAI_API_KEY}` | 환경변수로 API Key 주입 | 코드에 키를 직접 넣지 않음 (보안). 기존 `.env` 패턴 동일하게 사용 |
+| `model: gpt-4o` | 사용할 LLM 모델 지정 | 학원 제공 API Key가 GPT-4o 지원 |
+| `temperature: 0.3` | 응답의 창의성 정도 (0~1) | 발주서는 정확한 수치가 중요하므로 낮게 설정. 높으면 매번 다른 결과 나옴 |
+
+#### 코드 설명
+
+- Spring AI starter가 `spring.ai.openai.*` 프로퍼티를 자동으로 읽어서 `ChatClient` Bean을 구성함
+- `.env` 파일은 `.gitignore`에 포함되어 있어 원격 저장소에 올라가지 않음
+- 팀원은 각자 `.env`에 본인 API Key를 넣으면 됨
 
 ---
 

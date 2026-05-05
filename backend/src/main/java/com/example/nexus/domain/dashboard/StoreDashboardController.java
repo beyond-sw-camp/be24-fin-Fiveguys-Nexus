@@ -27,4 +27,16 @@ public class StoreDashboardController {
         StoreDashboardDto.SalesKpiRes result = storeDashboardService.getSalesKpi(authUserDetails.getIdx());
         return ResponseEntity.ok(BaseResponse.success(result));
     }
+
+    /**
+     * 제안 발주서 KPI 조회
+     *
+     * @param authUserDetails 인증된 사용자 정보
+     * @return ResponseEntity 승인 대기 상태의 제안 발주서 건수
+     */
+    @GetMapping("/orders/pending/kpi")
+    public ResponseEntity<BaseResponse> getPendingOrderKpi(@AuthenticationPrincipal AuthUserDetails authUserDetails) {
+        StoreDashboardDto.PendingOrderKpiRes result = storeDashboardService.getPendingOrderKpi(authUserDetails.getIdx());
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
 }

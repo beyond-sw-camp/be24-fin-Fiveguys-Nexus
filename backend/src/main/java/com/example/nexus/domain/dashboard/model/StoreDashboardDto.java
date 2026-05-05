@@ -11,4 +11,10 @@ public class StoreDashboardDto {
         private long todaySales;
         private double deltaPercent;
     }
+
+    @Getter
+    @Builder
+    public static class PendingOrderKpiRes {
+        private long pendingCount;
+    }
 }

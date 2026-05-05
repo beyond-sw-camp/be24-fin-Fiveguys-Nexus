@@ -1,8 +1,11 @@
 package com.example.nexus.domain.dashboard;
 
+import com.example.nexus.common.enums.OrdersStatus;
+import com.example.nexus.common.enums.OrdersType;
 import com.example.nexus.common.exception.BaseException;
 import com.example.nexus.common.model.BaseResponseStatus;
 import com.example.nexus.domain.dashboard.model.StoreDashboardDto;
+import com.example.nexus.domain.orders.OrdersRepository;
 import com.example.nexus.domain.pos.PosPayRepository;
 import com.example.nexus.domain.store.StoreRepository;
 import com.example.nexus.domain.store.model.Store;
@@ -16,6 +19,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class StoreDashboardService {
     private final PosPayRepository posPayRepository;
+    private final OrdersRepository ordersRepository;
     private final StoreRepository storeRepository;
 
     /**
@@ -47,6 +51,24 @@ public class StoreDashboardService {
         return StoreDashboardDto.SalesKpiRes.builder()
                 .todaySales(todaySales)
                 .deltaPercent(deltaPercent)
+                .build();
+    }
+
+    /**
+     * 제안 발주서 KPI 조회
+     * - 점주 매장에 대해 본사가 자동 생성한 발주서 중 승인 대기(WAITING) 상태 건수 반환
+     */
+    public StoreDashboardDto.PendingOrderKpiRes getPendingOrderKpi(Long userIdx) {
+        // 점주의 매장 조회
+        Store store = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+
+        // 승인 대기 상태의 자동 발주 건수 조회
+        long pendingCount = ordersRepository.countByStore_IdxAndOrdersStatusAndOrdersType(
+                store.getIdx(), OrdersStatus.WAITING, OrdersType.AUTO);
+
+        return StoreDashboardDto.PendingOrderKpiRes.builder()
+                .pendingCount(pendingCount)
                 .build();
     }
 }

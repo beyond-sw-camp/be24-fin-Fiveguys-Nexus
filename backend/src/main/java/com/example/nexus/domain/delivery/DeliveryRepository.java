@@ -23,4 +23,7 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
 
     // 대시보드용: 지연 배송 목록 Slice 페이징
     Slice<Delivery> findByDeliveryStatus(DeliveryStatus status, Pageable pageable);
+
+    // 점주 대시보드용: 매장별 배송 목록 (배송완료 제외)
+    List<Delivery> findByOrders_Store_IdxAndDeliveryStatusNotOrderByDepartureDateDesc(Long storeIdx, DeliveryStatus excludeStatus);
 }

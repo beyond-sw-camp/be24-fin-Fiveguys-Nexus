@@ -42,15 +42,15 @@ public class StoreDto {
     // 메뉴 페이징 조회
     @Getter
     @Builder
-    public static class StoerPageRes{
+    public static class StorePageRes{
         private List<StoreDto.StoreListRes> menuList;
         private int totalPage;
         private long totalCount;
         private int currentPage;
         private int currentSize;
 
-        public static StoreDto.StoerPageRes from(Page<Store> entity){
-            return StoerPageRes.builder()
+        public static StoreDto.StorePageRes from(Page<Store> entity){
+            return StorePageRes.builder()
                     .menuList(entity.map(StoreDto.StoreListRes::from).getContent())
                     .totalPage(entity.getTotalPages())
                     .totalCount(entity.getTotalElements())

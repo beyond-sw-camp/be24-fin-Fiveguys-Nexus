@@ -2,6 +2,8 @@ package com.example.nexus.domain.store;
 
 import com.example.nexus.domain.store.model.Store;
 import com.example.nexus.domain.user.model.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;
@@ -27,4 +29,8 @@ public interface StoreRepository extends JpaRepository<Store,Long> {
 
     // 대시보드용 - 본사 대시보드 이전 기간 매장 수 (증감률 계산)
     long countByIsDeletedFalseAndCreatedAtBefore(LocalDateTime until);
+
+    // 가맹점 페이지 처리 입점, 폐점 데이터 조회
+    Page<Store> findByIsDeletedFalse(Pageable pageable); // 입점(false) 데이터만
+    Page<Store> findByIsDeletedTrue(Pageable pageable);  // 폐점(true) 데이터만
 }

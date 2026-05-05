@@ -38,10 +38,11 @@ public class StoreController {
     // 가맹점 목록 조회
     @GetMapping("/list")
     public ResponseEntity storeList(
+            @RequestParam(defaultValue = "ALL") String status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ){
-        StoreDto.StoerPageRes result = storeService.storeList(page,size);
+        StoreDto.StorePageRes result = storeService.storeList(status, page,size);
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 

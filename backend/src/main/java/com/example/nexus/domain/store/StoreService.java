@@ -42,10 +42,18 @@ public class StoreService {
     }
 
     @Transactional(readOnly = true)
-    public StoreDto.StoerPageRes storeList(int page, int size) {
+    public StoreDto.StorePageRes storeList(String status, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
-        Page<Store> result = storeRepository.findAll(pageRequest);
-        return StoreDto.StoerPageRes.from(result);
+        Page<Store> result;
+
+        if ("ACTIVE".equals(status)) {
+            result = storeRepository.findByIsDeletedFalse(pageRequest);
+        } else if ("CLOSED".equals(status)) {
+            result = storeRepository.findByIsDeletedTrue(pageRequest);
+        } else {
+            result = storeRepository.findAll(pageRequest); // ALL인 경우
+        }
+        return StoreDto.StorePageRes.from(result);
     }
 
     public List<StoreDto.StoreSearchRes> searchByStoreName(StoreDto.StoreSearchReq reqDto) {

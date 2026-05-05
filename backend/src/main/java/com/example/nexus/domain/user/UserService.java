@@ -75,10 +75,18 @@ public class UserService implements UserDetailsService {
 
         User user = userRepository.findById(authUserDetails.getIdx()).orElse(null);
 
-        user.setPassword(passwordEncoder.encode(password));
+        String encodedPassword = passwordEncoder.encode(password);
+        user.setPassword(encodedPassword);
 
         userRepository.save(user);
 
-        return user.getPassword().equals(passwordEncoder.encode(password));
+        return user.getPassword().equals(encodedPassword);
+
     }
+
+    public Boolean verifyPassword(AuthUserDetails authUserDetails, String currentPassword) {
+        User user = userRepository.findById(authUserDetails.getIdx()).orElse(null);
+        return passwordEncoder.matches(currentPassword, user.getPassword());
+    }
+
 }

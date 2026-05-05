@@ -108,7 +108,8 @@ public class UserDto {
 
     @Getter
     public static class ChangePasswordDto {
-        private String password;
+        private String currentPassword;
+        private String newPassword;
     }
-
+    
 }

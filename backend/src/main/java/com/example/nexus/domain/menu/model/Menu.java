@@ -45,7 +45,7 @@ public class Menu {
         this.menuCategory = category;
     }
 
-    public void isDeleteTrue() {
+    public void deleteTrue() {
         this.isDeleted = true;
     }
 }

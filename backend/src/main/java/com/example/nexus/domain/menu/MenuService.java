@@ -164,6 +164,6 @@ public class MenuService {
         Menu menu = menuRepository.findByIdxAndIsDeletedFalse(menuIdx)
                 .orElseThrow(() -> new BaseException(NOT_FOUND_MENU));
 
-        menu.isDeleteTrue();
+        menu.deleteTrue();
     }
 }

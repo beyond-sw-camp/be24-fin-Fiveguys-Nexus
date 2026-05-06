@@ -57,6 +57,7 @@ public class ProductController {
         return ResponseEntity.ok(result);
     }
 
+    // 가맹점 별 제품 조회
     @GetMapping("/store")
     public ResponseEntity<List<ProductDto.ListRes>> getMyStoreProducts(
             @AuthenticationPrincipal AuthUserDetails authUserDetails
@@ -69,5 +70,22 @@ public class ProductController {
 
         List<ProductDto.ListRes> list = productService.findProductsByStore(storeIdx);
         return ResponseEntity.ok(list);
+    }
+
+    // 가맹점 별 제품 검색
+    @GetMapping("/store/search")
+    public ResponseEntity<List<ProductDto.ListRes>> searchInMyStore(
+            @AuthenticationPrincipal AuthUserDetails authUserDetails,
+            @RequestParam String productName
+    ) {
+        if (authUserDetails == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+
+        Long storeIdx = authUserDetails.getIdx();
+
+        List<ProductDto.ListRes> result = productService.searchProductInStore(storeIdx, productName);
+
+        return ResponseEntity.ok(result);
     }
 }

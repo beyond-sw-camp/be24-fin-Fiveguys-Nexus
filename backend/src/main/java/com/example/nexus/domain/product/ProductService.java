@@ -82,4 +82,16 @@ public class ProductService {
                 .map(ProductDto.ListRes::from)
                 .collect(Collectors.toList());
     }
+
+    @Transactional(readOnly = true)
+    public List<ProductDto.ListRes> searchProductInStore(Long storeIdx, String productName) {
+        List<Product> entities = productRepository.findByStoreIdxAndProductNameContaining(storeIdx, productName);
+
+        List<ProductDto.ListRes> dtos = new ArrayList<>();
+        for (Product entity : entities) {
+            dtos.add(ProductDto.ListRes.from(entity));
+        }
+
+        return dtos;
+    }
 }

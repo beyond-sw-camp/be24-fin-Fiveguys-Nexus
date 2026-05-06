@@ -14,4 +14,12 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "JOIN StoreInventory s ON s.product.idx = p.idx " +
             "WHERE s.store.idx = :storeIdx")
     List<Product> findAllByStoreIdx(@Param("storeIdx") Long storeIdx);
+
+    @Query("SELECT s.product FROM StoreInventory s " +
+            "WHERE s.store.idx = :storeIdx " +
+            "AND s.product.productName LIKE %:productName%")
+    List<Product> findByStoreIdxAndProductNameContaining(
+            @Param("storeIdx") Long storeIdx,
+            @Param("productName") String productName
+    );
 }

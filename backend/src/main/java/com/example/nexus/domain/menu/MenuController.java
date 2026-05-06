@@ -61,4 +61,10 @@ public class MenuController {
         return ResponseEntity.ok(BaseResponse.success("성공"));
     }
 
+    // 메뉴 수정
+    @PutMapping("/update/{menuIdx}")
+    public ResponseEntity menuUpdate(@PathVariable(name = "menuIdx") Long menuIdx, @Valid  @RequestBody MenuDto.MenuRegReq dto){
+        menuService.menuUpdate(menuIdx, dto);
+        return ResponseEntity.ok(BaseResponse.success("성공"));
+    }
 }

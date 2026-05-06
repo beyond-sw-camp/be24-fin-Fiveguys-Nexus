@@ -4,9 +4,9 @@ import com.example.nexus.common.exception.BaseException;
 import com.example.nexus.domain.menu.model.Menu;
 import com.example.nexus.domain.menu.model.MenuCategory;
 import com.example.nexus.domain.menu.model.MenuDto;
+import com.example.nexus.domain.menu.model.MenuItem;
 import com.example.nexus.domain.product.ProductRepository;
 import com.example.nexus.domain.product.model.Product;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -35,6 +35,7 @@ public class MenuService {
     @Value("${spring.cloud.aws.s3.menu-bucket}")
     private String menuBucket;
 
+    @Transactional(readOnly = true)
     public MenuDto.MenuPageRes list(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<Menu> result = menuRepository.findAll(pageRequest);
@@ -52,6 +53,7 @@ public class MenuService {
         return null;
     }
 
+    @Transactional(readOnly = true)
     public List<MenuDto.MenuCategoryRes> menucategory() {
         List<MenuCategory> res = menuCategoryRepository.findAll();
         List<MenuDto.MenuCategoryRes> result = new ArrayList<>();
@@ -62,6 +64,7 @@ public class MenuService {
         return result;
     }
 
+    @Transactional
     public Map<String, String> getPresignedUrl(String fileName) {
         // 1. 경로 및 고유 파일명 생성 (기존 로직 유지)
         String path = createPath(fileName);
@@ -90,7 +93,6 @@ public class MenuService {
         return UUID.randomUUID().toString() + "-nexus-" + fileName;
     }
 
-    @Transactional
     public void menuRegister(MenuDto.MenuRegReq dto) {
 
         if (menuRepository.existsByMenuName(dto.getMenuName())) {
@@ -112,10 +114,47 @@ public class MenuService {
         }
 
 
-        // 3. DTO의 toEntity 호출 (조회한 객체들을 전달)
         Menu menu = dto.toEntity(category, products);
 
-        // 4. 저장
         menuRepository.save(menu);
+    }
+
+    @Transactional
+    public void menuUpdate(Long menuIdx, MenuDto.MenuRegReq dto) {
+        Menu menu = menuRepository.findByIdxAndIsDeletedFalse(menuIdx)
+                .orElseThrow(() -> new BaseException(NOT_FOUND_MENU));
+
+        // 메뉴명 중복 확인
+        if (menuRepository.existsByMenuNameAndIdxNot(dto.getMenuName(), menuIdx)) {
+            throw new BaseException(DUPLICATE_MENU_NAME);
+        }
+
+
+        // 카테고리 존재 여부 확인
+        MenuCategory category = menuCategoryRepository.findById(dto.getMenuCategoryIdx())
+                .orElseThrow(() -> new BaseException(NOT_FOUND_CATEGORY));
+
+        // 제품 조회
+        List<Long> productIds = Optional.ofNullable(dto.getMenuItemList()).orElseGet(Collections::emptyList).stream()
+                .map(MenuDto.MenuItemReq::getProductIdx).toList();
+        List<Product> products = productRepository.findAllById(productIds);
+
+        // 메뉴 업데이트
+        menu.update(dto.getMenuName(), dto.getPrice(), dto.getImgPath(), category);
+
+        // 해당 메뉴에 재료 리스트(MenuItem) 비우기
+        menu.getMenuItemList().clear();
+
+        Map<Long, Product> productMap = products.stream()
+                .collect(Collectors.toMap(Product::getIdx, p -> p));
+
+        for (MenuDto.MenuItemReq itemReq : Optional.ofNullable(dto.getMenuItemList()).orElseGet(Collections::emptyList)) {
+            Product product = productMap.get(itemReq.getProductIdx());
+            if (product == null) throw new BaseException(NOT_FOUND_PRODUCT);
+
+            // 기존에 잘 만들어둔 toEntity를 그대로 활용합니다!
+            MenuItem newItem = itemReq.toEntity(menu, product);
+            menu.getMenuItemList().add(newItem);
+        }
     }
 }

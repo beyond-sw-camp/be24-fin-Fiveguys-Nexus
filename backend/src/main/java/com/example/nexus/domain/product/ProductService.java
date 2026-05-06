@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -73,5 +74,12 @@ public class ProductService {
         return productRepository.findByProductNameContaining(productName).stream()
                 .map(ProductDto.ListRes::from)
                 .toList();
+    }
+
+    // 가맹점별 제품 조회
+    public List<ProductDto.ListRes> findProductsByStore(Long storeIdx) {
+        return productRepository.findAllByStoreIdx(storeIdx).stream()
+                .map(ProductDto.ListRes::from)
+                .collect(Collectors.toList());
     }
 }

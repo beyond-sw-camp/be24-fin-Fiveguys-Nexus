@@ -10,7 +10,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface PosPayRepository extends JpaRepository<PosPay, Long> {
-    List<PosPay> findByStore_IdxAndPaidAtBetweenOrderByPaidAtDesc(Long storeIdx, LocalDateTime from, LocalDateTime to);
+    List<PosPay> findByStoreIdxAndPaidAtBetweenOrderByPaidAtDesc(Long storeIdx, LocalDateTime from, LocalDateTime to);
+
+    List<PosPay> findByStoreIdxAndPaidAtBetweenAndStoreInventoryDeductedAtIsNullOrderByPaidAtAsc(Long storeIdx, LocalDateTime from, LocalDateTime to);
 
     // 대시보드: 반개방 구간 [from, to)
     @Query("SELECT COALESCE(SUM(p.payAmount), 0) FROM PosPay p WHERE p.store.idx = :storeIdx AND p.paidAt >= :from AND p.paidAt < :to")

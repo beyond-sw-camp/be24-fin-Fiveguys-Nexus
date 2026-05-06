@@ -6,6 +6,7 @@ import com.example.nexus.domain.menu.MenuItemRepository;
 import com.example.nexus.domain.menu.MenuRepository;
 import com.example.nexus.domain.menu.model.Menu;
 import com.example.nexus.domain.menu.model.MenuItem;
+import com.example.nexus.domain.pos.model.PosCloseDto;
 import com.example.nexus.domain.pos.model.PosOrdersItem;
 import com.example.nexus.domain.pos.model.PosPay;
 import com.example.nexus.domain.pos.model.PosPayDto;
@@ -26,6 +27,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -79,7 +81,7 @@ public class PosService {
         LocalDateTime from = LocalDate.now().atStartOfDay();
         LocalDateTime to = from.plusDays(1);
 
-        List<PosPay> pays = posPayRepository.findByStore_IdxAndPaidAtBetweenOrderByPaidAtDesc(store.getIdx(), from, to);
+        List<PosPay> pays = posPayRepository.findByStoreIdxAndPaidAtBetweenOrderByPaidAtDesc(store.getIdx(), from, to);
         if (pays.isEmpty()) {
             return List.of();
         }
@@ -106,6 +108,65 @@ public class PosService {
                 .paidAt(pay.getPaidAt())
                 .items(itemsByPayIdx.getOrDefault(pay.getIdx(), Collections.emptyList()))
                 .build()).toList();
+    }
+
+    @Transactional
+    public PosCloseDto.CloseRes deductOnClose(Long userIdx) {
+        Store store = storeRepository.findByUserIdx(userIdx).orElseThrow();
+
+        LocalDateTime from = LocalDate.now().atStartOfDay();
+        LocalDateTime to = from.plusDays(1);
+        List<PosPay> pending = posPayRepository
+                .findByStoreIdxAndPaidAtBetweenAndStoreInventoryDeductedAtIsNullOrderByPaidAtAsc(store.getIdx(), from, to);
+
+        if (pending.isEmpty()) {
+            LocalDateTime closedAt = LocalDateTime.now();
+            return PosCloseDto.CloseRes.builder()
+                    .storeIdx(store.getIdx())
+                    .processedPayCount(0)
+                    .deductedProductKinds(0)
+                    .closedAt(closedAt)
+                    .message("당일 마감할 미반영 결제가 없습니다.")
+                    .build();
+        }
+
+        List<Long> payIds = pending.stream().map(PosPay::getIdx).toList();
+        List<PosOrdersItem> orderLines = posOrdersItemRepository.findByPosPay_IdxIn(payIds);
+
+        Map<Long, Integer> menuQty = new HashMap<>();
+        for (PosOrdersItem oi : orderLines) {
+            menuQty.merge(oi.getMenu().getIdx(), oi.getQuantity(), Integer::sum);
+        }
+
+        List<MenuOrderLine> lines = new ArrayList<>();
+        for (Map.Entry<Long, Integer> e : menuQty.entrySet()) {
+            Menu menu = menuRepository.findById(e.getKey()).orElseThrow();
+            lines.add(new MenuOrderLine(menu, e.getValue()));
+        }
+
+        Map<Long, Integer> productNeed = aggregateProductNeedFromRecipes(lines);
+        for (Map.Entry<Long, Integer> e : productNeed.entrySet()) {
+            deductOfficialFifo(store.getIdx(), e.getKey(), e.getValue());
+        }
+
+        LocalDateTime closedAt = LocalDateTime.now();
+        for (PosPay pay : pending) {
+            pay.setStoreInventoryDeductedAt(closedAt);
+        }
+        posPayRepository.saveAll(pending);
+
+        String message = String.format(
+                "당일 결제 %d건 기준으로 본사 재고에 %d종 원자재를 차감했습니다.",
+                pending.size(),
+                productNeed.size());
+
+        return PosCloseDto.CloseRes.builder()
+                .storeIdx(store.getIdx())
+                .processedPayCount(pending.size())
+                .deductedProductKinds(productNeed.size())
+                .closedAt(closedAt)
+                .message(message)
+                .build();
     }
 
     @Transactional
@@ -195,8 +256,45 @@ public class PosService {
         }
         List<PosStoreInventory> lots = posStoreInventoryRepository
                 .findByStore_IdxAndProduct_IdxOrderByManufacturedDateAsc(store.getIdx(), productIdx);
+        int availableTotal = lots.stream().mapToInt(PosStoreInventory::getCount).sum();
+        if (availableTotal < amount) {
+            Map<String, Object> detail = new LinkedHashMap<>();
+            detail.put("productIdx", productIdx);
+            detail.put("required", amount);
+            detail.put("availableTotal", availableTotal);
+            throw new BaseException(BaseResponseStatus.POS_STORE_INVENTORY_INSUFFICIENT, detail);
+        }
         int remaining = amount;
         for (PosStoreInventory lot : lots) {
+            if (remaining <= 0) {
+                break;
+            }
+            int onHand = lot.getCount();
+            if (onHand <= 0) {
+                continue;
+            }
+            int take = Math.min(onHand, remaining);
+            lot.setCount(onHand - take);
+            remaining -= take;
+        }
+    }
+
+    private void deductOfficialFifo(Long storeIdx, Long productIdx, int amount) {
+        if (amount <= 0) {
+            return;
+        }
+        List<StoreInventory> lots = storeInventoryRepository
+                .findByStore_IdxAndProduct_IdxOrderByManufacturedDateAsc(storeIdx, productIdx);
+        int availableTotal = lots.stream().mapToInt(StoreInventory::getCount).sum();
+        if (availableTotal < amount) {
+            Map<String, Object> detail = new LinkedHashMap<>();
+            detail.put("productIdx", productIdx);
+            detail.put("required", amount);
+            detail.put("availableTotal", availableTotal);
+            throw new BaseException(BaseResponseStatus.STORE_INVENTORY_INSUFFICIENT, detail);
+        }
+        int remaining = amount;
+        for (StoreInventory lot : lots) {
             if (remaining <= 0) {
                 break;
             }

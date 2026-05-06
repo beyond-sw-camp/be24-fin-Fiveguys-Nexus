@@ -92,13 +92,6 @@ export const useNotificationStore = defineStore('notification', () => {
     LOW_STOCK:      { label: '재고 부족',   color: 'text-amber-600',  bg: 'bg-amber-50',   border: 'border-amber-200'  },
     ABNORMAL_ORDER: { label: '비정상 감지', color: 'text-red-600',    bg: 'bg-red-50',     border: 'border-red-200'    },
     DELIVERY_DELAY: { label: '배송 지연',   color: 'text-blue-600',   bg: 'bg-blue-50',    border: 'border-blue-200'   },
-    LOW:            { label: '재고 부족',   color: 'text-amber-600',  bg: 'bg-amber-50',   border: 'border-amber-200'  },
-    CRITICAL:       { label: '유통기한',    color: 'text-red-600',    bg: 'bg-red-50',     border: 'border-red-200'    },
-    ABNORMAL:       { label: '비정상 감지', color: 'text-red-600',    bg: 'bg-red-50',     border: 'border-red-200'    },
-    DELAY:          { label: '배송 지연',   color: 'text-blue-600',   bg: 'bg-blue-50',    border: 'border-blue-200'   },
-    DELIVERED:      { label: '배송 완료',   color: 'text-green-600',  bg: 'bg-green-50',   border: 'border-green-200'  },
-    APPROVE:        { label: '승인',        color: 'text-green-600',  bg: 'bg-green-50',   border: 'border-green-200'  },
-    REJECT:         { label: '반려',        color: 'text-red-600',    bg: 'bg-red-50',     border: 'border-red-200'    },
   }
 
   return {

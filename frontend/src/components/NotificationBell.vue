@@ -43,13 +43,6 @@ function typeColor(type) {
     LOW_STOCK: 'bg-amber-500',
     ABNORMAL_ORDER: 'bg-red-500',
     DELIVERY_DELAY: 'bg-blue-500',
-    LOW: 'bg-amber-500',
-    CRITICAL: 'bg-red-500',
-    ABNORMAL: 'bg-red-500',
-    DELAY: 'bg-blue-500',
-    DELIVERED: 'bg-green-500',
-    APPROVE: 'bg-green-500',
-    REJECT: 'bg-red-500',
   }
   return map[type] ?? 'bg-gray-300'
 }

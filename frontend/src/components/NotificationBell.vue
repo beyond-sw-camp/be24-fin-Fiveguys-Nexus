@@ -65,7 +65,7 @@ function typeConfig(type) {
 function onScroll(e) {
   const { scrollTop, scrollHeight, clientHeight } = e.target
   if (scrollHeight - scrollTop - clientHeight < 50) {
-    notifStore.loadMore()
+    notifStore.loadMore(20)
   }
 }
 </script>
@@ -122,7 +122,7 @@ function onScroll(e) {
           <div v-for="n in unreadNotifications" :key="n.idx"
             @click="handleNotifClick(n)"
             class="flex gap-3 px-4 py-3.5 cursor-pointer transition-colors"
-            :class="unreadRowClass"
+            :class="unreadRowClass">
 
             <!-- Type badge dot -->
             <div class="shrink-0 mt-0.5">

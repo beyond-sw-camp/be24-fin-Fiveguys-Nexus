@@ -236,6 +236,23 @@ async function saveStore() {
     alert("처리 중 오류 발생: " + error.message);
   }
 }
+// <script setup> 내부에 추가
+const isFormValid = computed(() => {
+  // 필수 항목들이 비어있는지 확인
+  const fields = [
+    form.storeName,
+    form.ownerEmail,
+    form.address,
+    form.business,
+    form.postcode,
+    form.fileName
+  ];
+
+  // 모든 필드에 값이 있고, 사업자 번호가 12자리(하이픈 포함 000-00-00000)인지 확인
+  return fields.every(field => field && String(field).trim() !== '') &&
+    form.business.length === 12;
+});
+
 
 // S3 미리보기 (뷰어)
 function viewPdf() {
@@ -675,8 +692,14 @@ onMounted(() => {
           <div class="flex gap-3 pt-4">
             <button type="button" @click="showModal = false"
                     class="flex-1 py-3 rounded-lg border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-50 transition-colors cursor-pointer">취소</button>
-            <button type="submit"
-                    class="flex-1 py-3 rounded-lg bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d] transition-colors shadow-sm cursor-pointer">저장</button>
+            <button
+              type="submit"
+              :disabled="!isFormValid"
+              :class="[!isFormValid ? 'bg-gray-300 cursor-not-allowed' : 'bg-[#F37321] hover:bg-[#e0661d] cursor-pointer']"
+              class="flex-1 py-3 rounded-lg text-white text-sm font-bold transition-colors shadow-sm"
+            >
+              저장
+            </button>
           </div>
         </form>
       </div>

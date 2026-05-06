@@ -52,11 +52,10 @@ public class DeliveryService {
 
         // 배송 지연 알림 발송
         String delayStoreName = delivery.getOrders().getStore().getStoreName();
-        Long ordersIdx = delivery.getOrders().getIdx();
         headNotificationService.create(
                 NotificationType.DELIVERY_DELAY,
                 "배송 지연 - " + delayStoreName,
-                "발주 #" + ordersIdx + " 배송이 지연되었습니다. 사유: " + delayReason);
+                delayStoreName + " 배송이 지연되었습니다. 사유: " + delayReason);
 
         return true;
     }

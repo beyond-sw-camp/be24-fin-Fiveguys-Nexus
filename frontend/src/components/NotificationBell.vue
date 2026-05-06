@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { Bell } from 'lucide-vue-next'
 import { useNotificationStore } from '@/stores/notification'
 import { useAuthStore } from '@/stores/auth'
@@ -14,11 +14,20 @@ const isStoreOwnerRole = computed(() => auth.isStoreOwner)
 const accentBadgeClass = computed(() => isStoreOwnerRole.value ? 'bg-blue-500' : 'bg-[#F37321]')
 const unreadRowClass = computed(() => isStoreOwnerRole.value ? 'bg-blue-50/30 hover:bg-blue-50/60' : 'bg-orange-50/30 hover:bg-orange-50/60')
 
+// 읽지 않은 알림만 필터링하여 드롭다운에 표시
+const unreadNotifications = computed(() => notifStore.notifications.filter(n => !n.isRead))
+
 // 마운트 시 알림 조회 + SSE 구독
 onMounted(async () => {
-  await notifStore.fetchNotifications()
   await notifStore.fetchUnreadCount()
   notifStore.subscribe()
+})
+
+// 드롭다운 열릴 때 전체 알림 조회
+watch(open, async (isOpen) => {
+  if (isOpen) {
+    await notifStore.fetchNotifications(null, 20)
+  }
 })
 
 // 언마운트 시 SSE 해제
@@ -26,12 +35,14 @@ onBeforeUnmount(() => {
   notifStore.unsubscribe()
 })
 
-function markAll() {
-  notifStore.markAllRead()
+async function markAll() {
+  await notifStore.markAllRead()
 }
 
 function handleNotifClick(n) {
-  if (!n.isRead) notifStore.markRead(n.idx)
+  if (!n.isRead) {
+    notifStore.markRead(n.idx)
+  }
   open.value = false
   const path = auth.isAdmin ? '/notification' : '/store-notification'
   router.push(path)
@@ -49,6 +60,13 @@ function typeColor(type) {
 
 function typeConfig(type) {
   return notifStore.typeConfig[type] ?? { label: '알림', color: 'text-gray-600', bg: 'bg-gray-50', border: 'border-gray-200' }
+}
+
+function onScroll(e) {
+  const { scrollTop, scrollHeight, clientHeight } = e.target
+  if (scrollHeight - scrollTop - clientHeight < 50) {
+    notifStore.loadMore(20)
+  }
 }
 </script>
 
@@ -96,20 +114,20 @@ function typeConfig(type) {
         </div>
 
         <!-- Notification list -->
-        <div class="max-h-[420px] overflow-y-auto divide-y divide-gray-50">
-          <div v-if="notifStore.notifications.length === 0" class="px-4 py-10 text-center text-gray-400 text-sm">
+        <div @scroll="onScroll" class="max-h-[420px] overflow-y-auto divide-y divide-gray-50">
+          <div v-if="unreadNotifications.length === 0" class="px-4 py-10 text-center text-gray-400 text-sm">
             새 알림이 없습니다.
           </div>
 
-          <div v-for="n in notifStore.notifications" :key="n.idx"
+          <div v-for="n in unreadNotifications" :key="n.idx"
             @click="handleNotifClick(n)"
             class="flex gap-3 px-4 py-3.5 cursor-pointer transition-colors"
-            :class="n.isRead ? 'bg-white hover:bg-gray-50/50' : unreadRowClass">
+            :class="unreadRowClass">
 
             <!-- Type badge dot -->
             <div class="shrink-0 mt-0.5">
               <div class="w-2 h-2 rounded-full mt-1.5"
-                :class="n.isRead ? 'bg-gray-200' : typeColor(n.type)">
+                :class="typeColor(n.type)">
               </div>
             </div>
 
@@ -130,14 +148,19 @@ function typeConfig(type) {
 
             <!-- Unread indicator -->
             <div class="shrink-0 self-center">
-              <div v-if="!n.isRead" class="w-1.5 h-1.5 rounded-full" :class="accentBadgeClass"></div>
+              <div class="w-1.5 h-1.5 rounded-full" :class="accentBadgeClass"></div>
             </div>
+          </div>
+
+          <!-- Loading indicator -->
+          <div v-if="notifStore.loading" class="px-4 py-3 text-center text-xs text-gray-400">
+            불러오는 중...
           </div>
         </div>
 
         <!-- Panel footer -->
         <div class="px-4 py-2.5 border-t border-gray-100 bg-gray-50/60">
-          <p class="text-[11px] text-gray-400 text-center">전체 {{ notifStore.notifications.length }}건</p>
+          <p class="text-[11px] text-gray-400 text-center">전체 {{ unreadNotifications.length }}건</p>
         </div>
       </div>
     </transition>

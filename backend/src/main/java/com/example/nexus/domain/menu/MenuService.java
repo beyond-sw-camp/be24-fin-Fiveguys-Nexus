@@ -36,9 +36,10 @@ public class MenuService {
     private String menuBucket;
 
     @Transactional(readOnly = true)
-    public MenuDto.MenuPageRes list(int page, int size) {
+    public MenuDto.MenuPageRes list(MenuDto.MenuSearchPagingReq searchReq, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
-        Page<Menu> result = menuRepository.findAll(pageRequest);
+
+        Page<Menu> result = menuRepository.findMenusBySearch(searchReq.getKeyword(), searchReq.getCategoryIdx(), pageRequest);
 
         return MenuDto.MenuPageRes.from(result);
     }
@@ -64,7 +65,7 @@ public class MenuService {
         return result;
     }
 
-    @Transactional
+
     public Map<String, String> getPresignedUrl(String fileName) {
         // 1. 경로 및 고유 파일명 생성 (기존 로직 유지)
         String path = createPath(fileName);
@@ -93,6 +94,7 @@ public class MenuService {
         return UUID.randomUUID().toString() + "-nexus-" + fileName;
     }
 
+    @Transactional
     public void menuRegister(MenuDto.MenuRegReq dto) {
 
         if (menuRepository.existsByMenuName(dto.getMenuName())) {

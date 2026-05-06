@@ -8,20 +8,26 @@ import com.example.nexus.domain.store.model.StoreInventoryDto;
 import com.example.nexus.domain.user.UserRepository;
 import com.example.nexus.domain.user.model.User;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 
 import static com.example.nexus.common.model.BaseResponseStatus.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StoreService {
@@ -31,6 +37,7 @@ public class StoreService {
 
     // URL을 발행해주는 핵심 도구
     private final S3Presigner s3Presigner;
+    private final S3Client s3Client;
 
     @Value("${spring.cloud.aws.s3.store-bucket}")
     private String storeBucket;
@@ -157,38 +164,57 @@ public class StoreService {
 
     @Transactional
     public void storeUpdate(Long storeIdx, StoreDto.StoreUpdateReq dto) {
-        // 가맹점 존재 여부
-        Store store = storeRepository.findById(storeIdx)
-                .orElseThrow(() ->{throw new BaseException(STORE_NOT_FOUND);
+        String newFilePath = dto.getFilePath();
+        String oldFilePath = "";
+
+        try {
+            Store store = storeRepository.findById(storeIdx)
+                    .orElseThrow(() -> new BaseException(STORE_NOT_FOUND));
+
+            oldFilePath = store.getFilePath();
+
+            if (store.isDeleted()) throw new BaseException(STORE_ALREADY_CLOSED);
+
+            if (!store.getStoreName().equals(dto.getStoreName())) {
+                storeRepository.findByStoreName(dto.getStoreName())
+                        .ifPresent(s -> { throw new BaseException(STORE_NAME_ALREADY_EXISTS); });
+            }
+
+            User owner = store.getUser();
+            if (owner == null || owner.isDeleted()) throw new BaseException(NOT_FOUND_USER);
+
+            if (newFilePath != null && !newFilePath.equals(oldFilePath)) {
+                String finalOldFile = oldFilePath;
+                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        deleteS3Object(finalOldFile);
+                    }
                 });
+            }
 
-        // 가맹점 폐업 여부
-        if(store.isDeleted()){
-            throw new BaseException(STORE_ALREADY_CLOSED);
+            store.update(dto);
+            owner.updateOwner(dto.getOwnerName(), dto.getOwnerEmail());
+
+        } catch (Exception e) {
+            if (newFilePath != null && !newFilePath.equals(oldFilePath)) {
+                deleteS3Object(newFilePath); // 새 파일 롤백 삭제
+            }
+
+            if (e instanceof BaseException) throw (BaseException) e;
+            throw new RuntimeException(e);
         }
+    }
 
-        // 가맹점 이름 중복 여부
-        if(!store.getStoreName().equals(dto.getStoreName())){
-            storeRepository.findByStoreName(dto.getStoreName())
-                    .ifPresent(s ->{
-                        throw new BaseException(STORE_NAME_ALREADY_EXISTS);
-                    });
-        }
-
-        // 가맹점 업데이트
-        store.update(dto);
-
-        User owner = store.getUser();
-
-        // 점주 탈퇴 여부 확인
-        if(owner == null || owner.isDeleted()){
-            throw new BaseException(NOT_FOUND_USER);
-        }
-
-
-        // 점주 이름, 이메일 업데이트
-        if(owner != null){
-            owner.updateOwner(dto.getOwnerName(),dto.getOwnerEmail());
+    private void deleteS3Object(String key) {
+        try {
+            s3Client.deleteObject(DeleteObjectRequest.builder()
+                    .bucket(storeBucket)
+                    .key(key)
+                    .build());
+        } catch (Exception e) {
+            // S3 삭제 실패 시 예외를 던져서 호출부에서 인지하게 처리
+            throw new BaseException(S3_DELETE_FAILED); // BaseResponseStatus에 추가 필요
         }
     }
 

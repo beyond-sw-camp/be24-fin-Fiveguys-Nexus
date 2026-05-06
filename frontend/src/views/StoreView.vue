@@ -1,7 +1,7 @@
 <script setup>
 import { ref, reactive, onMounted, computed, nextTick } from 'vue'
 import { Plus, Search, FileText, ChevronDown } from 'lucide-vue-next'
-import { getStoreList , getStoreDetailList, getPresignedUrl, postNewRegister} from '@/api/store/index.js'
+import { getStoreList , getStoreDetailList, getPresignedUrl, postNewRegister, putStoreUpdate} from '@/api/store/index.js'
 import axios from 'axios'
 
 
@@ -147,9 +147,14 @@ async function openModal(idx =! null) {
     // [수정 모드]
     const res = await getStoreDetailList(idx);
     const detailData = res.data.result;
+    console.log(detailData)
     Object.assign(form, getInitialForm());
     // v-model로 연결된 form에 DB에서 가져온 값을 세팅 (화면에 바로 보임)
     Object.assign(form, detailData);
+    if (detailData.filePath) {
+      // S3 경로나 파일 경로에서 마지막 '/' 뒤의 이름만 가져옵니다.
+      form.fileName = detailData.filePath.split('/').pop();
+    }
 
     editTarget.value = detailData; // 나중에 수정 API 보낼 때 쓸 idx가 담긴 원본
   } else {
@@ -196,24 +201,36 @@ async function uploadFileToS3() {
 async function saveStore() {
   try {
     // [핵심 추가] 파일을 선택했다면 등록/수정 전에 S3에 먼저 올립니다.
-    const newFilePath = await uploadFileToS3();
-    if (newFilePath) {
-      form.filePath = newFilePath; // 업로드된 경로를 form에 세팅
-    }
+    let finalFilePath = form.filePath; // 기본은 기존 경로 유지
 
+    if (selectedFile.value) {
+      // 새 파일이 선택되었다면 S3에 업로드하고 새 경로를 받아옴
+      const newS3Path = await uploadFileToS3();
+      if (newS3Path) {
+        finalFilePath = newS3Path;
+      }
+    }
     // --- 수정 로직 ---
     if (editTarget.value) {
-      // form.value가 아니라 reactive 객체인 form 자체를 비교해야 합니다.
-      const isNoChange = JSON.stringify(editTarget.value) === JSON.stringify(form);
+      const updateData = {
+        storeName: form.storeName,
+        ownerName: form.ownerName,
+        ownerEmail: form.ownerEmail,
+        postcode: form.postcode,
+        address: form.address,
+        addressDetail: form.addressDetail,
+        closedAt: form.closedAt === "운영 중" ? null : form.closedAt, // 날짜 형식 주의
+        filePath: finalFilePath // 새 경로 또는 기존 경로[cite: 14]
+      };
 
-      if (isNoChange) {
-        alert("수정된 내용이 없습니다.");
+      // [핵심] 백엔드 수정 API 호출 (StoreController_11.java의 @PutMapping 연동)
+      const res = await putStoreUpdate(editTarget.value.idx, updateData);
+
+      if (res.data.code === 2000) {
+        alert("가맹점 정보가 수정되었습니다.");
+        await storeListRes(pagination.currentPage); // 현재 페이지 목록 새로고침[cite: 14]
         showModal.value = false;
-        return;
       }
-
-      // TODO: 수정 API가 준비되면 여기에 호출 로직 추가
-      alert("수정 완료 (API 연동 필요)");
     }
     // --- 등록 로직 ---
     else {
@@ -315,10 +332,7 @@ const sample6_execDaumPostcode = () => {
         addr = data.jibunAddress;
       }
 
-      // [핵심] Vue의 reactive 객체에 직접 값을 할당합니다.
       form.address = addr;
-
-      // 만약 우편번호도 저장하고 싶다면 form에 추가 후 할당하세요.
       form.postcode = data.zonecode;
 
       // 상세주소 입력창으로 포커스 이동

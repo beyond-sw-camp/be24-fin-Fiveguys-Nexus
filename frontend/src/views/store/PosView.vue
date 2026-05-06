@@ -170,6 +170,14 @@ function showToastMsg(msg) {
   toastTimer = setTimeout(() => { toast.value.show = false }, 3000)
 }
 
+function extractApiErrorMessage(error, fallback = '영업 마감 처리에 실패했습니다. 잠시 후 다시 시도해 주세요.') {
+  const message = error?.response?.data?.message
+  if (typeof message === 'string' && message.trim()) {
+    return message
+  }
+  return fallback
+}
+
 function updateTime() {
   const now = new Date()
   currentTime.value = `${now.toLocaleDateString('ko-KR')} ${now.toLocaleTimeString('ko-KR', { hour12: false })}`
@@ -294,8 +302,7 @@ async function confirmClose() {
   } catch (e) {
     console.error(e)
     showCloseModal.value = false
-    const apiMessage = e?.response?.data?.message
-    showToastMsg(apiMessage || '영업 마감 처리에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+    showToastMsg(extractApiErrorMessage(e))
   } finally {
     isClosingStore.value = false
   }

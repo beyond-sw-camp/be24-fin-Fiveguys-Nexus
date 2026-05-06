@@ -1,9 +1,14 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { Bell } from 'lucide-vue-next'
 import { useNotificationStore } from '@/stores/notification'
 
 const store = useNotificationStore()
+
+// 페이지 진입 시 전체 알림 목록 조회
+onMounted(() => {
+  store.fetchNotifications(null, 20)
+})
 
 // 알림 타입별 필터 탭 목록
 const tabs = [
@@ -20,7 +25,7 @@ const activeTab = ref(null)
 // 탭 전환 시 해당 타입의 알림 목록 조회
 async function switchTab(type) {
   activeTab.value = type
-  await store.fetchNotifications(type)
+  await store.fetchNotifications(type, 20)
 }
 
 // 전체 읽음 처리
@@ -36,6 +41,14 @@ async function handleClick(n) {
 // 알림 타입별 스타일 반환 (fallback 포함)
 function typeConfig(type) {
   return store.typeConfig[type] ?? { label: type, color: 'text-gray-600', bg: 'bg-gray-50', border: 'border-gray-200' }
+}
+
+// 무한스크롤: 스크롤 하단 도달 시 다음 페이지 로드
+function onScroll(e) {
+  const { scrollTop, scrollHeight, clientHeight } = e.target
+  if (scrollHeight - scrollTop - clientHeight < 50) {
+    store.loadMore(20)
+  }
 }
 </script>
 
@@ -69,7 +82,7 @@ function typeConfig(type) {
     </div>
 
     <!-- List -->
-    <div v-if="store.notifications.length > 0" class="flex flex-col gap-2">
+    <div v-if="store.notifications.length > 0" @scroll="onScroll" class="flex flex-col gap-2 max-h-[700px] overflow-y-auto">
       <button
         v-for="n in store.notifications"
         :key="n.idx"
@@ -100,14 +113,10 @@ function typeConfig(type) {
         </div>
       </button>
 
-      <!-- 더 보기 -->
-      <button
-        v-if="store.hasNext"
-        @click="store.loadMore()"
-        class="w-full py-3 text-sm text-gray-500 hover:text-gray-700 font-medium"
-      >
-        더 보기
-      </button>
+      <!-- 로딩 인디케이터 -->
+      <div v-if="store.loading" class="py-3 text-center text-sm text-gray-400">
+        불러오는 중...
+      </div>
     </div>
 
     <!-- Empty -->

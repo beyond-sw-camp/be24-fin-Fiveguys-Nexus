@@ -68,7 +68,7 @@ public class StoreDto {
         private String storeName;
         private String ownerName;
         private String ownerEmail;
-        private Integer postcode;
+        private String postcode;
         private String address;
         private String addressDetail;
         private String totalAddress;
@@ -89,7 +89,7 @@ public class StoreDto {
                     .postcode(entity.getPostcode())
                     .address(entity.getAddress())
                     .addressDetail(entity.getAddressDetail())
-                    .totalAddress(String.format("[%05d] %s %s",
+                    .totalAddress(String.format("[%s] %s %s",
                             entity.getPostcode(),
                             entity.getAddress(),
                             entity.getAddressDetail()).trim())
@@ -145,7 +145,7 @@ public class StoreDto {
     public static class StoreRegReq{
         private String storeName;
         private String ownerEmail;
-        private Integer postcode;
+        private String postcode;
         private String address;
         private String addressDetail;
         private String business;
@@ -170,7 +170,7 @@ public class StoreDto {
         private String storeName;
         private String ownerName;
         private String ownerEmail;
-        private Integer postcode;
+        private String postcode;
         private String address;
         private String addressDetail;
         private LocalDateTime closedAt;

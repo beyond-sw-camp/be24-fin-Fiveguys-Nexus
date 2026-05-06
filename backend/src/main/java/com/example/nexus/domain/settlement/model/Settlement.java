@@ -1,4 +1,4 @@
-package com.example.nexus.domain.head.model;
+package com.example.nexus.domain.settlement.model;
 
 import com.example.nexus.domain.orders.model.Orders;
 import com.example.nexus.domain.store.model.Store;
@@ -9,16 +9,15 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "head_income")
+@Table(name = "settlement")
 @Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class HeadIncome {
-
+public class Settlement {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "head_income_idx")
+    @Column(name = "settlement_idx")
     private Long idx;
 
     @Column(name = "price", nullable = false)

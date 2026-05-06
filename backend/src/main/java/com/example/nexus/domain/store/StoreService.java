@@ -191,4 +191,8 @@ public class StoreService {
             owner.updateOwner(dto.getOwnerName(),dto.getOwnerEmail());
         }
     }
+
+    public Long findStoreIdx(Long userIdx) {
+        return storeRepository.findByUserIdx(userIdx).orElse(null).getIdx();
+    }
 }

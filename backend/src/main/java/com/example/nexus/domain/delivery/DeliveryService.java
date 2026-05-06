@@ -5,6 +5,7 @@ import com.example.nexus.common.enums.NotificationType;
 import com.example.nexus.domain.delivery.model.Delivery;
 import com.example.nexus.domain.delivery.model.DeliveryDto;
 import com.example.nexus.domain.notification.HeadNotificationService;
+import com.example.nexus.domain.notification.StoreNotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 public class DeliveryService {
     private final DeliveryRepository deliveryRepository;
     private final HeadNotificationService headNotificationService;
+    private final StoreNotificationService storeNotificationService;
 
     public List<DeliveryDto> getDeliveriesByHead(
             String storeName, DeliveryStatus status, Integer year, Integer month, Integer day) {
@@ -50,12 +52,19 @@ public class DeliveryService {
         delivery.setDelayReason(delayReason);
         delivery.setDeliveryStatus(DeliveryStatus.DELAY);
 
-        // 배송 지연 알림 발송
+        // 배송 지연 알림 발송 (본사)
         String delayStoreName = delivery.getOrders().getStore().getStoreName();
         headNotificationService.create(
                 NotificationType.DELIVERY_DELAY,
                 "배송 지연 - " + delayStoreName,
                 delayStoreName + " 배송이 지연되었습니다. 사유: " + delayReason);
+
+        // 배송 지연 알림 발송 (가맹점, NOTIFY_016)
+        storeNotificationService.create(
+                NotificationType.DELIVERY_DELAY,
+                "배송 지연 안내",
+                "배송이 지연되었습니다. 사유: " + delayReason,
+                delivery.getOrders().getStore());
 
         return true;
     }

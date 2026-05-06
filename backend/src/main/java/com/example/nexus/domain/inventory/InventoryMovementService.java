@@ -8,6 +8,7 @@ import com.example.nexus.domain.inventory.model.InventoryMovement;
 import com.example.nexus.domain.inventory.model.InventoryMovementDto;
 import com.example.nexus.domain.notification.HeadNotificationRepository;
 import com.example.nexus.domain.notification.HeadNotificationService;
+import com.example.nexus.domain.notification.StoreNotificationService;
 import com.example.nexus.domain.product.ProductRepository;
 import com.example.nexus.domain.product.model.Product;
 import com.example.nexus.domain.store.StoreInventoryRepository;
@@ -32,6 +33,7 @@ public class InventoryMovementService {
     private final StoreRepository storeRepository;
     private final HeadNotificationService headNotificationService;
     private final HeadNotificationRepository headNotificationRepository;
+    private final StoreNotificationService storeNotificationService;
 
     @Transactional
     public InventoryMovementDto.MovementRes inbound(InventoryMovementDto.InboundReq req) {
@@ -78,6 +80,13 @@ public class InventoryMovementService {
                         "현재 수량: " + headInventory.getCount() + product.getProductUnit()
                                 + " (최소 기준: " + product.getMinStock() + product.getProductUnit() + ")");
             }
+
+            // 가맹점 재고 부족 알림 (NOTIFY_009)
+            storeNotificationService.create(
+                    NotificationType.LOW_STOCK,
+                    title,
+                    product.getProductName() + " 재고가 부족합니다. 본사에 발주를 요청해주세요.",
+                    store);
         }
 
         StoreInventory storeInventory = new StoreInventory(

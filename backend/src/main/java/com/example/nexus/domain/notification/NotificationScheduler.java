@@ -3,6 +3,8 @@ package com.example.nexus.domain.notification;
 import com.example.nexus.common.enums.NotificationType;
 import com.example.nexus.domain.head.HeadInventoryRepository;
 import com.example.nexus.domain.head.model.HeadInventory;
+import com.example.nexus.domain.store.StoreInventoryRepository;
+import com.example.nexus.domain.store.model.StoreInventory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -18,6 +20,9 @@ public class NotificationScheduler {
     private final HeadInventoryRepository headInventoryRepository;
     private final HeadNotificationService headNotificationService;
     private final HeadNotificationRepository headNotificationRepository;
+    private final StoreInventoryRepository storeInventoryRepository;
+    private final StoreNotificationService storeNotificationService;
+    private final StoreNotificationRepository storeNotificationRepository;
 
     /**
      * 유통기한 임박 알림
@@ -58,6 +63,28 @@ public class NotificationScheduler {
                 }
             }
         }
+
+        // 가맹점 재고 유통기한 임박 알림 (NOTIFY_008)
+        List<StoreInventory> storeInventories = storeInventoryRepository.findAllByCountGreaterThan(0);
+
+        for (StoreInventory storeInventory : storeInventories) {
+            int shelfLifeDays = Integer.parseInt(storeInventory.getProduct().getDangerDays());
+            LocalDateTime expiryDate = storeInventory.getManufacturedDate().plusDays(shelfLifeDays);
+            long daysUntilExpiry = java.time.Duration.between(now, expiryDate).toDays();
+
+            if (daysUntilExpiry <= alertDays && daysUntilExpiry >= 0) {
+                String productName = storeInventory.getProduct().getProductName();
+                String title = "유통기한 임박 - " + productName;
+                String content = "유통기한 " + daysUntilExpiry + "일 이내입니다. (만료일: "
+                        + expiryDate.toLocalDate() + ")";
+
+                boolean exists = storeNotificationRepository.existsByTypeAndTitleAndStore_IdxAndCreatedAtAfter(
+                        NotificationType.EXPIRY, title, storeInventory.getStore().getIdx(), now.toLocalDate().atStartOfDay());
+                if (!exists) {
+                    storeNotificationService.create(NotificationType.EXPIRY, title, content, storeInventory.getStore());
+                }
+            }
+        }
     }
 
     /**
@@ -72,6 +99,8 @@ public class NotificationScheduler {
         LocalDateTime now = LocalDateTime.now();
         headNotificationRepository.deleteReadBefore(now.minusDays(30));
         headNotificationRepository.deleteUnreadBefore(now.minusDays(90));
+        storeNotificationRepository.deleteReadBefore(now.minusDays(30));
+        storeNotificationRepository.deleteUnreadBefore(now.minusDays(90));
     }
 
 }

@@ -21,4 +21,7 @@ public interface StoreInventoryRepository extends JpaRepository<StoreInventory, 
     Optional<StoreInventory> findByStore_IdxAndProduct_IdxAndManufacturedDate(Long storeIdx, Long productIdx, LocalDateTime manufacturedDate);
 
     List<StoreInventory> findByStore_IdxAndProduct_IdxOrderByManufacturedDateAsc(Long storeIdx, Long productIdx);
+
+    // 유통기한 임박 알림용 - 재고 수량이 0보다 큰 가맹점 재고 조회
+    List<StoreInventory> findAllByCountGreaterThan(int count);
 }

@@ -12,7 +12,6 @@ const router = useRouter()
 
 const isStoreOwnerRole = computed(() => auth.isStoreOwner)
 const accentBadgeClass = computed(() => isStoreOwnerRole.value ? 'bg-blue-500' : 'bg-[#F37321]')
-const accentDotClass = accentBadgeClass
 const unreadRowClass = computed(() => isStoreOwnerRole.value ? 'bg-blue-50/30 hover:bg-blue-50/60' : 'bg-orange-50/30 hover:bg-orange-50/60')
 
 // 마운트 시 알림 조회 + SSE 구독
@@ -138,7 +137,7 @@ function typeConfig(type) {
 
             <!-- Unread indicator -->
             <div class="shrink-0 self-center">
-              <div v-if="!n.isRead" class="w-1.5 h-1.5 rounded-full" :class="accentDotClass"></div>
+              <div v-if="!n.isRead" class="w-1.5 h-1.5 rounded-full" :class="accentBadgeClass"></div>
             </div>
           </div>
         </div>

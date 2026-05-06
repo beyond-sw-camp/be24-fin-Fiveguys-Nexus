@@ -1,7 +1,7 @@
-package com.example.nexus.domain.head;
+package com.example.nexus.domain.notification;
 
 import com.example.nexus.common.enums.NotificationType;
-import com.example.nexus.domain.head.model.HeadNotification;
+import com.example.nexus.domain.notification.model.HeadNotification;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;

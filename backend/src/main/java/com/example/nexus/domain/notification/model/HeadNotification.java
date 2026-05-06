@@ -1,4 +1,4 @@
-package com.example.nexus.domain.head.model;
+package com.example.nexus.domain.notification.model;
 
 import com.example.nexus.common.enums.NotificationType;
 import jakarta.persistence.*;

@@ -8,6 +8,7 @@ import com.example.nexus.domain.store.model.StoreInventoryDto;
 import com.example.nexus.domain.user.UserRepository;
 import com.example.nexus.domain.user.model.User;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,9 +20,12 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 
 import static com.example.nexus.common.model.BaseResponseStatus.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StoreService {
@@ -31,6 +35,7 @@ public class StoreService {
 
     // URL을 발행해주는 핵심 도구
     private final S3Presigner s3Presigner;
+    private final S3Client s3Client;
 
     @Value("${spring.cloud.aws.s3.store-bucket}")
     private String storeBucket;
@@ -175,8 +180,35 @@ public class StoreService {
                     });
         }
 
+        // 2. 기존 파일 경로 백업 (삭제를 위해)
+        String oldFilePath = store.getFilePath();
+
+
         // 가맹점 업데이트
         store.update(dto);
+
+        // 4. 파일이 변경되었고, 기존 파일이 존재한다면 S3에서 삭제
+        // dto.getFilePath()가 null이 아니고 기존 경로와 다를 때만 실행
+        if (dto.getFilePath() != null && !dto.getFilePath().equals(oldFilePath)) {
+            if (oldFilePath != null && !oldFilePath.isEmpty()) {
+                try {
+                    String key = oldFilePath;
+                    log.info("S3 삭제 시도 - 버킷: {}, 키: {}", storeBucket, key);
+
+                    // v2 스타일의 삭제 요청
+                    DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                            .bucket(storeBucket)
+                            .key(key)
+                            .build();
+
+                    s3Client.deleteObject(deleteObjectRequest);
+                    log.info("S3 기존 파일 삭제 성공: {}", key);
+
+                } catch (Exception e) {
+                    log.error("S3 기존 파일 삭제 실패 (파일 경로: {}), 사유: {}", oldFilePath, e.getMessage());
+                }
+            }
+        }
 
         User owner = store.getUser();
 
@@ -190,6 +222,13 @@ public class StoreService {
         if(owner != null){
             owner.updateOwner(dto.getOwnerName(),dto.getOwnerEmail());
         }
+    }
+
+    private String extractKeyFromUrl(String fileUrl) {
+        // 예: https://bucket-name.s3.region.amazonaws.com/store/file.pdf
+        // -> "store/file.pdf"만 추출
+        String splitStr = ".com/";
+        return fileUrl.substring(fileUrl.lastIndexOf(splitStr) + splitStr.length());
     }
 
     public Long findStoreIdx(Long userIdx) {

@@ -219,7 +219,7 @@ async function saveStore() {
         postcode: form.postcode,
         address: form.address,
         addressDetail: form.addressDetail,
-        closedAt: form.closedAt === "운영 중" ? null : form.closedAt, // 날짜 형식 주의
+        closedAt: (form.closedAt === "운영 중" || !form.closedAt) ? null : form.closedAt + "T00:00:00", // 날짜 형식 주의
         filePath: finalFilePath // 새 경로 또는 기존 경로[cite: 14]
       };
 

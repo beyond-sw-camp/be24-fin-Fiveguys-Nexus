@@ -23,3 +23,6 @@ export const getPresignedUrl = (fileName) =>
 
 export const postNewRegister = (storeRegDto)=>
   api.post('/store/new/register',storeRegDto)
+
+export const putStoreUpdate = (storeIdx,updateData) =>
+  api.put(`/store/update/${storeIdx}`,updateData)

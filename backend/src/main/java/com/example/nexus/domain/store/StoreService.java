@@ -125,7 +125,6 @@ public class StoreService {
     }
 
     // Presigned URL을 발급 받는 로직
-    @Transactional
     public Map<String, String> getPresignedUrl(String fileName) {
 
         // 1. 경로 및 고유 파일명 생성 (기존 로직 유지)

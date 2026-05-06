@@ -93,7 +93,6 @@ public class MenuService {
         return UUID.randomUUID().toString() + "-nexus-" + fileName;
     }
 
-    @Transactional
     public void menuRegister(MenuDto.MenuRegReq dto) {
 
         if (menuRepository.existsByMenuName(dto.getMenuName())) {
@@ -136,7 +135,7 @@ public class MenuService {
                 .orElseThrow(() -> new BaseException(NOT_FOUND_CATEGORY));
 
         // 제품 조회
-        List<Long> productIds = dto.getMenuItemList().stream()
+        List<Long> productIds = Optional.ofNullable(dto.getMenuItemList()).orElseGet(Collections::emptyList).stream()
                 .map(MenuDto.MenuItemReq::getProductIdx).toList();
         List<Product> products = productRepository.findAllById(productIds);
 
@@ -149,7 +148,7 @@ public class MenuService {
         Map<Long, Product> productMap = products.stream()
                 .collect(Collectors.toMap(Product::getIdx, p -> p));
 
-        for (MenuDto.MenuItemReq itemReq : dto.getMenuItemList()) {
+        for (MenuDto.MenuItemReq itemReq : Optional.ofNullable(dto.getMenuItemList()).orElseGet(Collections::emptyList)) {
             Product product = productMap.get(itemReq.getProductIdx());
             if (product == null) throw new BaseException(NOT_FOUND_PRODUCT);
 

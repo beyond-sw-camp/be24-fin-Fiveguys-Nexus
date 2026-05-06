@@ -6,7 +6,6 @@ import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 
 const open = ref(false)
-const listRef = ref(null)
 const notifStore = useNotificationStore()
 const auth = useAuthStore()
 const router = useRouter()
@@ -115,7 +114,7 @@ function onScroll(e) {
         </div>
 
         <!-- Notification list -->
-        <div ref="listRef" @scroll="onScroll" class="max-h-[420px] overflow-y-auto divide-y divide-gray-50">
+        <div @scroll="onScroll" class="max-h-[420px] overflow-y-auto divide-y divide-gray-50">
           <div v-if="unreadNotifications.length === 0" class="px-4 py-10 text-center text-gray-400 text-sm">
             새 알림이 없습니다.
           </div>
@@ -123,12 +122,12 @@ function onScroll(e) {
           <div v-for="n in unreadNotifications" :key="n.idx"
             @click="handleNotifClick(n)"
             class="flex gap-3 px-4 py-3.5 cursor-pointer transition-colors"
-            :class="n.isRead ? 'bg-white hover:bg-gray-50/50' : unreadRowClass">
+            :class="unreadRowClass"
 
             <!-- Type badge dot -->
             <div class="shrink-0 mt-0.5">
               <div class="w-2 h-2 rounded-full mt-1.5"
-                :class="n.isRead ? 'bg-gray-200' : typeColor(n.type)">
+                :class="typeColor(n.type)">
               </div>
             </div>
 
@@ -149,7 +148,7 @@ function onScroll(e) {
 
             <!-- Unread indicator -->
             <div class="shrink-0 self-center">
-              <div v-if="!n.isRead" class="w-1.5 h-1.5 rounded-full" :class="accentBadgeClass"></div>
+              <div class="w-1.5 h-1.5 rounded-full" :class="accentBadgeClass"></div>
             </div>
           </div>
 

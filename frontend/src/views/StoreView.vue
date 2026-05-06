@@ -13,19 +13,33 @@ const statusOptions = ['전체', '입점', '폐점']
 
 // --- 가맹점 목록 리스트 ---
 const storesList = reactive([])
+const pagination = reactive({
+  totalPage: 0,
+  totalCount: 0,
+  currentPage: 0,
+  currentSize: 10
+})
 
-const storeListRes = async ()=>{
+const storeListRes = async (page = 0)=>{
   const searchReq = {
     keyword: searchQuery.value, // ref로 선언된 검색어
-    status: filterStatus.value === '전체' ? null : filterStatus.value // '전체'일 때는 null로 보내기
+    status: filterStatus.value === '입점' ? 'ACTIVE' : filterStatus.value === '폐점' ? 'CLOSED' : null
   }
 
-  const page = 0;
-  const size = 10;
+  const res = await getStoreList(searchReq, page, pagination.currentSize)
+  console.log(res.data.result)
+  storesList.splice(0, storesList.length, ...res.data.result.storeList)
 
-  const res = await getStoreList(searchReq,page,size)
-  console.log(res.data)
-  storesList.push(...res.data.result.storeList)
+
+  pagination.totalPage = res.data.result.totalPage
+  pagination.totalCount = res.data.result.totalCount
+  pagination.currentPage = res.data.result.currentPage
+}
+
+const changePage = (page) => {
+  // 0보다 작거나 마지막 페이지(totalPage - 1)보다 크면 무시[cite: 1]
+  if (page < 0 || page >= pagination.totalPage) return
+  storeListRes(page)
 }
 
 const filteredStores = computed(() => {
@@ -118,9 +132,6 @@ function selectFilter(type, value) {
   activeDropdown.value = null
 }
 
-// 검색
-function handleSearch() {}
-
 // 가맹점 목록 클릭시 상세 모달창
 async function openDetail(idx) {
   const res = await getStoreDetailList(idx)
@@ -153,7 +164,6 @@ const selectedFile = ref(null);
 // 파일 선택 감지
 async function handleFileChange(e) {
   const file = e.target.files[0]
-
   if (file) {
     selectedFile.value = file; // 선택한 파일 보관
     form.fileName = file.name; // 화면 표시용
@@ -302,6 +312,20 @@ const sample6_execDaumPostcode = () => {
     }
   }).open();
 }
+
+const visiblePages = computed(() => {
+  const range = 10; // 한 번에 보여줄 페이지 개수
+  const currentGroup = Math.floor(pagination.currentPage / range);
+
+  const start = currentGroup * range;
+  const end = Math.min(start + range, pagination.totalPage);
+
+  const pages = [];
+  for (let i = start; i < end; i++) {
+    pages.push(i);
+  }
+  return pages;
+});
 
 onMounted(() => {
   storeListRes()
@@ -656,6 +680,41 @@ onMounted(() => {
           </div>
         </form>
       </div>
+    </div>
+    <!-- Pagination UI -->
+    <div class="flex items-center justify-center gap-3 mt-8 pb-10">
+      <!-- 이전 페이지 버튼 (작게) -->
+      <button
+        @click="changePage(pagination.currentPage - 1)"
+        :disabled="pagination.currentPage === 0"
+        class="w-7 h-7 flex items-center justify-center rounded border border-gray-200 bg-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors cursor-pointer"
+      >
+        <span class="text-[10px] text-gray-500">◀</span>
+      </button>
+
+      <!-- 페이지 번호 -->
+      <div class="flex items-center gap-1">
+        <button
+          v-for="pageIdx in visiblePages"
+          :key="pageIdx"
+          @click="changePage(pageIdx)"
+          class="min-w-[28px] h-7 px-2 flex items-center justify-center rounded text-xs font-bold transition-all cursor-pointer"
+          :class="pagination.currentPage === pageIdx
+        ? 'text-[#F37321] border-b-2 border-[#F37321] rounded-none'
+        : 'text-gray-400 hover:text-gray-600'"
+        >
+          {{ pageIdx + 1 }}
+        </button>
+      </div>
+
+      <!-- 다음 페이지 버튼 (작게) -->
+      <button
+        @click="changePage(pagination.currentPage + 1)"
+        :disabled="pagination.currentPage >= pagination.totalPage - 1"
+        class="w-7 h-7 flex items-center justify-center rounded border border-gray-200 bg-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors cursor-pointer"
+      >
+        <span class="text-[10px] text-gray-500">▶</span>
+      </button>
     </div>
   </div>
 </template>

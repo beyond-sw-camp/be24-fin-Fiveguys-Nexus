@@ -1,10 +1,12 @@
 package com.example.nexus.domain.inventory;
 
 import com.example.nexus.common.enums.InventoryStatus;
+import com.example.nexus.common.enums.NotificationType;
 import com.example.nexus.domain.head.HeadInventoryRepository;
 import com.example.nexus.domain.head.model.HeadInventory;
 import com.example.nexus.domain.inventory.model.InventoryMovement;
 import com.example.nexus.domain.inventory.model.InventoryMovementDto;
+import com.example.nexus.domain.notification.HeadNotificationService;
 import com.example.nexus.domain.product.ProductRepository;
 import com.example.nexus.domain.product.model.Product;
 import com.example.nexus.domain.store.StoreInventoryRepository;
@@ -26,6 +28,7 @@ public class InventoryMovementService {
     private final StoreInventoryRepository storeInventoryRepository;
     private final ProductRepository productRepository;
     private final StoreRepository storeRepository;
+    private final HeadNotificationService headNotificationService;
 
     @Transactional
     public InventoryMovementDto.MovementRes inbound(InventoryMovementDto.InboundReq req) {
@@ -59,6 +62,15 @@ public class InventoryMovementService {
 
         headInventory.setCount(headInventory.getCount() - req.getQuantity());
         headInventoryRepository.save(headInventory);
+
+        // 재고 부족 알림: 차감 후 최소 기준 이하이면 알림 발송
+        if (headInventory.getCount() <= product.getMinStock()) {
+            headNotificationService.create(
+                    NotificationType.LOW_STOCK,
+                    "재고 부족 - " + product.getProductName(),
+                    "현재 수량: " + headInventory.getCount() + product.getProductUnit()
+                            + " (최소 기준: " + product.getMinStock() + product.getProductUnit() + ")");
+        }
 
         StoreInventory storeInventory = new StoreInventory(
                 null,

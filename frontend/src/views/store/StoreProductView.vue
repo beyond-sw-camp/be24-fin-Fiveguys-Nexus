@@ -78,7 +78,7 @@
           </td>
         </tr>
         <tr v-if="filteredProducts.length === 0">
-          <td colspan="8" class="px-5 py-12 text-center text-gray-400 text-sm">등록된 제품이 없거나 검색 결과가 없습니다.</td>
+          <td colspan="8" class="px-5 py-12 text-center text-gray-400 text-sm">검색 결과가 없습니다.</td>
         </tr>
         </tbody>
       </table>
@@ -89,20 +89,22 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { Search } from 'lucide-vue-next'
-import { getProductList, searchProduct } from '@/api/product'
+import { getStoreProductList, searchProduct } from '@/api/product'
 import { readCategoryList } from '@/api/category'
+
 
 const categories = ref([])
 const products = ref([])
 const selectedCategory = ref('전체')
 const searchQuery = ref('')
 
-// 데이터 로드: 페이지가 열릴 때 카테고리와 제품 목록을 가져옵니다.
+// 데이터 로드: 페이지가 열릴 때 해당 가맹점의 제품 목록을 가져옵니다.
 const loadData = async () => {
   try {
+    // 카테고리 목록과 가맹점 전용 제품 목록을 병렬로 가져옴
     const [catRes, prodRes] = await Promise.all([
       readCategoryList(),
-      getProductList()
+      getStoreProductList()
     ])
     categories.value = catRes.data
     products.value = prodRes.data
@@ -111,16 +113,17 @@ const loadData = async () => {
   }
 }
 
-// 검색 핸들러: 입력 시 searchProduct API 호출
+// 검색 핸들러
 const handleSearch = async () => {
-  // 검색어가 없으면 전체 목록 다시 로드
+  // 검색어가 없으면 다시 가맹점별 목록 로드
   if (!searchQuery.value.trim()) {
-    const response = await getProductList()
+    const response = await getStoreProductList(storeIdx.value)
     products.value = response.data
     return
   }
 
   try {
+    // 백엔드의 검색 API가 전체 검색인지 매장 내 검색인지에 따라 결과가 달라질 수 있습니다.
     const response = await searchProduct(searchQuery.value)
     products.value = response.data
   } catch (error) {
@@ -129,6 +132,7 @@ const handleSearch = async () => {
 }
 
 onMounted(() => {
+  // 컴포넌트 마운트 시 데이터 로드
   loadData()
 })
 

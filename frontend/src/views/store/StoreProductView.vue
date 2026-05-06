@@ -89,7 +89,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { Search } from 'lucide-vue-next'
-import { getStoreProductList, searchProduct } from '@/api/product'
+import { getStoreProductList, searchStoreProduct } from '@/api/product'
 import { readCategoryList } from '@/api/category'
 
 
@@ -124,7 +124,7 @@ const handleSearch = async () => {
 
   try {
     // 백엔드의 검색 API가 전체 검색인지 매장 내 검색인지에 따라 결과가 달라질 수 있습니다.
-    const response = await searchProduct(searchQuery.value)
+    const response = await searchStoreProduct(searchQuery.value)
     products.value = response.data
   } catch (error) {
     console.error('검색 실패:', error)

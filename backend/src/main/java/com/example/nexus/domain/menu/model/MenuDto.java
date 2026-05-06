@@ -3,10 +3,7 @@ package com.example.nexus.domain.menu.model;
 import com.example.nexus.common.exception.BaseException;
 import com.example.nexus.domain.product.model.Product;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.domain.Page;
 import java.util.List;
 import java.util.Map;
@@ -171,5 +168,15 @@ public class MenuDto {
             }
             return menu;
         }
+    }
+
+    // 메뉴 검색
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class MenuSearchPagingReq {
+        private String keyword;
+        private Long categoryIdx;
     }
 }

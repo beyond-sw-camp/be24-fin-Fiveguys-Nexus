@@ -20,10 +20,11 @@ public class MenuController {
     // 메뉴 리스트 조회
     @GetMapping("/list")
     public ResponseEntity list(
+            MenuDto.MenuSearchPagingReq searchReq,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size)
     {
-        MenuDto.MenuPageRes result =  menuService.list(page, size);
+        MenuDto.MenuPageRes result =  menuService.list(searchReq, page, size);
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 

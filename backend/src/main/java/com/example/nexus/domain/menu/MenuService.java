@@ -35,10 +35,11 @@ public class MenuService {
     @Value("${spring.cloud.aws.s3.menu-bucket}")
     private String menuBucket;
 
-    @Transactional(readOnly = true)
-    public MenuDto.MenuPageRes list(int page, int size) {
+    @Transactional
+    public MenuDto.MenuPageRes list(MenuDto.MenuSearchPagingReq searchReq,int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
-        Page<Menu> result = menuRepository.findAllByIsDeletedFalse(pageRequest);
+
+        Page<Menu> result = menuRepository.findMenusBySearch(searchReq.getKeyword(), searchReq.getCategoryIdx(), pageRequest);
 
         return MenuDto.MenuPageRes.from(result);
     }

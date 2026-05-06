@@ -20,7 +20,7 @@ public class NotificationScheduler {
     private final HeadNotificationRepository headNotificationRepository;
 
     /**
-     * NOTIFY_002: 재고 부족 알림
+     * 재고 부족 알림
      * 매일 오전 7시에 실행
      * 본사 재고 수량이 제품의 최소 기준(minStock) 이하이면 알림 발송
      */
@@ -51,7 +51,7 @@ public class NotificationScheduler {
     }
 
     /**
-     * NOTIFY_001: 유통기한 임박 알림
+     * 유통기한 임박 알림
      * 매일 오전 7시에 실행
      * 제조일 + dangerDays 기준으로 유통기한 7일 이내 제품 감지
      */
@@ -90,4 +90,5 @@ public class NotificationScheduler {
             }
         }
     }
+
 }

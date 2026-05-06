@@ -3,15 +3,13 @@ package com.example.nexus.domain.settlement.model;
 import com.example.nexus.domain.orders.model.Orders;
 import com.example.nexus.domain.store.model.Store;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Table(name = "settlement")
 @Setter
 @Getter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Settlement {
@@ -29,4 +27,8 @@ public class Settlement {
     @Column(name = "pg_payment_id")
     private String pgPaymentId;
 
+    private Long storeIdx;
+
+    @Column(name = "settlement_ym", nullable = false, length = 7)
+    private String settlementYm;
 }

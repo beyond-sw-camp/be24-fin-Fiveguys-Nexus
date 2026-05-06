@@ -9,4 +9,6 @@ public interface HeadIncomeRepository extends JpaRepository<HeadIncome, Long> {
     List<HeadIncome> findAllByStoreIdx(Long storeIdx);
 
     List<HeadIncome> findBySettlementIdx(Long idx);
+
+    HeadIncome findByOrdersIdx(Long orderIdx);
 }

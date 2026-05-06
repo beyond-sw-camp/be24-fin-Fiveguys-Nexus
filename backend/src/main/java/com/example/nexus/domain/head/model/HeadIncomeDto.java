@@ -14,4 +14,20 @@ public class HeadIncomeDto {
         private Long storeIdx;
     }
 
+    @Getter
+    public static class FindHeadIncomeReq {
+        private Long orderIdx;
+    }
+
+    @Getter
+    @Builder
+    public static class FindHeadIncomeRes {
+        private Long idx;
+        private Long price;
+        private boolean paid;
+        private Long settlementIdx;
+        private Long storeIdx;
+        private Long ordersIdx;
+    }
+
 }

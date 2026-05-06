@@ -11,3 +11,5 @@ k8s/backend/configmap.yaml
 k8s/db-statefulset.yaml
 k8s/db-service.yaml
 frontend/.env.development
+
+docs/SSE_알림_구현_설명.md

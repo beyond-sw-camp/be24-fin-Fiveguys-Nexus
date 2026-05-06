@@ -1,10 +1,13 @@
 package com.example.nexus.domain.inventory;
 
 import com.example.nexus.common.enums.InventoryStatus;
+import com.example.nexus.common.enums.NotificationType;
 import com.example.nexus.domain.head.HeadInventoryRepository;
 import com.example.nexus.domain.head.model.HeadInventory;
 import com.example.nexus.domain.inventory.model.InventoryMovement;
 import com.example.nexus.domain.inventory.model.InventoryMovementDto;
+import com.example.nexus.domain.notification.HeadNotificationRepository;
+import com.example.nexus.domain.notification.HeadNotificationService;
 import com.example.nexus.domain.product.ProductRepository;
 import com.example.nexus.domain.product.model.Product;
 import com.example.nexus.domain.store.StoreInventoryRepository;
@@ -16,6 +19,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -26,6 +30,8 @@ public class InventoryMovementService {
     private final StoreInventoryRepository storeInventoryRepository;
     private final ProductRepository productRepository;
     private final StoreRepository storeRepository;
+    private final HeadNotificationService headNotificationService;
+    private final HeadNotificationRepository headNotificationRepository;
 
     @Transactional
     public InventoryMovementDto.MovementRes inbound(InventoryMovementDto.InboundReq req) {
@@ -59,6 +65,20 @@ public class InventoryMovementService {
 
         headInventory.setCount(headInventory.getCount() - req.getQuantity());
         headInventoryRepository.save(headInventory);
+
+        // 재고 부족 알림: 차감 후 최소 기준 이하이면 알림 발송 (당일 동일 제품 중복 방지)
+        if (headInventory.getCount() <= product.getMinStock()) {
+            String title = "재고 부족 - " + product.getProductName();
+            boolean alreadySent = headNotificationRepository.existsByTypeAndTitleAndCreatedAtAfter(
+                    NotificationType.LOW_STOCK, title, LocalDate.now().atStartOfDay());
+            if (!alreadySent) {
+                headNotificationService.create(
+                        NotificationType.LOW_STOCK,
+                        title,
+                        "현재 수량: " + headInventory.getCount() + product.getProductUnit()
+                                + " (최소 기준: " + product.getMinStock() + product.getProductUnit() + ")");
+            }
+        }
 
         StoreInventory storeInventory = new StoreInventory(
                 null,

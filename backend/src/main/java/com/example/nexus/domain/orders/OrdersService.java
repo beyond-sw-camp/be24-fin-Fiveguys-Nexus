@@ -1,11 +1,13 @@
 package com.example.nexus.domain.orders;
 
+import com.example.nexus.common.enums.NotificationType;
 import com.example.nexus.common.enums.OrdersStatus;
 import com.example.nexus.common.enums.OrdersType;
 import com.example.nexus.common.exception.BaseException;
 import com.example.nexus.common.model.BaseResponseStatus;
 import com.example.nexus.domain.inventory.InventoryMovementService;
 import com.example.nexus.domain.inventory.model.InventoryMovementDto;
+import com.example.nexus.domain.notification.HeadNotificationService;
 import com.example.nexus.domain.orders.model.*;
 import com.example.nexus.domain.product.ProductRepository;
 import com.example.nexus.domain.product.model.Product;
@@ -37,6 +39,7 @@ public class OrdersService {
     private final StoreInventoryRepository storeInventoryRepository;
     private final ProductRepository productRepository;
     private final InventoryMovementService inventoryMovementService;
+    private final HeadNotificationService headNotificationService;
 
     // 자동 발주 제안 검색 조회 (AUTO + WAITING 상태 대상)
     // 매장명 키워드 검색 + 페이징 처리
@@ -263,6 +266,14 @@ public class OrdersService {
         int totalQty = itemList.stream().mapToInt(OrdersItem::getCount).sum();
         boolean isDanger = evaluateDanger(store.getIdx(), totalQty, LocalDateTime.now(), null);
 
+        // 이상 발주로 판정되면 본사에 알림 발송
+        if (isDanger) {
+            headNotificationService.create(
+                    NotificationType.ABNORMAL_ORDER,
+                    "비정상 발주 감지 - " + store.getStoreName(),
+                    "수동 발주 수량 " + totalQty + "개 (평균 대비 초과)");
+        }
+
         // 5. Orders 저장
         Orders orders = ordersRepository.save(Orders.builder()
                 .price(totalprice)
@@ -316,7 +327,16 @@ public class OrdersService {
 
         // 이상 발주 재판정: 점주가 아이템을 수정했을 수 있으므로 확정 시점에 재평가
         int totalQty = orders.getOrdersItemList().stream().mapToInt(OrdersItem::getCount).sum();
-        orders.markDanger(evaluateDanger(store.getIdx(), totalQty, orders.getCreatedAt(), orders.getIdx()));
+        boolean isDanger = evaluateDanger(store.getIdx(), totalQty, orders.getCreatedAt(), orders.getIdx());
+        orders.markDanger(isDanger);
+
+        // 이상 발주로 판정되면 본사에 알림 발송
+        if (isDanger) {
+            headNotificationService.create(
+                    NotificationType.ABNORMAL_ORDER,
+                    "비정상 발주 감지 - " + store.getStoreName(),
+                    "발주 확정 수량 " + totalQty + "개 (평균 대비 초과)");
+        }
 
         orders.confirm();
     }

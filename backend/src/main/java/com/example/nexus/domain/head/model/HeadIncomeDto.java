@@ -7,9 +7,11 @@ public class HeadIncomeDto {
 
     @Builder
     @Getter
-    public static class PayReq {
+    public static class UnpaidRes {
+        private Long idx;
+        private Boolean status;
         private Long price;
-        private int ordersIdx;
+        private Long storeIdx;
     }
 
 }

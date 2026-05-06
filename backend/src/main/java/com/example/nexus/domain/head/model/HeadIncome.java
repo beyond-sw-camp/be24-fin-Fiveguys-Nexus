@@ -27,8 +27,8 @@ public class HeadIncome {
     @Column(name = "status", nullable = false)
     private Boolean status;
 
-    @Column(name = "pg_payment_id")
-    private String pgPaymentId;
+    @Column(name = "settlement_idx")
+    private Long settlementIdx;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_idx")

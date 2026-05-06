@@ -57,6 +57,11 @@ dependencies {
 	// --- 크롤링 ---
 	implementation 'org.jsoup:jsoup:1.18.1'
 
+	// --- portone ---
+	implementation 'io.portone:server-sdk:0.23.0'
+
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
 }
 
 tasks.named('test') {

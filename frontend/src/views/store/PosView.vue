@@ -92,6 +92,28 @@ const salesData = ref({
 })
 
 const paymentHistory = ref([])
+const CLOSE_STATUS_STORAGE_PREFIX = 'nexus_pos_closed_'
+
+function closeStatusStorageKey() {
+  const scope = auth.user?.email || auth.user?.storeId || 'default'
+  return `${CLOSE_STATUS_STORAGE_PREFIX}${scope}`
+}
+
+function loadClosedStatus() {
+  try {
+    return localStorage.getItem(closeStatusStorageKey()) === 'true'
+  } catch {
+    return false
+  }
+}
+
+function saveClosedStatus(isClosed) {
+  try {
+    localStorage.setItem(closeStatusStorageKey(), String(isClosed))
+  } catch {
+    // localStorage 접근 불가 환경에서는 메모리 상태만 사용
+  }
+}
 
 function formatPaidAtTime(iso) {
   if (!iso) return ''
@@ -284,6 +306,7 @@ function toggleStoreStatus() {
     showCloseModal.value = true
   } else if (confirm('새로운 영업을 시작하시겠습니까?\n기존 매출 및 결제 내역이 모두 초기화됩니다.')) {
     Object.assign(salesData.value, { isClosed: false, total: 0, card: 0, cash: 0, count: 0 })
+    saveClosedStatus(false)
     paymentHistory.value = []
     showToastMsg('새로운 영업이 시작되었습니다.')
   }
@@ -296,6 +319,7 @@ async function confirmClose() {
     const { data } = await postPosClose()
     const closeMessage = data?.result?.message
     salesData.value.isClosed = true
+    saveClosedStatus(true)
     showCloseModal.value = false
     await loadTodaySettlement()
     showToastMsg(closeMessage || '영업이 마감되었습니다. AI 자동 발주서가 생성되었습니다.')
@@ -316,6 +340,7 @@ watch(
 )
 
 onMounted(() => {
+  salesData.value.isClosed = loadClosedStatus()
   updateTime()
   timer = setInterval(updateTime, 1000)
   loadMenusAndCategories()

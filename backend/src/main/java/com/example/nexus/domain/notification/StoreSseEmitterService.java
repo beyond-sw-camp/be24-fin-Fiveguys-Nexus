@@ -15,6 +15,9 @@ public class StoreSseEmitterService {
 
     private final Map<Long, List<SseEmitter>> emitterMap = new ConcurrentHashMap<>();
 
+    /**
+     * SSE 연결 생성 (가맹점별, 타임아웃: 30분)
+     */
     public SseEmitter subscribe(Long storeIdx) {
         SseEmitter emitter = new SseEmitter(30 * 60 * 1000L);
 
@@ -42,6 +45,9 @@ public class StoreSseEmitterService {
         return emitter;
     }
 
+    /**
+     * 특정 가맹점 구독자에게 알림 전송
+     */
     public void send(Long storeIdx, StoreNotificationDto.ListRes notification) {
         List<SseEmitter> emitters = emitterMap.get(storeIdx);
         if (emitters == null) return;

@@ -39,7 +39,7 @@ public class Store {
     private String business;
 
     @Column(nullable = false)
-    private Integer postcode;
+    private String postcode;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

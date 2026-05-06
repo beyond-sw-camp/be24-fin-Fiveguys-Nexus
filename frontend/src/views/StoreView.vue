@@ -1,7 +1,7 @@
 <script setup>
 import { ref, reactive, onMounted, computed, nextTick } from 'vue'
 import { Plus, Search, FileText, ChevronDown } from 'lucide-vue-next'
-import { getStoreList , getStoreDetailList, getPresignedUrl, postNewRegister} from '@/api/store/index.js'
+import { getStoreList , getStoreDetailList, getPresignedUrl, postNewRegister, putStoreUpdate} from '@/api/store/index.js'
 import axios from 'axios'
 
 
@@ -27,7 +27,6 @@ const storeListRes = async (page = 0)=>{
   }
 
   const res = await getStoreList(searchReq, page, pagination.currentSize)
-  console.log(res.data.result)
   storesList.splice(0, storesList.length, ...res.data.result.storeList)
 
 
@@ -150,6 +149,10 @@ async function openModal(idx =! null) {
     Object.assign(form, getInitialForm());
     // v-model로 연결된 form에 DB에서 가져온 값을 세팅 (화면에 바로 보임)
     Object.assign(form, detailData);
+    if (detailData.filePath) {
+      // S3 경로나 파일 경로에서 마지막 '/' 뒤의 이름만 가져옵니다.
+      form.fileName = detailData.filePath.split('/').pop();
+    }
 
     editTarget.value = detailData; // 나중에 수정 API 보낼 때 쓸 idx가 담긴 원본
   } else {
@@ -196,29 +199,49 @@ async function uploadFileToS3() {
 async function saveStore() {
   try {
     // [핵심 추가] 파일을 선택했다면 등록/수정 전에 S3에 먼저 올립니다.
-    const newFilePath = await uploadFileToS3();
-    if (newFilePath) {
-      form.filePath = newFilePath; // 업로드된 경로를 form에 세팅
-    }
+    let finalFilePath = form.filePath; // 기본은 기존 경로 유지
 
+    if (selectedFile.value) {
+      // 새 파일이 선택되었다면 S3에 업로드하고 새 경로를 받아옴
+      const newS3Path = await uploadFileToS3();
+      if (newS3Path) {
+        finalFilePath = newS3Path;
+      }
+    }
     // --- 수정 로직 ---
     if (editTarget.value) {
-      // form.value가 아니라 reactive 객체인 form 자체를 비교해야 합니다.
-      const isNoChange = JSON.stringify(editTarget.value) === JSON.stringify(form);
+      const updateData = {
+        storeName: form.storeName,
+        ownerName: form.ownerName,
+        ownerEmail: form.ownerEmail,
+        postcode: form.postcode,
+        address: form.address,
+        addressDetail: form.addressDetail,
+        closedAt: (form.closedAt === "운영 중" || !form.closedAt) ? null : form.closedAt + "T00:00:00", // 날짜 형식 주의
+        filePath: finalFilePath // 새 경로 또는 기존 경로[cite: 14]
+      };
 
-      if (isNoChange) {
-        alert("수정된 내용이 없습니다.");
+      // [핵심] 백엔드 수정 API 호출 (StoreController_11.java의 @PutMapping 연동)
+      const res = await putStoreUpdate(editTarget.value.idx, updateData);
+
+      if (res.data.code === 2000) {
+        alert("가맹점 정보가 수정되었습니다.");
+        await storeListRes(pagination.currentPage); // 현재 페이지 목록 새로고침[cite: 14]
         showModal.value = false;
-        return;
       }
-
-      // TODO: 수정 API가 준비되면 여기에 호출 로직 추가
-      alert("수정 완료 (API 연동 필요)");
     }
     // --- 등록 로직 ---
     else {
       // form 내용을 복사하여 전송용 DTO 생성
-      const storeRegDto = { ...form };
+      const storeRegDto = {
+        storeName: form.storeName,
+        ownerEmail: form.ownerEmail,
+        postcode: form.postcode,
+        address: form.address,
+        addressDetail: form.addressDetail,
+        business: form.business,
+        filePath: finalFilePath
+      };
 
       const res = await postNewRegister(storeRegDto);
 
@@ -233,9 +256,31 @@ async function saveStore() {
     selectedFile.value = null; // 파일 변수 초기화
 
   } catch (error) {
-    alert("처리 중 오류 발생: " + error.message);
+    // 백엔드에서 보낸 상세 에러 메시지 추출
+    const serverMessage = error.response?.data?.message || error.message;
+    const serverCode = error.response?.data?.code || "Unknown Code";
+
+    console.error("서버 에러 상세:", error.response?.data);
+    alert(`등록 실패 (${serverCode}): ${serverMessage}`);
   }
 }
+// <script setup> 내부에 추가
+const isFormValid = computed(() => {
+  // 필수 항목들이 비어있는지 확인
+  const fields = [
+    form.storeName,
+    form.ownerEmail,
+    form.address,
+    form.business,
+    form.postcode,
+    form.fileName
+  ];
+
+  // 모든 필드에 값이 있고, 사업자 번호가 12자리(하이픈 포함 000-00-00000)인지 확인
+  return fields.every(field => field && String(field).trim() !== '') &&
+    form.business.length === 12;
+});
+
 
 // S3 미리보기 (뷰어)
 function viewPdf() {
@@ -248,7 +293,6 @@ function viewPdf() {
 
 // S3 다운로드
 async function downloadPdf() {
-  console.log(detailTarget.value)
   const filePath = detailTarget.value?.filePath;
   if (!filePath) return alert('파일이 없습니다.');
 
@@ -298,10 +342,7 @@ const sample6_execDaumPostcode = () => {
         addr = data.jibunAddress;
       }
 
-      // [핵심] Vue의 reactive 객체에 직접 값을 할당합니다.
       form.address = addr;
-
-      // 만약 우편번호도 저장하고 싶다면 form에 추가 후 할당하세요.
       form.postcode = data.zonecode;
 
       // 상세주소 입력창으로 포커스 이동
@@ -675,8 +716,14 @@ onMounted(() => {
           <div class="flex gap-3 pt-4">
             <button type="button" @click="showModal = false"
                     class="flex-1 py-3 rounded-lg border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-50 transition-colors cursor-pointer">취소</button>
-            <button type="submit"
-                    class="flex-1 py-3 rounded-lg bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d] transition-colors shadow-sm cursor-pointer">저장</button>
+            <button
+              type="submit"
+              :disabled="!isFormValid"
+              :class="[!isFormValid ? 'bg-gray-300 cursor-not-allowed' : 'bg-[#F37321] hover:bg-[#e0661d] cursor-pointer']"
+              class="flex-1 py-3 rounded-lg text-white text-sm font-bold transition-colors shadow-sm"
+            >
+              저장
+            </button>
           </div>
         </form>
       </div>

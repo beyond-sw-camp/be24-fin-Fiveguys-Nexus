@@ -67,4 +67,11 @@ public class MenuController {
         menuService.menuUpdate(menuIdx, dto);
         return ResponseEntity.ok(BaseResponse.success("성공"));
     }
+
+    // 메뉴 삭제
+    @PutMapping("/delete/{menuIdx}")
+    public ResponseEntity menuDelete(@PathVariable(name = "menuIdx") Long menuIdx){
+        menuService.menuDelete(menuIdx);
+        return ResponseEntity.ok(BaseResponse.success("성공"));
+    }
 }

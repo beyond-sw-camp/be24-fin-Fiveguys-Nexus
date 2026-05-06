@@ -27,7 +27,6 @@ const storeListRes = async (page = 0)=>{
   }
 
   const res = await getStoreList(searchReq, page, pagination.currentSize)
-  console.log(res.data.result)
   storesList.splice(0, storesList.length, ...res.data.result.storeList)
 
 
@@ -147,7 +146,6 @@ async function openModal(idx =! null) {
     // [수정 모드]
     const res = await getStoreDetailList(idx);
     const detailData = res.data.result;
-    console.log(detailData)
     Object.assign(form, getInitialForm());
     // v-model로 연결된 form에 DB에서 가져온 값을 세팅 (화면에 바로 보임)
     Object.assign(form, detailData);
@@ -236,8 +234,14 @@ async function saveStore() {
     else {
       // form 내용을 복사하여 전송용 DTO 생성
       const storeRegDto = {
-        ...form,
-        filePath: finalFilePath };
+        storeName: form.storeName,
+        ownerEmail: form.ownerEmail,
+        postcode: form.postcode,
+        address: form.address,
+        addressDetail: form.addressDetail,
+        business: form.business,
+        filePath: finalFilePath
+      };
 
       const res = await postNewRegister(storeRegDto);
 
@@ -289,7 +293,6 @@ function viewPdf() {
 
 // S3 다운로드
 async function downloadPdf() {
-  console.log(detailTarget.value)
   const filePath = detailTarget.value?.filePath;
   if (!filePath) return alert('파일이 없습니다.');
 

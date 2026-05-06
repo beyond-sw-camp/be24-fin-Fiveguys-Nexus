@@ -51,5 +51,5 @@ public interface StoreRepository extends JpaRepository<Store,Long> {
     // 검색 없이 '입점'만 조회할 때: 최신 등록순 정렬[cite: 7]
     Page<Store> findByIsDeletedFalseOrderByCreatedAtDesc(Pageable pageable); // 입점(false)
     // 검색 없이 '폐점'만 조회할 때: 최신 폐업일순 또는 등록순 정렬[cite: 7]
-    Page<Store> findByIsDeletedTrueOrderByCreatedAtDesc(Pageable pageable);
+    Page<Store> findByIsDeletedTrueOrderByClosedAtDesc(Pageable pageable);
 }

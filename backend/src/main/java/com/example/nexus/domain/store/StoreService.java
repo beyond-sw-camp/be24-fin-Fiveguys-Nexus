@@ -57,7 +57,7 @@ public class StoreService {
         } else if ("CLOSED".equals(status)) {
             result = hasKeyword
                     ? storeRepository.findByStatusAndKeyword(true, keyword, pageRequest)
-                    : storeRepository.findByIsDeletedTrueOrderByCreatedAtDesc(pageRequest);
+                    : storeRepository.findByIsDeletedTrueOrderByClosedAtDesc(pageRequest);
         } else {
             result = hasKeyword
                     ? storeRepository.findByKeywordAll(keyword,pageRequest)

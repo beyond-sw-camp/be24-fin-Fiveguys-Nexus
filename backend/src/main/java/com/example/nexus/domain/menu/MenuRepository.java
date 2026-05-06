@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 public interface MenuRepository extends JpaRepository<Menu, Long> {
-    // 가맹점명 중복 여부
+    // 메뉴명 중복 여부
     boolean existsByMenuName(String menuName);
 
     // 메뉴 이름 중복 확인

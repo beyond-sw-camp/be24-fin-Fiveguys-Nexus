@@ -157,4 +157,13 @@ public class MenuService {
             menu.getMenuItemList().add(newItem);
         }
     }
+
+    @Transactional
+    public void menuDelete(Long menuIdx) {
+        // 메뉴 삭제 여부 확인
+        Menu menu = menuRepository.findByIdxAndIsDeletedFalse(menuIdx)
+                .orElseThrow(() -> new BaseException(NOT_FOUND_MENU));
+
+        menu.deleteTrue();
+    }
 }

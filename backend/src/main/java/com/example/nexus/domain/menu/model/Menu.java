@@ -44,4 +44,8 @@ public class Menu {
         this.imgPath = imgPath;
         this.menuCategory = category;
     }
+
+    public void deleteTrue() {
+        this.isDeleted = true;
+    }
 }

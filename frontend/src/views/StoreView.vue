@@ -15,8 +15,17 @@ const statusOptions = ['전체', '입점', '폐점']
 const storesList = reactive([])
 
 const storeListRes = async ()=>{
-  const res = await getStoreList()
-  storesList.push(...res.data.result)
+  const searchReq = {
+    keyword: searchQuery.value, // ref로 선언된 검색어
+    status: filterStatus.value === '전체' ? null : filterStatus.value // '전체'일 때는 null로 보내기
+  }
+
+  const page = 0;
+  const size = 10;
+
+  const res = await getStoreList(searchReq,page,size)
+  console.log(res.data)
+  storesList.push(...res.data.result.storeList)
 }
 
 const filteredStores = computed(() => {

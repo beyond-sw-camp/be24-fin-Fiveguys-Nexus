@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 
 const open = ref(false)
+const listRef = ref(null)
 const notifStore = useNotificationStore()
 const auth = useAuthStore()
 const router = useRouter()
@@ -49,6 +50,13 @@ function typeColor(type) {
 
 function typeConfig(type) {
   return notifStore.typeConfig[type] ?? { label: '알림', color: 'text-gray-600', bg: 'bg-gray-50', border: 'border-gray-200' }
+}
+
+function onScroll(e) {
+  const { scrollTop, scrollHeight, clientHeight } = e.target
+  if (scrollHeight - scrollTop - clientHeight < 50) {
+    notifStore.loadMore()
+  }
 }
 </script>
 
@@ -96,7 +104,7 @@ function typeConfig(type) {
         </div>
 
         <!-- Notification list -->
-        <div class="max-h-[420px] overflow-y-auto divide-y divide-gray-50">
+        <div ref="listRef" @scroll="onScroll" class="max-h-[420px] overflow-y-auto divide-y divide-gray-50">
           <div v-if="notifStore.notifications.length === 0" class="px-4 py-10 text-center text-gray-400 text-sm">
             새 알림이 없습니다.
           </div>
@@ -132,6 +140,11 @@ function typeConfig(type) {
             <div class="shrink-0 self-center">
               <div v-if="!n.isRead" class="w-1.5 h-1.5 rounded-full" :class="accentBadgeClass"></div>
             </div>
+          </div>
+
+          <!-- Loading indicator -->
+          <div v-if="notifStore.loading" class="px-4 py-3 text-center text-xs text-gray-400">
+            불러오는 중...
           </div>
         </div>
 

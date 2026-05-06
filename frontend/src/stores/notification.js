@@ -10,22 +10,26 @@ export const useNotificationStore = defineStore('notification', () => {
   const currentType = ref(null)
   let eventSource = null
 
+  const loading = ref(false)
+
   // 알림 목록 조회 (첫 페이지)
-  async function fetchNotifications(type = null) {
+  async function fetchNotifications(type = null, size = 10) {
     currentType.value = type
     currentPage.value = 0
-    const res = await notificationApi.getNotifications(type, 0, 20)
+    const res = await notificationApi.getNotifications(type, 0, size)
     notifications.value = res.data.result.content
     hasNext.value = res.data.result.hasNext
   }
 
   // 알림 목록 추가 로드 (다음 페이지)
-  async function loadMore() {
-    if (!hasNext.value) return
+  async function loadMore(size = 10) {
+    if (!hasNext.value || loading.value) return
+    loading.value = true
     currentPage.value++
-    const res = await notificationApi.getNotifications(currentType.value, currentPage.value, 20)
+    const res = await notificationApi.getNotifications(currentType.value, currentPage.value, size)
     notifications.value.push(...res.data.result.content)
     hasNext.value = res.data.result.hasNext
+    loading.value = false
   }
 
   // 미읽음 개수 조회
@@ -98,6 +102,7 @@ export const useNotificationStore = defineStore('notification', () => {
     notifications,
     unreadCount,
     hasNext,
+    loading,
     fetchNotifications,
     loadMore,
     fetchUnreadCount,

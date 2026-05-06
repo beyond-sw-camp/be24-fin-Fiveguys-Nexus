@@ -45,6 +45,7 @@
 
     <PosCloseStoreModal
       :open="showCloseModal"
+      :loading="isClosingStore"
       @close="showCloseModal = false"
       @confirm="confirmClose" />
   </div>
@@ -70,6 +71,7 @@ const selectedCategory = ref('전체')
 const searchQuery = ref('')
 const showPaymentModal = ref(false)
 const showCloseModal = ref(false)
+const isClosingStore = ref(false)
 const currentTime = ref('')
 const toast = ref({ show: false, message: '' })
 const loadingMenus = ref(true)
@@ -90,6 +92,28 @@ const salesData = ref({
 })
 
 const paymentHistory = ref([])
+const CLOSE_STATUS_STORAGE_PREFIX = 'nexus_pos_closed_'
+
+function closeStatusStorageKey() {
+  const scope = auth.user?.email || auth.user?.storeId || 'default'
+  return `${CLOSE_STATUS_STORAGE_PREFIX}${scope}`
+}
+
+function loadClosedStatus() {
+  try {
+    return localStorage.getItem(closeStatusStorageKey()) === 'true'
+  } catch {
+    return false
+  }
+}
+
+function saveClosedStatus(isClosed) {
+  try {
+    localStorage.setItem(closeStatusStorageKey(), String(isClosed))
+  } catch {
+    // localStorage 접근 불가 환경에서는 메모리 상태만 사용
+  }
+}
 
 function formatPaidAtTime(iso) {
   if (!iso) return ''
@@ -166,6 +190,14 @@ function showToastMsg(msg) {
   toast.value = { show: true, message: msg }
   clearTimeout(toastTimer)
   toastTimer = setTimeout(() => { toast.value.show = false }, 3000)
+}
+
+function extractApiErrorMessage(error, fallback = '영업 마감 처리에 실패했습니다. 잠시 후 다시 시도해 주세요.') {
+  const message = error?.response?.data?.message
+  if (typeof message === 'string' && message.trim()) {
+    return message
+  }
+  return fallback
 }
 
 function updateTime() {
@@ -274,21 +306,29 @@ function toggleStoreStatus() {
     showCloseModal.value = true
   } else if (confirm('새로운 영업을 시작하시겠습니까?\n기존 매출 및 결제 내역이 모두 초기화됩니다.')) {
     Object.assign(salesData.value, { isClosed: false, total: 0, card: 0, cash: 0, count: 0 })
+    saveClosedStatus(false)
     paymentHistory.value = []
     showToastMsg('새로운 영업이 시작되었습니다.')
   }
 }
 
 async function confirmClose() {
+  if (isClosingStore.value) return
   try {
-    await postPosClose()
+    isClosingStore.value = true
+    const { data } = await postPosClose()
+    const closeMessage = data?.result?.message
     salesData.value.isClosed = true
+    saveClosedStatus(true)
     showCloseModal.value = false
-    showToastMsg('영업이 마감되었습니다. AI 자동 발주서가 생성되었습니다.')
+    await loadTodaySettlement()
+    showToastMsg(closeMessage || '영업이 마감되었습니다. AI 자동 발주서가 생성되었습니다.')
   } catch (e) {
     console.error(e)
     showCloseModal.value = false
-    showToastMsg('영업 마감 처리에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+    showToastMsg(extractApiErrorMessage(e))
+  } finally {
+    isClosingStore.value = false
   }
 }
 
@@ -300,6 +340,7 @@ watch(
 )
 
 onMounted(() => {
+  salesData.value.isClosed = loadClosedStatus()
   updateTime()
   timer = setInterval(updateTime, 1000)
   loadMenusAndCategories()

@@ -235,7 +235,9 @@ async function saveStore() {
     // --- 등록 로직 ---
     else {
       // form 내용을 복사하여 전송용 DTO 생성
-      const storeRegDto = { ...form };
+      const storeRegDto = {
+        ...form,
+        filePath: finalFilePath };
 
       const res = await postNewRegister(storeRegDto);
 
@@ -250,7 +252,12 @@ async function saveStore() {
     selectedFile.value = null; // 파일 변수 초기화
 
   } catch (error) {
-    alert("처리 중 오류 발생: " + error.message);
+    // 백엔드에서 보낸 상세 에러 메시지 추출
+    const serverMessage = error.response?.data?.message || error.message;
+    const serverCode = error.response?.data?.code || "Unknown Code";
+
+    console.error("서버 에러 상세:", error.response?.data);
+    alert(`등록 실패 (${serverCode}): ${serverMessage}`);
   }
 }
 // <script setup> 내부에 추가

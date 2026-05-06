@@ -12,13 +12,16 @@ export const useNotificationStore = defineStore('notification', () => {
 
   const loading = ref(false)
 
+  const currentIsRead = ref(undefined)
+
   // 알림 목록 조회 (첫 페이지)
-  async function fetchNotifications(type = null, size = 10) {
+  async function fetchNotifications(type = null, size = 10, isRead = undefined) {
     currentType.value = type
+    currentIsRead.value = isRead
     currentPage.value = 0
-    const res = await notificationApi.getNotifications(type, 0, size)
+    const res = await notificationApi.getNotifications(type, 0, size, isRead)
     notifications.value = res.data.result.content
-    hasNext.value = res.data.result.hasNext
+    hasNext.value = !res.data.result.last
   }
 
   // 알림 목록 추가 로드 (다음 페이지)
@@ -26,9 +29,9 @@ export const useNotificationStore = defineStore('notification', () => {
     if (!hasNext.value || loading.value) return
     loading.value = true
     currentPage.value++
-    const res = await notificationApi.getNotifications(currentType.value, currentPage.value, size)
+    const res = await notificationApi.getNotifications(currentType.value, currentPage.value, size, currentIsRead.value)
     notifications.value.push(...res.data.result.content)
-    hasNext.value = res.data.result.hasNext
+    hasNext.value = !res.data.result.last
     loading.value = false
   }
 

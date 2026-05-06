@@ -54,3 +54,6 @@ logging:
             required: true
           auth: true
           timeout: 5000
+
+portone:
+  portone_secret: ${PORTONE_SECRET}

@@ -1,6 +1,7 @@
 package com.example.nexus.domain.notification.model;
 
 import com.example.nexus.common.enums.NotificationType;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -15,6 +16,7 @@ public class HeadNotificationDto {
         private NotificationType type;
         private String title;
         private String content;
+        @JsonProperty("isRead")
         private boolean isRead;
         private LocalDateTime createdAt;
 

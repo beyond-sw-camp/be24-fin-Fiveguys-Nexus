@@ -1,20 +1,18 @@
-package com.example.nexus.domain.store.model;
+package com.example.nexus.domain.notification.model;
 
 import com.example.nexus.common.enums.NotificationType;
+import com.example.nexus.domain.store.model.Store;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "store_notification")
-@Setter
 @Getter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class StoreNotification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,6 +23,12 @@ public class StoreNotification {
     @Column(name = "type", nullable = false)
     private NotificationType type;
 
+    @Column(name = "title", nullable = false)
+    private String title;
+
+    @Column(name = "content")
+    private String content;
+
     @Column(name = "is_read", nullable = false)
     private boolean isRead;
 
@@ -34,4 +38,8 @@ public class StoreNotification {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_idx", nullable = false)
     private Store store;
+
+    public void markAsRead() {
+        this.isRead = true;
+    }
 }

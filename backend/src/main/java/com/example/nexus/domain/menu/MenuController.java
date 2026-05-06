@@ -52,4 +52,12 @@ public class MenuController {
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 
+    // 메뉴 등록
+    @PostMapping("/new/register")
+    public ResponseEntity menuRegister(@RequestBody MenuDto.MenuRegReq dto){
+        menuService.menuRegister(dto);
+
+        return ResponseEntity.ok(BaseResponse.success("성공"));
+    }
+
 }

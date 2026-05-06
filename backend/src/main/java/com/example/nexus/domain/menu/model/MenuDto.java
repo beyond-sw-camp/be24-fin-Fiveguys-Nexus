@@ -1,11 +1,18 @@
 package com.example.nexus.domain.menu.model;
 
+import com.example.nexus.common.exception.BaseException;
+import com.example.nexus.domain.product.model.Product;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Page;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+
+import static com.example.nexus.common.model.BaseResponseStatus.*;
 
 public class MenuDto {
 
@@ -106,6 +113,63 @@ public class MenuDto {
             return MenuCategoryRes.builder()
                     .menuCategoryName(entity.getMenuCategoryName())
                     .build();
+        }
+    }
+
+    @Getter
+    public static class MenuItemReq{
+        private Integer quantity;
+        private String menuUnit;
+        private Long productIdx;
+
+        public MenuItem toEntity(Menu menu, Product product) {
+            return MenuItem.builder()
+                    .quantity(this.quantity)
+                    .menuUnit(this.menuUnit)
+                    .product(product) // 조회된 진짜 객체 주입
+                    .menu(menu)
+                    .build();
+        }
+    }
+
+    // 메뉴 등록
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class MenuRegReq{
+        private String menuName;
+        private Integer price;
+        private String imgPath;
+        private Long menuCategoryIdx;
+        private List<MenuItemReq> menuItemList;
+
+        public Menu toEntity(MenuCategory category, List<Product> products) {
+            Menu menu = Menu.builder()
+                    .menuName(this.menuName)
+                    .price(this.price)
+                    .imgPath(this.imgPath)
+                    .menuCategory(category) // 주입받은 카테고리 설정
+                    .build();
+
+            if (this.menuItemList != null) {
+                Map<Long, Product> productMap = products.stream()
+                        .collect(Collectors.toMap(Product::getIdx, p -> p));
+
+                for (MenuItemReq itemDto : this.menuItemList) {
+                    Product product = productMap.get(itemDto.getProductIdx());
+                    if (product == null) {
+                        throw new BaseException(NOT_FOUND_PRODUCT);
+                    }
+
+                    // 1. MenuItem 생성 시 'menu' 객체를 넘겨주어 자식에게 부모를 알려줌
+                    MenuItem menuItem = itemDto.toEntity(menu, product);
+
+                    // 2. 부모 객체의 리스트에도 자식을 추가 (양방향 연결)
+                    menu.getMenuItemList().add(menuItem);
+                }
+            }
+            return menu;
         }
     }
 }

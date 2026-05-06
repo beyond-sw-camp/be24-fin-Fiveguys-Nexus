@@ -1,25 +1,34 @@
 package com.example.nexus.domain.menu;
 
+import com.example.nexus.common.exception.BaseException;
 import com.example.nexus.domain.menu.model.Menu;
 import com.example.nexus.domain.menu.model.MenuCategory;
 import com.example.nexus.domain.menu.model.MenuDto;
+import com.example.nexus.domain.product.ProductRepository;
+import com.example.nexus.domain.product.model.Product;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 import java.time.Duration;
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static com.example.nexus.common.model.BaseResponseStatus.*;
 
 @Service
 @RequiredArgsConstructor
 public class MenuService {
     private final MenuRepository menuRepository;
     private final MenuCategoryRepository menuCategoryRepository;
+    private final ProductRepository productRepository;
 
     private final S3Presigner s3Presigner;
 
@@ -79,5 +88,34 @@ public class MenuService {
     }
     private String createPath(String fileName) {
         return UUID.randomUUID().toString() + "-nexus-" + fileName;
+    }
+
+    @Transactional
+    public void menuRegister(MenuDto.MenuRegReq dto) {
+
+        if (menuRepository.existsByMenuName(dto.getMenuName())) {
+            throw new BaseException(DUPLICATE_MENU_NAME);
+        }
+
+        // 카테고리 존재 여부 확인
+        MenuCategory category = menuCategoryRepository.findById(dto.getMenuCategoryIdx())
+                .orElseThrow(() -> new BaseException(NOT_FOUND_CATEGORY));
+
+
+        List<Long> productIds = Collections.emptyList();
+        List<Product> products = Collections.emptyList();
+
+        if (dto.getMenuItemList() != null && !dto.getMenuItemList().isEmpty()) {
+            productIds = dto.getMenuItemList().stream()
+                    .map(MenuDto.MenuItemReq::getProductIdx).toList();
+            products = productRepository.findAllById(productIds);
+        }
+
+
+        // 3. DTO의 toEntity 호출 (조회한 객체들을 전달)
+        Menu menu = dto.toEntity(category, products);
+
+        // 4. 저장
+        menuRepository.save(menu);
     }
 }

@@ -12,7 +12,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.*;
 
@@ -21,6 +20,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "pos_pay")
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -43,5 +43,8 @@ public class PosPay {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_idx", nullable = false)
     private Store store;
+
+    @Column(name = "store_inventory_deducted_at")
+    private LocalDateTime storeInventoryDeductedAt;
 
 }

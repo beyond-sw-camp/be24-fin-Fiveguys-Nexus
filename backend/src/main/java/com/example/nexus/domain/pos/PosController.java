@@ -1,6 +1,9 @@
 package com.example.nexus.domain.pos;
 
+import com.example.nexus.common.exception.BaseException;
 import com.example.nexus.common.model.BaseResponse;
+import com.example.nexus.common.model.BaseResponseStatus;
+import com.example.nexus.domain.pos.model.PosCloseDto;
 import com.example.nexus.domain.pos.model.PosPayDto;
 import com.example.nexus.domain.pos.model.PosStoreInventoryDto;
 import com.example.nexus.domain.user.model.AuthUserDetails;
@@ -59,15 +62,18 @@ public class PosController {
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 
-    /**
-     * POS 영업 마감 및 AI 자동 발주서 생성
-     *
-     * @param userDetails 인증된 가맹점주 정보
-     * @return ResponseEntity 자동 발주서 생성 결과 메시지
-     */
+    // [가맹점] POS 영업 마감: 당일 결제 기준 store_inventory 차감 후 자동 발주
     @PostMapping("/close")
-    public ResponseEntity<BaseResponse<String>> close(@AuthenticationPrincipal AuthUserDetails userDetails) {
+    public ResponseEntity<BaseResponse<PosCloseDto.CloseRes>> close(@AuthenticationPrincipal AuthUserDetails userDetails) {
+        PosCloseDto.CloseRes res = posService.deductOnClose(userDetails.getIdx());
         autoOrderService.generateAutoOrder(userDetails.getIdx());
-        return ResponseEntity.ok(BaseResponse.success("자동 발주서가 생성되었습니다."));
+        PosCloseDto.CloseRes body = PosCloseDto.CloseRes.builder()
+                .storeIdx(res.getStoreIdx())
+                .processedPayCount(res.getProcessedPayCount())
+                .deductedProductKinds(res.getDeductedProductKinds())
+                .closedAt(res.getClosedAt())
+                .message(res.getMessage() + " 자동 발주를 실행했습니다.")
+                .build();
+        return ResponseEntity.ok(BaseResponse.success(body));
     }
 }

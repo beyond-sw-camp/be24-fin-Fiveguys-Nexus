@@ -52,4 +52,10 @@ public class ProductController {
         List<ProductDto.ListRes> result = productService.searchProduct(productName);
         return ResponseEntity.ok(result);
     }
+
+    @GetMapping("/store/{storeIdx}")
+    public ResponseEntity<List<ProductDto.ListRes>> getStoreProductList(@PathVariable Long storeIdx) {
+        List<ProductDto.ListRes> list = productService.findProductsByStore(storeIdx);
+        return ResponseEntity.ok(list);
+    }
 }

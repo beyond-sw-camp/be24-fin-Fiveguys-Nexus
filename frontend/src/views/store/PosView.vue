@@ -45,6 +45,7 @@
 
     <PosCloseStoreModal
       :open="showCloseModal"
+      :loading="isClosingStore"
       @close="showCloseModal = false"
       @confirm="confirmClose" />
   </div>
@@ -70,6 +71,7 @@ const selectedCategory = ref('전체')
 const searchQuery = ref('')
 const showPaymentModal = ref(false)
 const showCloseModal = ref(false)
+const isClosingStore = ref(false)
 const currentTime = ref('')
 const toast = ref({ show: false, message: '' })
 const loadingMenus = ref(true)
@@ -280,15 +282,22 @@ function toggleStoreStatus() {
 }
 
 async function confirmClose() {
+  if (isClosingStore.value) return
   try {
-    await postPosClose()
+    isClosingStore.value = true
+    const { data } = await postPosClose()
+    const closeMessage = data?.result?.message
     salesData.value.isClosed = true
     showCloseModal.value = false
-    showToastMsg('영업이 마감되었습니다. AI 자동 발주서가 생성되었습니다.')
+    await loadTodaySettlement()
+    showToastMsg(closeMessage || '영업이 마감되었습니다. AI 자동 발주서가 생성되었습니다.')
   } catch (e) {
     console.error(e)
     showCloseModal.value = false
-    showToastMsg('영업 마감 처리에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+    const apiMessage = e?.response?.data?.message
+    showToastMsg(apiMessage || '영업 마감 처리에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+  } finally {
+    isClosingStore.value = false
   }
 }
 

@@ -31,7 +31,6 @@ public class Menu {
     private boolean isDeleted = false;
 
     @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Setter
     @Builder.Default
     private List<MenuItem> menuItemList = new ArrayList<>();
 

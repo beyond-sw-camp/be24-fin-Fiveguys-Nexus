@@ -2,6 +2,7 @@ package com.example.nexus.domain.menu;
 
 import com.example.nexus.common.model.BaseResponse;
 import com.example.nexus.domain.menu.model.MenuDto;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -54,7 +55,7 @@ public class MenuController {
 
     // 메뉴 등록
     @PostMapping("/new/register")
-    public ResponseEntity menuRegister(@RequestBody MenuDto.MenuRegReq dto){
+    public ResponseEntity menuRegister(@Valid @RequestBody MenuDto.MenuRegReq dto){
         menuService.menuRegister(dto);
 
         return ResponseEntity.ok(BaseResponse.success("성공"));

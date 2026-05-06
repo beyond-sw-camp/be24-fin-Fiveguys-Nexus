@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { Bell } from 'lucide-vue-next'
 import { useNotificationStore } from '@/stores/notification'
 
@@ -15,9 +15,6 @@ const tabs = [
 
 const activeTab = ref(null)
 
-onMounted(() => {
-  store.fetchNotifications()
-})
 
 async function switchTab(type) {
   activeTab.value = type

@@ -13,7 +13,7 @@ TRUNCATE TABLE pos_pay;
 TRUNCATE TABLE pos_store_inventory;
 TRUNCATE TABLE store_notification;
 TRUNCATE TABLE head_notification;
-TRUNCATE TABLE head_income;
+TRUNCATE TABLE settlement;
 TRUNCATE TABLE news_summary;
 TRUNCATE TABLE waste_log;
 TRUNCATE TABLE report;
@@ -1067,7 +1067,7 @@ INSERT INTO news_summary (store_idx, summary_date, target, summary_title, summar
 -- ============================================================
 -- 18. HeadIncome (본사 수익)
 -- ============================================================
-INSERT INTO head_income (store_idx, orders_idx, price, status) VALUES
+INSERT INTO settlement (store_idx, orders_idx, price, status) VALUES
 (1, 1, 310000, true),
 (1, 2, 180000, true),
 (1, 3, 106000, false),

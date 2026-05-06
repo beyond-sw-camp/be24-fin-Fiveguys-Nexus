@@ -101,8 +101,8 @@ public class OrdersService {
             spec = spec.and(OrdersSpecification.keywordLike(keyword));
         }
 
-        Danger danger = dangerRepository.findById(1L).orElse(null);
-        int period = danger != null ? danger.getPeriod() : 3;
+        int period = dangerRepository.findById(1L)
+                .map(Danger::getPeriod).orElse(3);
 
         return ordersRepository.findAll(spec, pageable).map(orders -> {
             LocalDateTime since = orders.getCreatedAt().minusMonths(period);
@@ -222,9 +222,10 @@ public class OrdersService {
      * 예: 평균 10개, 이번 30개, 기준 200% → (30-10)*100/10 = 200% → 이상 발주
      */
     private boolean evaluateDanger(Long storeIdx, int totalQty, LocalDateTime baseTime, Long excludeIdx) {
-        Danger danger = dangerRepository.findById(1L).orElse(null);
-        int dangerRatio = danger != null ? danger.getRatio() : 200;
-        int period = danger != null ? danger.getPeriod() : 3;
+        Danger danger = dangerRepository.findById(1L)
+                .orElse(Danger.builder().ratio(200).period(3).build());
+        int dangerRatio = danger.getRatio();
+        int period = danger.getPeriod();
 
         LocalDateTime since = baseTime.minusMonths(period);
         Integer avgQty = ordersRepository.findAvgQtyByStoreAndPeriod(storeIdx, since, excludeIdx);

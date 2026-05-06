@@ -49,10 +49,6 @@ const rejectDangerOrder = (ordersIdx) => {
   return api.put(`/orders/${ordersIdx}/reject`)
 }
 
-const getStoreOrderList = () => {
-  return api.get('/orders/store/list')
-}
-
 const getStoreOrderListPaged = (page = 0, size = 10) => {
   return api.get('/orders/store/list/paged', { params: { page, size } })
 }
@@ -94,7 +90,6 @@ export default {
   approveAllConfirmed,
   approveDangerOrder,
   rejectDangerOrder,
-  getStoreOrderList,
   getStoreOrderListPaged,
   getStorePendingOrders,
   confirmStoreOrder,

@@ -37,6 +37,7 @@ export const productPrices = {
 }
 
 export const ORDER_STATUS_LABEL = {
+  WAITING: '제안중',
   CONFIRMED: '확정',
   APPROVE: '승인',
   REJECT: '거절',
@@ -50,6 +51,7 @@ export const ORDER_TYPE_LABEL = {
 
 export function storeStatusClass(status) {
   const map = {
+    WAITING:   'bg-blue-50 text-blue-600 border border-blue-200',
     CONFIRMED: 'bg-green-50 text-green-700 border border-green-200',
     APPROVE:   'bg-blue-50 text-blue-600 border border-blue-200',
     REJECT:    'bg-red-50 text-red-600 border border-red-200',

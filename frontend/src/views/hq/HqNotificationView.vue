@@ -5,6 +5,7 @@ import { useNotificationStore } from '@/stores/notification'
 
 const store = useNotificationStore()
 
+// 알림 타입별 필터 탭 목록
 const tabs = [
   { label: '전체',        value: null },
   { label: '재고 부족',   value: 'LOW_STOCK' },
@@ -13,22 +14,26 @@ const tabs = [
   { label: '배송 지연',   value: 'DELIVERY_DELAY' },
 ]
 
+// 현재 선택된 탭
 const activeTab = ref(null)
 
-
+// 탭 전환 시 해당 타입의 알림 목록 조회
 async function switchTab(type) {
   activeTab.value = type
   await store.fetchNotifications(type)
 }
 
+// 전체 읽음 처리
 async function handleMarkAllRead() {
   await store.markAllRead()
 }
 
+// 알림 클릭 시 읽음 처리
 async function handleClick(n) {
   if (!n.isRead) await store.markRead(n.idx)
 }
 
+// 알림 타입별 스타일 반환 (fallback 포함)
 function typeConfig(type) {
   return store.typeConfig[type] ?? { label: type, color: 'text-gray-600', bg: 'bg-gray-50', border: 'border-gray-200' }
 }

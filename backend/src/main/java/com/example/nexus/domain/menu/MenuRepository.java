@@ -7,4 +7,8 @@ import java.util.Optional;
 
 public interface MenuRepository extends JpaRepository<Menu, Long> {
     boolean existsByMenuName(String menuName);
+
+    boolean existsByMenuNameAndIdxNot(String menuName, Long idx);
+
+    Optional<Menu> findByIdxAndIsDeletedFalse(Long menuIdx);
 }

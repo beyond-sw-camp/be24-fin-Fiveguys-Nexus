@@ -122,15 +122,14 @@ public class MenuService {
 
     @Transactional
     public void menuUpdate(Long menuIdx, MenuDto.MenuRegReq dto) {
+        Menu menu = menuRepository.findByIdxAndIsDeletedFalse(menuIdx)
+                .orElseThrow(() -> new BaseException(NOT_FOUND_MENU));
 
         // 메뉴명 중복 확인
-        if (menuRepository.existsByMenuName(dto.getMenuName())) {
+        if (menuRepository.existsByMenuNameAndIdxNot(dto.getMenuName(), menuIdx)) {
             throw new BaseException(DUPLICATE_MENU_NAME);
         }
 
-        // 메뉴 존재 여부 확인
-        Menu menu = menuRepository.findById(menuIdx)
-                .orElseThrow(() -> new BaseException(NOT_FOUND_MENU));
 
         // 카테고리 존재 여부 확인
         MenuCategory category = menuCategoryRepository.findById(dto.getMenuCategoryIdx())

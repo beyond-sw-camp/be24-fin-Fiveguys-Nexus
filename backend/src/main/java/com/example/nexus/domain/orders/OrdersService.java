@@ -434,4 +434,9 @@ public class OrdersService {
 
         orders.cancel();
     }
+
+    public List<Orders> findByStoreIdx(Long storeIdx) {
+        return ordersRepository.findAllByStoreIdx(storeIdx);
+    }
+
 }

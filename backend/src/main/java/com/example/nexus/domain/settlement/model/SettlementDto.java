@@ -2,27 +2,26 @@ package com.example.nexus.domain.settlement.model;
 
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
+
+import java.util.List;
 
 public class SettlementDto {
 
     @Getter
     @Builder
     public static class PayReq {
-        @Setter
-        private Long storeIdx;
-        private int month;
+        private Integer paymentPrice;
+        private List<Long> orderIdxList;
     }
 
-    @Builder
     @Getter
-    public static class PayRes {
-        private Long price;
-        private boolean status;
-        private String pgPaymentId;
-        private Long storeIdx;
-        private Long ordersIdx;
+    @Builder
+    public static class VerifyReq {
+        private String paymentIdx;
     }
+
+
+
 
 
 }

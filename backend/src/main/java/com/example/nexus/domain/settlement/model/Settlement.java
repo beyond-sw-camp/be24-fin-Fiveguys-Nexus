@@ -23,17 +23,10 @@ public class Settlement {
     @Column(name = "price", nullable = false)
     private Long price;
 
-    @Column(name = "status", nullable = false)
-    private Boolean status;
+    @Column(name = "paid", nullable = false)
+    private Boolean paid;
 
     @Column(name = "pg_payment_id")
     private String pgPaymentId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "store_idx")
-    private Store store;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "orders_idx", nullable = false)
-    private Orders orders;
 }

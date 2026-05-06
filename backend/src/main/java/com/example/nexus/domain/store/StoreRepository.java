@@ -34,14 +34,22 @@ public interface StoreRepository extends JpaRepository<Store,Long> {
 
     // 전체 조회 시 이름 또는 주소 검색
     @Query("SELECT s FROM Store s WHERE " +
-            "(s.storeName LIKE %:keyword% OR s.address LIKE %:keyword%)")
+            "(s.storeName LIKE %:keyword% OR s.address LIKE %:keyword%) " +
+            "ORDER BY s.isDeleted ASC, s.createdAt DESC")
     Page<Store> findByKeywordAll(@Param("keyword")String keyword, Pageable pageable);
 
     // 특정 상태(isDeleted)이면서 이름 또는 주소 검색
-    @Query("SELECT s FROM Store s WHERE s.isDeleted = :isDeleted AND (s.storeName LIKE %:keyword% OR s.address LIKE %:keyword%)")
+    @Query("SELECT s FROM Store s WHERE s.isDeleted = :isDeleted AND " +
+            "(s.storeName LIKE %:keyword% OR s.address LIKE %:keyword%) " +
+            "ORDER BY s.createdAt DESC")
     Page<Store> findByStatusAndKeyword(@Param("isDeleted")boolean isDeleted, @Param("keyword") String keyword, Pageable pageable);
 
-    // 검색 없음/ 가맹점 페이지 처리 입점, 폐점 데이터 조회
-    Page<Store> findByIsDeletedFalse(Pageable pageable); // 입점(false)
-    Page<Store> findByIsDeletedTrue(Pageable pageable);  // 폐점(true)
+    // ALL
+    @Query("SELECT s FROM Store s ORDER BY s.isDeleted ASC, s.createdAt DESC")
+    Page<Store> findAllCustom(Pageable pageable);
+
+    // 검색 없이 '입점'만 조회할 때: 최신 등록순 정렬[cite: 7]
+    Page<Store> findByIsDeletedFalseOrderByCreatedAtDesc(Pageable pageable); // 입점(false)
+    // 검색 없이 '폐점'만 조회할 때: 최신 폐업일순 또는 등록순 정렬[cite: 7]
+    Page<Store> findByIsDeletedTrueOrderByClosedAtDesc(Pageable pageable);
 }

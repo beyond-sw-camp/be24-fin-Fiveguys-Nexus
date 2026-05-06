@@ -53,15 +53,15 @@ public class StoreService {
         if ("ACTIVE".equals(status)) {
             result = hasKeyword
                     ? storeRepository.findByStatusAndKeyword(false, keyword, pageRequest)
-                    : storeRepository.findByIsDeletedFalse(pageRequest);
+                    : storeRepository.findByIsDeletedFalseOrderByCreatedAtDesc(pageRequest);
         } else if ("CLOSED".equals(status)) {
             result = hasKeyword
                     ? storeRepository.findByStatusAndKeyword(true, keyword, pageRequest)
-                    : storeRepository.findByIsDeletedTrue(pageRequest);
+                    : storeRepository.findByIsDeletedTrueOrderByClosedAtDesc(pageRequest);
         } else {
             result = hasKeyword
                     ? storeRepository.findByKeywordAll(keyword,pageRequest)
-                    : storeRepository.findAll(pageRequest);
+                    : storeRepository.findAllCustom(pageRequest);
         }
         return StoreDto.StorePageRes.from(result);
     }
@@ -160,7 +160,7 @@ public class StoreService {
         // 가맹점 존재 여부
         Store store = storeRepository.findById(storeIdx)
                 .orElseThrow(() ->{throw new BaseException(STORE_NOT_FOUND);
-        });
+                });
 
         // 가맹점 폐업 여부
         if(store.isDeleted()){

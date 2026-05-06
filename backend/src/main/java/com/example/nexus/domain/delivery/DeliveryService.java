@@ -10,6 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.nexus.domain.orders.model.Orders;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,6 +23,18 @@ public class DeliveryService {
     private final DeliveryRepository deliveryRepository;
     private final HeadNotificationService headNotificationService;
     private final StoreNotificationService storeNotificationService;
+
+    // 발주 승인 시 배송 생성 (READY 상태)
+    @Transactional
+    public void createDelivery(Orders orders) {
+        Delivery delivery = Delivery.builder()
+                .deliveryStatus(DeliveryStatus.READY)
+                .departureDate(LocalDateTime.now())
+                .estimatedArrivalAt(LocalDateTime.now().plusDays(1))
+                .orders(orders)
+                .build();
+        deliveryRepository.save(delivery);
+    }
 
     public List<DeliveryDto> getDeliveriesByHead(
             String storeName, DeliveryStatus status, Integer year, Integer month, Integer day) {

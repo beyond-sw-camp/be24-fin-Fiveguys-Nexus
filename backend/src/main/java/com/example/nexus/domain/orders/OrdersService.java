@@ -7,6 +7,7 @@ import com.example.nexus.common.exception.BaseException;
 import com.example.nexus.common.model.BaseResponseStatus;
 import com.example.nexus.domain.inventory.InventoryMovementService;
 import com.example.nexus.domain.inventory.model.InventoryMovementDto;
+import com.example.nexus.domain.delivery.DeliveryService;
 import com.example.nexus.domain.notification.HeadNotificationService;
 import com.example.nexus.domain.notification.StoreNotificationService;
 import com.example.nexus.domain.orders.model.*;
@@ -42,6 +43,7 @@ public class OrdersService {
     private final InventoryMovementService inventoryMovementService;
     private final HeadNotificationService headNotificationService;
     private final StoreNotificationService storeNotificationService;
+    private final DeliveryService deliveryService;
 
     // 자동 발주 제안 검색 조회 (AUTO + WAITING 상태 대상)
     // 매장명 키워드 검색 + 페이징 처리
@@ -175,6 +177,7 @@ public class OrdersService {
 
         applyOutboundForOrder(orders, "발주 승인(이상) ordersIdx=");
         orders.approve();
+        deliveryService.createDelivery(orders);
     }
 
     // 본사 - 이상 발주 개별 반려
@@ -198,6 +201,7 @@ public class OrdersService {
         for (Orders orders : confirmedOrders) {
             applyOutboundForOrder(orders, "발주 일괄승인 ordersIdx=");
             orders.approve();
+            deliveryService.createDelivery(orders);
         }
     }
 

@@ -28,11 +28,14 @@ public class HeadNotificationController {
     @GetMapping("/list")
     public ResponseEntity<BaseResponse> getNotifications(
             @RequestParam(required = false) NotificationType type,
+            @RequestParam(required = false) Boolean isRead,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         Slice<HeadNotificationDto.ListRes> result;
         if (type != null) {
             result = headNotificationService.getNotificationsByType(type, page, size);
+        } else if (isRead != null) {
+            result = headNotificationService.getNotificationsByReadStatus(isRead, page, size);
         } else {
             result = headNotificationService.getNotifications(page, size);
         }

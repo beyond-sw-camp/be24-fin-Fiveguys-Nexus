@@ -15,6 +15,9 @@ public interface HeadNotificationRepository extends JpaRepository<HeadNotificati
     // 알림 목록 전체 조회 (최신순, 페이징)
     Slice<HeadNotification> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
+    // 알림 목록 읽음 상태별 조회 (최신순, 페이징)
+    Slice<HeadNotification> findAllByIsReadOrderByCreatedAtDesc(boolean isRead, Pageable pageable);
+
     // 알림 목록 타입별 필터 조회 (최신순, 페이징)
     Slice<HeadNotification> findAllByTypeOrderByCreatedAtDesc(NotificationType type, Pageable pageable);
 

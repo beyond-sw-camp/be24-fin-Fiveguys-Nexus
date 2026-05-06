@@ -28,6 +28,14 @@ public class HeadNotificationService {
     }
 
     /**
+     * 알림 목록 조회 (읽음 상태별)
+     */
+    public Slice<HeadNotificationDto.ListRes> getNotificationsByReadStatus(boolean isRead, int page, int size) {
+        return headNotificationRepository.findAllByIsReadOrderByCreatedAtDesc(isRead, PageRequest.of(page, size))
+                .map(HeadNotificationDto.ListRes::from);
+    }
+
+    /**
      * 알림 목록 조회 (타입별 필터)
      */
     public Slice<HeadNotificationDto.ListRes> getNotificationsByType(NotificationType type, int page, int size) {

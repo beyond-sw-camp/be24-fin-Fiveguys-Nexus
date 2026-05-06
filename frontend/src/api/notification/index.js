@@ -1,9 +1,10 @@
 import api from '@/plugins/axiosinterceptor'
 
 // 알림 목록 조회 (타입별 필터 + 페이징)
-const getNotifications = (type, page = 0, size = 20) => {
+const getNotifications = (type, page = 0, size = 20, isRead) => {
   const params = { page, size }
   if (type) params.type = type
+  if (isRead !== undefined) params.isRead = isRead
   return api.get('/notification/list', { params })
 }
 

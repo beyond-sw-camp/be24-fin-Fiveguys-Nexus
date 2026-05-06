@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 public class HeadNotificationService {
 
     private final HeadNotificationRepository headNotificationRepository;
+    private final SseEmitterService sseEmitterService;
 
     /**
      * 알림 목록 조회 (전체)
@@ -61,7 +62,7 @@ public class HeadNotificationService {
     }
 
     /**
-     * 알림 생성 (트리거에서 호출)
+     * 알림 생성 + SSE 실시간 전송
      */
     @Transactional
     public HeadNotification create(NotificationType type, String title, String content) {
@@ -72,6 +73,8 @@ public class HeadNotificationService {
                 .isRead(false)
                 .createdAt(LocalDateTime.now())
                 .build();
-        return headNotificationRepository.save(notification);
+        HeadNotification saved = headNotificationRepository.save(notification);
+        sseEmitterService.broadcast(HeadNotificationDto.ListRes.from(saved));
+        return saved;
     }
 }

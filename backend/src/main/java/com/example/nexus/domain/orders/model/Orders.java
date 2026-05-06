@@ -2,6 +2,7 @@ package com.example.nexus.domain.orders.model;
 
 import com.example.nexus.common.enums.OrdersStatus;
 import com.example.nexus.common.enums.OrdersType;
+import com.example.nexus.common.enums.PaymentStatus;
 import com.example.nexus.domain.delivery.model.Delivery;
 import com.example.nexus.domain.store.model.Store;
 import jakarta.persistence.*;
@@ -33,6 +34,10 @@ public class Orders {
     @Enumerated(EnumType.STRING)
     @Column(name = "order_status", nullable = false)
     private OrdersStatus ordersStatus;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_status", nullable = false)
+    private PaymentStatus paymentStatus;
 
     @Column(name = "is_danger", nullable = false)
     private boolean isDanger;

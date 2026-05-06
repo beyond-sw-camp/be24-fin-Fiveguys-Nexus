@@ -35,6 +35,17 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
 
     Delivery findByIdx(Long deliveryIdx);
 
+    // 배송 상태 자동 전환용 - 특정 상태 + 출발일이 기준 시간 이전인 배송 조회
+    List<Delivery> findByDeliveryStatusAndDepartureDateBefore(DeliveryStatus status, LocalDateTime before);
+
+    // 배송 지연 자동 감지용 - 예상도착일 초과 + 미완료 배송 조회
+    @Query("SELECT d FROM Delivery d JOIN FETCH d.orders o JOIN FETCH o.store s " +
+            "WHERE d.estimatedArrivalAt < :now " +
+            "AND d.deliveryStatus NOT IN (:excludeStatuses)")
+    List<Delivery> findOverdueDeliveries(
+            @Param("now") LocalDateTime now,
+            @Param("excludeStatuses") List<DeliveryStatus> excludeStatuses);
+
     // 본사 배송 조회용
     @Query("SELECT d FROM Delivery d " +
             "JOIN FETCH d.orders o " +

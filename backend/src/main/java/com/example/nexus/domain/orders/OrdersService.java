@@ -7,7 +7,9 @@ import com.example.nexus.common.exception.BaseException;
 import com.example.nexus.common.model.BaseResponseStatus;
 import com.example.nexus.domain.inventory.InventoryMovementService;
 import com.example.nexus.domain.inventory.model.InventoryMovementDto;
+import com.example.nexus.domain.delivery.DeliveryService;
 import com.example.nexus.domain.notification.HeadNotificationService;
+import com.example.nexus.domain.notification.StoreNotificationService;
 import com.example.nexus.domain.orders.model.*;
 import com.example.nexus.domain.product.ProductRepository;
 import com.example.nexus.domain.product.model.Product;
@@ -40,6 +42,8 @@ public class OrdersService {
     private final ProductRepository productRepository;
     private final InventoryMovementService inventoryMovementService;
     private final HeadNotificationService headNotificationService;
+    private final StoreNotificationService storeNotificationService;
+    private final DeliveryService deliveryService;
 
     // 자동 발주 제안 검색 조회 (AUTO + WAITING 상태 대상)
     // 매장명 키워드 검색 + 페이징 처리
@@ -173,6 +177,7 @@ public class OrdersService {
 
         applyOutboundForOrder(orders, "발주 승인(이상) ordersIdx=");
         orders.approve();
+        deliveryService.createDelivery(orders);
     }
 
     // 본사 - 이상 발주 개별 반려
@@ -196,6 +201,7 @@ public class OrdersService {
         for (Orders orders : confirmedOrders) {
             applyOutboundForOrder(orders, "발주 일괄승인 ordersIdx=");
             orders.approve();
+            deliveryService.createDelivery(orders);
         }
     }
 
@@ -272,6 +278,13 @@ public class OrdersService {
                     NotificationType.ABNORMAL_ORDER,
                     "비정상 발주 감지 - " + store.getStoreName(),
                     "수동 발주 수량 " + totalQty + "개 (평균 대비 초과)");
+
+            // 가맹점 비정상 발주 재확인 요청 알림 (NOTIFY_010)
+            storeNotificationService.create(
+                    NotificationType.ABNORMAL_ORDER,
+                    "발주 수량 재확인 요청",
+                    "발주 수량 " + totalQty + "개가 평균 대비 비정상으로 감지되었습니다. 발주 내역을 확인해주세요.",
+                    store);
         }
 
         // 5. Orders 저장
@@ -336,6 +349,13 @@ public class OrdersService {
                     NotificationType.ABNORMAL_ORDER,
                     "비정상 발주 감지 - " + store.getStoreName(),
                     "발주 확정 수량 " + totalQty + "개 (평균 대비 초과)");
+
+            // 가맹점 비정상 발주 재확인 요청 알림 (NOTIFY_010)
+            storeNotificationService.create(
+                    NotificationType.ABNORMAL_ORDER,
+                    "발주 수량 재확인 요청",
+                    "발주 확정 수량 " + totalQty + "개가 평균 대비 비정상으로 감지되었습니다. 발주 내역을 확인해주세요.",
+                    store);
         }
 
         orders.confirm();

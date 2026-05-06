@@ -14,5 +14,6 @@ public enum NotificationType {
     EXPIRY,         // 유통기한 임박
     LOW_STOCK,      // 재고 부족 (본사)
     ABNORMAL_ORDER, // 비정상 발주 감지
-    DELIVERY_DELAY  // 배송 지연 (본사)
+    DELIVERY_DELAY, // 배송 지연 (본사)
+    DELIVERY_START  // 배송 시작 (가맹점)
 }

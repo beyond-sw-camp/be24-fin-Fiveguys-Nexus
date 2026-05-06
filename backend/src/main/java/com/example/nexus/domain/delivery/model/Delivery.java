@@ -3,10 +3,7 @@ package com.example.nexus.domain.delivery.model;
 import com.example.nexus.common.enums.DeliveryStatus;
 import com.example.nexus.domain.orders.model.Orders;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -17,6 +14,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Delivery {
 
     @Id
@@ -37,7 +35,7 @@ public class Delivery {
     @Column(name = "est_des_date", nullable = false)
     private LocalDateTime estimatedArrivalAt;
 
-    @Column(name = "delivered_date", nullable = false)
+    @Column(name = "delivered_date")
     private LocalDateTime deliveredDate;
 
     @OneToOne(fetch = FetchType.LAZY)

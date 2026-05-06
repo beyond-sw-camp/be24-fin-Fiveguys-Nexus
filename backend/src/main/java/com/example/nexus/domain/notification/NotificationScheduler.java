@@ -6,6 +6,7 @@ import com.example.nexus.domain.head.model.HeadInventory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -57,6 +58,20 @@ public class NotificationScheduler {
                 }
             }
         }
+    }
+
+    /**
+     * 오래된 알림 자동 삭제
+     * 매일 새벽 3시에 실행
+     * 읽은 알림: 30일 경과 시 삭제
+     * 안 읽은 알림: 90일 경과 시 삭제
+     */
+    @Scheduled(cron = "0 0 3 * * *")
+    @Transactional
+    public void deleteOldNotifications() {
+        LocalDateTime now = LocalDateTime.now();
+        headNotificationRepository.deleteReadBefore(now.minusDays(30));
+        headNotificationRepository.deleteUnreadBefore(now.minusDays(90));
     }
 
 }

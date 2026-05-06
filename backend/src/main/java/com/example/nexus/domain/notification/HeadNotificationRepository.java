@@ -31,4 +31,14 @@ public interface HeadNotificationRepository extends JpaRepository<HeadNotificati
 
     // 중복 알림 방지: 동일 타입 + 제목 + 특정 시간 이후 존재 여부 확인
     boolean existsByTypeAndTitleAndCreatedAtAfter(NotificationType type, String title, LocalDateTime after);
+
+    // 읽은 알림 중 특정 일자 이전 삭제
+    @Modifying
+    @Query("DELETE FROM HeadNotification n WHERE n.isRead = true AND n.createdAt < :before")
+    void deleteReadBefore(LocalDateTime before);
+
+    // 안 읽은 알림 중 특정 일자 이전 삭제
+    @Modifying
+    @Query("DELETE FROM HeadNotification n WHERE n.isRead = false AND n.createdAt < :before")
+    void deleteUnreadBefore(LocalDateTime before);
 }

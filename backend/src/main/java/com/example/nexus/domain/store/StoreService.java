@@ -14,6 +14,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
@@ -162,73 +164,58 @@ public class StoreService {
 
     @Transactional
     public void storeUpdate(Long storeIdx, StoreDto.StoreUpdateReq dto) {
-        // 가맹점 존재 여부
-        Store store = storeRepository.findById(storeIdx)
-                .orElseThrow(() ->{throw new BaseException(STORE_NOT_FOUND);
-                });
+        String newFilePath = dto.getFilePath();
+        String oldFilePath = "";
 
-        // 가맹점 폐업 여부
-        if(store.isDeleted()){
-            throw new BaseException(STORE_ALREADY_CLOSED);
-        }
+        try {
+            Store store = storeRepository.findById(storeIdx)
+                    .orElseThrow(() -> new BaseException(STORE_NOT_FOUND));
 
-        // 가맹점 이름 중복 여부
-        if(!store.getStoreName().equals(dto.getStoreName())){
-            storeRepository.findByStoreName(dto.getStoreName())
-                    .ifPresent(s ->{
-                        throw new BaseException(STORE_NAME_ALREADY_EXISTS);
-                    });
-        }
+            oldFilePath = store.getFilePath();
 
-        // 2. 기존 파일 경로 백업 (삭제를 위해)
-        String oldFilePath = store.getFilePath();
+            if (store.isDeleted()) throw new BaseException(STORE_ALREADY_CLOSED);
 
-
-        // 가맹점 업데이트
-        store.update(dto);
-
-        // 4. 파일이 변경되었고, 기존 파일이 존재한다면 S3에서 삭제
-        // dto.getFilePath()가 null이 아니고 기존 경로와 다를 때만 실행
-        if (dto.getFilePath() != null && !dto.getFilePath().equals(oldFilePath)) {
-            if (oldFilePath != null && !oldFilePath.isEmpty()) {
-                try {
-                    String key = oldFilePath;
-                    log.info("S3 삭제 시도 - 버킷: {}, 키: {}", storeBucket, key);
-
-                    // v2 스타일의 삭제 요청
-                    DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
-                            .bucket(storeBucket)
-                            .key(key)
-                            .build();
-
-                    s3Client.deleteObject(deleteObjectRequest);
-                    log.info("S3 기존 파일 삭제 성공: {}", key);
-
-                } catch (Exception e) {
-                    log.error("S3 기존 파일 삭제 실패 (파일 경로: {}), 사유: {}", oldFilePath, e.getMessage());
-                }
+            if (!store.getStoreName().equals(dto.getStoreName())) {
+                storeRepository.findByStoreName(dto.getStoreName())
+                        .ifPresent(s -> { throw new BaseException(STORE_NAME_ALREADY_EXISTS); });
             }
-        }
 
-        User owner = store.getUser();
+            User owner = store.getUser();
+            if (owner == null || owner.isDeleted()) throw new BaseException(NOT_FOUND_USER);
 
-        // 점주 탈퇴 여부 확인
-        if(owner == null || owner.isDeleted()){
-            throw new BaseException(NOT_FOUND_USER);
-        }
+            if (newFilePath != null && !newFilePath.equals(oldFilePath)) {
+                String finalOldFile = oldFilePath;
+                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        deleteS3Object(finalOldFile);
+                    }
+                });
+            }
 
+            store.update(dto);
+            owner.updateOwner(dto.getOwnerName(), dto.getOwnerEmail());
 
-        // 점주 이름, 이메일 업데이트
-        if(owner != null){
-            owner.updateOwner(dto.getOwnerName(),dto.getOwnerEmail());
+        } catch (Exception e) {
+            if (newFilePath != null && !newFilePath.equals(oldFilePath)) {
+                deleteS3Object(newFilePath); // 새 파일 롤백 삭제
+            }
+
+            if (e instanceof BaseException) throw (BaseException) e;
+            throw new RuntimeException(e);
         }
     }
 
-    private String extractKeyFromUrl(String fileUrl) {
-        // 예: https://bucket-name.s3.region.amazonaws.com/store/file.pdf
-        // -> "store/file.pdf"만 추출
-        String splitStr = ".com/";
-        return fileUrl.substring(fileUrl.lastIndexOf(splitStr) + splitStr.length());
+    private void deleteS3Object(String key) {
+        try {
+            s3Client.deleteObject(DeleteObjectRequest.builder()
+                    .bucket(storeBucket)
+                    .key(key)
+                    .build());
+        } catch (Exception e) {
+            // S3 삭제 실패 시 예외를 던져서 호출부에서 인지하게 처리
+            throw new BaseException(S3_DELETE_FAILED); // BaseResponseStatus에 추가 필요
+        }
     }
 
     public Long findStoreIdx(Long userIdx) {

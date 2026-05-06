@@ -1,10 +1,14 @@
 package com.example.nexus.domain.product;
 
 import com.example.nexus.domain.product.model.ProductDto;
+import com.example.nexus.domain.user.model.AuthUserDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -53,8 +57,16 @@ public class ProductController {
         return ResponseEntity.ok(result);
     }
 
-    @GetMapping("/store/{storeIdx}")
-    public ResponseEntity<List<ProductDto.ListRes>> getStoreProductList(@PathVariable Long storeIdx) {
+    @GetMapping("/store")
+    public ResponseEntity<List<ProductDto.ListRes>> getMyStoreProducts(
+            @AuthenticationPrincipal AuthUserDetails authUserDetails
+    ) {
+        if (authUserDetails == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+
+        Long storeIdx = authUserDetails.getIdx();
+
         List<ProductDto.ListRes> list = productService.findProductsByStore(storeIdx);
         return ResponseEntity.ok(list);
     }

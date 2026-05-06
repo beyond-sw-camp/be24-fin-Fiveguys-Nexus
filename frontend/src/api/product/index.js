@@ -23,3 +23,7 @@ export const searchProduct = (productName) =>
 // 가맹점별 제품 목록 조회
 export const getStoreProductList = () =>
   api.get(`/product/store`)
+
+// 가맹점별 제품 검색
+export const searchStoreProduct = (productName) =>
+  api.get('/product/store/search', { params: { productName } })

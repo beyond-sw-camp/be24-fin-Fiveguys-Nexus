@@ -1,6 +1,7 @@
 package com.example.nexus.domain.settlement;
 
 import com.example.nexus.domain.head.HeadIncomeRepository;
+import com.example.nexus.domain.head.HeadIncomeService;
 import com.example.nexus.domain.head.model.HeadIncome;
 import com.example.nexus.domain.settlement.model.Settlement;
 import com.example.nexus.domain.settlement.model.SettlementDto;
@@ -12,8 +13,11 @@ import io.portone.sdk.server.payment.Payment;
 import io.portone.sdk.server.payment.PaymentClient;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -25,6 +29,7 @@ public class SettlementService {
     private final SettlementRepository settlementRepository;
     private final PaymentClient pg;
     private final HeadIncomeRepository headIncomeRepository;
+    private final HeadIncomeService headIncomeService;
 
     @Transactional
     public void verify(AuthUserDetails authUserDetails, SettlementDto.VerifyReq dto) {
@@ -58,4 +63,30 @@ public class SettlementService {
 
         }
     }
+
+
+    public Long pay(Long storeIdx, SettlementDto.PayReq dto) {
+        YearMonth currentMonth = YearMonth.now();
+
+        YearMonth lastMonth = currentMonth.minusMonths(1);
+
+        String settlementYm = lastMonth.format(DateTimeFormatter.ofPattern("yyyy-MM"));
+        Settlement settlement = Settlement.builder()
+                .paid(false)
+                .price(dto.getPaymentPrice())
+                .storeIdx(storeIdx)
+                .settlementYm(settlementYm)
+                .build();
+
+
+        settlementRepository.save(settlement);
+
+        for (Long idx : dto.getHeadIncomeidxList()) {
+            HeadIncome headIncome = headIncomeRepository.findById(idx).orElse(null);
+            headIncome.setSettlementIdx(settlement.getIdx());
+        }
+
+        return settlement.getIdx();
+    }
+
 }

@@ -10,8 +10,8 @@ public class SettlementDto {
     @Getter
     @Builder
     public static class PayReq {
-        private Integer paymentPrice;
-        private List<Long> orderIdxList;
+        private Long paymentPrice;
+        List<Long> headIncomeidxList;
     }
 
     @Getter

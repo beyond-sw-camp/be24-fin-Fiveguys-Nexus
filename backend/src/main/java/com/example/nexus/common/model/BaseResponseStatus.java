@@ -19,7 +19,7 @@ public enum BaseResponseStatus {
     PASSWORD_WRONG(false, 3007, "비밀번호가 일치하지 않습니다."),
 
 
-    // 3100번대 ~ 가맹점 등록 클라이언트 오류
+    // 3100번대 ~ 가맹점 클라이언트 오류
     NOT_FOUND_USER(false, 3101, "등록되지 않은 점주 정보입니다."),
     STORE_NAME_ALREADY_EXISTS(false, 3102, "이미 사용중인 가맹점명입니다."),
     BUSINESS_NUMBER_ALREADY_EXISTS(false, 3103, "이미 등록된 사업자 번호입니다."),
@@ -28,6 +28,10 @@ public enum BaseResponseStatus {
     STORE_ALREADY_CLOSED(false, 3106, "폐업 처리되어 수정할 수 없는 가맹점입니다."),
     DUPLICATE_EMAIL(false, 3107, "이미 다른 계정에서 사용중인 이메일입니다."),
 
+    // 3200번대 ~ 메뉴 클라이언트 오류
+    NOT_FOUND_CATEGORY(false, 3201, "존재하지 않는 카테고리입니다."),
+    NOT_FOUND_PRODUCT(false, 3202, "제품을 찾을 수 없습니다."),
+    DUPLICATE_MENU_NAME(false, 3203, "이미 사용중인 메뉴명입니다."),
 
 
     // 4000번대 실패

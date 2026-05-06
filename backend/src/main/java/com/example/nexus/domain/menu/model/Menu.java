@@ -1,9 +1,7 @@
 package com.example.nexus.domain.menu.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +9,7 @@ import java.util.List;
 @Entity
 @Table(name = "menu")
 @Getter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Menu {
@@ -31,7 +30,8 @@ public class Menu {
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted = false;
 
-    @OneToMany(mappedBy = "menu")
+    @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<MenuItem> menuItemList = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)

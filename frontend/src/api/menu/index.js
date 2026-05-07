@@ -26,3 +26,5 @@ export const postNewRegister = (menuRegReq) =>
 export const putMenuUpdate = (menuIdx,menuRegReq) =>
   api.put(`/menu/update/${menuIdx}`, menuRegReq)
 
+export const putMenuDelete  = (menuIdx) =>
+  api.put(`menu/delete/${menuIdx}`)

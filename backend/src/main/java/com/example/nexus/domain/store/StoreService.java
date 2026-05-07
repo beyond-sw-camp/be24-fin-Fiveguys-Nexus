@@ -215,7 +215,7 @@ public class StoreService {
             owner.updateOwner(dto.getOwnerName(), dto.getOwnerEmail());
 
         } catch (Exception e) {
-            if (newFilePath != null && !newFilePath.isEmpty()) {
+            if (newFilePath != null && !newFilePath.isEmpty() && !newFilePath.equals(oldFilePath)) {
                 try {
                     deleteS3Object(newFilePath);
                 } catch (Exception ignored) {

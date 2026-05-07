@@ -60,10 +60,11 @@ public class ProductController {
                 .body(BaseResponse.success("fail to delete: product not found"));
     }
 
+    // 본사 제품 검색
     @GetMapping("/search")
-    public ResponseEntity<List<ProductDto.ListRes>> searchProduct(@RequestParam String productName) {
+    public ResponseEntity<BaseResponse<List<ProductDto.ListRes>>> searchProduct(@RequestParam String productName) {
         List<ProductDto.ListRes> result = productService.searchProduct(productName);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(BaseResponse.success(result));
     }
 
     // 가맹점 별 제품 조회

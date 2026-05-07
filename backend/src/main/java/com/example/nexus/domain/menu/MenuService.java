@@ -13,6 +13,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
@@ -31,6 +35,7 @@ public class MenuService {
     private final ProductRepository productRepository;
 
     private final S3Presigner s3Presigner;
+    private final S3Client s3Client;
 
     @Value("${spring.cloud.aws.s3.menu-bucket}")
     private String menuBucket;
@@ -96,67 +101,130 @@ public class MenuService {
 
     @Transactional
     public void menuRegister(MenuDto.MenuRegReq dto) {
+        String newFilePath = dto.getImgPath();
 
-        if (menuRepository.existsByMenuName(dto.getMenuName())) {
-            throw new BaseException(DUPLICATE_MENU_NAME);
+        try {
+            if (menuRepository.existsByMenuName(dto.getMenuName())) {
+                throw new BaseException(DUPLICATE_MENU_NAME);
+            }
+
+            // 카테고리 존재 여부 확인
+            MenuCategory category = menuCategoryRepository.findById(dto.getMenuCategoryIdx())
+                    .orElseThrow(() -> new BaseException(NOT_FOUND_CATEGORY));
+
+
+            List<Long> productIds = Collections.emptyList();
+            List<Product> products = Collections.emptyList();
+
+            if (dto.getMenuItemList() != null && !dto.getMenuItemList().isEmpty()) {
+                productIds = dto.getMenuItemList().stream()
+                        .map(MenuDto.MenuItemReq::getProductIdx).toList();
+                products = productRepository.findAllById(productIds);
+            }
+
+
+            Menu menu = dto.toEntity(category, products);
+            menuRepository.save(menu);
+
+        } catch (Exception e) {
+            // 4. 예외 발생 시 S3 롤백 삭제
+            // 등록 중 에러가 나면 DB는 롤백되지만, 이미 업로드된 파일은 좀비가 되므로 삭제 처리
+            if (newFilePath != null && !newFilePath.isEmpty()) {
+                try {
+                    deleteS3Object(newFilePath);
+                } catch (Exception ignored) {
+                    // 롤백 중 S3 삭제 실패는 무시하여 원래 예외를 보존합니다.
+                }
+            }
+
+            // 5. 예외 다시 던지기
+            if (e instanceof BaseException) throw (BaseException) e;
+            throw new RuntimeException(e);
         }
 
-        // 카테고리 존재 여부 확인
-        MenuCategory category = menuCategoryRepository.findById(dto.getMenuCategoryIdx())
-                .orElseThrow(() -> new BaseException(NOT_FOUND_CATEGORY));
-
-
-        List<Long> productIds = Collections.emptyList();
-        List<Product> products = Collections.emptyList();
-
-        if (dto.getMenuItemList() != null && !dto.getMenuItemList().isEmpty()) {
-            productIds = dto.getMenuItemList().stream()
-                    .map(MenuDto.MenuItemReq::getProductIdx).toList();
-            products = productRepository.findAllById(productIds);
-        }
-
-
-        Menu menu = dto.toEntity(category, products);
-
-        menuRepository.save(menu);
     }
 
     @Transactional
     public void menuUpdate(Long menuIdx, MenuDto.MenuRegReq dto) {
-        Menu menu = menuRepository.findByIdxAndIsDeletedFalse(menuIdx)
-                .orElseThrow(() -> new BaseException(NOT_FOUND_MENU));
+        String newFilePath = dto.getImgPath();
+        String oldFilePath = "";
 
-        // 메뉴명 중복 확인
-        if (menuRepository.existsByMenuNameAndIdxNot(dto.getMenuName(), menuIdx)) {
-            throw new BaseException(DUPLICATE_MENU_NAME);
+        try{
+            Menu menu = menuRepository.findByIdxAndIsDeletedFalse(menuIdx)
+                    .orElseThrow(() -> new BaseException(NOT_FOUND_MENU));
+
+            // 카테고리 존재 여부 확인
+            MenuCategory category = menuCategoryRepository.findById(dto.getMenuCategoryIdx())
+                    .orElseThrow(() -> new BaseException(NOT_FOUND_CATEGORY));
+
+            oldFilePath = menu.getImgPath();
+
+            // 메뉴명 중복 확인
+            if (menuRepository.existsByMenuNameAndIdxNot(dto.getMenuName(), menuIdx)) {
+                throw new BaseException(DUPLICATE_MENU_NAME);
+            }
+
+
+            // 제품 조회
+            List<Long> productIds = Optional.ofNullable(dto.getMenuItemList()).orElseGet(Collections::emptyList).stream()
+                    .map(MenuDto.MenuItemReq::getProductIdx).toList();
+            List<Product> products = productRepository.findAllById(productIds);
+
+            // 4. [S3 관리 로직] 커밋 직전에 등록
+            // 새 파일이 들어왔고, 기존 파일과 다를 경우에만 동기화 등록
+            if (newFilePath != null && !newFilePath.equals(oldFilePath) && oldFilePath != null && !oldFilePath.isBlank()) {
+                String finalOldFile = oldFilePath;
+                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        deleteS3Object(finalOldFile);
+                    }
+                });
+            }
+
+            // 메뉴 업데이트
+            menu.update(dto.getMenuName(), dto.getPrice(), dto.getImgPath(), category);
+
+            // 해당 메뉴에 재료 리스트(MenuItem) 비우기
+            menu.getMenuItemList().clear();
+
+            Map<Long, Product> productMap = products.stream()
+                    .collect(Collectors.toMap(Product::getIdx, p -> p));
+
+            for (MenuDto.MenuItemReq itemReq : Optional.ofNullable(dto.getMenuItemList()).orElseGet(Collections::emptyList)) {
+                Product product = productMap.get(itemReq.getProductIdx());
+                if (product == null) throw new BaseException(NOT_FOUND_PRODUCT);
+
+                // 기존에 잘 만들어둔 toEntity를 그대로 활용합니다!
+                MenuItem newItem = itemReq.toEntity(menu, product);
+                menu.getMenuItemList().add(newItem);
+            }
+
+        }catch (Exception e) {
+            if (newFilePath != null && !newFilePath.isEmpty() && !newFilePath.equals(oldFilePath)) {
+                try {
+                    deleteS3Object(newFilePath);
+                } catch (Exception ignored) {
+                    // 롤백 중 S3 삭제 실패는 무시하여 원래 예외를 보존합니다.
+                }
+            }
+
+            if (e instanceof BaseException) throw (BaseException) e;
+            throw new RuntimeException(e);
         }
+    }
 
-
-        // 카테고리 존재 여부 확인
-        MenuCategory category = menuCategoryRepository.findById(dto.getMenuCategoryIdx())
-                .orElseThrow(() -> new BaseException(NOT_FOUND_CATEGORY));
-
-        // 제품 조회
-        List<Long> productIds = Optional.ofNullable(dto.getMenuItemList()).orElseGet(Collections::emptyList).stream()
-                .map(MenuDto.MenuItemReq::getProductIdx).toList();
-        List<Product> products = productRepository.findAllById(productIds);
-
-        // 메뉴 업데이트
-        menu.update(dto.getMenuName(), dto.getPrice(), dto.getImgPath(), category);
-
-        // 해당 메뉴에 재료 리스트(MenuItem) 비우기
-        menu.getMenuItemList().clear();
-
-        Map<Long, Product> productMap = products.stream()
-                .collect(Collectors.toMap(Product::getIdx, p -> p));
-
-        for (MenuDto.MenuItemReq itemReq : Optional.ofNullable(dto.getMenuItemList()).orElseGet(Collections::emptyList)) {
-            Product product = productMap.get(itemReq.getProductIdx());
-            if (product == null) throw new BaseException(NOT_FOUND_PRODUCT);
-
-            // 기존에 잘 만들어둔 toEntity를 그대로 활용합니다!
-            MenuItem newItem = itemReq.toEntity(menu, product);
-            menu.getMenuItemList().add(newItem);
+    private void deleteS3Object(String key) {
+        if (key == null || key.isBlank()) {
+            return;
+        }
+        try {
+            s3Client.deleteObject(DeleteObjectRequest.builder()
+                    .bucket(menuBucket)
+                    .key(key)
+                    .build());
+        } catch (Exception e) {
+            // S3 삭제 실패 시 로그를 남기거나 무시하여 원래 예외가 전파되도록 합니다.
         }
     }
 

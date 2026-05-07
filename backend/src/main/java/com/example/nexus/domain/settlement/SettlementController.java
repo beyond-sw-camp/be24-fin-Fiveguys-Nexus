@@ -11,6 +11,7 @@ import com.example.nexus.domain.user.model.AuthUserDetails;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,6 +36,7 @@ public class SettlementController {
     @PostMapping("/pay")
     public ResponseEntity pay (@AuthenticationPrincipal AuthUserDetails authUserDetails) {
 
+        // 로그인 한 사용자의  storeIdx 가져오기
         Long storeIdx = storeService.findStoreIdx(authUserDetails.getIdx());
 
         LocalDateTime now = LocalDateTime.now();
@@ -42,30 +44,38 @@ public class SettlementController {
 
         List<Orders> ordersList = ordersService.findByStoreIdx(storeIdx);
 
-        List<Orders> thisMonthOrderList = new ArrayList<>();
+        List<Orders> lastMonthOrderList = new ArrayList<>();
 
+        YearMonth lastMonth = currentYearMonth.minusMonths(1);
+        System.out.println("지난 달 " + lastMonth);
         for (Orders orders : ordersList) {
 
             YearMonth orderYearMonth = YearMonth.from(orders.getCreatedAt());
 
-            if (currentYearMonth.equals(orderYearMonth)) {
+            if (lastMonth.equals(orderYearMonth)) {
                 // 이번 달에 결제/생성된 주문 처리 로직 작성
 
-                thisMonthOrderList.add(orders);
+                lastMonthOrderList.add(orders);
+                System.out.println(orders.getIdx());
             }
         }
+
+        // 여기까지는 지난 달 발주서 제대로 불러왔음
 
         int totalPrice = 0;
         List<Long> notPaidHeadIncomeIdxList = new ArrayList<>();
-        for (Orders orders : thisMonthOrderList) {
+        System.out.println(lastMonthOrderList.size());
+        for (Orders orders : lastMonthOrderList) {
             // 이번 달에 생성된 발주서 중 결제 안된 것들
+            System.out.println("이번달 생성된 발주서 중 결제 안된 것들 " + orders.getIdx());
             HeadIncomeDto.FindHeadIncomeRes resDto = headIncomeService.findByOrdersIdx(orders.getIdx());
-            if (!resDto.isPaid()) {
+            if (resDto != null && !resDto.isPaid()) {
+                System.out.println(resDto.getPrice());
                 totalPrice += resDto.getPrice();
                 notPaidHeadIncomeIdxList.add(resDto.getIdx());
+                System.out.println("미결제 : " + resDto.getIdx());
             }
         }
-
         SettlementDto.PayReq reqDto = SettlementDto.PayReq.builder()
                 .paymentPrice((long)totalPrice)
                 .headIncomeidxList(notPaidHeadIncomeIdxList)

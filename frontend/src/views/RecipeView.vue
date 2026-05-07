@@ -9,6 +9,7 @@ const showCategoryModal = ref(false)
 const newCategoryInput = ref('')
 const UNIT_OPTIONS = ['g', 'kg', 'ml', 'L', '개', '봉', '묶음', 'ea', '기타']
 
+
 //  상품 목록
 const products = ref([])
 const productListRes = async () => {
@@ -24,14 +25,24 @@ const pagination = reactive({
   currentPage: 0,
   currentSize: 10
 })
+
 const getMenuRes = async (page = 0)=>{
   const searchReq = {
     keyword : searchQuery.value,
-    categoryIdx: null
+    categoryIdx: selectedCategoryIdx.value
   }
 
   const res = await getMenuList(searchReq, page, pagination.currentSize)
   menus.value = res.data.result.menuList
+
+  pagination.totalPage = res.data.result.totalPage
+  pagination.totalCount = res.data.result.totalCount
+  pagination.currentPage = res.data.result.currentPage
+
+}
+const selectCategory = (idx) => {
+  selectedCategoryIdx.value = idx; // idx (Long) 저장
+  getMenuRes(0); // 페이지를 0으로 초기화하여 재조회
 }
 
 //  검색 및 필터링
@@ -43,23 +54,15 @@ const categories = ref([])
 const categoryRes = async () => {
   const res = await getCategoryList()
   categories.value = res.data.result
+  console.log(categories.value)
 }
 
+// --- 카테고리 필터링 (클라이언트 사이드) ---
 const filteredMenus = computed(() => {
-  let list = menus.value
-
-  // 제품 드롭다운 필터: 선택한 제품이 재료(ingredients)에 포함되어 있는지 확인
-  if (selectedCategoryIdx.value) {
-    list = list.filter(m => m.ingredients.some(ing => ing.productIdx === selectedCategoryIdx.value))
-  }
-
-  // 텍스트 검색 (메뉴명)
-  const q = searchQuery.value.trim().toLowerCase()
-  if (q) {
-    list = list.filter(m => m.name.toLowerCase().includes(q))
-  }
-  return list
+  return menus.value; // 서버에서 이미 필터링된 결과를 받아오므로 그대로 반환
 })
+
+
 
 //  메뉴 등록 / 수정 모달
 const showMenuModal = ref(false)
@@ -155,6 +158,7 @@ async function deleteCategoryAction(idx, name) {
   try {
     await deleteCategory(idx)
     await categoryRes()
+    if (selectedCategoryIdx.value === name) selectedCategoryIdx.value = '전체'
   } catch (error) {
     alert('삭제 실패: 해당 카테고리를 사용하는 데이터가 있을 수 있습니다.')
   }
@@ -198,6 +202,22 @@ function confirmDelete() {
 function formatPrice(price) {
   return '₩ ' + price.toLocaleString('ko-KR')
 }
+
+const visiblePages = computed(() => {
+  const range = 10; // 한 번에 보여줄 페이지 개수
+  const currentGroup = Math.floor(pagination.currentPage / range);
+
+  const start = currentGroup * range;
+  const end = Math.min(start + range, pagination.totalPage);
+
+  const pages = [];
+  for (let i = start; i < end; i++) {
+    pages.push(i);
+  }
+  return pages;
+});
+
+
 onMounted(() => {
   getMenuRes()
   productListRes()
@@ -242,20 +262,23 @@ onMounted(() => {
         />
       </div>
 
-      <!-- 수정된 부분: 재료(제품명) 선택 드롭다운 -->
-      <div class="relative w-64">
-        <select
-          v-model="selectedCategoryIdx"
-          class="w-full pl-4 pr-10 py-2 bg-white border border-gray-200 rounded-lg text-sm appearance-none outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316] transition-colors shadow-sm cursor-pointer text-gray-600"
-        >
-          <option value="">전체 제품 보기</option>
-          <option v-for="product in products" :key="product.idx" :value="product.idx">
-            {{ categories.categoryName }}
-          </option>
-        </select>
-        <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-          <ChevronDown class="w-4 h-4" />
-        </div>
+      <div class="flex gap-1.5 flex-wrap">
+        <button @click="selectCategory(null)"
+                class="px-3 py-1.5 text-sm font-semibold border rounded-lg transition-colors shadow-sm cursor-pointer"
+                :class="selectedCategoryIdx === null
+        ? 'bg-[#F37321] text-white border-[#F37321]'
+        : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'">
+          전체
+        </button>
+
+        <button v-for="cat in categories"
+                :key="cat.idx"
+                @click="selectCategory(cat.categoryIdx)"
+                class="px-3 py-1.5 text-sm font-semibold border rounded-lg transition-colors shadow-sm cursor-pointer"
+                :class="selectedCategoryIdx === cat.categoryIdx
+        ? 'bg-[#F37321] text-white border-[#F37321]'
+        : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'">
+          {{ cat.menuCategoryName }} </button>
       </div>
     </div>
 

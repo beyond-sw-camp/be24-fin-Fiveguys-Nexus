@@ -8,6 +8,9 @@ import {getProductList, getCategoryList, getMenuList, getMenuItemList} from '@/a
 const showCategoryModal = ref(false)
 const newCategoryInput = ref('')
 const UNIT_OPTIONS = ['g', 'kg', 'ml', 'L', '개', '봉', '묶음', 'ea', '기타']
+//  검색 및 필터링
+const searchQuery = ref('')
+const selectedCategoryIdx = ref('') // 제품 드롭다운 필터용 상태
 
 
 //  상품 목록
@@ -18,7 +21,7 @@ const productListRes = async () => {
 }
 
 //  메뉴 데이터
-const menus = ref([])
+const menus = reactive([])
 const pagination = reactive({
   totalPage: 0,
   totalCount: 0,
@@ -33,7 +36,7 @@ const getMenuRes = async (page = 0)=>{
   }
 
   const res = await getMenuList(searchReq, page, pagination.currentSize)
-  menus.value = res.data.result.menuList
+  menus.splice(0, menus.length, ...res.data.result.menuList)
 
   pagination.totalPage = res.data.result.totalPage
   pagination.totalCount = res.data.result.totalCount
@@ -45,9 +48,7 @@ const selectCategory = (idx) => {
   getMenuRes(0); // 페이지를 0으로 초기화하여 재조회
 }
 
-//  검색 및 필터링
-const searchQuery = ref('')
-const selectedCategoryIdx = ref('') // 제품 드롭다운 필터용 상태
+
 
 // 카테고리
 const categories = ref([])
@@ -59,9 +60,8 @@ const categoryRes = async () => {
 
 // --- 카테고리 필터링 (클라이언트 사이드) ---
 const filteredMenus = computed(() => {
-  return menus.value; // 서버에서 이미 필터링된 결과를 받아오므로 그대로 반환
+  return menus; // 서버에서 이미 필터링된 결과를 받아오므로 그대로 반환
 })
-
 
 
 //  메뉴 등록 / 수정 모달
@@ -217,6 +217,13 @@ const visiblePages = computed(() => {
   return pages;
 });
 
+const changePage = (page) => {
+  // 0보다 작거나 마지막 페이지(totalPage - 1)보다 크면 무시[cite: 1]
+  if (page < 0 || page >= pagination.totalPage) return
+  getMenuRes(page)
+}
+
+
 
 onMounted(() => {
   getMenuRes()
@@ -247,7 +254,7 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- 텍스트 검색 및 드롭다운 -->
+    <!-- 텍스트 검색 -->
     <div class="flex items-center gap-3 mb-4 flex-wrap">
       <div class="relative">
         <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -282,7 +289,7 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- ── 검색 ── -->
+    <!-- ── 리스트 ── -->
     <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full text-sm text-left">

@@ -23,3 +23,6 @@ export const getPresignedUrl = (fileName) =>
 export const postNewRegister = (MenuRegReq) =>
   api.post('/menu/new/register', MenuRegReq)
 
+export const putMenuUpdate = (menuIdx,MenuRegReq) =>
+  api.put(`/menu/update/${menuIdx}`, MenuRegReq)
+

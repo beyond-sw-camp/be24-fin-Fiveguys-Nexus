@@ -1,7 +1,7 @@
 <script setup>
 import {ref, computed, onMounted, reactive} from 'vue'
 import {Plus, Search, Image as ImageIcon, Tag, Trash2} from 'lucide-vue-next'
-import {getProductList, getCategoryList, getMenuList, getMenuItemList, getPresignedUrl, postNewRegister} from '@/api/menu/index.js'
+import {getProductList, getCategoryList, getMenuList, getMenuItemList, getPresignedUrl, postNewRegister, putMenuUpdate} from '@/api/menu/index.js'
 import axios from 'axios'
 
 const showCategoryModal = ref(false)
@@ -50,7 +50,7 @@ const menuForm = ref(getInFrom())
 // 제품 목록 조회
 const productListRes = async () => {
   const res  = await getProductList()
-  products.value = res.data
+  products.value = res.data.result
 }
 
 // 메뉴 목록 조회
@@ -91,23 +91,54 @@ function openNewMenuModal() {
 
 // 수정 모달창
 async function openEditMenuModal(menu) {
-  const res = await getMenuItemList(menu.idx)
-  const detail = res.data.result
+  try {
+    // 1. 상세 데이터 조회 (재료 목록 등)
+    const res = await getMenuItemList(menu.idx);
+    console.log(res.data.result)
+    const detail = res.data.result; // 응답 데이터 (제공해주신 구조)
 
-  editTarget.value = menu
-  menuForm.value = {
-    name: menu.menuName,
-    price: menu.price,
-    imageName: detail.imgPath?.trim() ?? '',
-    category: menu.menuCategory,
-    menuItemList: detail.menuItemList ? detail.menuItemList.map(i => ({
-      productIdx: i.idx,
-      amount: i.quantity,
-      menuUnit: i.menuUnit,
-    })) : [],
+    editTarget.value = menu;
+
+    // 2. getInFrom()의 표준 구조를 가져와서 데이터를 '재조립' 합니다.
+    const form = getInFrom();
+
+    // [중요] 응답 데이터에 맞춰 필드 매핑
+    form.menuName = detail.menuName;
+    form.price = detail.price;
+
+    // 이미지 경로의 경우 공백이 포함될 수 있으므로 trim() 처리
+    form.imgPath = detail.imgPath ? detail.imgPath.trim() : "";
+    form.imgName = detail.imgPath ? detail.imgPath.trim() : "";
+
+    // [카테고리] v-model은 IDX(숫자)를 바라보므로, 목록(menu)에서 가져온 idx를 사용합니다.
+    form.menuCategoryIdx = categories.value.find(
+      c => c.menuCategoryName === detail.menuCategory
+    )?.categoryIdx ?? null;
+
+
+    // [재료 목록] 응답의 'idx'를 'productIdx'로 매핑
+    form.menuItemList = detail.menuItemList.map(i => {
+      const isStandardUnit = UNIT_OPTIONS.includes(i.menuUnit);
+      return {
+        productIdx: products.value.find(p => p.productName === i.productName)?.idx ?? '',
+        quantity: i.quantity,
+        menuUnit: isStandardUnit ? i.menuUnit : '기타',
+        customUnit: isStandardUnit ? '' : i.menuUnit
+      };
+    });
+
+    // 3. 폼 상태 업데이트
+    menuForm.value = form;
+    console.log(menuForm.value)
+
+    // 가격 표시 업데이트 (toLocaleString은 숫자에만 작동하므로 안전하게 처리)
+    formattedPriceInput.value = (detail.price || 0).toLocaleString('ko-KR');
+
+    showMenuModal.value = true;
+  } catch (error) {
+    console.error("수정 데이터 로드 실패:", error);
+    alert("메뉴 상세 정보를 불러오는 중 오류가 발생했습니다.");
   }
-  formattedPriceInput.value = menu.price.toLocaleString('ko-KR')
-  showMenuModal.value = true
 }
 
 // 숫자 이외의 문자(한글, 영문 등)를 모두 제거
@@ -166,46 +197,71 @@ async function uploadFileToS3() {
   }
 }
 
+// 등록 및 저장 시 비어있는지 확인
+const isFormValid = computed(() => {
+  return (
+    menuForm.value.menuName?.trim() &&
+    menuForm.value.price !== null &&
+    menuForm.value.menuCategoryIdx !== null &&
+    menuForm.value.menuItemList.length > 0 &&
+    menuForm.value.menuItemList.every(item => {
+      // 1. 제품과 수량은 기본적으로 필수
+      const baseValid = item.productIdx && item.quantity > 0;
+
+      // 2. 단위 검증 로직
+      let unitValid = false;
+      if (item.menuUnit === '기타') {
+        // '기타'일 때는 customUnit에 값이 채워져 있어야 함
+        unitValid = item.customUnit?.trim() !== '';
+      } else {
+        // '기타'가 아닐 때는 menuUnit만 선택되어 있으면 됨 (빈 값 아님)
+        unitValid = item.menuUnit !== '';
+      }
+
+      return baseValid && unitValid;
+    })
+  );
+})
+
 // 메뉴 등록 및 수정
 async function saveMenu() {
   try{
-    let finalFilePath = menuForm.value.imgPath;
     if (selectedFile.value) {
       const newS3Path = await uploadFileToS3();
       if (newS3Path) {
-        finalFilePath = newS3Path;
+        menuForm.value.imgPath = newS3Path;
       }
     }
-    // 수정
-    if (editTarget.value) {
+
+    const dto = {
+      menuName: menuForm.value.menuName,
+      price: menuForm.value.price,
+      imgPath: menuForm.value.imgPath,
+      menuCategoryIdx: menuForm.value.menuCategoryIdx,
+      menuItemList: menuForm.value.menuItemList.map(i => ({
+        productIdx: i.productIdx,
+        quantity: i.quantity,
+        menuUnit: i.menuUnit === '기타' ? i.customUnit : i.menuUnit
+      }))
     }
-    // 등록
-    else {
-      const menuRegDto = {
-        menuName: menuForm.value.menuName,
-        price: menuForm.value.price,
-        imgPath: finalFilePath,
-        menuCategoryIdx: menuForm.value.menuCategoryIdx,
-        menuItemList: menuForm.value.menuItemList.map(i => ({
-          productIdx: i.productIdx,
-          quantity: i.quantity,
-          menuUnit: i.menuUnit === '기타' ? i.customUnit : i.menuUnit
-        }))
-      }
-      const res = await postNewRegister(menuRegDto)
-      if (res.data.code === 2000) {
-        alert("신규 메뉴가 등록되었습니다.");
-        menus.value.length = 0;
-        await getMenuRes();
-      }
+
+    const res = editTarget.value
+      ? await putMenuUpdate(editTarget.value.idx, dto)
+      : await postNewRegister(dto);
+
+    if (res.data.code === 2000) {
+      alert(editTarget.value ? "메뉴가 수정되었습니다." : "신규 메뉴가 등록되었습니다.");
+
+      if (!editTarget.value) menus.value.length = 0; // 등록일 때만 목록 초기화
+      await getMenuRes();
+
+      showMenuModal.value = false;
+      selectedFile.value = null;
     }
-    showMenuModal.value = false
-    selectedFile.value = null;
+
   }catch (error) {
     const serverMessage = error.response?.data?.message || error.message;
-    const serverCode = error.response?.data?.code || "Unknown Code";
-    console.error("서버 에러 상세:", error.response?.data);
-    alert(`등록 실패 (${serverCode}): ${serverMessage}`);
+    alert(`등록 실패 : ${serverMessage}`);
   }
 }
 
@@ -460,7 +516,9 @@ onMounted(() => {
             <button type="button" @click="showMenuModal = false"
                     class="flex-1 py-3 rounded-lg border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-50 transition-colors cursor-pointer">취소
             </button>
-            <button type="submit" class="flex-1 py-3 rounded-lg bg-[#F97316] text-white text-sm font-bold hover:bg-[#EA6700] transition-colors shadow-sm cursor-pointer">
+            <button type="submit" :disabled="!isFormValid"
+                    :class="[!isFormValid ? 'bg-gray-300 cursor-not-allowed' : 'bg-[#F37321] hover:bg-[#e0661d] cursor-pointer']"
+                    class="flex-1 py-3 rounded-lg text-white text-sm font-bold transition-colors shadow-sm">
               {{ editTarget ? '수정 저장' : '등록하기' }}
             </button>
           </div>

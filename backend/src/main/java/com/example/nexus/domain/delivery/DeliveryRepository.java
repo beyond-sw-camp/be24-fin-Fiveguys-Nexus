@@ -19,10 +19,10 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
     // 발주 승인용 - 주문 기준 배송 조회
     Delivery findByOrders(Orders orders);
 
-    // 스케줄러용 - 특정 상태 + 출발일이 기준 시간 이전인 배송 조회
+    // 알림 스케줄러용 - 특정 상태 + 출발일이 기준 시간 이전인 배송 조회
     List<Delivery> findByDeliveryStatusAndDepartureDateBefore(DeliveryStatus status, LocalDateTime before);
 
-    // 스케줄러용 - 예상도착일 초과 + 미완료 배송 조회
+    // 알림 스케줄러용 - 예상도착일 초과 + 미완료 배송 조회
     @Query("SELECT d FROM Delivery d JOIN FETCH d.orders o JOIN FETCH o.store s " +
             "WHERE d.estimatedArrivalAt < :now " +
             "AND d.deliveryStatus NOT IN (:excludeStatuses)")

@@ -254,14 +254,14 @@ public class OrdersService {
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
 
         // 3. Product 조회 및 총 가격 계산
-        long totalprice = 0;
+        long totalPrice = 0;
         List<OrdersItem> itemList = new ArrayList<>();
 
         for (OrdersItemDto.OrdersItemReq itemReq : req.getOrdersItemList()) {
             Product product = productRepository.findById(itemReq.getProductIdx())
                     .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
 
-            totalprice += (long) product.getUnitPrice() * itemReq.getCount();
+            totalPrice += (long) product.getUnitPrice() * itemReq.getCount();
 
             itemList.add(OrdersItem.builder()
                     .count(itemReq.getCount())
@@ -290,7 +290,7 @@ public class OrdersService {
 
         // 5. Orders 저장
         Orders orders = ordersRepository.save(Orders.builder()
-                .price(totalprice)
+                .price(totalPrice)
                 .ordersType(OrdersType.MANUAL)
                 .ordersStatus(OrdersStatus.CONFIRMED)
                 .isDanger(isDanger)

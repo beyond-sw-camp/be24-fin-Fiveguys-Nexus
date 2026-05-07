@@ -84,7 +84,7 @@ public class ProductController {
 
     // 가맹점 별 제품 검색
     @GetMapping("/store/search")
-    public ResponseEntity<List<ProductDto.ListRes>> searchInMyStore(
+    public ResponseEntity<BaseResponse<List<ProductDto.ListRes>>> searchInMyStore(
             @AuthenticationPrincipal AuthUserDetails authUserDetails,
             @RequestParam String productName
     ) {
@@ -96,6 +96,6 @@ public class ProductController {
 
         List<ProductDto.ListRes> result = productService.searchProductInStore(storeIdx, productName);
 
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(BaseResponse.success(result));
     }
 }

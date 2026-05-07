@@ -1,5 +1,6 @@
 package com.example.nexus.domain.product;
 
+import com.example.nexus.common.model.BaseResponse;
 import com.example.nexus.domain.product.model.ProductDto;
 import com.example.nexus.domain.user.model.AuthUserDetails;
 import jakarta.validation.Valid;
@@ -20,26 +21,29 @@ public class ProductController {
 
     // 신규 제품 등록
     @PostMapping("/reg")
-    public ResponseEntity<ProductDto.RegRes> addNewProduct(@Valid @RequestBody ProductDto.RegReq dto) {
+    public ResponseEntity<BaseResponse<ProductDto.RegRes>> addNewProduct(@Valid @RequestBody ProductDto.RegReq dto) {
         ProductDto.RegRes result = productService.addProduct(dto);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(BaseResponse.success(result));
     }
 
     // 제품 목록으로 조회
     @GetMapping("/list")
-    public ResponseEntity<List<ProductDto.ListRes>> readProductList () {
+    public ResponseEntity<BaseResponse<List<ProductDto.ListRes>>> readProductList () {
         List<ProductDto.ListRes> list = productService.findAllProduct();
-        return ResponseEntity.ok(list);
+        return ResponseEntity.ok(BaseResponse.success(list));
     }
 
     // 기존 제품 수정
-    @PutMapping("/update/{idx}")
-    public ResponseEntity<String> updateProduct(@PathVariable Long idx, @RequestBody ProductDto.RegReq dto) {
-        boolean isModified = productService.updateProduct(idx, dto);
+    @PutMapping("/update")
+    public ResponseEntity<BaseResponse<String>> updateProduct(@Valid @RequestBody ProductDto.RegReq dto) {
+        boolean isModified = productService.updateProduct(dto.getIdx(), dto);
+
         if (isModified) {
-            return ResponseEntity.ok("success modify product");
+            return ResponseEntity.ok(BaseResponse.success("success modify product"));
         }
-        return ResponseEntity.badRequest().body("fail to modify: product or category not found");
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(BaseResponse.success("fail to modify: product or category not found"));
     }
 
     @DeleteMapping("/delete/{idx}")

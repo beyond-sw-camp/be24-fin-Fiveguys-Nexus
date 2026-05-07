@@ -141,6 +141,7 @@ function handleImageChange(e) {
   const allowedTypes = ['image/jpg', 'image/jpeg', 'image/png'];
   if (!allowedTypes.includes(file.type)) {
     alert('JPG, PNG 형식의 이미지 파일만 업로드할 수 있습니다.');
+    e.target.value = '';
     return;
   }
   if (file) {
@@ -488,7 +489,6 @@ onMounted(() => {
               <div v-for="(item, idx) in menuForm.menuItemList" :key="idx"
                    class="grid grid-cols-[2.5fr_1fr_1.2fr_1.2fr_32px] gap-2 items-center">
                 <select v-model="item.productIdx"
-                        @change="handleProductChange(item)"
                         class="w-full px-2 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#F97316] transition-all appearance-none bg-white">
                   <option value="">제품 선택</option>
                   <option v-for="p in products"

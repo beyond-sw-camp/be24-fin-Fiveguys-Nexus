@@ -1,3 +1,54 @@
+<script setup>
+import { ref, computed, onMounted } from 'vue'
+import { Bell } from 'lucide-vue-next'
+import { useNotificationStore } from '@/stores/notification'
+
+const store = useNotificationStore()
+
+const tabs = [
+  { label: '전체',   value: null },
+  { label: '재고',   value: 'stock' },
+  { label: '발주',   value: 'order' },
+  { label: '배송',   value: 'delivery' },
+]
+
+const activeTab = ref(null)
+
+const tabTypeMap = {
+  stock:    ['EXPIRY', 'LOW_STOCK'],
+  order:    ['ABNORMAL_ORDER'],
+  delivery: ['DELIVERY_DELAY', 'DELIVERY_START'],
+}
+
+const filtered = computed(() => {
+  if (activeTab.value === null) return store.storeNotifications
+  const types = tabTypeMap[activeTab.value] ?? []
+  return store.storeNotifications.filter(n => types.includes(n.type))
+})
+
+function changeTab(tabValue) {
+  activeTab.value = tabValue
+  // 탭 변경 시 전체 목록 재조회 (백엔드 단일 type 필터 제한으로 프론트 필터링)
+  store.storeFetchNotifications(null)
+}
+
+function typeStyle(type) {
+  return store.typeConfig[type] ?? { label: '알림', color: 'text-gray-600', bg: 'bg-gray-50', border: 'border-gray-200' }
+}
+
+function onScroll(e) {
+  const { scrollTop, scrollHeight, clientHeight } = e.target
+  if (scrollHeight - scrollTop - clientHeight < 50) {
+    store.storeLoadMore(20)
+  }
+}
+
+onMounted(() => {
+  store.storeFetchNotifications()
+  store.storeFetchUnreadCount()
+})
+</script>
+
 <template>
   <div class="p-6">
     <!-- Header -->
@@ -72,54 +123,3 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref, computed, onMounted } from 'vue'
-import { Bell } from 'lucide-vue-next'
-import { useNotificationStore } from '@/stores/notification'
-
-const store = useNotificationStore()
-
-const tabs = [
-  { label: '전체',   value: null },
-  { label: '재고',   value: 'stock' },
-  { label: '발주',   value: 'order' },
-  { label: '배송',   value: 'delivery' },
-]
-
-const activeTab = ref(null)
-
-const tabTypeMap = {
-  stock:    ['EXPIRY', 'LOW_STOCK'],
-  order:    ['ABNORMAL_ORDER'],
-  delivery: ['DELIVERY_DELAY', 'DELIVERY_START'],
-}
-
-const filtered = computed(() => {
-  if (activeTab.value === null) return store.storeNotifications
-  const types = tabTypeMap[activeTab.value] ?? []
-  return store.storeNotifications.filter(n => types.includes(n.type))
-})
-
-function changeTab(tabValue) {
-  activeTab.value = tabValue
-  // 탭 변경 시 전체 목록 재조회 (백엔드 단일 type 필터 제한으로 프론트 필터링)
-  store.storeFetchNotifications(null)
-}
-
-function typeStyle(type) {
-  return store.typeConfig[type] ?? { label: '알림', color: 'text-gray-600', bg: 'bg-gray-50', border: 'border-gray-200' }
-}
-
-function onScroll(e) {
-  const { scrollTop, scrollHeight, clientHeight } = e.target
-  if (scrollHeight - scrollTop - clientHeight < 50) {
-    store.storeLoadMore(20)
-  }
-}
-
-onMounted(() => {
-  store.storeFetchNotifications()
-  store.storeFetchUnreadCount()
-})
-</script>

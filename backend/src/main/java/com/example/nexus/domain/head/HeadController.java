@@ -1,5 +1,6 @@
 package com.example.nexus.domain.head;
 
+import com.example.nexus.common.model.BaseResponse;
 import com.example.nexus.domain.head.model.HeadIncomeDto;
 import com.example.nexus.domain.head.model.HeadInventoryDto;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,7 @@ public class HeadController {
 
     // 본사 정산 내역 조회
     @GetMapping("/income")
-    public ResponseEntity<List<HeadIncomeDto.ListRes>> getIncomeList(
+    public ResponseEntity<BaseResponse<List<HeadIncomeDto.ListRes>>> getIncomeList(
             @RequestParam(required = false) String storeName,
             @RequestParam(required = false) Boolean status,
             @RequestParam(required = false)
@@ -37,6 +38,6 @@ public class HeadController {
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         List<HeadIncomeDto.ListRes> result = headIncomeService.getIncomeList(storeName, status, startDate, endDate);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(BaseResponse.success(result));
     }
 }

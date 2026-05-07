@@ -53,17 +53,6 @@ public class DeliveryController {
         return ResponseEntity.ok(response);
     }
 
-    // 본사 배송 승인 (READY → START + 점주 배송 시작 알림)
-    @PatchMapping("/head/{deliveryIdx}/approve")
-    public ResponseEntity<String> approveDelivery(@PathVariable Long deliveryIdx) {
-        boolean isSuccess = deliveryService.approveDelivery(deliveryIdx);
-        if (isSuccess) {
-            return ResponseEntity.ok("배송이 승인되었습니다.");
-        } else {
-            return ResponseEntity.badRequest().body("승인할 수 없는 배송 상태입니다.");
-        }
-    }
-
     // 본사 배송 지연 사유 입력
     @PatchMapping("/head/{deliveryIdx}/delayreason")
     public ResponseEntity<String> updateDelayReason(

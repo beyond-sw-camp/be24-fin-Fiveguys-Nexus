@@ -33,38 +33,39 @@ public interface OrdersRepository extends JpaRepository<Orders, Long>, JpaSpecif
             "WHERE o.store.idx = :storeIdx AND o.createdAt >= :since AND (:excludeIdx IS NULL OR o.idx <> :excludeIdx)")
     Integer findAvgQtyByStoreAndPeriod(@Param("storeIdx") Long storeIdx, @Param("since") LocalDateTime since, @Param("excludeIdx") Long excludeIdx);
 
-    // 본사 대시보드용 - 발주 유형별 최근 건수 (자동/수동 KPI)
+    // 정산용 - 매장별 전체 주문 목록 조회
+    List<Orders> findAllByStoreIdx(Long storeIdx);
+
+    // 본사 대시보드 - 발주 유형별 최근 건수 (자동/수동 KPI)
     long countByOrdersTypeAndCreatedAtAfter(OrdersType ordersType, LocalDateTime since);
 
-    // 본사 대시보드용 - 상태별 발주 건수 (확정 대기 KPI)
+    // 본사 대시보드 - 상태별 발주 건수 (확정 대기 KPI)
     long countByOrdersStatus(OrdersStatus ordersStatus);
 
-    // 본사 대시보드용 - 이상 발주 건수 KPI
+    // 본사 대시보드 - 이상 발주 건수 KPI
     long countByIsDangerTrue();
 
-    // 본사 대시보드용 - 이상 발주 월별 추이 차트 (상태별 그룹핑)
+    // 본사 대시보드 - 이상 발주 월별 추이 차트 (상태별 그룹핑)
     @Query("SELECT FUNCTION('DATE_FORMAT', o.createdAt, '%Y-%m'), o.ordersStatus, COUNT(o) " +
             "FROM Orders o WHERE o.isDanger = true AND o.createdAt >= :since " +
             "GROUP BY FUNCTION('DATE_FORMAT', o.createdAt, '%Y-%m'), o.ordersStatus " +
             "ORDER BY FUNCTION('DATE_FORMAT', o.createdAt, '%Y-%m')")
     List<Object[]> findDangerStatsByMonth(@Param("since") LocalDateTime since);
 
-    // 본사 대시보드용 - 주간 발주 추이 차트 (일별 건수)
+    // 본사 대시보드 - 주간 발주 추이 차트 (일별 건수)
     @Query("SELECT FUNCTION('DATE_FORMAT', o.createdAt, '%m-%d'), COUNT(o) " +
             "FROM Orders o WHERE o.createdAt >= :since " +
             "GROUP BY FUNCTION('DATE_FORMAT', o.createdAt, '%m-%d') " +
             "ORDER BY FUNCTION('DATE_FORMAT', o.createdAt, '%m-%d')")
     List<Object[]> findWeeklyOrderStats(@Param("since") LocalDateTime since);
 
-    // 점주 대시보드용 - 미확정 제안 발주서 개수 KPI
+    // 점주 대시보드 - 미확정 제안 발주서 개수 KPI
     long countByStore_IdxAndOrdersStatusAndOrdersType(Long storeIdx, OrdersStatus ordersStatus, OrdersType ordersType);
 
-    // 점주 대시보드용 - 미확정 제안 발주서 목록
+    // 점주 대시보드 - 미확정 제안 발주서 목록
     List<Orders> findAllByStore_IdxAndOrdersStatusAndOrdersTypeOrderByCreatedAtDesc(Long storeIdx, OrdersStatus ordersStatus, OrdersType ordersType);
 
-    // 점주 대시보드용 - 기간별 승인 발주 금액 합계 (매출 KPI)
+    // 점주 대시보드 - 기간별 승인 발주 금액 합계 (매출 KPI)
     @Query("SELECT COALESCE(SUM(o.price), 0) FROM Orders o WHERE o.store.idx = :storeIdx AND o.ordersStatus = 'APPROVE' AND o.createdAt >= :from AND o.createdAt < :to")
     long sumApprovedPriceByStoreAndPeriod(@Param("storeIdx") Long storeIdx, @Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
-
-    List<Orders> findAllByStoreIdx(Long storeIdx);
 }

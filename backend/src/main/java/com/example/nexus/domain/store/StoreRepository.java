@@ -23,15 +23,6 @@ public interface StoreRepository extends JpaRepository<Store,Long> {
 
     Optional<Store> findByBusiness(String business);
 
-    // 대시보드용 - 본사 대시보드 전체 매장 수 KPI 카드
-    long countByIsDeletedFalse();
-
-    // 대시보드용 - 본사 대시보드 신규 매장 수 (기준일 이후 생성)
-    long countByIsDeletedFalseAndCreatedAtAfter(LocalDateTime since);
-
-    // 대시보드용 - 본사 대시보드 이전 기간 매장 수 (증감률 계산)
-    long countByIsDeletedFalseAndCreatedAtBefore(LocalDateTime until);
-
     // 전체 조회 시 이름 또는 주소 검색
     @Query("SELECT s FROM Store s WHERE " +
             "(s.storeName LIKE %:keyword% OR s.address LIKE %:keyword%) " +
@@ -52,4 +43,13 @@ public interface StoreRepository extends JpaRepository<Store,Long> {
     Page<Store> findByIsDeletedFalseOrderByCreatedAtDesc(Pageable pageable); // 입점(false)
     // 검색 없이 '폐점'만 조회할 때: 최신 폐업일순 또는 등록순 정렬[cite: 7]
     Page<Store> findByIsDeletedTrueOrderByClosedAtDesc(Pageable pageable);
+
+    // 본사 대시보드용 - 전체 매장 수 KPI 카드
+    long countByIsDeletedFalse();
+
+    // 본사 대시보드용 - 신규 매장 수 (기준일 이후 생성)
+    long countByIsDeletedFalseAndCreatedAtAfter(LocalDateTime since);
+
+    // 본사 대시보드용 - 이전 기간 매장 수 (증감률 계산)
+    long countByIsDeletedFalseAndCreatedAtBefore(LocalDateTime until);
 }

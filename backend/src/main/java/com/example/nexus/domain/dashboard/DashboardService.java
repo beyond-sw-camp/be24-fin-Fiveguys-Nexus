@@ -30,8 +30,8 @@ import java.util.List;
 public class DashboardService {
     private final StoreRepository storeRepository;
     private final OrdersRepository ordersRepository;
-    private final DeliveryRepository deliveryRepository;
     private final HeadInventoryRepository headInventoryRepository;
+    private final DeliveryRepository deliveryRepository;
 
     // 본사 대시보드 입점 매장 카드 데이터 조회 메서드
     public DashboardDto.StoreKpiRes getStoreKpi() {

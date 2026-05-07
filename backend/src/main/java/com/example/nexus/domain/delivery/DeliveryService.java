@@ -53,27 +53,6 @@ public class DeliveryService {
                 orders.getStore());
     }
 
-    // 배송 승인: READY → START + 점주 배송 시작 알림 (NOTIFY_014)
-    @Transactional
-    public boolean approveDelivery(Long deliveryIdx) {
-        Delivery delivery = deliveryRepository.findByIdx(deliveryIdx);
-        if (delivery == null || delivery.getDeliveryStatus() != DeliveryStatus.READY) {
-            return false;
-        }
-
-        delivery.setDeliveryStatus(DeliveryStatus.START);
-
-        String storeName = delivery.getOrders().getStore().getStoreName();
-        storeNotificationService.create(
-                NotificationType.DELIVERY_START,
-                "배송 시작 안내",
-                "주문하신 상품의 배송이 시작되었습니다. 예상 도착일: "
-                        + delivery.getEstimatedArrivalAt().toLocalDate(),
-                delivery.getOrders().getStore());
-
-        return true;
-    }
-
     public List<DeliveryDto> getDeliveriesByHead(
             String storeName, DeliveryStatus status, Integer year, Integer month, Integer day) {
         return deliveryRepository.findAllByFilters(storeName, status, year, month, day)

@@ -69,13 +69,25 @@ spec:
         stage('Deploy to Kubernetes') {
             steps {
                 container('kubectl') {
-                    sh """
-                        kubectl apply -f k8s/frontend/deployment.yaml
-                        kubectl apply -f k8s/frontend/service.yaml
-                        kubectl apply -f k8s/ingress.yaml
-                        kubectl set image deployment/nexus-frontend nexus-frontend=${IMAGE_REPO}:${BUILD_NUMBER}
-                        kubectl rollout status deployment/nexus-frontend
-                    """
+                    script {
+                        sh 'kubectl apply -f k8s/frontend/deployment-blue.yaml'
+                        sh 'kubectl apply -f k8s/frontend/deployment-green.yaml'
+                        sh 'kubectl apply -f k8s/frontend/service.yaml'
+                        sh 'kubectl apply -f k8s/ingress.yaml'
+
+                        def currentSlot = sh(
+                            script: "kubectl get svc nexus-frontend-service -o jsonpath='{.spec.selector.slot}'",
+                            returnStdout: true
+                        ).trim()
+
+                        def newSlot = (currentSlot == 'blue') ? 'green' : 'blue'
+
+                        sh "kubectl set image deployment/nexus-frontend-${newSlot} nexus-frontend=${IMAGE_REPO}:${BUILD_NUMBER}"
+                        sh "kubectl rollout status deployment/nexus-frontend-${newSlot} --timeout=120s"
+                        sh "kubectl patch svc nexus-frontend-service -p '{\"spec\":{\"selector\":{\"slot\":\"${newSlot}\"}}}'"
+
+                        echo "Switched traffic to ${newSlot} slot"
+                    }
                 }
             }
         }

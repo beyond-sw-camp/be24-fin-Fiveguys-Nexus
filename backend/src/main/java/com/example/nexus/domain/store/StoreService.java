@@ -136,7 +136,11 @@ public class StoreService {
             // 5. 예외 발생 시 S3 롤백 삭제
             // 트랜잭션 도중 에러가 나면 DB는 롤백되지만, S3에 업로드된 파일은 남으므로 삭제 처리
             if (newFilePath != null && !newFilePath.isEmpty()) {
-                deleteS3Object(newFilePath);
+                try {
+                    deleteS3Object(newFilePath);
+                } catch (Exception ignored) {
+                    // 롤백 중 S3 삭제 실패는 무시하여 원래 예외를 보존합니다.
+                }
             }
 
             // 6. 예외 다시 던지기
@@ -197,7 +201,7 @@ public class StoreService {
             User owner = store.getUser();
             if (owner == null || owner.isDeleted()) throw new BaseException(NOT_FOUND_USER);
 
-            if (newFilePath != null && !newFilePath.equals(oldFilePath)) {
+            if (newFilePath != null && !newFilePath.equals(oldFilePath) && oldFilePath != null && !oldFilePath.isBlank()) {
                 String finalOldFile = oldFilePath;
                 TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                     @Override
@@ -211,8 +215,12 @@ public class StoreService {
             owner.updateOwner(dto.getOwnerName(), dto.getOwnerEmail());
 
         } catch (Exception e) {
-            if (newFilePath != null && !newFilePath.equals(oldFilePath)) {
-                deleteS3Object(newFilePath); // 새 파일 롤백 삭제
+            if (newFilePath != null && !newFilePath.isEmpty()) {
+                try {
+                    deleteS3Object(newFilePath);
+                } catch (Exception ignored) {
+                    // 롤백 중 S3 삭제 실패는 무시하여 원래 예외를 보존합니다.
+                }
             }
 
             if (e instanceof BaseException) throw (BaseException) e;
@@ -221,14 +229,16 @@ public class StoreService {
     }
 
     private void deleteS3Object(String key) {
+        if (key == null || key.isBlank()) {
+            return;
+        }
         try {
             s3Client.deleteObject(DeleteObjectRequest.builder()
                     .bucket(storeBucket)
                     .key(key)
                     .build());
         } catch (Exception e) {
-            // S3 삭제 실패 시 예외를 던져서 호출부에서 인지하게 처리
-            throw new BaseException(S3_DELETE_FAILED); // BaseResponseStatus에 추가 필요
+            // S3 삭제 실패 시 로그를 남기거나 무시하여 원래 예외가 전파되도록 합니다.
         }
     }
 

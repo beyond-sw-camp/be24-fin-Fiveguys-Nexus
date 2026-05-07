@@ -151,8 +151,9 @@ function handleImageChange(e) {
   const allowedTypes = ['image/jpg', 'image/jpeg', 'image/png'];
   if (!allowedTypes.includes(file.type)) {
     alert('JPG, PNG 형식의 이미지 파일만 업로드할 수 있습니다.');
-    if (fileInput.value) {
-      fileInput.value.value = '';
+    if (file) {
+      selectedFile.value = file; // 선택한 파일 보관
+      menuForm.value.fileName = file.name; // 화면 표시용
     }
     return;
   }
@@ -174,9 +175,7 @@ async function uploadFileToS3() {
     const { url, fileName: s3Path } = presigned.data.result;
 
     // 2. S3에 실제 파일 업로드 (PUT 방식)
-    await axios.put(url, selectedFile.value, {
-      headers: { 'Content-Type': 'application/pdf' }
-    });
+    await axios.put(url, selectedFile.value, {});
 
     return s3Path; // 업로드된 S3 파일 경로(DB 저장용) 반환
   } catch {

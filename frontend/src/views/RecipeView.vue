@@ -2,6 +2,7 @@
 import {ref, computed, onMounted, reactive} from 'vue'
 import {Plus, Search, Image as ImageIcon, Tag, Trash2} from 'lucide-vue-next'
 import {getProductList, getCategoryList, getMenuList, getMenuItemList} from '@/api/menu/index.js'
+import HqAbnormalOrderTable from "@/components/orders/HqAbnormalOrderTable.vue";
 
 
 //  상태 관리 (카테고리 관리 관련 추가)
@@ -14,7 +15,7 @@ const showIngredientModal = ref(false)
 const selectedMenu = ref(null)
 const showDeleteConfirm = ref(false)
 const deleteTarget = ref(null)
-
+const selectedFile = ref(null);
 const products = ref([])
 //  메뉴 데이터
 const menus = ref([])
@@ -95,7 +96,7 @@ async function openEditMenuModal(menu) {
   showMenuModal.value = true
 }
 
-// 가격 입력 시 "," 자동 입력
+// 숫자 이외의 문자(한글, 영문 등)를 모두 제거
 const onPriceInput = (e) => {
   const val = e.target.value.replace(/[^0-9]/g, '');
   menuForm.value.price = val ? parseInt(val, 10) : 0;
@@ -114,33 +115,72 @@ function removeIngredientRow(idx) {
 
 // 이미지
 function handleImageChange(e) {
-  const file = e.target.files[0]
-  if (file) menuForm.value.imageName = file.name
+  if (file) {
+    selectedFile.value = file; // 선택한 파일 보관
+    form.fileName = file.name; // 화면 표시용
+  }
+}
+
+// S3 업로드 로직만 담당하는 공통 함수
+async function uploadFileToS3() {
+  // 선택된 파일이 없으면 업로드 과정을 건너뛰고 null 반환
+  if (!selectedFile.value) return null;
+
+  try {
+    // 1. 백엔드에 Presigned URL 요청
+    const presigned = await getPresignedUrl(selectedFile.value.name);
+    const { url, fileName: s3Path } = presigned.data.result;
+
+    // 2. S3에 실제 파일 업로드 (PUT 방식)
+    await axios.put(url, selectedFile.value, {
+      headers: { 'Content-Type': 'application/pdf' }
+    });
+
+    return s3Path; // 업로드된 S3 파일 경로(DB 저장용) 반환
+  } catch (error) {
+    alert("파일 업로드 중 오류가 발생했습니다.")
+    throw new Error("파일 업로드 중 오류가 발생했습니다.");
+  }
 }
 
 // 메뉴 등록 및 수정
 function saveMenu() {
-  if (editTarget.value) {
-    Object.assign(editTarget.value, {
-      menuName: menuForm.value.name,
-      price: menuForm.value.price,
-      imgPath: menuForm.value.imageName,
-      menuCategory: menuForm.value.category,
-      menuItemList: menuForm.value.ingredients.map(i => ({ ...i })),
+  try{
+    // 수정
+    if (editTarget.value) {
+      Object.assign(editTarget.value, {
+        menuName: menuForm.value!!HqAbnormalOrderTable=.name,
+        price: menuForm.value.price,
+        imgPath: menuForm.value.imageName,
+        menuCategory: menuForm.value.category,
+        menuItemList: menuForm.value.ingredients.map(i => ({ ...i })),
     })
-  } else {
-    const maxIdx = menus.value.reduce((max, menu) => menu.idx > max ? menu.idx : max, 0)
-    menus.value.push({
-      idx: maxIdx + 1,
-      menuName: menuForm.value.name,
-      price: menuForm.value.price,
-      imgPath: menuForm.value.imageName,
-      menuCategory: menuForm.value.category,
-      menuItemList: menuForm.value.ingredients.map(i => ({ ...i })),
-      menuItemCount: menuForm.value.ingredients.length,
-    })
+
+
+    }
+    // 등록
+    else {
+      const maxIdx = menus.value.reduce((max, menu) => menu.idx > max ? menu.idx : max, 0)
+      menus.value.push({
+        idx: maxIdx + 1,
+        menuName: menuForm.value.name,
+        price: menuForm.value.price,
+        imgPath: menuForm.value.imageName,
+        menuCategory: menuForm.value.category,
+        menuItemList: menuForm.value.ingredients.map(i => ({ ...i })),
+        menuItemCount: menuForm.value.ingredients.length,
+      })
+    }
+    showMenuModal.value = false
+  }catch (error) {
+    // 백엔드에서 보낸 상세 에러 메시지 추출
+    const serverMessage = error.response?.data?.message || error.message;
+    const serverCode = error.response?.data?.code || "Unknown Code";
+
+    console.error("서버 에러 상세:", error.response?.data);
+    alert(`등록 실패 (${serverCode}): ${serverMessage}`);
   }
-  showMenuModal.value = false
+
 }
 
 // 카테고리 추가

@@ -5,6 +5,7 @@ metadata:
 spec:
   selector:
     app: nexus-backend
+    slot: blue
   ports:
     - protocol: TCP
       port: 8080

@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nexus-backend-blue
+  labels:
+    app: nexus-backend
+    slot: blue
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nexus-backend
+      slot: blue
+  template:
+    metadata:
+      labels:
+        app: nexus-backend
+        slot: blue
+    spec:
+      containers:
+        - name: nexus-backend
+          image: deatytim/nexusback:latest
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: nexus-backend-config
+            - secretRef:
+                name: nexus-backend-secret
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 30

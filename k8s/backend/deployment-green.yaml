@@ -1,18 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nexus-backend
+  name: nexus-backend-green
   labels:
     app: nexus-backend
+    slot: green
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: nexus-backend
+      slot: green
   template:
     metadata:
       labels:
         app: nexus-backend
+        slot: green
     spec:
       containers:
         - name: nexus-backend

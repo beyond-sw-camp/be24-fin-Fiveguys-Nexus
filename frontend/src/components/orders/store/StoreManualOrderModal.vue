@@ -1,7 +1,7 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
 import { Plus } from 'lucide-vue-next'
-import { formatPrice } from './orderUtils'
+import { formatPrice } from '../orderUtils'
 import { getProductList } from '@/api/product'
 
 defineProps({

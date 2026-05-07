@@ -1,6 +1,6 @@
 <script setup>
 import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
-import { ORDER_STATUS_LABEL, ORDER_TYPE_LABEL, storeStatusClass } from './orderUtils'
+import { ORDER_STATUS_LABEL, ORDER_TYPE_LABEL, storeStatusClass } from '../orderUtils'
 
 defineProps({
   orders: { type: Array, required: true },

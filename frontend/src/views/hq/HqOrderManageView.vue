@@ -3,12 +3,12 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Settings, CheckCheck } from 'lucide-vue-next'
 import ordersApi from '@/api/orders'
-import HqAutoOrderTable from '@/components/orders/HqAutoOrderTable.vue'
-import HqConfirmedOrderTable from '@/components/orders/HqConfirmedOrderTable.vue'
-import HqOrderHistoryTable from '@/components/orders/HqOrderHistoryTable.vue'
-import HqAbnormalOrderTable from '@/components/orders/HqAbnormalOrderTable.vue'
-import HqOrderDetailModal from '@/components/orders/HqOrderDetailModal.vue'
-import HqDangerSettingsModal from '@/components/orders/HqDangerSettingsModal.vue'
+import HqAutoOrderTable from '@/components/orders/hq/HqAutoOrderTable.vue'
+import HqConfirmedOrderTable from '@/components/orders/hq/HqConfirmedOrderTable.vue'
+import HqOrderHistoryTable from '@/components/orders/hq/HqOrderHistoryTable.vue'
+import HqAbnormalOrderTable from '@/components/orders/hq/HqAbnormalOrderTable.vue'
+import HqOrderDetailModal from '@/components/orders/hq/HqOrderDetailModal.vue'
+import HqDangerSettingsModal from '@/components/orders/hq/HqDangerSettingsModal.vue'
 
 const route = useRoute()
 const router = useRouter()

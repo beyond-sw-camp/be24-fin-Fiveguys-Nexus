@@ -1,82 +1,95 @@
 <script setup>
 import {ref, computed, onMounted, reactive} from 'vue'
-import {Plus, Search, Image as ImageIcon, ChevronDown, Tag, Trash2} from 'lucide-vue-next'
-import {getProductList, getCategoryList, getMenuList, getMenuItemList} from '@/api/menu/index.js'
+import {Plus, Search, Image as ImageIcon, Tag, Trash2} from 'lucide-vue-next'
+import {getProductList, getCategoryList, getMenuList, getMenuItemList, getPresignedUrl, postNewRegister} from '@/api/menu/index.js'
+import axios from 'axios'
 
-
-//  상태 관리 (카테고리 관리 관련 추가)
 const showCategoryModal = ref(false)
 const newCategoryInput = ref('')
-const UNIT_OPTIONS = ['g', 'kg', 'ml', 'L', '개', '봉', '묶음', 'ea', '기타']
-//  검색 및 필터링
 const searchQuery = ref('')
-const selectedCategoryIdx = ref('') // 제품 드롭다운 필터용 상태
-
-
-//  상품 목록
+const selectedCategoryIdx = ref('')
+const showIngredientModal = ref(false)
+const selectedMenu = ref(null)
+const showDeleteConfirm = ref(false)
+const deleteTarget = ref(null)
+const selectedFile = ref(null);
 const products = ref([])
-const productListRes = async () => {
-  const res  = await getProductList()
-  products.value = res.data
-}
-
-//  메뉴 데이터
-const menus = reactive([])
+const menus = ref([])
 const pagination = reactive({
   totalPage: 0,
   totalCount: 0,
   currentPage: 0,
   currentSize: 10
 })
+const UNIT_OPTIONS = ['g', 'kg', 'ml', 'L', '개', '봉', '묶음', 'ea', '기타']
+const categories = ref([])
 
+//  메뉴 등록 / 수정 모달
+const showMenuModal = ref(false)
+const editTarget = ref(null)
+const formattedPriceInput = ref('')
+const getInFrom = () => ({
+  menuName: '',
+  price: null,
+  imgPath: '',
+  imgName:'',
+  menuCategoryIdx: null,
+  // MenuItemReq 구조에 맞춘 배열
+  menuItemList: [
+    {
+      productIdx: '',
+      quantity: 0,
+      menuUnit: '' ,
+      customUnit: ''
+    }
+  ]
+})
+
+const menuForm = ref(getInFrom())
+
+// 제품 목록 조회
+const productListRes = async () => {
+  const res  = await getProductList()
+  products.value = res.data
+}
+
+// 메뉴 목록 조회
 const getMenuRes = async (page = 0)=>{
   const searchReq = {
     keyword : searchQuery.value,
     categoryIdx: selectedCategoryIdx.value
   }
-
   const res = await getMenuList(searchReq, page, pagination.currentSize)
-  menus.splice(0, menus.length, ...res.data.result.menuList)
-
+  menus.value.splice(0, menus.value.length, ...res.data.result.menuList)
   pagination.totalPage = res.data.result.totalPage
   pagination.totalCount = res.data.result.totalCount
   pagination.currentPage = res.data.result.currentPage
-
-}
-const selectCategory = (idx) => {
-  selectedCategoryIdx.value = idx; // idx (Long) 저장
-  getMenuRes(0); // 페이지를 0으로 초기화하여 재조회
 }
 
-
-
-// 카테고리
-const categories = ref([])
+// 카테고리 목록 조회
 const categoryRes = async () => {
   const res = await getCategoryList()
   categories.value = res.data.result
-  console.log(categories.value)
 }
 
-// --- 카테고리 필터링 (클라이언트 사이드) ---
-const filteredMenus = computed(() => {
-  return menus; // 서버에서 이미 필터링된 결과를 받아오므로 그대로 반환
-})
+// 카테고리 선택
+const selectCategory = (idx) => {
+  selectedCategoryIdx.value = idx;
+  getMenuRes(0);
+}
 
-
-//  메뉴 등록 / 수정 모달
-const showMenuModal = ref(false)
-const editTarget = ref(null)
-const menuForm = ref({ name: '', price: 0, imageName: '', category: '전체', ingredients: [] })
-const formattedPriceInput = ref('')
-
+// 등록
 function openNewMenuModal() {
-  editTarget.value = null
-  menuForm.value = { name: '', price: 0, imageName: '', category: '육류', ingredients: [] }
-  formattedPriceInput.value = ''
-  showMenuModal.value = true
+  editTarget.value = null;
+  selectedFile.value = null;
+  formattedPriceInput.value = '';
+  const initial = getInFrom();
+  initial.menuCategoryIdx = null;
+  menuForm.value = initial;
+  showMenuModal.value = true;
 }
 
+// 수정 모달창
 async function openEditMenuModal(menu) {
   const res = await getMenuItemList(menu.idx)
   const detail = res.data.result
@@ -87,60 +100,116 @@ async function openEditMenuModal(menu) {
     price: menu.price,
     imageName: detail.imgPath?.trim() ?? '',
     category: menu.menuCategory,
-    ingredients: detail.menuItemList ? detail.menuItemList.map(i => ({
+    menuItemList: detail.menuItemList ? detail.menuItemList.map(i => ({
       productIdx: i.idx,
       amount: i.quantity,
-      unit: i.menuUnit,
+      menuUnit: i.menuUnit,
     })) : [],
   }
   formattedPriceInput.value = menu.price.toLocaleString('ko-KR')
   showMenuModal.value = true
 }
 
+// 숫자 이외의 문자(한글, 영문 등)를 모두 제거
 const onPriceInput = (e) => {
-  const val = e.target.value.replace(/[^0-9]/g, '');
-  menuForm.value.price = val ? parseInt(val, 10) : 0;
-  e.target.value = val ? menuForm.value.price.toLocaleString('ko-KR') : '';
+  const rawValue = e.target.value.replace(/[^0-9]/g, '')
+  const numericValue = rawValue ? parseInt(rawValue, 10) : 0
+  menuForm.value.price = numericValue // 실제 데이터 저장
+  formattedPriceInput.value = numericValue ? numericValue.toLocaleString('ko-KR') : ''
 };
 
+// 재료 버튼 클릭시 menuForm에 재료 추가
 function addIngredientRow() {
-  menuForm.value.ingredients.push({ productIdx: '', amount: 0, unit: '' })
+  menuForm.value.menuItemList.push({
+    productIdx: '',
+    quantity: 0,
+    menuUnit: '' ,
+    customUnit: ''
+  })
 }
 
+// 재료 버튼 클릭시 menuForm에 재료 삭제
 function removeIngredientRow(idx) {
-  menuForm.value.ingredients.splice(idx, 1)
+  menuForm.value.menuItemList.splice(idx, 1)
 }
 
+// 이미지
 function handleImageChange(e) {
   const file = e.target.files[0]
-  if (file) menuForm.value.imageName = file.name
-}
-function saveMenu() {
-  if (editTarget.value) {
-    Object.assign(editTarget.value, {
-      menuName: menuForm.value.name,
-      price: menuForm.value.price,
-      imgPath: menuForm.value.imageName,
-      menuCategory: menuForm.value.category,
-      menuItemList: menuForm.value.ingredients.map(i => ({ ...i })),
-    })
-  } else {
-    const maxIdx = menus.value.reduce((max, menu) => menu.idx > max ? menu.idx : max, 0)
-    menus.value.push({
-      idx: maxIdx + 1,
-      menuName: menuForm.value.name,
-      price: menuForm.value.price,
-      imgPath: menuForm.value.imageName,
-      menuCategory: menuForm.value.category,
-      menuItemList: menuForm.value.ingredients.map(i => ({ ...i })),
-      menuItemCount: menuForm.value.ingredients.length,
-    })
+  if (!file) return;
+
+  const allowedTypes = ['image/jpg', 'image/jpeg', 'image/png'];
+  if (!allowedTypes.includes(file.type)) {
+    alert('JPG, PNG 형식의 이미지 파일만 업로드할 수 있습니다.');
+    e.target.value = '';
+    return;
   }
-  showMenuModal.value = false
+  if (file) {
+    selectedFile.value = file; // 선택한 파일 보관
+    menuForm.value.imgName = file.name; // 화면 표시용
+  }
 }
 
+// S3 업로드 로직만 담당하는 공통 함수
+async function uploadFileToS3() {
+  if (!selectedFile.value) return null;
 
+  try {
+    const presigned = await getPresignedUrl(selectedFile.value.name);
+    const { url, fileName: s3Path } = presigned.data.result;
+    await axios.put(url, selectedFile.value, {
+      headers: { 'Content-Type': selectedFile.value.type }
+    });
+    return s3Path;
+  } catch {
+    alert("파일 업로드 중 오류가 발생했습니다. 다시 시도해주세요.")
+  }
+}
 
+// 메뉴 등록 및 수정
+async function saveMenu() {
+  try{
+    let finalFilePath = menuForm.value.imgPath;
+    if (selectedFile.value) {
+      const newS3Path = await uploadFileToS3();
+      if (newS3Path) {
+        finalFilePath = newS3Path;
+      }
+    }
+    // 수정
+    if (editTarget.value) {
+    }
+    // 등록
+    else {
+      const menuRegDto = {
+        menuName: menuForm.value.menuName,
+        price: menuForm.value.price,
+        imgPath: finalFilePath,
+        menuCategoryIdx: menuForm.value.menuCategoryIdx,
+        menuItemList: menuForm.value.menuItemList.map(i => ({
+          productIdx: i.productIdx,
+          quantity: i.quantity,
+          menuUnit: i.menuUnit === '기타' ? i.customUnit : i.menuUnit
+        }))
+      }
+      const res = await postNewRegister(menuRegDto)
+      if (res.data.code === 2000) {
+        alert("신규 메뉴가 등록되었습니다.");
+        menus.value.length = 0;
+        await getMenuRes();
+      }
+    }
+    showMenuModal.value = false
+    selectedFile.value = null;
+  }catch (error) {
+    const serverMessage = error.response?.data?.message || error.message;
+    const serverCode = error.response?.data?.code || "Unknown Code";
+    console.error("서버 에러 상세:", error.response?.data);
+    alert(`등록 실패 (${serverCode}): ${serverMessage}`);
+  }
+}
+
+// 카테고리 추가
 async function addCategoryAction() {
   const name = newCategoryInput.value.trim()
   if (!name) return
@@ -153,43 +222,32 @@ async function addCategoryAction() {
   }
 }
 
+// 카테고리 삭제
 async function deleteCategoryAction(idx, name) {
   if (!confirm(`'${name}' 카테고리를 삭제하시겠습니까?`)) return
   try {
     await deleteCategory(idx)
     await categoryRes()
-    if (selectedCategoryIdx.value === name) selectedCategoryIdx.value = '전체'
+    if (selectedCategoryIdx.value === idx) selectedCategoryIdx.value = null
   } catch (error) {
     alert('삭제 실패: 해당 카테고리를 사용하는 데이터가 있을 수 있습니다.')
   }
 }
 
-//  재료 목록 모달
-const showIngredientModal = ref(false)
-const selectedMenu = ref(null)
-
 // 상세 모달 창
 async function openIngredientModal(menuIdx) {
   const res = await getMenuItemList(menuIdx)
-  console.log(res.data.result)
   selectedMenu.value = res.data.result
   showIngredientModal.value = true
 }
 
-function getProductName(productIdx) {
-  return products.value.find(p => p.idx === productIdx)?.name ?? productIdx
-
-}
-
-//  삭제 확인 모달
-const showDeleteConfirm = ref(false)
-const deleteTarget = ref(null)
-
+// 메뉴 삭제
 function openDeleteConfirm(menu) {
   deleteTarget.value = menu
   showDeleteConfirm.value = true
 }
 
+// 삭제 모달 창에 있는 삭제
 function confirmDelete() {
   if (deleteTarget.value) {
     menus.value = menus.value.filter(m => m.idx !== deleteTarget.value.idx)
@@ -198,18 +256,24 @@ function confirmDelete() {
   deleteTarget.value = null
 }
 
-//  유틸
+// 제품 선택 시 중복 비허용
+const isAlreadySelected = (productIdx, currentItem) => {
+  return menuForm.value.menuItemList.some(
+    (i) => i !== currentItem && i.productIdx === productIdx
+  );
+};
+
+//  가격 유틸
 function formatPrice(price) {
   return '₩ ' + price.toLocaleString('ko-KR')
 }
 
+// 페이지 번호
 const visiblePages = computed(() => {
   const range = 10; // 한 번에 보여줄 페이지 개수
   const currentGroup = Math.floor(pagination.currentPage / range);
-
   const start = currentGroup * range;
   const end = Math.min(start + range, pagination.totalPage);
-
   const pages = [];
   for (let i = start; i < end; i++) {
     pages.push(i);
@@ -217,13 +281,11 @@ const visiblePages = computed(() => {
   return pages;
 });
 
+// 페이지 번호 클릭시 수정 (0보다 작거나 마지막 페이지(totalPage - 1)보다 크면 무시)
 const changePage = (page) => {
-  // 0보다 작거나 마지막 페이지(totalPage - 1)보다 크면 무시[cite: 1]
   if (page < 0 || page >= pagination.totalPage) return
   getMenuRes(page)
 }
-
-
 
 onMounted(() => {
   getMenuRes()
@@ -234,7 +296,6 @@ onMounted(() => {
 
 <template>
   <div class="p-5 space-y-4">
-
     <!-- ── 페이지 헤더 ── -->
     <div class="flex items-center justify-between">
       <div>
@@ -279,7 +340,7 @@ onMounted(() => {
         </button>
 
         <button v-for="cat in categories"
-                :key="cat.idx"
+                :key="cat.categoryIdx"
                 @click="selectCategory(cat.categoryIdx)"
                 class="px-3 py-1.5 text-sm font-semibold border rounded-lg transition-colors shadow-sm cursor-pointer"
                 :class="selectedCategoryIdx === cat.categoryIdx
@@ -304,7 +365,7 @@ onMounted(() => {
           </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
-          <tr v-for="menu in filteredMenus" :key="menu.idx"
+          <tr v-for="menu in menus" :key="menu.idx"
               @click="openIngredientModal(menu.idx)"
               class="hover:bg-gray-50/50 transition-colors cursor-pointer group">
             <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ menu.idx }}</td>
@@ -334,8 +395,8 @@ onMounted(() => {
               </div>
             </td>
           </tr>
-          <tr v-if="filteredMenus.length === 0">
-            <td colspan="5" class="px-5 py-12 text-center text-gray-400 text-sm">검색 결과가 없습니다.</td>
+          <tr v-if="menus.length === 0">
+            <td colspan="5" class="px-5 py-12 text-center text-gray-400 text-sm">메뉴가 없습니다.</td>
           </tr>
           </tbody>
         </table>
@@ -361,7 +422,7 @@ onMounted(() => {
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-1.5">
               <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">메뉴명</label>
-              <input v-model="menuForm.name" required type="text" placeholder="예: 삼겹살 세트"
+              <input v-model="menuForm.menuName" required type="text" placeholder="예: 아메리카노"
                      class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#F97316] focus:ring-4 focus:ring-[#F97316]/5 transition-all" />
             </div>
             <div class="space-y-1.5">
@@ -379,12 +440,12 @@ onMounted(() => {
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">카테고리</label>
             <div class="flex items-center gap-2 flex-wrap">
-              <button v-for="cat in categories.filter(c => c !== '전체')" :key="cat"
+              <button v-for="cat in categories" :key="cat.categoryIdx"
                       type="button"
-                      @click="menuForm.category = cat.menuCategoryName"
-                      :class="menuForm.category === cat.menuCategoryName
-                        ? 'bg-[#F97316] text-white border-[#F97316]'
-                        : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:bg-gray-50'"
+                      @click="menuForm.menuCategoryIdx = cat.categoryIdx"
+                      :class="(menuForm.menuCategoryIdx !== null && menuForm.menuCategoryIdx === cat.categoryIdx)
+          ? 'bg-[#F97316] text-white border-[#F97316]'
+          : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:bg-gray-50'"
                       class="px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all cursor-pointer">
                 {{ cat.menuCategoryName }}
               </button>
@@ -396,11 +457,11 @@ onMounted(() => {
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">메뉴 이미지</label>
             <label class="cursor-pointer block">
               <div class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm text-gray-400 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between">
-                <span>{{ menuForm.imageName || '이미지를 업로드하세요' }}</span>
+                <span>{{ menuForm.imgName || '이미지를 업로드하세요' }}</span>
                 <ImageIcon class="w-4 h-4 flex-shrink-0" />
               </div>
 
-              <input type="file" class="hidden" @change="handleImageChange" accept="image/*" />
+              <input type="file" class="hidden" @change="handleImageChange" accept=".jpg, .jpeg, .png" />
             </label>
           </div>
 
@@ -416,7 +477,7 @@ onMounted(() => {
 
             <!-- 재료 컬럼 레이블 -->
             <div class="grid grid-cols-[2.5fr_1fr_1.2fr_1.2fr_32px] gap-2 mb-2 px-0.5">
-              <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">상품명</span>
+              <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">제품명</span>
               <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">소요량</span>
               <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">단위 선택</span>
               <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">직접 입력</span>
@@ -425,28 +486,38 @@ onMounted(() => {
 
             <!-- 재료 행 목록 -->
             <div class="space-y-3">
-              <div v-for="(item, idx) in menuForm.ingredients" :key="idx"
-                   class="grid grid-cols-[2.5fr_1fr_1.2fr_1.2fr_32px] gap-2 items-center"> <select v-model="item.productIdx"
-                                                                                                   class="w-full px-2 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#F97316] transition-all appearance-none bg-white">
-                <option value="">상품 선택</option>
-                <option v-for="p in products" :key="p.idx" :value="p.idx">{{ p.productName }}</option>
-              </select>
+              <div v-for="(item, idx) in menuForm.menuItemList" :key="idx"
+                   class="grid grid-cols-[2.5fr_1fr_1.2fr_1.2fr_32px] gap-2 items-center">
+                <select v-model="item.productIdx"
+                        class="w-full px-2 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#F97316] transition-all appearance-none bg-white">
+                  <option value="">제품 선택</option>
+                  <option v-for="p in products"
+                          :key="p.idx"
+                          :value="p.idx"
+                          :disabled="isAlreadySelected(p.idx, item)">
+                    {{ p.productName }} {{ isAlreadySelected(p.idx, item) ? '(선택됨)' : '' }}
+                  </option>
+                </select>
 
-                <input v-model.number="item.amount" type="number" placeholder="0"
+                <input v-model.number="item.quantity"
+                       type="number"
+                       min="1"
+                       placeholder="0"
                        class="w-full px-2 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#F97316] text-right" />
 
-                <select v-model="item.unit"
-                        @change="item.unit !== '기타' ? item.customUnit = '' : null"
+                <select v-model="item.menuUnit"
+                        @change="item.menuUnit !== '기타' ? item.customUnit = '' : null"
                         class="w-full px-2 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#F97316] bg-white">
                   <option value="">선택</option>
-                  <option v-for="unit in UNIT_OPTIONS" :key="unit" :value="unit">{{ unit }}</option>
+                  <option v-for="unit in UNIT_OPTIONS" :key="unit" :value="unit">
+                    {{ unit }}</option>
                 </select>
 
                 <input v-model="item.customUnit"
-                       :disabled="item.unit !== '기타'"
+                       :disabled="item.menuUnit !== '기타'"
                        type="text"
                        placeholder="직접 입력"
-                       :class="item.unit === '기타' ? 'bg-white border-gray-200' : 'bg-gray-50 border-gray-100 text-transparent select-none'"
+                       :class="item.menuUnit === '기타' ? 'bg-white border-gray-200' : 'bg-gray-50 border-gray-100 text-transparent select-none'"
                        class="w-full px-2 py-2 rounded-lg border text-sm outline-none focus:border-[#F97316] transition-all" />
 
                 <button type="button" @click="removeIngredientRow(idx)"
@@ -454,7 +525,7 @@ onMounted(() => {
                   ✕
                 </button>
               </div>
-              <p v-if="menuForm.ingredients.length === 0" class="text-xs text-gray-300 py-2 text-center">
+              <p v-if="menuForm.menuItemList.length === 0" class="text-xs text-gray-300 py-2 text-center">
                 재료를 추가해주세요
               </p>
             </div>
@@ -500,7 +571,7 @@ onMounted(() => {
                    @error="(e) => e.target.src = 'https://nexus-menu-assets.s3.ap-northeast-2.amazonaws.com/theVenti_logo.png'" />
               <img v-else
                    :src="'https://nexus-menu-assets.s3.ap-northeast-2.amazonaws.com/theVenti_logo.png'"
-                   :alt="NEXUS"
+                   alt="NEXUS"
                    class="w-full h-full object-cover" />
             </div>
           </div>
@@ -520,7 +591,7 @@ onMounted(() => {
               <tr v-for="(item, idx) in selectedMenu?.menuItemList" :key="idx"
                   class="hover:bg-gray-50/80 transition-colors">
                 <td class="px-3 py-3 font-mono text-xs text-gray-400">R-{{ String(idx + 1).padStart(3, '0') }}</td>
-                <td class="px-3 py-3 font-semibold text-gray-800">{{ getProductName(item.productName) }}</td>
+                <td class="px-3 py-3 font-semibold text-gray-800">{{ item.productName }}</td>
                 <td class="px-3 py-3 text-right text-gray-700 font-mono">{{ item.quantity }}</td>
                 <td class="px-3 py-3 text-gray-500">{{ item.menuUnit }}</td>
               </tr>
@@ -584,10 +655,10 @@ onMounted(() => {
               <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">카테고리 목록 ({{ categories.length }}개)</p>
             </div>
             <div class="divide-y divide-gray-100 max-h-64 overflow-y-auto">
-              <div v-for="cat in categories" :key="cat.idx"
+              <div v-for="cat in categories" :key="cat.categoryIdx"
                    class="flex items-center justify-between px-4 py-2.5 hover:bg-gray-50">
                 <span class="text-sm font-medium text-gray-700">{{ cat.menuCategoryName }}</span>
-                <button @click="deleteCategoryAction(cat.idx, cat.menuCategoryName)" class="text-gray-300 hover:text-red-500 transition-colors cursor-pointer">
+                <button @click="deleteCategoryAction(cat.categoryIdx, cat.menuCategoryName)" class="text-gray-300 hover:text-red-500 transition-colors cursor-pointer">
                   <Trash2 class="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -640,5 +711,3 @@ onMounted(() => {
 
   </div>
 </template>
-
-

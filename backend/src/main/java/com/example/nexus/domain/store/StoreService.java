@@ -94,41 +94,55 @@ public class StoreService {
 
     @Transactional
     public void storeReg(StoreDto.StoreRegReq dto) {
-        // 이메일을 통한 가맹점 점주 체크
-        User owner = userRepository.findByEmail(dto.getOwnerEmail()).orElseThrow(
-                ()-> new BaseException(NOT_FOUND_USER));
+        String newFilePath = dto.getFilePath();
 
-        // 점주 중복 체크
-        storeRepository.findByUserIdx(owner.getIdx())
-                .ifPresent(s-> {
-                    throw new BaseException(ALREADY_HAS_STORE);
-                });
+        try{
+            // 이메일을 통한 가맹점 점주 체크
+            User owner = userRepository.findByEmail(dto.getOwnerEmail()).orElseThrow(
+                    ()-> new BaseException(NOT_FOUND_USER));
 
-        // 가맹점 이름 중복 체크
-        storeRepository.findByStoreName(dto.getStoreName())
-                .ifPresent(s -> {
-                    throw new BaseException(STORE_NAME_ALREADY_EXISTS);
-                });
+            // 점주 중복 체크
+            storeRepository.findByUserIdx(owner.getIdx())
+                    .ifPresent(s-> {
+                        throw new BaseException(ALREADY_HAS_STORE);
+                    });
 
-        // 가맹점 사업자 번호 중복 체크
-        storeRepository.findByBusiness(dto.getBusiness())
-                .ifPresent(s -> {
-                    throw new BaseException(BUSINESS_NUMBER_ALREADY_EXISTS);
-                });
+            // 가맹점 이름 중복 체크
+            storeRepository.findByStoreName(dto.getStoreName())
+                    .ifPresent(s -> {
+                        throw new BaseException(STORE_NAME_ALREADY_EXISTS);
+                    });
 
-        Store store = Store.builder()
-                .storeName(dto.getStoreName())
-                .postcode(dto.getPostcode())
-                .address(dto.getAddress())
-                .addressDetail(dto.getAddressDetail())
-                .filePath(dto.getFilePath())
-                .business(dto.getBusiness())
-                .createdAt(LocalDateTime.now())
-                .isDeleted(false)
-                .user(owner)
-                .build();
+            // 가맹점 사업자 번호 중복 체크
+            storeRepository.findByBusiness(dto.getBusiness())
+                    .ifPresent(s -> {
+                        throw new BaseException(BUSINESS_NUMBER_ALREADY_EXISTS);
+                    });
 
-        storeRepository.save(store);
+            Store store = Store.builder()
+                    .storeName(dto.getStoreName())
+                    .postcode(dto.getPostcode())
+                    .address(dto.getAddress())
+                    .addressDetail(dto.getAddressDetail())
+                    .filePath(dto.getFilePath())
+                    .business(dto.getBusiness())
+                    .createdAt(LocalDateTime.now())
+                    .isDeleted(false)
+                    .user(owner)
+                    .build();
+
+            storeRepository.save(store);
+        } catch (Exception e) {
+            // 5. 예외 발생 시 S3 롤백 삭제
+            // 트랜잭션 도중 에러가 나면 DB는 롤백되지만, S3에 업로드된 파일은 남으므로 삭제 처리
+            if (newFilePath != null && !newFilePath.isEmpty()) {
+                deleteS3Object(newFilePath);
+            }
+
+            // 6. 예외 다시 던지기
+            if (e instanceof BaseException) throw (BaseException) e;
+            throw new RuntimeException(e);
+        }
     }
 
     // Presigned URL을 발급 받는 로직

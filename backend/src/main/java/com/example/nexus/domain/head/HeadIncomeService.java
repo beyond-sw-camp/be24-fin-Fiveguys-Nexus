@@ -38,15 +38,18 @@ public class HeadIncomeService {
     // ordersIdx 로 HeadIncome을 찾기
     public HeadIncomeDto.FindHeadIncomeRes findByOrdersIdx(Long ordersIdx) {
         HeadIncome headIncome = headIncomeRepository.findByOrdersIdx(ordersIdx);
-        HeadIncomeDto.FindHeadIncomeRes resDto = HeadIncomeDto.FindHeadIncomeRes.builder()
-                .idx(headIncome.getIdx())
-                .price(headIncome.getPrice())
-                .paid(headIncome.getStatus())
-                .settlementIdx(headIncome.getSettlementIdx())
-                .storeIdx(headIncome.getStore().getIdx())
-                .ordersIdx(headIncome.getOrders().getIdx())
-                .build();
-        return  resDto;
+        if (headIncome != null) {
+            HeadIncomeDto.FindHeadIncomeRes resDto = HeadIncomeDto.FindHeadIncomeRes.builder()
+                    .idx(headIncome.getIdx())
+                    .price(headIncome.getPrice())
+                    .paid(headIncome.getStatus())
+                    .settlementIdx(headIncome.getSettlementIdx())
+                    .storeIdx(headIncome.getStore().getIdx())
+                    .ordersIdx(headIncome.getOrders().getIdx())
+                    .build();
+            return resDto;
+        }
+        return null;
     }
 
 

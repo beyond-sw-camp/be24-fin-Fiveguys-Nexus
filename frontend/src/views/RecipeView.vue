@@ -48,17 +48,17 @@ const getMenuRes = async (page = 0)=>{
 
 }
 
-// 카테고리 선택
-const selectCategory = (idx) => {
-  selectedCategoryIdx.value = idx; // idx (Long) 저장
-  getMenuRes(0); // 페이지를 0으로 초기화하여 재조회
-}
-
 // 카테고리 목록 조회
 const categories = ref([])
 const categoryRes = async () => {
   const res = await getCategoryList()
   categories.value = res.data.result
+}
+
+// 카테고리 선택
+const selectCategory = (idx) => {
+  selectedCategoryIdx.value = idx; // idx (Long) 저장
+  getMenuRes(0); // 페이지를 0으로 초기화하여 재조회
 }
 
 //  메뉴 등록 / 수정 모달

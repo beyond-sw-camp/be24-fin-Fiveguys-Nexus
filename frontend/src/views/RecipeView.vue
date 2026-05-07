@@ -7,22 +7,15 @@ import {getProductList, getCategoryList, getMenuList, getMenuItemList} from '@/a
 //  상태 관리 (카테고리 관리 관련 추가)
 const showCategoryModal = ref(false)
 const newCategoryInput = ref('')
-const UNIT_OPTIONS = ['g', 'kg', 'ml', 'L', '개', '봉', '묶음', 'ea', '기타']
 //  검색 및 필터링
 const searchQuery = ref('')
 const selectedCategoryIdx = ref('') // 제품 드롭다운 필터용 상태
-//  재료 목록 모달
 const showIngredientModal = ref(false)
 const selectedMenu = ref(null)
+const showDeleteConfirm = ref(false)
+const deleteTarget = ref(null)
 
-
-//  상품 목록 조회
 const products = ref([])
-const productListRes = async () => {
-  const res  = await getProductList()
-  products.value = res.data.result
-}
-
 //  메뉴 데이터
 const menus = ref([])
 const pagination = reactive({
@@ -31,6 +24,13 @@ const pagination = reactive({
   currentPage: 0,
   currentSize: 10
 })
+const UNIT_OPTIONS = ['g', 'kg', 'ml', 'L', '개', '봉', '묶음', 'ea', '기타']
+
+//  상품 목록 조회
+const productListRes = async () => {
+  const res  = await getProductList()
+  products.value = res.data.result
+}
 
 // 메뉴 목록 조회
 const getMenuRes = async (page = 0)=>{
@@ -61,7 +61,6 @@ const categoryRes = async () => {
   categories.value = res.data.result
 }
 
-
 //  메뉴 등록 / 수정 모달
 const showMenuModal = ref(false)
 const editTarget = ref(null)
@@ -75,6 +74,7 @@ function openNewMenuModal() {
   showMenuModal.value = true
 }
 
+// 수정 모달창
 async function openEditMenuModal(menu) {
   const res = await getMenuItemList(menu.idx)
   const detail = res.data.result
@@ -95,24 +95,30 @@ async function openEditMenuModal(menu) {
   showMenuModal.value = true
 }
 
+// 가격 입력 시 "," 자동 입력
 const onPriceInput = (e) => {
   const val = e.target.value.replace(/[^0-9]/g, '');
   menuForm.value.price = val ? parseInt(val, 10) : 0;
   e.target.value = val ? menuForm.value.price.toLocaleString('ko-KR') : '';
 };
 
+// 재료 버튼 클릭시 menuForm에 재료 추가
 function addIngredientRow() {
   menuForm.value.ingredients.push({ productIdx: '', amount: 0, unit: '' })
 }
 
+// 재료 버튼 클릭시 menuForm에 재료 삭제
 function removeIngredientRow(idx) {
   menuForm.value.ingredients.splice(idx, 1)
 }
 
+// 이미지
 function handleImageChange(e) {
   const file = e.target.files[0]
   if (file) menuForm.value.imageName = file.name
 }
+
+// 메뉴 등록 및 수정
 function saveMenu() {
   if (editTarget.value) {
     Object.assign(editTarget.value, {
@@ -137,8 +143,7 @@ function saveMenu() {
   showMenuModal.value = false
 }
 
-
-
+// 카테고리 추가
 async function addCategoryAction() {
   const name = newCategoryInput.value.trim()
   if (!name) return
@@ -151,6 +156,7 @@ async function addCategoryAction() {
   }
 }
 
+// 카테고리 삭제
 async function deleteCategoryAction(idx, name) {
   if (!confirm(`'${name}' 카테고리를 삭제하시겠습니까?`)) return
   try {
@@ -162,8 +168,6 @@ async function deleteCategoryAction(idx, name) {
   }
 }
 
-
-
 // 상세 모달 창
 async function openIngredientModal(menuIdx) {
   const res = await getMenuItemList(menuIdx)
@@ -171,19 +175,13 @@ async function openIngredientModal(menuIdx) {
   showIngredientModal.value = true
 }
 
-function getProductName(productIdx) {
-  return products.value.find(p => p.idx === productIdx)?.productName ?? productIdx
-}
-
-//  삭제 확인 모달
-const showDeleteConfirm = ref(false)
-const deleteTarget = ref(null)
-
+// 메뉴 삭제
 function openDeleteConfirm(menu) {
   deleteTarget.value = menu
   showDeleteConfirm.value = true
 }
 
+// 삭제 모달 창에 있는 삭제
 function confirmDelete() {
   if (deleteTarget.value) {
     menus.value = menus.value.filter(m => m.idx !== deleteTarget.value.idx)
@@ -192,11 +190,12 @@ function confirmDelete() {
   deleteTarget.value = null
 }
 
-//  유틸
+//  가격 유틸
 function formatPrice(price) {
   return '₩ ' + price.toLocaleString('ko-KR')
 }
 
+// 페이지 번호
 const visiblePages = computed(() => {
   const range = 10; // 한 번에 보여줄 페이지 개수
   const currentGroup = Math.floor(pagination.currentPage / range);
@@ -211,13 +210,12 @@ const visiblePages = computed(() => {
   return pages;
 });
 
+// 페이지 번호 클릭시 수정
 const changePage = (page) => {
   // 0보다 작거나 마지막 페이지(totalPage - 1)보다 크면 무시[cite: 1]
   if (page < 0 || page >= pagination.totalPage) return
   getMenuRes(page)
 }
-
-
 
 onMounted(() => {
   getMenuRes()

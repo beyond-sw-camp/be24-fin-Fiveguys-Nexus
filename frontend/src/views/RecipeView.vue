@@ -1,6 +1,6 @@
 <script setup>
 import {ref, computed, onMounted, reactive} from 'vue'
-import {Plus, Search, Image as ImageIcon, ChevronDown, Tag, Trash2} from 'lucide-vue-next'
+import {Plus, Search, Image as ImageIcon, Tag, Trash2} from 'lucide-vue-next'
 import {getProductList, getCategoryList, getMenuList, getMenuItemList} from '@/api/menu/index.js'
 
 
@@ -11,13 +11,16 @@ const UNIT_OPTIONS = ['g', 'kg', 'ml', 'L', '개', '봉', '묶음', 'ea', '기�
 //  검색 및 필터링
 const searchQuery = ref('')
 const selectedCategoryIdx = ref('') // 제품 드롭다운 필터용 상태
+//  재료 목록 모달
+const showIngredientModal = ref(false)
+const selectedMenu = ref(null)
 
 
 //  상품 목록
 const products = ref([])
 const productListRes = async () => {
   const res  = await getProductList()
-  products.value = res.data
+  products.value = res.data.result
 }
 
 //  메뉴 데이터
@@ -55,7 +58,6 @@ const categories = ref([])
 const categoryRes = async () => {
   const res = await getCategoryList()
   categories.value = res.data.result
-  console.log(categories.value)
 }
 
 // --- 카테고리 필터링 (클라이언트 사이드) ---
@@ -164,9 +166,7 @@ async function deleteCategoryAction(idx, name) {
   }
 }
 
-//  재료 목록 모달
-const showIngredientModal = ref(false)
-const selectedMenu = ref(null)
+
 
 // 상세 모달 창
 async function openIngredientModal(menuIdx) {

@@ -147,6 +147,17 @@ function removeIngredientRow(idx) {
 // 이미지
 function handleImageChange(e) {
   const file = e.target.files[0]
+  if (!file) return;
+
+  const allowedTypes = ['image/jpg', 'image/jpeg', 'image/png'];
+  if (!allowedTypes.includes(file.type)) {
+    alert('JPG, PNG 형식의 이미지 파일만 업로드할 수 있습니다.');
+    if (fileInput.value) {
+      fileInput.value.value = '';
+    }
+    return;
+  }
+
   if (file) {
     selectedFile.value = file; // 선택한 파일 보관
     menuForm.value.imgName = file.name; // 화면 표시용
@@ -476,7 +487,7 @@ onMounted(() => {
                 <ImageIcon class="w-4 h-4 flex-shrink-0" />
               </div>
 
-              <input type="file" class="hidden" @change="handleImageChange" accept="image/*" />
+              <input type="file" class="hidden" @change="handleImageChange" accept=".jpg, .jpeg, .png" />
             </label>
           </div>
 

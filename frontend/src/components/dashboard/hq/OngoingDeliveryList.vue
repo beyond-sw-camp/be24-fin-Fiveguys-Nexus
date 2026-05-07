@@ -37,11 +37,11 @@ const deliveries = ref([])
 const scrollContainer = ref(null)
 let page = 0
 let hasNext = true
-let loading = false
+const loading = ref(false)
 
 const fetchData = async () => {
-  if (loading || !hasNext) return
-  loading = true
+  if (loading.value || !hasNext) return
+  loading.value = true
   try {
     const { data } = await getDelayDeliveryList(page, 10)
     const result = data.result
@@ -51,7 +51,7 @@ const fetchData = async () => {
   } catch (e) {
     console.error('지연 배송 조회 실패', e)
   } finally {
-    loading = false
+    loading.value = false
   }
 }
 

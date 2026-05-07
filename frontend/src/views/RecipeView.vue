@@ -521,15 +521,18 @@ onMounted(() => {
                   {{ p.productName }}</option>
               </select>
 
-                <input v-model.number="item.quantity" type="number" placeholder="0"
-
+                <input v-model.number="item.quantity"
+                       type="number"
+                       min="1"
+                       placeholder="0"
                        class="w-full px-2 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#F97316] text-right" />
 
                 <select v-model="item.menuUnit"
                         @change="item.menuUnit !== '기타' ? item.customUnit = '' : null"
                         class="w-full px-2 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#F97316] bg-white">
                   <option value="">선택</option>
-                  <option v-for="unit in UNIT_OPTIONS" :key="unit" :value="unit">{{ unit }}</option>
+                  <option v-for="unit in UNIT_OPTIONS" :key="unit" :value="unit">
+                    {{ unit }}</option>
                 </select>
 
                 <input v-model="item.customUnit"

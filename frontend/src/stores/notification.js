@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import notificationApi from '@/api/notification'
+import storeNotificationApi from '@/api/notification/store'
 
 export const useNotificationStore = defineStore('notification', () => {
   const notifications = ref([])
@@ -93,15 +94,88 @@ export const useNotificationStore = defineStore('notification', () => {
     return `${d}일 전`
   }
 
+  // === 가맹점 알림 ===
+  const storeNotifications = ref([])
+  const storeUnreadCount = ref(0)
+  const storeHasNext = ref(false)
+  const storeCurrentPage = ref(0)
+  const storeCurrentType = ref(null)
+  const storeCurrentIsRead = ref(undefined)
+  const storeLoading = ref(false)
+  let storeEventSource = null
+
+  async function storeFetchNotifications(type = null, size = 10, isRead = undefined) {
+    storeCurrentType.value = type
+    storeCurrentIsRead.value = isRead
+    storeCurrentPage.value = 0
+    const res = await storeNotificationApi.getNotifications(type, 0, size, isRead)
+    storeNotifications.value = res.data.result.content
+    storeHasNext.value = !res.data.result.last
+  }
+
+  async function storeLoadMore(size = 10) {
+    if (!storeHasNext.value || storeLoading.value) return
+    storeLoading.value = true
+    storeCurrentPage.value++
+    const res = await storeNotificationApi.getNotifications(storeCurrentType.value, storeCurrentPage.value, size, storeCurrentIsRead.value)
+    storeNotifications.value.push(...res.data.result.content)
+    storeHasNext.value = !res.data.result.last
+    storeLoading.value = false
+  }
+
+  async function storeFetchUnreadCount() {
+    const res = await storeNotificationApi.getUnreadCount()
+    storeUnreadCount.value = res.data.result.count
+  }
+
+  async function storeMarkRead(idx) {
+    await storeNotificationApi.markAsRead(idx)
+    const n = storeNotifications.value.find(n => n.idx === idx)
+    if (n) n.isRead = true
+    storeUnreadCount.value = Math.max(0, storeUnreadCount.value - 1)
+  }
+
+  async function storeMarkAllRead() {
+    await storeNotificationApi.markAllAsRead()
+    storeNotifications.value.forEach(n => { n.isRead = true })
+    storeUnreadCount.value = 0
+  }
+
+  function storeSubscribe() {
+    if (storeEventSource) return
+    const baseUrl = import.meta.env.VITE_API_URL || '/api'
+    storeEventSource = new EventSource(`${baseUrl}/store/notification/subscribe`)
+
+    storeEventSource.addEventListener('notification', (event) => {
+      const notification = JSON.parse(event.data)
+      storeNotifications.value.unshift(notification)
+      storeUnreadCount.value++
+    })
+
+    storeEventSource.onerror = () => {
+      // 연결 끊기면 브라우저가 자동 재연결 시도
+    }
+  }
+
+  function storeUnsubscribe() {
+    if (storeEventSource) {
+      storeEventSource.close()
+      storeEventSource = null
+    }
+  }
+
   // 알림 타입별 스타일 (백엔드 NotificationType enum 기준)
   const typeConfig = {
     EXPIRY:         { label: '유통기한',    color: 'text-amber-600',  bg: 'bg-amber-50',   border: 'border-amber-200'  },
     LOW_STOCK:      { label: '재고 부족',   color: 'text-amber-600',  bg: 'bg-amber-50',   border: 'border-amber-200'  },
     ABNORMAL_ORDER: { label: '비정상 감지', color: 'text-red-600',    bg: 'bg-red-50',     border: 'border-red-200'    },
     DELIVERY_DELAY: { label: '배송 지연',   color: 'text-blue-600',   bg: 'bg-blue-50',    border: 'border-blue-200'   },
+    DELIVERY_START: { label: '배송 시작',   color: 'text-green-600',  bg: 'bg-green-50',   border: 'border-green-200'  },
+    DELIVERED:      { label: '배송 완료',   color: 'text-green-600',  bg: 'bg-green-50',   border: 'border-green-200'  },
   }
 
   return {
+    // 본사
     notifications,
     unreadCount,
     hasNext,
@@ -113,6 +187,19 @@ export const useNotificationStore = defineStore('notification', () => {
     markAllRead,
     subscribe,
     unsubscribe,
+    // 가맹점
+    storeNotifications,
+    storeUnreadCount,
+    storeHasNext,
+    storeLoading,
+    storeFetchNotifications,
+    storeLoadMore,
+    storeFetchUnreadCount,
+    storeMarkRead,
+    storeMarkAllRead,
+    storeSubscribe,
+    storeUnsubscribe,
+    // 공통
     relativeTime,
     typeConfig,
   }

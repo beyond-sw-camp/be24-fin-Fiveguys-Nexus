@@ -10,42 +10,79 @@ const notifStore = useNotificationStore()
 const auth = useAuthStore()
 const router = useRouter()
 
-const isStoreOwnerRole = computed(() => auth.isStoreOwner)
-const accentBadgeClass = computed(() => isStoreOwnerRole.value ? 'bg-blue-500' : 'bg-[#F37321]')
-const unreadRowClass = computed(() => isStoreOwnerRole.value ? 'bg-blue-50/30 hover:bg-blue-50/60' : 'bg-orange-50/30 hover:bg-orange-50/60')
+const isStore = computed(() => auth.isStoreOwner)
+const accentBadgeClass = computed(() => isStore.value ? 'bg-blue-500' : 'bg-[#F37321]')
+const unreadRowClass = computed(() => isStore.value ? 'bg-blue-50/30 hover:bg-blue-50/60' : 'bg-orange-50/30 hover:bg-orange-50/60')
 
-// 읽지 않은 알림만 필터링하여 드롭다운에 표시
-const unreadNotifications = computed(() => notifStore.notifications.filter(n => !n.isRead))
+// 역할에 따른 unreadCount
+const unreadCount = computed(() => isStore.value ? notifStore.storeUnreadCount : notifStore.unreadCount)
+
+// 역할에 따른 알림 목록 (읽지 않은 것만)
+const unreadNotifications = computed(() => {
+  const list = isStore.value ? notifStore.storeNotifications : notifStore.notifications
+  return list.filter(n => !n.isRead)
+})
 
 // 마운트 시 알림 조회 + SSE 구독
 onMounted(async () => {
-  await notifStore.fetchUnreadCount()
-  notifStore.subscribe()
+  if (isStore.value) {
+    await notifStore.storeFetchUnreadCount()
+    notifStore.storeSubscribe()
+  } else {
+    await notifStore.fetchUnreadCount()
+    notifStore.subscribe()
+  }
 })
 
-// 드롭다운 열릴 때 전체 알림 조회
+// 드롭다운 열릴 때 알림 조회
 watch(open, async (isOpen) => {
   if (isOpen) {
-    await notifStore.fetchNotifications(null, 20)
+    if (isStore.value) {
+      await notifStore.storeFetchNotifications(null, 20)
+    } else {
+      await notifStore.fetchNotifications(null, 20)
+    }
   }
 })
 
 // 언마운트 시 SSE 해제
 onBeforeUnmount(() => {
-  notifStore.unsubscribe()
+  if (isStore.value) {
+    notifStore.storeUnsubscribe()
+  } else {
+    notifStore.unsubscribe()
+  }
 })
 
 async function markAll() {
-  await notifStore.markAllRead()
+  if (isStore.value) {
+    await notifStore.storeMarkAllRead()
+  } else {
+    await notifStore.markAllRead()
+  }
 }
 
 function handleNotifClick(n) {
   if (!n.isRead) {
-    notifStore.markRead(n.idx)
+    if (isStore.value) {
+      notifStore.storeMarkRead(n.idx)
+    } else {
+      notifStore.markRead(n.idx)
+    }
   }
   open.value = false
-  const path = auth.isAdmin ? '/notification' : '/store-notification'
-  router.push(path)
+  router.push(isStore.value ? '/store-notification' : '/notification')
+}
+
+function onScroll(e) {
+  const { scrollTop, scrollHeight, clientHeight } = e.target
+  if (scrollHeight - scrollTop - clientHeight < 50) {
+    if (isStore.value) {
+      notifStore.storeLoadMore(20)
+    } else {
+      notifStore.loadMore(20)
+    }
+  }
 }
 
 function typeColor(type) {
@@ -54,19 +91,14 @@ function typeColor(type) {
     LOW_STOCK: 'bg-amber-500',
     ABNORMAL_ORDER: 'bg-red-500',
     DELIVERY_DELAY: 'bg-blue-500',
+    DELIVERY_START: 'bg-green-500',
+    DELIVERED: 'bg-green-500',
   }
   return map[type] ?? 'bg-gray-300'
 }
 
 function typeConfig(type) {
   return notifStore.typeConfig[type] ?? { label: '알림', color: 'text-gray-600', bg: 'bg-gray-50', border: 'border-gray-200' }
-}
-
-function onScroll(e) {
-  const { scrollTop, scrollHeight, clientHeight } = e.target
-  if (scrollHeight - scrollTop - clientHeight < 50) {
-    notifStore.loadMore(20)
-  }
 }
 </script>
 
@@ -79,10 +111,10 @@ function onScroll(e) {
     <button @click="open = !open"
       class="relative flex items-center justify-center w-9 h-9 rounded hover:bg-gray-100 transition-colors z-50">
       <Bell class="w-4.5 h-4.5 text-gray-500" />
-      <span v-if="notifStore.unreadCount > 0"
+      <span v-if="unreadCount > 0"
         class="absolute top-1 right-1 min-w-[16px] h-4 flex items-center justify-center text-[10px] font-black text-white rounded-full px-1 leading-none"
         :class="accentBadgeClass">
-        {{ notifStore.unreadCount > 9 ? '9+' : notifStore.unreadCount }}
+        {{ unreadCount > 9 ? '9+' : unreadCount }}
       </span>
     </button>
 
@@ -101,13 +133,13 @@ function onScroll(e) {
         <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50/60">
           <div class="flex items-center gap-2">
             <span class="text-sm font-bold text-gray-900">알림</span>
-            <span v-if="notifStore.unreadCount > 0"
+            <span v-if="unreadCount > 0"
               class="text-[11px] font-bold px-1.5 py-0.5 text-white rounded"
               :class="accentBadgeClass">
-              {{ notifStore.unreadCount }}
+              {{ unreadCount }}
             </span>
           </div>
-          <button v-if="notifStore.unreadCount > 0" @click="markAll"
+          <button v-if="unreadCount > 0" @click="markAll"
             class="text-xs text-gray-400 hover:text-gray-700 font-medium transition-colors">
             모두 읽음
           </button>
@@ -153,7 +185,7 @@ function onScroll(e) {
           </div>
 
           <!-- Loading indicator -->
-          <div v-if="notifStore.loading" class="px-4 py-3 text-center text-xs text-gray-400">
+          <div v-if="notifStore.loading || notifStore.storeLoading" class="px-4 py-3 text-center text-xs text-gray-400">
             불러오는 중...
           </div>
         </div>

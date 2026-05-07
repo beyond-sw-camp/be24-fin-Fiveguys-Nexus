@@ -249,8 +249,13 @@ public class StoreDashboardService {
     private Map<LocalDate, Long> toDailySalesMap(List<Object[]> rows) {
         Map<LocalDate, Long> map = new java.util.HashMap<>();
         for (Object[] row : rows) {
-            LocalDate date = ((java.sql.Date) row[0]).toLocalDate();
-            Long amount = (Long) row[1];
+            LocalDate date;
+            if (row[0] instanceof java.sql.Date sqlDate) {
+                date = sqlDate.toLocalDate();
+            } else {
+                date = (LocalDate) row[0];
+            }
+            Long amount = ((Number) row[1]).longValue();
             map.put(date, amount);
         }
         return map;

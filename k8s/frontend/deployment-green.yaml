@@ -1,10 +1,12 @@
+# Blue/Green 배포 - Green 슬롯
+# Service의 selector.slot 값을 blue/green으로 전환하여 트래픽을 제어합니다.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nexus-frontend-green
   labels:
     app: nexus-frontend
-    slot: green
+    slot: green            # blue/green 슬롯 구분용 라벨
 spec:
   replicas: 1
   selector:

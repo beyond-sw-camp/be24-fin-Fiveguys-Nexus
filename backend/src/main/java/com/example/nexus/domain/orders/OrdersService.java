@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -316,10 +317,17 @@ public class OrdersService {
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
 
         List<StoreInventory> inventoryList = storeInventoryRepository.findByStoreIdx(store.getIdx());
-        Map<Long, Integer> stockMap = inventoryList.stream()
-                .collect(Collectors.toMap(inv -> inv.getProduct().getIdx(), StoreInventory::getCount, Integer::sum));
+        Map<Long, Integer> stockMap = new HashMap<>();
+        for (StoreInventory inv : inventoryList) {
+            Long productIdx = inv.getProduct().getIdx();
+            if (stockMap.containsKey(productIdx)) {
+                stockMap.put(productIdx, stockMap.get(productIdx) + inv.getCount());
+            } else {
+                stockMap.put(productIdx, inv.getCount());
+            }
+        }
 
-        return ordersRepository.findAllByStore_IdxAndOrdersStatus(store.getIdx(), OrdersStatus.WAITING).stream()
+        return ordersRepository.findAllByStore_IdxAndOrdersStatusAndOrdersTypeOrderByCreatedAtDesc(store.getIdx(), OrdersStatus.WAITING, OrdersType.AUTO).stream()
                 .map(order -> OrdersDto.OrdersRes.fromWithStock(order, stockMap))
                 .toList();
     }

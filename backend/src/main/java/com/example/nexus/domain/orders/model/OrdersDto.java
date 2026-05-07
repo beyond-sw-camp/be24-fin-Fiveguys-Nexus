@@ -15,7 +15,6 @@ public class OrdersDto {
     @Getter
     @NoArgsConstructor
     public static class OrdersReq {
-        private Long storeIdx;
         private List<OrdersItemDto.OrdersItemReq> ordersItemList;
     }
 

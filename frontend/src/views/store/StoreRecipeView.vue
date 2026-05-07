@@ -7,10 +7,17 @@
         <h1 class="text-xl font-bold text-gray-900 tracking-tight">매장 메뉴 관리</h1>
         <p class="text-xs text-gray-500 mt-1">이 매장의 메뉴와 재료(BOM)를 구성합니다. 재료는 매장 제품 관리에 등록한 품목에서 선택합니다.</p>
       </div>
-      <button @click="openNewMenuModal"
-              class="flex items-center gap-2 px-4 py-2 bg-[#2563eb] text-white text-sm font-bold rounded-lg hover:bg-[#1d4ed8] transition-colors shadow-sm cursor-pointer">
-        <Plus class="w-4 h-4" /> 신규 메뉴 등록
-      </button>
+      <div class="flex gap-2">
+        <!-- 카테고리 관리 버튼 추가 -->
+        <button @click="showCategoryModal = true"
+                class="px-4 py-2 rounded-lg border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 flex items-center gap-2 cursor-pointer transition-colors shadow-sm">
+          <Tag class="w-4 h-4" /> 카테고리 관리
+        </button>
+        <button @click="openNewMenuModal"
+                class="flex items-center gap-2 px-4 py-2 bg-[#F97316] text-white text-sm font-bold rounded-lg hover:bg-[#EA6700] transition-colors shadow-sm cursor-pointer">
+          <Plus class="w-4 h-4" /> 신규 메뉴 등록
+        </button>
+      </div>
     </div>
 
     <!-- 텍스트 검색 및 드롭다운 -->
@@ -52,6 +59,7 @@
           <thead>
           <tr class="border-b border-gray-200 bg-gray-50">
             <th class="px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">메뉴번호</th>
+            <th class="px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">카테고리</th>
             <th class="px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">메뉴명</th>
             <th class="px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">가격</th>
             <th class="px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">재료 수</th>
@@ -63,6 +71,11 @@
               @click="openIngredientModal(menu)"
               class="hover:bg-gray-50/50 transition-colors cursor-pointer group">
             <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ menu.id }}</td>
+            <td class="px-5 py-3.5">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-gray-100 text-gray-600 border border-gray-200">
+                {{ menu.category || '기타' }}
+              </span>
+            </td>
             <td class="px-5 py-3.5 font-bold text-gray-900 group-hover:text-[#2563eb] transition-colors">{{ menu.name }}</td>
             <td class="px-5 py-3.5 text-gray-700 font-semibold">{{ formatPrice(menu.price) }}</td>
             <td class="px-5 py-3.5 text-center">
@@ -288,61 +301,90 @@
         </div>
       </div>
     </div>
-
+    <div v-if="showCategoryModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-black/40" @click="showCategoryModal = false"></div>
+      <div class="relative bg-white rounded-xl w-full max-w-md border border-gray-200 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+          <h3 class="font-bold text-gray-900">카테고리 관리</h3>
+          <button @click="showCategoryModal = false" class="text-gray-400 hover:text-gray-600 font-bold text-xl cursor-pointer">✕</button>
+        </div>
+        <div class="p-6 space-y-4">
+          <div class="flex gap-2">
+            <input v-model="newCategoryInput" type="text" placeholder="새 카테고리명 입력"
+                   @keyup.enter="addCategoryAction"
+                   class="flex-1 px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#F97316] focus:ring-4 focus:ring-[#F97316]/5 transition-all" />
+            <button @click="addCategoryAction"
+                    class="px-4 py-2 bg-[#F97316] text-white text-sm font-semibold rounded-lg hover:bg-[#EA6700] cursor-pointer transition-colors">추가</button>
+          </div>
+          <div class="border border-gray-100 rounded-lg overflow-hidden">
+            <div class="px-4 py-2.5 bg-gray-50 border-b border-gray-100">
+              <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">카테고리 목록 ({{ categoriesList.length }}개)</p>
+            </div>
+            <div class="divide-y divide-gray-100 max-h-64 overflow-y-auto">
+              <div v-for="cat in categoriesList" :key="cat.idx"
+                   class="flex items-center justify-between px-4 py-2.5 hover:bg-gray-50 transition-colors">
+                <span class="text-sm font-medium text-gray-700">{{ cat.categoryName }}</span>
+                <button @click="deleteCategoryAction(cat.idx, cat.categoryName)" class="text-gray-300 hover:text-red-500 transition-colors cursor-pointer">
+                  <Trash2 class="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <div v-if="categoriesList.length === 0" class="px-4 py-8 text-center text-gray-400 text-sm">
+                등록된 카테고리가 없습니다.
+              </div>
+            </div>
+          </div>
+          <button @click="showCategoryModal = false"
+                  class="w-full py-2.5 rounded-lg border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer">닫기</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { Plus, Trash2, Search, Image as ImageIcon, ChevronDown } from 'lucide-vue-next'
+import { ref, computed , onMounted} from 'vue'
+import {Plus, Trash2, Search, Image as ImageIcon, ChevronDown, Tag} from 'lucide-vue-next'
 
 // ─────────────────────────────────────────────
 //  상품 목록 (매장 제품 관리의 제품코드와 동일하게 맞춤)
 // ─────────────────────────────────────────────
 const products = ref([
-  { id: 'P100', name: '한우 등심' },
-  { id: 'P101', name: '한우 안심' },
-  { id: 'P102', name: '한우 채끝' },
-  { id: 'P200', name: '연어 필렛' },
-  { id: 'P201', name: '참치 블록' },
-  { id: 'P202', name: '새우' },
-  { id: 'P300', name: '양파' },
-  { id: 'P301', name: '마늘' },
-  { id: 'P302', name: '대파' },
-  { id: 'P400', name: '간장' },
-  { id: 'P401', name: '고추장' },
-  { id: 'P500', name: '올리브오일' },
-  { id: 'P501', name: '버터' },
-  { id: 'P502', name: '생크림' },
+  { id: 'P-001', name: '더벤티 다크 로스팅 원두' },
+  { id: 'P-002', name: '1A등급 신선우유' },
+  { id: 'P-003', name: '바닐라 빈 시럽' },
+  { id: 'P-004', name: '초코 파우더' },
+  { id: 'P-005', name: '타피오카 펄' },
+  { id: 'P-006', name: '휘핑크림' },
 ])
+
+const categoriesList = ref([]) // 서버에서 받아온 카테고리 객체 배열
+const showCategoryModal = ref(false)
+const newCategoryInput = ref('')
 
 // ─────────────────────────────────────────────
 //  메뉴 데이터
 // ─────────────────────────────────────────────
 const menus = ref([
   {
-    id: 'M-001', name: '한우 등심 오마카세 코스', price: 180000, imageName: '', category: '한우',
+    id: 'M-001', name: '아인슈페너(반절커피)', price: 3500, imageName: '', category: '커피',
     ingredients: [
-      { productId: 'P100', amount: 0.3,  unit: 'kg' },
-      { productId: 'P301', amount: 20,   unit: 'g'  },
-      { productId: 'P400', amount: 50,   unit: 'ml' },
-      { productId: 'P500', amount: 30,   unit: 'ml' },
+      { productId: 'P-001', amount: 2, unit: '샷' },
+      { productId: 'P-006', amount: 50, unit: 'ml' },
     ]
   },
   {
-    id: 'M-002', name: '한우 안심 스테이크', price: 120000, imageName: '', category: '한우',
+    id: 'M-002', name: '바닐라라떼', price: 3500, imageName: '', category: '커피',
     ingredients: [
-      { productId: 'P101', amount: 0.25, unit: 'kg' },
-      { productId: 'P501', amount: 30,   unit: 'g'  },
-      { productId: 'P300', amount: 50,   unit: 'g'  },
+      { productId: 'P-001', amount: 2, unit: '샷' },
+      { productId: 'P-002', amount: 250, unit: 'ml' },
+      { productId: 'P-003', amount: 3, unit: '펌프' },
     ]
   },
   {
-    id: 'M-003', name: '연어 스시 플래터', price: 65000, imageName: '', category: '해산물',
+    id: 'M-003', name: '타로 버블티', price: 4300, imageName: '', category: '버블티',
     ingredients: [
-      { productId: 'P200', amount: 0.2,  unit: 'kg' },
-      { productId: 'P400', amount: 30,   unit: 'ml' },
-      { productId: 'P301', amount: 5,    unit: 'g'  },
+      { productId: 'P-002', amount: 200, unit: 'ml' },
+      { productId: 'P-005', amount: 80, unit: 'g' },
     ]
   },
 ])
@@ -352,7 +394,7 @@ const menus = ref([
 // ─────────────────────────────────────────────
 const searchQuery = ref('')
 const selectedProductId = ref('') // 제품 드롭다운 필터용 상태
-const categories = ['전체', '육류', '음료', '채소', '소스', '기타']
+const categories = ['전체', '커피', '음료', '버블티', '스무디/에이드', '디저트']
 
 const filteredMenus = computed(() => {
   let list = menus.value
@@ -498,4 +540,41 @@ function confirmDelete() {
 function formatPrice(price) {
   return '₩ ' + price.toLocaleString('ko-KR')
 }
+// ─────────────────────────────────────────────
+//  카테고리 액션 (productview 로직 이식)
+// ─────────────────────────────────────────────
+const fetchCategories = async () => {
+  try {
+    const response = await readCategoryList()
+    categoriesList.value = response.data
+  } catch (error) {
+    console.error('카테고리 조회 실패:', error)
+  }
+}
+
+async function addCategoryAction() {
+  const name = newCategoryInput.value.trim()
+  if (!name) return
+  try {
+    await createCategory(name)
+    newCategoryInput.value = ''
+    await fetchCategories()
+  } catch (error) {
+    alert('카테고리 등록 실패')
+  }
+}
+
+async function deleteCategoryAction(idx, name) {
+  if (!confirm(`'${name}' 카테고리를 삭제하시겠습니까?`)) return
+  try {
+    await deleteCategory(idx)
+    await fetchCategories()
+  } catch (error) {
+    alert('삭제 실패: 해당 카테고리를 사용하는 데이터가 있을 수 있습니다.')
+  }
+}
+
+onMounted(() => {
+  fetchCategories()
+})
 </script>

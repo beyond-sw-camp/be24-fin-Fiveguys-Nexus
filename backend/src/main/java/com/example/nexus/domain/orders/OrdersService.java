@@ -177,7 +177,7 @@ public class OrdersService {
 
         applyOutboundForOrder(orders, "발주 승인(이상) ordersIdx=");
         orders.approve();
-        deliveryService.createDelivery(orders);
+        deliveryService.startDeliveryByOrders(orders);
     }
 
     // 본사 - 이상 발주 개별 반려
@@ -201,7 +201,7 @@ public class OrdersService {
         for (Orders orders : confirmedOrders) {
             applyOutboundForOrder(orders, "발주 일괄승인 ordersIdx=");
             orders.approve();
-            deliveryService.createDelivery(orders);
+            deliveryService.startDeliveryByOrders(orders);
         }
     }
 
@@ -305,6 +305,9 @@ public class OrdersService {
                     .orders(orders)
                     .build());
         }
+
+        // 7. 배송 생성 (READY 상태)
+        deliveryService.createDelivery(orders);
     }
 
     // 점주 - 제안 발주서 목록 조회 (WAITING 상태, 현재 재고 포함)
@@ -359,6 +362,7 @@ public class OrdersService {
         }
 
         orders.confirm();
+        deliveryService.createDelivery(orders);
     }
 
     // 점주 - 제안 발주서에 품목 추가 (가격 자동 반영)

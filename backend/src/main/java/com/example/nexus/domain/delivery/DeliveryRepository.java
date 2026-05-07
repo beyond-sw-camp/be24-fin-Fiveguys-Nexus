@@ -2,6 +2,7 @@ package com.example.nexus.domain.delivery;
 
 import com.example.nexus.common.enums.DeliveryStatus;
 import com.example.nexus.domain.delivery.model.Delivery;
+import com.example.nexus.domain.orders.model.Orders;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -34,6 +35,8 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
     List<Delivery> findByDeliveryStatus(DeliveryStatus status);
 
     Delivery findByIdx(Long deliveryIdx);
+
+    Delivery findByOrders(Orders orders);
 
     // 배송 상태 자동 전환용 - 특정 상태 + 출발일이 기준 시간 이전인 배송 조회
     List<Delivery> findByDeliveryStatusAndDepartureDateBefore(DeliveryStatus status, LocalDateTime before);

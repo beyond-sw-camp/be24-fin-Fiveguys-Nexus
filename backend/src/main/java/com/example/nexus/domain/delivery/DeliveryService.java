@@ -24,7 +24,7 @@ public class DeliveryService {
     private final HeadNotificationService headNotificationService;
     private final StoreNotificationService storeNotificationService;
 
-    // 발주 승인 시 배송 생성 (READY 상태)
+    // 점주 발주 확정 시 배송 생성 (READY 상태)
     @Transactional
     public void createDelivery(Orders orders) {
         Delivery delivery = Delivery.builder()
@@ -34,6 +34,23 @@ public class DeliveryService {
                 .orders(orders)
                 .build();
         deliveryRepository.save(delivery);
+    }
+
+    // 본사 발주 승인 시 배송 시작 (READY → START) + 점주 알림
+    @Transactional
+    public void startDeliveryByOrders(Orders orders) {
+        Delivery delivery = deliveryRepository.findByOrders(orders);
+        if (delivery == null || delivery.getDeliveryStatus() != DeliveryStatus.READY) {
+            return;
+        }
+        delivery.setDeliveryStatus(DeliveryStatus.START);
+
+        storeNotificationService.create(
+                NotificationType.DELIVERY_START,
+                "배송 시작 안내",
+                "주문하신 상품의 배송이 시작되었습니다. 예상 도착일: "
+                        + delivery.getEstimatedArrivalAt().toLocalDate(),
+                orders.getStore());
     }
 
     // 배송 승인: READY → START + 점주 배송 시작 알림 (NOTIFY_014)

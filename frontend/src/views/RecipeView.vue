@@ -26,10 +26,9 @@ const pagination = reactive({
 })
 const UNIT_OPTIONS = ['g', 'kg', 'ml', 'L', '개', '봉', '묶음', 'ea', '기타']
 
-//  상품 목록 조회
+// 제품 목록 조회
 const productListRes = async () => {
   const res  = await getProductList()
-  console.log(res.data)
   products.value = res.data
 }
 
@@ -211,7 +210,7 @@ async function saveMenu() {
         menuCategoryIdx: menuForm.value.menuCategoryIdx, // 선택된 카테고리 ID
         // i(각 재료)를 순회하며 백엔드 MenuItemReq 규격으로 변환
         menuItemList: menuForm.value.menuItemList.map(i => ({
-          productIdx: i.productIdx, // 상품 ID
+          productIdx: i.productIdx, // 제품 ID
           quantity: i.quantity,       // 수량
           menuUnit: i.menuUnit === '기타' ? i.customUnit : i.menuUnit  // 단위
         }))
@@ -284,6 +283,14 @@ function confirmDelete() {
   showDeleteConfirm.value = false
   deleteTarget.value = null
 }
+
+// 제품 선택 시 중복 비허용
+const isAlreadySelected = (productIdx, currentItem) => {
+  // 리스트를 돌면서 다른 행(row)에서 이미 이 productIdx를 사용 중인지 체크
+  return menuForm.value.menuItemList.some(
+    (i) => i !== currentItem && i.productIdx === productIdx
+  );
+};
 
 //  가격 유틸
 function formatPrice(price) {
@@ -503,7 +510,7 @@ onMounted(() => {
 
             <!-- 재료 컬럼 레이블 -->
             <div class="grid grid-cols-[2.5fr_1fr_1.2fr_1.2fr_32px] gap-2 mb-2 px-0.5">
-              <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">상품명</span>
+              <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">제품명</span>
               <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">소요량</span>
               <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">단위 선택</span>
               <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">직접 입력</span>
@@ -515,11 +522,16 @@ onMounted(() => {
               <div v-for="(item, idx) in menuForm.menuItemList" :key="idx"
                    class="grid grid-cols-[2.5fr_1fr_1.2fr_1.2fr_32px] gap-2 items-center">
                 <select v-model="item.productIdx"
+                        @change="handleProductChange(item)"
                         class="w-full px-2 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#F97316] transition-all appearance-none bg-white">
-                <option value="">상품 선택</option>
-                <option v-for="p in products" :key="p.idx" :value="p.idx">
-                  {{ p.productName }}</option>
-              </select>
+                  <option value="">제품 선택</option>
+                  <option v-for="p in products"
+                        :key="p.idx"
+                        :value="p.idx"
+                        :disabled="isAlreadySelected(p.idx, item)">
+                  {{ p.productName }} {{ isAlreadySelected(p.idx, item) ? '(선택됨)' : '' }}
+                  </option>
+                </select>
 
                 <input v-model.number="item.quantity"
                        type="number"

@@ -507,28 +507,30 @@ onMounted(() => {
           </div>
         </div>
         <div class="p-7">
-          <table class="w-full text-sm text-left">
-            <thead>
-            <tr class="border-b border-gray-100 bg-gray-50/60">
-              <th class="px-3 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">재료번호</th>
-              <th class="px-3 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">제품명</th>
-              <th class="px-3 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">소요량</th>
-              <th class="px-3 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">단위</th>
-            </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-50">
-            <tr v-for="(item, idx) in selectedMenu?.menuItemList" :key="idx"
-                class="hover:bg-gray-50/80 transition-colors">
-              <td class="px-3 py-3 font-mono text-xs text-gray-400">R-{{ String(idx + 1).padStart(3, '0') }}</td>
-              <td class="px-3 py-3 font-semibold text-gray-800">{{ getProductName(item.productName) }}</td>
-              <td class="px-3 py-3 text-right text-gray-700 font-mono">{{ item.quantity }}</td>
-              <td class="px-3 py-3 text-gray-500">{{ item.menuUnit }}</td>
-            </tr>
-            <tr v-if="!selectedMenu?.menuItemList?.length">
-              <td colspan="4" class="px-3 py-8 text-center text-gray-400 text-sm">등록된 재료가 없습니다.</td>
-            </tr>
-            </tbody>
-          </table>
+          <div class="h-[200px] overflow-y-auto scrollbar-hide border-b border-gray-50">
+            <table class="w-full text-sm text-left">
+              <thead class="sticky top-0 z-10 bg-gray-50/90 backdrop-blur-sm"> <!-- 헤더 고정 -->
+              <tr class="border-b border-gray-100">
+                <th class="px-3 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">재료번호</th>
+                <th class="px-3 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">제품명</th>
+                <th class="px-3 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">소요량</th>
+                <th class="px-3 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">단위</th>
+              </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-50">
+              <tr v-for="(item, idx) in selectedMenu?.menuItemList" :key="idx"
+                  class="hover:bg-gray-50/80 transition-colors">
+                <td class="px-3 py-3 font-mono text-xs text-gray-400">R-{{ String(idx + 1).padStart(3, '0') }}</td>
+                <td class="px-3 py-3 font-semibold text-gray-800">{{ getProductName(item.productName) }}</td>
+                <td class="px-3 py-3 text-right text-gray-700 font-mono">{{ item.quantity }}</td>
+                <td class="px-3 py-3 text-gray-500">{{ item.menuUnit }}</td>
+              </tr>
+              <tr v-if="!selectedMenu?.menuItemList?.length">
+                <td colspan="4" class="px-3 py-8 text-center text-gray-400 text-sm">등록된 재료가 없습니다.</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
 
           <div class="mt-5 flex justify-end">
             <button @click="showIngredientModal = false"

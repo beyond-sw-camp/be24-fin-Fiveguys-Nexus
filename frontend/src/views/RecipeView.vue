@@ -16,7 +16,7 @@ const showIngredientModal = ref(false)
 const selectedMenu = ref(null)
 
 
-//  상품 목록
+//  상품 목록 조회
 const products = ref([])
 const productListRes = async () => {
   const res  = await getProductList()
@@ -24,7 +24,7 @@ const productListRes = async () => {
 }
 
 //  메뉴 데이터
-const menus = reactive([])
+const menus = ref([])
 const pagination = reactive({
   totalPage: 0,
   totalCount: 0,
@@ -32,6 +32,7 @@ const pagination = reactive({
   currentSize: 10
 })
 
+// 메뉴 목록 조회
 const getMenuRes = async (page = 0)=>{
   const searchReq = {
     keyword : searchQuery.value,
@@ -39,31 +40,26 @@ const getMenuRes = async (page = 0)=>{
   }
 
   const res = await getMenuList(searchReq, page, pagination.currentSize)
-  menus.splice(0, menus.length, ...res.data.result.menuList)
+  menus.value.splice(0, menus.value.length, ...res.data.result.menuList)
 
   pagination.totalPage = res.data.result.totalPage
   pagination.totalCount = res.data.result.totalCount
   pagination.currentPage = res.data.result.currentPage
 
 }
+
+// 카테고리 선택
 const selectCategory = (idx) => {
   selectedCategoryIdx.value = idx; // idx (Long) 저장
   getMenuRes(0); // 페이지를 0으로 초기화하여 재조회
 }
 
-
-
-// 카테고리
+// 카테고리 목록 조회
 const categories = ref([])
 const categoryRes = async () => {
   const res = await getCategoryList()
   categories.value = res.data.result
 }
-
-// --- 카테고리 필터링 (클라이언트 사이드) ---
-const filteredMenus = computed(() => {
-  return menus; // 서버에서 이미 필터링된 결과를 받아오므로 그대로 반환
-})
 
 
 //  메뉴 등록 / 수정 모달
@@ -304,7 +300,7 @@ onMounted(() => {
           </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
-          <tr v-for="menu in filteredMenus" :key="menu.idx"
+          <tr v-for="menu in menus" :key="menu.idx"
               @click="openIngredientModal(menu.idx)"
               class="hover:bg-gray-50/50 transition-colors cursor-pointer group">
             <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ menu.idx }}</td>
@@ -334,8 +330,8 @@ onMounted(() => {
               </div>
             </td>
           </tr>
-          <tr v-if="filteredMenus.length === 0">
-            <td colspan="5" class="px-5 py-12 text-center text-gray-400 text-sm">검색 결과가 없습니다.</td>
+          <tr v-if="menus.length === 0">
+            <td colspan="5" class="px-5 py-12 text-center text-gray-400 text-sm">메뉴가 없습니다.</td>
           </tr>
           </tbody>
         </table>

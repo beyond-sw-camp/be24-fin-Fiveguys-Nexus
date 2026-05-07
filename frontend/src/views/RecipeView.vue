@@ -1,6 +1,7 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import {Plus, Trash2, Search, Image as ImageIcon, ChevronDown, Tag} from 'lucide-vue-next'
+import {ref, computed, onMounted, reactive} from 'vue'
+import {Plus, Search, Image as ImageIcon, ChevronDown, Tag} from 'lucide-vue-next'
+import { getProductList } from '@/api/menu/index.js'
 // ─────────────────────────────────────────────
 //  상태 관리 (카테고리 관리 관련 추가)
 // ─────────────────────────────────────────────
@@ -11,39 +12,38 @@ const newCategoryInput = ref('')
 // ─────────────────────────────────────────────
 //  상품 목록 (제품 관리에서 연동 가정)
 // ─────────────────────────────────────────────
-const products = ref([
-  { id: 'P-001', name: '더벤티 다크 로스팅 원두' },
-  { id: 'P-002', name: '1A등급 신선우유' },
-  { id: 'P-003', name: '바닐라 빈 시럽' },
-  { id: 'P-004', name: '초코 파우더' },
-  { id: 'P-005', name: '타피오카 펄' },
-  { id: 'P-006', name: '휘핑크림' },
-])
+const products = ref([])
+
+const productListRes = async () => {
+  const res  = await getProductList()
+  console.log(res.data)
+  products.value = res.data
+}
 
 // ─────────────────────────────────────────────
 //  메뉴 데이터
 // ─────────────────────────────────────────────
 const menus = ref([
   {
-    id: 'M-001', name: '아인슈페너(반절커피)', price: 3500, imageName: '', category: '커피',
+    id: '1', name: '아인슈페너(반절커피)', price: 3500, imageName: '', category: '커피',
     ingredients: [
-      { productId: 'P-001', amount: 2, unit: '샷' },
-      { productId: 'P-006', amount: 50, unit: 'ml' },
+      { productId: '1', amount: 2, unit: '샷' },
+      { productId: '6', amount: 50, unit: 'ml' },
     ]
   },
   {
-    id: 'M-002', name: '바닐라라떼', price: 3500, imageName: '', category: '커피',
+    id: '2', name: '바닐라라떼', price: 3500, imageName: '', category: '커피',
     ingredients: [
-      { productId: 'P-001', amount: 2, unit: '샷' },
-      { productId: 'P-002', amount: 250, unit: 'ml' },
-      { productId: 'P-003', amount: 3, unit: '펌프' },
+      { productId: '1', amount: 2, unit: '샷' },
+      { productId: '2', amount: 250, unit: 'ml' },
+      { productId: '3', amount: 3, unit: '펌프' },
     ]
   },
   {
-    id: 'M-003', name: '타로 버블티', price: 4300, imageName: '', category: '버블티',
+    id: '3', name: '타로 버블티', price: 4300, imageName: '', category: '버블티',
     ingredients: [
-      { productId: 'P-002', amount: 200, unit: 'ml' },
-      { productId: 'P-005', amount: 80, unit: 'g' },
+      { productId: '2', amount: 200, unit: 'ml' },
+      { productId: '5', amount: 80, unit: 'g' },
     ]
   },
 ])
@@ -193,8 +193,9 @@ function openIngredientModal(menu) {
   showIngredientModal.value = true
 }
 
-function getProductName(productId) {
-  return products.value.find(p => p.id === productId)?.name ?? productId
+function getProductName(productIdx) {
+  return products.value.find(p => p.idx === productIdx)?.name ?? productIdx
+
 }
 
 function editIngredient(idx) {
@@ -235,6 +236,7 @@ function formatPrice(price) {
   return '₩ ' + price.toLocaleString('ko-KR')
 }
 onMounted(() => {
+  productListRes()
   fetchCategories()
 })
 </script>
@@ -284,7 +286,7 @@ onMounted(() => {
         >
           <option value="">전체 제품 보기</option>
           <option v-for="product in products" :key="product.id" :value="product.id">
-            {{ product.name }}
+            {{ product.productName }}
           </option>
         </select>
         <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
@@ -432,7 +434,7 @@ onMounted(() => {
                 <select v-model="item.productId"
                         class="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#F97316] focus:ring-4 focus:ring-[#F97316]/5 transition-all">
                   <option value="">상품 선택</option>
-                  <option v-for="p in products" :key="p.id" :value="p.id">{{ p.name }}</option>
+                  <option v-for="p in products" :key="p.id" :value="p.id">{{ p.productName }}</option>
                 </select>
                 <input v-model.number="item.amount" type="number" placeholder="0" min="0" step="any"
                        class="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#F97316] focus:ring-4 focus:ring-[#F97316]/5 transition-all" />
@@ -507,7 +509,7 @@ onMounted(() => {
             <tr v-for="(item, idx) in selectedMenu?.ingredients" :key="idx"
                 class="hover:bg-gray-50/80 transition-colors">
               <td class="px-3 py-3 font-mono text-xs text-gray-400">R-{{ String(idx + 1).padStart(3, '0') }}</td>
-              <td class="px-3 py-3 font-semibold text-gray-800">{{ getProductName(item.productId) }}</td>
+              <td class="px-3 py-3 font-semibold text-gray-800">{{ getProductName(item.idx) }}</td>
               <td class="px-3 py-3 text-right text-gray-700 font-mono">{{ item.amount }}</td>
               <td class="px-3 py-3 text-gray-500">{{ item.unit }}</td>
             </tr>

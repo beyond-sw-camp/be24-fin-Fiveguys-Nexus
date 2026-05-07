@@ -64,9 +64,13 @@ export const useNotificationStore = defineStore('notification', () => {
     eventSource = new EventSource(`${baseUrl}/notification/subscribe`)
 
     eventSource.addEventListener('notification', (event) => {
-      const notification = JSON.parse(event.data)
-      notifications.value.unshift(notification)
-      unreadCount.value++
+      try {
+        const notification = JSON.parse(event.data)
+        notifications.value.unshift(notification)
+        unreadCount.value++
+      } catch (e) {
+        console.error('알림 데이터 파싱 실패', e)
+      }
     })
 
     eventSource.onerror = () => {
@@ -147,9 +151,13 @@ export const useNotificationStore = defineStore('notification', () => {
     storeEventSource = new EventSource(`${baseUrl}/store/notification/subscribe`)
 
     storeEventSource.addEventListener('notification', (event) => {
-      const notification = JSON.parse(event.data)
-      storeNotifications.value.unshift(notification)
-      storeUnreadCount.value++
+      try {
+        const notification = JSON.parse(event.data)
+        storeNotifications.value.unshift(notification)
+        storeUnreadCount.value++
+      } catch (e) {
+        console.error('가맹점 알림 데이터 파싱 실패', e)
+      }
     })
 
     storeEventSource.onerror = () => {

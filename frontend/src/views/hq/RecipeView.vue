@@ -1,7 +1,7 @@
 <script setup>
 import {ref, computed, onMounted, reactive} from 'vue'
 import {Plus, Search, Image as ImageIcon, Tag, Trash2} from 'lucide-vue-next'
-import {getProductList, getCategoryList, getMenuList, getMenuItemList, getPresignedUrl, postNewRegister, putMenuUpdate} from '@/api/menu/index.js'
+import {getProductList, getCategoryList, getMenuList, getMenuItemList, getPresignedUrl, postNewRegister, putMenuUpdate, putMenuDelete} from '@/api/menu/index.js'
 import axios from 'axios'
 
 const showCategoryModal = ref(false)
@@ -94,6 +94,7 @@ async function openEditMenuModal(menu) {
   try {
     // 1. 상세 데이터 조회 (재료 목록 등)
     const res = await getMenuItemList(menu.idx);
+    console.log(res.data.result)
     const detail = res.data.result; // 응답 데이터 (제공해주신 구조)
 
     editTarget.value = menu;
@@ -128,12 +129,14 @@ async function openEditMenuModal(menu) {
 
     // 3. 폼 상태 업데이트
     menuForm.value = form;
+    console.log(menuForm.value)
 
     // 가격 표시 업데이트 (toLocaleString은 숫자에만 작동하므로 안전하게 처리)
     formattedPriceInput.value = (detail.price || 0).toLocaleString('ko-KR');
 
     showMenuModal.value = true;
   } catch (error) {
+    console.error("수정 데이터 로드 실패:", error);
     alert("메뉴 상세 정보를 불러오는 중 오류가 발생했습니다.");
   }
 }
@@ -258,7 +261,7 @@ async function saveMenu() {
 
   }catch (error) {
     const serverMessage = error.response?.data?.message || error.message;
-    alert(`${editTarget.value ? '수정' : '등록'} 실패 : ${serverMessage}`);
+    alert(`등록 실패 : ${serverMessage}`);
   }
 }
 
@@ -301,9 +304,13 @@ function openDeleteConfirm(menu) {
 }
 
 // 삭제 모달 창에 있는 삭제
-function confirmDelete() {
+async function confirmDelete() {
   if (deleteTarget.value) {
-    menus.value = menus.value.filter(m => m.idx !== deleteTarget.value.idx)
+    const res = await putMenuDelete(deleteTarget.value.idx)
+    if (res.data.code === 2000) {
+      alert("메뉴가 삭제되었습니다.");
+      await getMenuRes();
+    }
   }
   showDeleteConfirm.value = false
   deleteTarget.value = null
@@ -368,7 +375,7 @@ onMounted(() => {
       <div class="relative">
         <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         <input v-model="searchQuery" type="text" placeholder="메뉴명 검색"
-          class="pl-10 pr-4 py-2 rounded-lg border border-gray-200 text-sm w-52 bg-white shadow-sm focus:border-[#F37321] focus:ring-1 focus:ring-[#F37321] outline-none transition-colors"/>
+               class="pl-10 pr-4 py-2 rounded-lg border border-gray-200 text-sm w-52 bg-white shadow-sm focus:border-[#F37321] focus:ring-1 focus:ring-[#F37321] outline-none transition-colors"/>
       </div>
       <div class="flex gap-1.5 flex-wrap">
         <button @click="selectCategory(null)" class="px-3 py-1.5 text-sm font-semibold border rounded-lg transition-colors shadow-sm cursor-pointer"
@@ -627,20 +634,20 @@ onMounted(() => {
     <!-- 페이지 버튼 -->
     <div class="flex items-center justify-center gap-3 mt-8 pb-10">
       <button @click="changePage(pagination.currentPage - 1)" :disabled="pagination.currentPage === 0"
-        class="w-7 h-7 flex items-center justify-center rounded border border-gray-200 bg-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors cursor-pointer">
+              class="w-7 h-7 flex items-center justify-center rounded border border-gray-200 bg-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors cursor-pointer">
         <span class="text-[10px] text-gray-500">◀</span>
       </button>
       <div class="flex items-center gap-1">
         <button v-for="pageIdx in visiblePages" :key="pageIdx" @click="changePage(pageIdx)"
-          class="min-w-[28px] h-7 px-2 flex items-center justify-center rounded text-xs font-bold transition-all cursor-pointer"
-          :class="pagination.currentPage === pageIdx
+                class="min-w-[28px] h-7 px-2 flex items-center justify-center rounded text-xs font-bold transition-all cursor-pointer"
+                :class="pagination.currentPage === pageIdx
         ? 'text-[#F37321] border-b-2 border-[#F37321] rounded-none'
         : 'text-gray-400 hover:text-gray-600'">
           {{ pageIdx + 1 }}
         </button>
       </div>
       <button @click="changePage(pagination.currentPage + 1)" :disabled="pagination.currentPage >= pagination.totalPage - 1"
-        class="w-7 h-7 flex items-center justify-center rounded border border-gray-200 bg-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors cursor-pointer">
+              class="w-7 h-7 flex items-center justify-center rounded border border-gray-200 bg-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors cursor-pointer">
         <span class="text-[10px] text-gray-500">▶</span>
       </button>
     </div>

@@ -86,7 +86,7 @@ public class SettlementController {
     }
 
     @PostMapping("/verify")
-    public ResponseEntity verify (@AuthenticationPrincipal AuthUserDetails authUserDetails, SettlementDto.VerifyReq dto) {
+    public ResponseEntity verify (@AuthenticationPrincipal AuthUserDetails authUserDetails, @RequestBody SettlementDto.VerifyReq dto) {
 
         LocalDateTime now = LocalDateTime.now();
 

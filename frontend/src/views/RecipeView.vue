@@ -1,14 +1,13 @@
 <script setup>
 import {ref, computed, onMounted, reactive} from 'vue'
-import {Plus, Search, Image as ImageIcon, ChevronDown, Tag, FileText} from 'lucide-vue-next'
+import {Plus, Search, Image as ImageIcon, ChevronDown, Tag, Trash2} from 'lucide-vue-next'
 import {getProductList, getCategoryList, getMenuList, getMenuItemList} from '@/api/menu/index.js'
-// ─────────────────────────────────────────────
+
+
 //  상태 관리 (카테고리 관리 관련 추가)
-// ─────────────────────────────────────────────
-const categoriesList = ref([]) // 서버에서 받아온 카테고리 객체 배열
 const showCategoryModal = ref(false)
 const newCategoryInput = ref('')
-const UNIT_OPTIONS = ['g', 'kg', 'ml', 'L', '개', '봉', '박스', '묶음', 'ea', '기타']
+const UNIT_OPTIONS = ['g', 'kg', 'ml', 'L', '개', '봉', '묶음', 'ea', '기타']
 
 //  상품 목록
 const products = ref([])
@@ -17,10 +16,7 @@ const productListRes = async () => {
   products.value = res.data
 }
 
-// ─────────────────────────────────────────────
 //  메뉴 데이터
-// ─────────────────────────────────────────────
-
 const menus = ref([])
 const pagination = reactive({
   totalPage: 0,
@@ -38,9 +34,7 @@ const getMenuRes = async (page = 0)=>{
   menus.value = res.data.result.menuList
 }
 
-// ─────────────────────────────────────────────
 //  검색 및 필터링
-// ─────────────────────────────────────────────
 const searchQuery = ref('')
 const selectedCategoryIdx = ref('') // 제품 드롭다운 필터용 상태
 
@@ -67,9 +61,7 @@ const filteredMenus = computed(() => {
   return list
 })
 
-// ─────────────────────────────────────────────
 //  메뉴 등록 / 수정 모달
-// ─────────────────────────────────────────────
 const showMenuModal = ref(false)
 const editTarget = ref(null)
 const menuForm = ref({ name: '', price: 0, imageName: '', category: '전체', ingredients: [] })
@@ -143,17 +135,8 @@ function saveMenu() {
   }
   showMenuModal.value = false
 }
-// ─────────────────────────────────────────────
-//  카테고리 액션 (productview 로직 이식)
-// ─────────────────────────────────────────────
-const fetchCategories = async () => {
-  try {
-    const response = await readCategoryList()
-    categoriesList.value = response.data
-  } catch (error) {
 
-  }
-}
+
 
 async function addCategoryAction() {
   const name = newCategoryInput.value.trim()
@@ -161,7 +144,7 @@ async function addCategoryAction() {
   try {
     await createCategory(name)
     newCategoryInput.value = ''
-    await fetchCategories()
+    await categoryRes()
   } catch (error) {
     alert('카테고리 등록 실패')
   }
@@ -171,17 +154,13 @@ async function deleteCategoryAction(idx, name) {
   if (!confirm(`'${name}' 카테고리를 삭제하시겠습니까?`)) return
   try {
     await deleteCategory(idx)
-    await fetchCategories()
+    await categoryRes()
   } catch (error) {
     alert('삭제 실패: 해당 카테고리를 사용하는 데이터가 있을 수 있습니다.')
   }
 }
 
-
-
-// ─────────────────────────────────────────────
 //  재료 목록 모달
-// ─────────────────────────────────────────────
 const showIngredientModal = ref(false)
 const selectedMenu = ref(null)
 
@@ -198,21 +177,7 @@ function getProductName(productIdx) {
 
 }
 
-function editIngredient(idx) {
-  // 재료 상세 모달을 닫고 수정 모달로 이동
-  showIngredientModal.value = false
-  openEditMenuModal(selectedMenu.value)
-}
-
-function deleteIngredient(idx) {
-  if (selectedMenu.value) {
-    selectedMenu.value.ingredients.splice(idx, 1)
-  }
-}
-
-// ─────────────────────────────────────────────
 //  삭제 확인 모달
-// ─────────────────────────────────────────────
 const showDeleteConfirm = ref(false)
 const deleteTarget = ref(null)
 
@@ -229,16 +194,13 @@ function confirmDelete() {
   deleteTarget.value = null
 }
 
-// ─────────────────────────────────────────────
 //  유틸
-// ─────────────────────────────────────────────
 function formatPrice(price) {
   return '₩ ' + price.toLocaleString('ko-KR')
 }
 onMounted(() => {
   getMenuRes()
   productListRes()
-  fetchCategories()
   categoryRes()
 })
 </script>
@@ -570,6 +532,47 @@ onMounted(() => {
         </div>
       </div>
     </div>
+
+    <!-- 카테고리 관리 모달 -->
+    <div v-if="showCategoryModal" class="fixed inset-0 z-50 flex items-center justify-center">
+      <div class="absolute inset-0 bg-black/40" @click="showCategoryModal = false"></div>
+      <div class="relative bg-white rounded-lg w-full max-w-md border border-gray-200 shadow-xl">
+        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+          <h3 class="font-bold text-gray-900">카테고리 관리</h3>
+          <button @click="showCategoryModal = false" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
+        </div>
+        <div class="p-6 space-y-4">
+          <div class="flex gap-2">
+            <input v-model="newCategoryInput" type="text" placeholder="새 카테고리명 입력"
+                   @keyup.enter="addCategoryAction"
+                   class="flex-1 px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none" />
+            <button @click="addCategoryAction"
+                    class="px-4 py-2 bg-[#F37321] text-white text-sm font-semibold rounded hover:bg-[#e0661d] cursor-pointer">추가</button>
+          </div>
+          <div class="border border-gray-200 rounded-lg overflow-hidden">
+            <div class="px-4 py-2.5 bg-gray-50 border-b border-gray-100">
+              <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">카테고리 목록 ({{ categories.length }}개)</p>
+            </div>
+            <div class="divide-y divide-gray-100 max-h-64 overflow-y-auto">
+              <div v-for="cat in categories" :key="cat.idx"
+                   class="flex items-center justify-between px-4 py-2.5 hover:bg-gray-50">
+                <span class="text-sm font-medium text-gray-700">{{ cat.menuCategoryName }}</span>
+                <button @click="deleteCategoryAction(cat.idx, cat.menuCategoryName)" class="text-gray-300 hover:text-red-500 transition-colors cursor-pointer">
+                  <Trash2 class="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <div v-if="categories.length === 0" class="px-4 py-6 text-center text-gray-400 text-sm">
+                등록된 카테고리가 없습니다.
+              </div>
+            </div>
+          </div>
+          <button @click="showCategoryModal = false"
+                  class="w-full py-2.5 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 cursor-pointer">닫기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 이전 다음 버튼 -->
     <div class="flex items-center justify-center gap-3 mt-8 pb-10">
       <!-- 이전 페이지 버튼 (작게) -->
       <button

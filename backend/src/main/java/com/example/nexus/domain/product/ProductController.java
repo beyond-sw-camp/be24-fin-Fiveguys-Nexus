@@ -46,13 +46,18 @@ public class ProductController {
                 .body(BaseResponse.success("fail to modify: product or category not found"));
     }
 
-    @DeleteMapping("/delete/{idx}")
-    public ResponseEntity<String> deleteProduct(@PathVariable Long idx) {
-        boolean isDeleted = productService.deleteProduct(idx);
+    // 기존 제품 삭제
+    @DeleteMapping("/delete")
+    public ResponseEntity<BaseResponse<String>> deleteProduct(@RequestBody ProductDto.RegReq dto) {
+
+        boolean isDeleted = productService.deleteProduct(dto.getIdx());
+
         if (isDeleted) {
-            return ResponseEntity.ok("success delete product");
+            return ResponseEntity.ok(BaseResponse.success("success delete product"));
         }
-        return ResponseEntity.badRequest().body("fail to delete: product not found");
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(BaseResponse.success("fail to delete: product not found"));
     }
 
     @GetMapping("/search")

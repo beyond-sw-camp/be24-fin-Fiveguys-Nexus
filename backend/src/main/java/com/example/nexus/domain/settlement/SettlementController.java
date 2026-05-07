@@ -78,12 +78,15 @@ public class SettlementController {
         // verify 전 단계 완료
         Long settlementIdx = settlementService.pay(storeIdx, reqDto);
 
+        for (Long idx : notPaidHeadIncomeIdxList) {
+            headIncomeService.findByOrdersIdx(idx);
+        }
 
         return ResponseEntity.ok("");
     }
 
     @PostMapping("/verify")
-    public ResponseEntity verify (@AuthenticationPrincipal AuthUserDetails authUserDetails) {
+    public ResponseEntity verify (@AuthenticationPrincipal AuthUserDetails authUserDetails, SettlementDto.VerifyReq dto) {
 
         LocalDateTime now = LocalDateTime.now();
 
@@ -91,10 +94,8 @@ public class SettlementController {
 
         YearMonth lastMonth = currentYearMonth.minusMonths(1);
 
-        System.out.println(lastMonth);
-
-//        settlementService.verify(authUserDetails, );
-        return ResponseEntity.ok("성공");
+        settlementService.verify(authUserDetails, dto, lastMonth);
+        return ResponseEntity.ok("결제 성공");
     }
 
 

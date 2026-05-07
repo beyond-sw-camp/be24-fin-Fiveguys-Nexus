@@ -31,7 +31,6 @@ public class DashboardDto {
     public static class DeliveryKpiRes {
         private long ongoingCount;
         private long delayCount;
-        private List<DeliveryItem> deliveryList;
     }
 
     @Getter

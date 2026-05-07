@@ -1,6 +1,6 @@
 import api from '@/plugins/axiosinterceptor'
 
-const getMenuList = (searchReq, page, size) => {
+export const getMenuList = (searchReq, page, size) => {
   return api.get('/menu/list', {
     params: {
       keyword: searchReq.keyword,
@@ -10,3 +10,9 @@ const getMenuList = (searchReq, page, size) => {
     }
   });
 }
+
+export const getProductList = () => api.get('/product/list')
+
+export const getCategoryList = () => api.get('/menu/category/list')
+
+export const getMenuItemList = (menuIdx) => api.get(`/menu/item/list/${menuIdx}`)

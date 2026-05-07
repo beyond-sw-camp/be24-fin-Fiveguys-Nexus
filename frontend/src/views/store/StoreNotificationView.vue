@@ -28,7 +28,7 @@
     </div>
 
     <!-- List -->
-    <div v-if="filtered.length > 0" class="flex flex-col gap-2">
+    <div v-if="filtered.length > 0" @scroll="onScroll" class="flex flex-col gap-2 max-h-[700px] overflow-y-auto">
       <button
         v-for="n in filtered"
         :key="n.idx"
@@ -59,15 +59,9 @@
         </div>
       </button>
 
-      <!-- Load more -->
-      <div v-if="store.storeHasNext" class="flex justify-center py-4">
-        <button
-          @click="store.storeLoadMore()"
-          :disabled="store.storeLoading"
-          class="text-sm text-blue-600 hover:underline font-medium cursor-pointer disabled:opacity-50"
-        >
-          {{ store.storeLoading ? '로딩 중...' : '더 보기' }}
-        </button>
+      <!-- 로딩 인디케이터 -->
+      <div v-if="store.storeLoading" class="py-3 text-center text-sm text-gray-400">
+        불러오는 중...
       </div>
     </div>
 
@@ -115,6 +109,13 @@ function changeTab(tabValue) {
 
 function typeStyle(type) {
   return store.typeConfig[type] ?? { label: '알림', color: 'text-gray-600', bg: 'bg-gray-50', border: 'border-gray-200' }
+}
+
+function onScroll(e) {
+  const { scrollTop, scrollHeight, clientHeight } = e.target
+  if (scrollHeight - scrollTop - clientHeight < 50) {
+    store.storeLoadMore(20)
+  }
 }
 
 onMounted(() => {

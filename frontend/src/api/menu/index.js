@@ -20,9 +20,9 @@ export const getMenuItemList = (menuIdx) => api.get(`/menu/item/list/${menuIdx}`
 export const getPresignedUrl = (fileName) =>
   api.get(`/menu/presignedUrl/${fileName}`)
 
-export const postNewRegister = (MenuRegReq) =>
-  api.post('/menu/new/register', MenuRegReq)
+export const postNewRegister = (menuRegReq) =>
+  api.post('/menu/new/register', menuRegReq)
 
-export const putMenuUpdate = (menuIdx,MenuRegReq) =>
-  api.put(`/menu/update/${menuIdx}`, MenuRegReq)
+export const putMenuUpdate = (menuIdx,menuRegReq) =>
+  api.put(`/menu/update/${menuIdx}`, menuRegReq)
 

@@ -94,7 +94,6 @@ async function openEditMenuModal(menu) {
   try {
     // 1. 상세 데이터 조회 (재료 목록 등)
     const res = await getMenuItemList(menu.idx);
-    console.log(res.data.result)
     const detail = res.data.result; // 응답 데이터 (제공해주신 구조)
 
     editTarget.value = menu;
@@ -129,14 +128,12 @@ async function openEditMenuModal(menu) {
 
     // 3. 폼 상태 업데이트
     menuForm.value = form;
-    console.log(menuForm.value)
 
     // 가격 표시 업데이트 (toLocaleString은 숫자에만 작동하므로 안전하게 처리)
     formattedPriceInput.value = (detail.price || 0).toLocaleString('ko-KR');
 
     showMenuModal.value = true;
   } catch (error) {
-    console.error("수정 데이터 로드 실패:", error);
     alert("메뉴 상세 정보를 불러오는 중 오류가 발생했습니다.");
   }
 }
@@ -261,7 +258,7 @@ async function saveMenu() {
 
   }catch (error) {
     const serverMessage = error.response?.data?.message || error.message;
-    alert(`등록 실패 : ${serverMessage}`);
+    alert(`${editTarget.value ? '수정' : '등록'} 실패 : ${serverMessage}`);
   }
 }
 

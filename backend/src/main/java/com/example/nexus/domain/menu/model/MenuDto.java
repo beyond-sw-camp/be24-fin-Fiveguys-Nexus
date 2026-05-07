@@ -104,10 +104,12 @@ public class MenuDto {
     @Getter
     @Builder
     public static class MenuCategoryRes{
+        private Long categoryIdx;
         private String menuCategoryName;
 
         public static MenuDto.MenuCategoryRes from(MenuCategory entity){
             return MenuCategoryRes.builder()
+                    .categoryIdx(entity.getIdx())
                     .menuCategoryName(entity.getMenuCategoryName())
                     .build();
         }

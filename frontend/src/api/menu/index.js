@@ -12,3 +12,5 @@ export const getMenuList = (searchReq, page, size) => {
 }
 
 export const getProductList = () => api.get('/product/list')
+
+export const getCategoryList = () => api.get('/menu/category/list')

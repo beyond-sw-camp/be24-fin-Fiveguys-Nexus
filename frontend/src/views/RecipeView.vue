@@ -1,7 +1,7 @@
 <script setup>
 import {ref, computed, onMounted, reactive} from 'vue'
 import {Plus, Search, Image as ImageIcon, ChevronDown, Tag} from 'lucide-vue-next'
-import { getProductList } from '@/api/menu/index.js'
+import { getProductList, getCategoryList } from '@/api/menu/index.js'
 // ─────────────────────────────────────────────
 //  상태 관리 (카테고리 관리 관련 추가)
 // ─────────────────────────────────────────────
@@ -9,14 +9,10 @@ const categoriesList = ref([]) // 서버에서 받아온 카테고리 객체 배
 const showCategoryModal = ref(false)
 const newCategoryInput = ref('')
 
-// ─────────────────────────────────────────────
-//  상품 목록 (제품 관리에서 연동 가정)
-// ─────────────────────────────────────────────
+//  상품 목록
 const products = ref([])
-
 const productListRes = async () => {
   const res  = await getProductList()
-  console.log(res.data)
   products.value = res.data
 }
 
@@ -53,7 +49,13 @@ const menus = ref([
 // ─────────────────────────────────────────────
 const searchQuery = ref('')
 const selectedProductId = ref('') // 제품 드롭다운 필터용 상태
-const categories = ['전체', '커피', '음료', '버블티', '스무디/에이드', '디저트']
+
+// 카테고리
+const categories = ref([])
+const categoryRes = async () => {
+  const res = await getCategoryList()
+  categories.value = res.data.result
+}
 
 const filteredMenus = computed(() => {
   let list = menus.value
@@ -238,6 +240,7 @@ function formatPrice(price) {
 onMounted(() => {
   productListRes()
   fetchCategories()
+  categoryRes()
 })
 </script>
 

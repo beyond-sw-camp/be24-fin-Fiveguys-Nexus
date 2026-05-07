@@ -69,7 +69,7 @@ public class ProductController {
 
     // 가맹점 별 제품 조회
     @GetMapping("/store")
-    public ResponseEntity<List<ProductDto.ListRes>> getMyStoreProducts(
+    public ResponseEntity<BaseResponse<List<ProductDto.ListRes>>> getMyStoreProducts(
             @AuthenticationPrincipal AuthUserDetails authUserDetails
     ) {
         if (authUserDetails == null) {
@@ -79,7 +79,7 @@ public class ProductController {
         Long storeIdx = authUserDetails.getIdx();
 
         List<ProductDto.ListRes> list = productService.findProductsByStore(storeIdx);
-        return ResponseEntity.ok(list);
+        return ResponseEntity.ok(BaseResponse.success(list));
     }
 
     // 가맹점 별 제품 검색

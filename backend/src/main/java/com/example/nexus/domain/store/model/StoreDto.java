@@ -5,8 +5,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
+import org.springframework.data.domain.Page;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 public class StoreDto {
 
@@ -36,6 +38,28 @@ public class StoreDto {
         }
     }
 
+    // 가맹점 조회 페이징 처리
+    // 메뉴 페이징 조회
+    @Getter
+    @Builder
+    public static class StorePageRes{
+        private List<StoreDto.StoreListRes> storeList;
+        private int totalPage;
+        private long totalCount;
+        private int currentPage;
+        private int currentSize;
+
+        public static StoreDto.StorePageRes from(Page<Store> entity){
+            return StorePageRes.builder()
+                    .storeList(entity.map(StoreDto.StoreListRes::from).getContent())
+                    .totalPage(entity.getTotalPages())
+                    .totalCount(entity.getTotalElements())
+                    .currentPage(entity.getPageable().getPageNumber())
+                    .currentSize(entity.getPageable().getPageSize())
+                    .build();
+        }
+    }
+
     @Builder
     @Getter
     // 가맹점 목록 상세 조회
@@ -44,9 +68,10 @@ public class StoreDto {
         private String storeName;
         private String ownerName;
         private String ownerEmail;
-        private Integer postcode;
+        private String postcode;
         private String address;
         private String addressDetail;
+        private String totalAddress;
         private String business;
         private String createdAt;
         private String closedAt;
@@ -64,6 +89,10 @@ public class StoreDto {
                     .postcode(entity.getPostcode())
                     .address(entity.getAddress())
                     .addressDetail(entity.getAddressDetail())
+                    .totalAddress(String.format("[%s] %s %s",
+                            entity.getPostcode(),
+                            entity.getAddress(),
+                            entity.getAddressDetail()).trim())
                     .business(entity.getBusiness())
                     .createdAt(entity.getCreatedAt().format(formatter))
                     .closedAt(
@@ -83,6 +112,16 @@ public class StoreDto {
     @AllArgsConstructor
     public static class StoreSearchReq {
         private String keyword;
+    }
+
+    // 가맹점 검색
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class StoreSearchPagingReq {
+        private String keyword;
+        private String status;
     }
 
     @Builder
@@ -106,7 +145,7 @@ public class StoreDto {
     public static class StoreRegReq{
         private String storeName;
         private String ownerEmail;
-        private Integer postcode;
+        private String postcode;
         private String address;
         private String addressDetail;
         private String business;
@@ -122,5 +161,20 @@ public class StoreDto {
                     .filePath(this.filePath)
                     .build();
         }
+    }
+
+    // 가맹점 수정
+    @Getter
+    @Builder
+    public static class StoreUpdateReq{
+        private String storeName;
+        private String ownerName;
+        private String ownerEmail;
+        private String postcode;
+        private String address;
+        private String addressDetail;
+        private LocalDateTime closedAt;
+        private String filePath;
+
     }
 }

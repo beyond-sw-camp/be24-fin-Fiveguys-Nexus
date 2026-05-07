@@ -11,7 +11,7 @@ defineEmits(['close'])
 <template>
   <div v-if="order" class="fixed inset-0 z-50 flex items-center justify-center">
     <div class="absolute inset-0 bg-black/40" @click="$emit('close')"></div>
-    <div class="relative bg-white rounded-xl w-full max-w-lg border border-gray-200 shadow-xl">
+    <div class="relative bg-white rounded-xl w-full max-w-2xl border border-gray-200 shadow-xl">
       <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
         <div>
           <h3 class="font-bold text-gray-900">발주 상세</h3>
@@ -42,11 +42,21 @@ defineEmits(['close'])
             <p class="text-xs text-gray-400 mb-1">발주 일시</p>
             <p class="text-gray-700 font-mono text-xs">{{ order.date }}</p>
           </div>
+          <div v-if="order.reason" class="col-span-2">
+            <p class="text-xs text-gray-400 mb-1">AI 추천 사유</p>
+            <p class="text-sm text-blue-600 font-medium">{{ order.reason }}</p>
+          </div>
         </div>
         <div>
           <p class="text-xs text-gray-400 mb-2">품목 목록</p>
           <div class="border border-gray-100 rounded-lg overflow-hidden">
-            <table class="w-full text-sm">
+            <table class="w-full text-sm table-fixed">
+              <colgroup>
+                <col class="w-[34%]" />
+                <col class="w-[16%]" />
+                <col class="w-[22%]" />
+                <col class="w-[28%]" />
+              </colgroup>
               <thead class="bg-gray-50">
                 <tr>
                   <th class="px-4 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase">품목명</th>
@@ -61,37 +71,53 @@ defineEmits(['close'])
                   </template>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-gray-100">
-                <tr v-for="item in order.items" :key="item.product"
-                  :class="item.isAbnormal ? 'bg-red-50/60' : ''">
-                  <td class="px-4 py-2.5">
-                    <div class="flex items-center gap-1.5">
-                      <span :class="item.isAbnormal ? 'text-red-700 font-semibold' : 'text-gray-800'">{{ item.product }}</span>
-                      <span v-if="item.isAbnormal" class="text-[10px] font-black px-1.5 py-0.5 rounded bg-red-100 text-red-600 border border-red-200">이상</span>
-                    </div>
-                  </td>
-                  <td class="px-4 py-2.5 text-right font-semibold" :class="item.isAbnormal ? 'text-red-600' : 'text-gray-900'">{{ item.qty.toLocaleString() }}</td>
-                  <template v-if="order.type === '이상'">
-                    <td class="px-4 py-2.5 text-right text-gray-500">{{ item.avgQty?.toLocaleString() ?? '-' }}</td>
-                    <td class="px-4 py-2.5 text-right">
-                      <span v-if="item.isAbnormal" class="text-xs font-black px-2 py-0.5 rounded bg-red-50 text-red-600 border border-red-200">+{{ item.ratio }}%</span>
-                      <span v-else class="text-xs text-gray-400">+{{ item.ratio }}%</span>
+            </table>
+            <div class="max-h-[280px] overflow-y-auto [scrollbar-gutter:stable]">
+              <table class="w-full text-sm table-fixed">
+                <colgroup>
+                  <col class="w-[34%]" />
+                  <col class="w-[16%]" />
+                  <col class="w-[22%]" />
+                  <col class="w-[28%]" />
+                </colgroup>
+                <tbody class="divide-y divide-gray-100">
+                  <tr v-for="item in order.items" :key="item.product"
+                    :class="item.isAbnormal ? 'bg-red-50/60' : ''">
+                    <td class="px-4 py-2.5">
+                      <div class="flex items-center gap-1.5">
+                        <span :class="item.isAbnormal ? 'text-red-700 font-semibold' : 'text-gray-800'">{{ item.product }}</span>
+                        <span v-if="item.isAbnormal" class="text-[10px] font-black px-1.5 py-0.5 rounded bg-red-100 text-red-600 border border-red-200">이상</span>
+                      </div>
                     </td>
-                  </template>
-                  <template v-else>
-                    <td class="px-4 py-2.5 text-right text-xs text-gray-500">{{ item.unitPrice ? item.unitPrice.toLocaleString() + '원' : '-' }}</td>
-                    <td class="px-4 py-2.5 text-right font-bold text-[#F37321]">{{ item.unitPrice ? formatPrice(item.unitPrice * item.qty) : '-' }}</td>
-                  </template>
-                </tr>
-              </tbody>
+                    <td class="px-4 py-2.5 text-right font-semibold" :class="item.isAbnormal ? 'text-red-600' : 'text-gray-900'">{{ item.qty.toLocaleString() }}</td>
+                    <template v-if="order.type === '이상'">
+                      <td class="px-4 py-2.5 text-right text-gray-500">{{ item.avgQty?.toLocaleString() ?? '-' }}</td>
+                      <td class="px-4 py-2.5 text-right">
+                        <span v-if="item.isAbnormal" class="text-xs font-black px-2 py-0.5 rounded bg-red-50 text-red-600 border border-red-200">+{{ item.ratio }}%</span>
+                        <span v-else class="text-xs text-gray-400">+{{ item.ratio }}%</span>
+                      </td>
+                    </template>
+                    <template v-else>
+                      <td class="px-4 py-2.5 text-right text-xs text-gray-500">{{ item.unitPrice ? item.unitPrice.toLocaleString() + '원' : '-' }}</td>
+                      <td class="px-4 py-2.5 text-right font-bold text-[#F37321] whitespace-nowrap">{{ item.unitPrice ? formatPrice(item.unitPrice * item.qty) : '-' }}</td>
+                    </template>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <table class="w-full text-sm table-fixed">
+              <colgroup>
+                <col class="w-[34%]" />
+                <col class="w-[16%]" />
+                <col class="w-[22%]" />
+                <col class="w-[28%]" />
+              </colgroup>
               <tfoot v-if="order.type !== '이상'" class="bg-gray-50 border-t border-gray-200">
                 <tr>
                   <td class="px-4 py-2.5 text-left text-xs font-bold text-gray-500">합계</td>
-                  <td class="px-4 py-2.5 text-right font-bold text-gray-900">
-                    {{ (order.items ?? []).reduce((s, i) => s + i.qty, 0).toLocaleString() }}
-                  </td>
                   <td class="px-4 py-2.5"></td>
-                  <td class="px-4 py-2.5 text-right font-black text-[#F37321]">
+                  <td class="px-4 py-2.5"></td>
+                  <td class="px-4 py-2.5 text-right font-black text-[#F37321] whitespace-nowrap">
                     {{ formatPrice((order.items ?? []).reduce((s, i) => s + (i.unitPrice ? i.unitPrice * i.qty : 0), 0)) }}
                   </td>
                 </tr>

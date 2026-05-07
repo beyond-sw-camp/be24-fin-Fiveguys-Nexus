@@ -1,7 +1,7 @@
 <script setup>
 import { ref, reactive, onMounted, computed, nextTick } from 'vue'
 import { Plus, Search, FileText, ChevronDown } from 'lucide-vue-next'
-import { getStoreList , getStoreDetailList, getPresignedUrl, postNewRegister} from '@/api/store/index.js'
+import { getStoreList , getStoreDetailList, getPresignedUrl, postNewRegister, putStoreUpdate} from '@/api/store/index.js'
 import axios from 'axios'
 
 
@@ -13,10 +13,32 @@ const statusOptions = ['전체', '입점', '폐점']
 
 // --- 가맹점 목록 리스트 ---
 const storesList = reactive([])
+const pagination = reactive({
+  totalPage: 0,
+  totalCount: 0,
+  currentPage: 0,
+  currentSize: 10
+})
 
-const storeListRes = async ()=>{
-  const res = await getStoreList()
-  storesList.push(...res.data.result)
+const storeListRes = async (page = 0)=>{
+  const searchReq = {
+    keyword: searchQuery.value, // ref로 선언된 검색어
+    status: filterStatus.value === '입점' ? 'ACTIVE' : filterStatus.value === '폐점' ? 'CLOSED' : null
+  }
+
+  const res = await getStoreList(searchReq, page, pagination.currentSize)
+  storesList.splice(0, storesList.length, ...res.data.result.storeList)
+
+
+  pagination.totalPage = res.data.result.totalPage
+  pagination.totalCount = res.data.result.totalCount
+  pagination.currentPage = res.data.result.currentPage
+}
+
+const changePage = (page) => {
+  // 0보다 작거나 마지막 페이지(totalPage - 1)보다 크면 무시[cite: 1]
+  if (page < 0 || page >= pagination.totalPage) return
+  storeListRes(page)
 }
 
 const filteredStores = computed(() => {
@@ -87,6 +109,7 @@ const getInitialForm = () => ({
   postcode: '',
   address: '',
   addressDetail: '',
+  totalAddress:'',
   business: '',
   createdAt: '',
   closedAt: '',
@@ -108,9 +131,6 @@ function selectFilter(type, value) {
   activeDropdown.value = null
 }
 
-// 검색
-function handleSearch() {}
-
 // 가맹점 목록 클릭시 상세 모달창
 async function openDetail(idx) {
   const res = await getStoreDetailList(idx)
@@ -129,6 +149,10 @@ async function openModal(idx =! null) {
     Object.assign(form, getInitialForm());
     // v-model로 연결된 form에 DB에서 가져온 값을 세팅 (화면에 바로 보임)
     Object.assign(form, detailData);
+    if (detailData.filePath) {
+      // S3 경로나 파일 경로에서 마지막 '/' 뒤의 이름만 가져옵니다.
+      form.fileName = detailData.filePath.split('/').pop();
+    }
 
     editTarget.value = detailData; // 나중에 수정 API 보낼 때 쓸 idx가 담긴 원본
   } else {
@@ -139,71 +163,170 @@ async function openModal(idx =! null) {
   showModal.value = true;
 }
 
+const selectedFile = ref(null);
 // 파일 선택 감지
 async function handleFileChange(e) {
   const file = e.target.files[0]
-
-  const presigned = await getPresignedUrl(file.name)
-
-  // 2. [응답] 백엔드가 "이 주소(uploadUrl)로 올리고, 이름은 이걸(fileKey)로 써!"라고 함[cite: 2]
-  const { url, fileName } = presigned.data.result;
-
-  // 3. [업로드] 받은 주소로 실제 파일 전송[cite: 2]
-  await axios.put(url, fileName, {
-    headers: { 'Content-Type': fileName.type }
-  });
-
-  form.fileName = file.name;
-  if (file) form.filePath = fileName
+  if (file) {
+    selectedFile.value = file; // 선택한 파일 보관
+    form.fileName = file.name; // 화면 표시용
+  }
 }
 
 
-async function saveStore() {
-  // 수정
-  if (editTarget.value) {
-    // 1. 변경 사항이 있는지 간단히 체크
-    const isNoChange = JSON.stringify(editTarget.value) === JSON.stringify(form.value);
+// [추가] S3 업로드 로직만 담당하는 공통 함수
+async function uploadFileToS3() {
+  // 선택된 파일이 없으면 업로드 과정을 건너뛰고 null 반환
+  if (!selectedFile.value) return null;
 
-    if (isNoChange) {
-      alert("수정된 내용이 없습니다.");
-      showModal.value = false;
-      return; // 함수 종료 (백엔드 요청 안 함)
-    }
+  try {
+    // 1. 백엔드에 Presigned URL 요청
+    const presigned = await getPresignedUrl(selectedFile.value.name);
+    const { url, fileName: s3Path } = presigned.data.result;
 
+    // 2. S3에 실제 파일 업로드 (PUT 방식)
+    await axios.put(url, selectedFile.value, {
+      headers: { 'Content-Type': 'application/pdf' }
+    });
+
+    return s3Path; // 업로드된 S3 파일 경로(DB 저장용) 반환
+  } catch (error) {
+    console.error("S3 업로드 실패:", error);
+    throw new Error("파일 업로드 중 오류가 발생했습니다.");
   }
-  // 등록
-  else {
-    const storeRegDto = reactive({
-      storeName: '',
-      ownerEmail: '',
-      postcode: '',
-      address: '',
-      addressDetail: '',
-      business: '',
-      filePath: '',
-    })
-    Object.assign(storeRegDto, form);
+}
 
-    try {
+async function saveStore() {
+  try {
+    // [핵심 추가] 파일을 선택했다면 등록/수정 전에 S3에 먼저 올립니다.
+    let finalFilePath = form.filePath; // 기본은 기존 경로 유지
+
+    if (selectedFile.value) {
+      // 새 파일이 선택되었다면 S3에 업로드하고 새 경로를 받아옴
+      const newS3Path = await uploadFileToS3();
+      if (newS3Path) {
+        finalFilePath = newS3Path;
+      }
+    }
+    // --- 수정 로직 ---
+    if (editTarget.value) {
+      const updateData = {
+        storeName: form.storeName,
+        ownerName: form.ownerName,
+        ownerEmail: form.ownerEmail,
+        postcode: form.postcode,
+        address: form.address,
+        addressDetail: form.addressDetail,
+        closedAt: (form.closedAt === "운영 중" || !form.closedAt) ? null : form.closedAt + "T00:00:00", // 날짜 형식 주의
+        filePath: finalFilePath // 새 경로 또는 기존 경로[cite: 14]
+      };
+
+      // [핵심] 백엔드 수정 API 호출 (StoreController_11.java의 @PutMapping 연동)
+      const res = await putStoreUpdate(editTarget.value.idx, updateData);
+
+      if (res.data.code === 2000) {
+        alert("가맹점 정보가 수정되었습니다.");
+        await storeListRes(pagination.currentPage); // 현재 페이지 목록 새로고침[cite: 14]
+        showModal.value = false;
+      }
+    }
+    // --- 등록 로직 ---
+    else {
+      // form 내용을 복사하여 전송용 DTO 생성
+      const storeRegDto = {
+        storeName: form.storeName,
+        ownerEmail: form.ownerEmail,
+        postcode: form.postcode,
+        address: form.address,
+        addressDetail: form.addressDetail,
+        business: form.business,
+        filePath: finalFilePath
+      };
+
       const res = await postNewRegister(storeRegDto);
 
       if (res.data.code === 2000) {
         alert("가맹점이 등록되었습니다.");
-
-        // [추가] 목록을 비우고 다시 서버에서 받아옵니다.
         storesList.length = 0;
         await storeListRes();
       }
-    } catch (error) {
-
-      alert("등록 실패: " + error.message);
     }
+
+    showModal.value = false; // 성공 시에만 모달 닫기
+    selectedFile.value = null; // 파일 변수 초기화
+
+  } catch (error) {
+    // 백엔드에서 보낸 상세 에러 메시지 추출
+    const serverMessage = error.response?.data?.message || error.message;
+    const serverCode = error.response?.data?.code || "Unknown Code";
+
+    console.error("서버 에러 상세:", error.response?.data);
+    alert(`등록 실패 (${serverCode}): ${serverMessage}`);
   }
-  showModal.value = false;
+}
+// <script setup> 내부에 추가
+const isFormValid = computed(() => {
+  // 필수 항목들이 비어있는지 확인
+  const fields = [
+    form.storeName,
+    form.ownerEmail,
+    form.address,
+    form.business,
+    form.postcode,
+    form.fileName
+  ];
+
+  // 모든 필드에 값이 있고, 사업자 번호가 12자리(하이픈 포함 000-00-00000)인지 확인
+  return fields.every(field => field && String(field).trim() !== '') &&
+    form.business.length === 12;
+});
+
+
+// S3 미리보기 (뷰어)
+function viewPdf() {
+  const filePath = detailTarget.value?.filePath;
+  if (!filePath) return alert('파일이 없습니다.');
+
+  const s3BaseUrl = 'https://nexus-store-archive.s3.ap-northeast-2.amazonaws.com/';
+  window.open(s3BaseUrl + filePath, '_blank'); // 새 탭에서 열기
 }
 
-function downloadPdf() {
-  alert('사업자 등록증 PDF를 다운로드합니다.')
+// S3 다운로드
+async function downloadPdf() {
+  const filePath = detailTarget.value?.filePath;
+  if (!filePath) return alert('파일이 없습니다.');
+
+  const s3BaseUrl = 'https://nexus-store-archive.s3.ap-northeast-2.amazonaws.com/';
+  const fileUrl = s3BaseUrl + filePath;
+
+  try {
+    // 1. fetch로 파일을 가져옵니다.
+    const response = await fetch(fileUrl);
+    if (!response.ok) throw new Error('파일을 가져오는데 실패했습니다.');
+
+    // 2. 파일 데이터를 Blob(Binary Large Object)으로 변환합니다.
+    const blob = await response.blob();
+
+    // 3. Blob 데이터를 위한 임시 URL을 생성합니다.
+    const url = window.URL.createObjectURL(blob);
+
+    // 4. 가상의 링크를 생성하여 클릭을 유도합니다.
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${detailTarget.value.storeName}_사업자등록증.pdf`; // 저장될 파일명
+    document.body.appendChild(link);
+    link.click();
+
+    // 5. 사용이 끝난 임시 URL과 링크를 제거합니다.
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+
+  } catch (error) {
+    console.error('다운로드 중 오류 발생:', error);
+    // 만약 CORS 에러가 난다면, 가장 단순한 방법인 window.open을 백업으로 사용합니다.
+    alert('브라우저 보안 정책으로 인해 직접 다운로드가 제한되었습니다. 새 탭에서 파일을 엽니다.');
+    window.open(fileUrl, '_blank');
+  }
 }
 
 // 카카오 주소 API
@@ -219,10 +342,7 @@ const sample6_execDaumPostcode = () => {
         addr = data.jibunAddress;
       }
 
-      // [핵심] Vue의 reactive 객체에 직접 값을 할당합니다.
       form.address = addr;
-
-      // 만약 우편번호도 저장하고 싶다면 form에 추가 후 할당하세요.
       form.postcode = data.zonecode;
 
       // 상세주소 입력창으로 포커스 이동
@@ -233,6 +353,20 @@ const sample6_execDaumPostcode = () => {
     }
   }).open();
 }
+
+const visiblePages = computed(() => {
+  const range = 10; // 한 번에 보여줄 페이지 개수
+  const currentGroup = Math.floor(pagination.currentPage / range);
+
+  const start = currentGroup * range;
+  const end = Math.min(start + range, pagination.totalPage);
+
+  const pages = [];
+  for (let i = start; i < end; i++) {
+    pages.push(i);
+  }
+  return pages;
+});
 
 onMounted(() => {
   storeListRes()
@@ -336,7 +470,9 @@ onMounted(() => {
           </td>
           <td class="px-5 py-3.5 text-gray-600">{{ store.ownerName }}</td>
           <td class="px-5 py-3.5 text-gray-500 text-xs truncate max-w-[150px]">{{ store.ownerEmail }}</td>
-          <td class="px-5 py-3.5 text-gray-500 text-xs">{{ store.address }}</td>
+          <td class="px-5 py-3.5 text-gray-500 text-xs truncate max-w-[250px]" :title="store.address">
+            {{ store.address }}
+          </td>
           <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ store.business }}</td>
           <td class="px-5 py-3.5 text-center">
               <span class="text-[11px] font-bold px-2 py-0.5 rounded-lg"
@@ -408,7 +544,7 @@ onMounted(() => {
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">가맹점 위치</label>
             <div class="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm text-gray-600">
-              {{ detailTarget?.address }}
+              {{ detailTarget?.totalAddress }}
             </div>
           </div>
 
@@ -436,10 +572,31 @@ onMounted(() => {
             </div>
           </div>
 
-          <div class="pt-2">
+          <div class="space-y-3 pt-2">
+            <div v-if="detailTarget.closedAt && detailTarget.closedAt !== '운영 중'"
+                 class="flex flex-col items-center p-3 bg-red-50 rounded-lg border border-red-100">
+              <span class="text-xs text-red-600 font-bold">* 폐업 처리된 가맹점입니다. 증빙 용도로만 사용하세요.</span>
+              <span class="text-[11px] text-red-400 mt-0.5">폐업일: {{ detailTarget.closedAt }}</span>
+            </div>
+
+
+            <button
+              @click="viewPdf"
+              type="button"
+              class="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-white border border-gray-200 text-gray-700 text-sm font-bold hover:bg-gray-50 transition-colors shadow-sm cursor-pointer">
+              <Search class="w-4 h-4 text-gray-400" />
+              사업자 PDF 미리보기
+            </button>
+
             <button @click="downloadPdf"
-                    class="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d] transition-colors shadow-sm cursor-pointer">
-              <FileText class="w-4 h-4 text-white" />
+                    type="button"
+                    :class="[
+            'w-full flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-bold transition-colors shadow-sm cursor-pointer',
+            detailTarget.closedAt && detailTarget.closedAt !== '운영 중'
+              ? 'bg-white border border-gray-200 text-gray-700 text-sm font-bold hover:bg-gray-50' // 폐업 시: 미리보기와 유사한 연회색 톤
+              : 'bg-[#F37321] text-white hover:bg-[#e0661d]' // 운영 중: 기존 주황색
+          ]">
+              <FileText :class="['w-4 h-4', detailTarget.closedAt && detailTarget.closedAt !== '운영 중' ? 'text-gray-400' : 'text-white']" />
               사업자 PDF 다운로드
             </button>
           </div>
@@ -559,11 +716,52 @@ onMounted(() => {
           <div class="flex gap-3 pt-4">
             <button type="button" @click="showModal = false"
                     class="flex-1 py-3 rounded-lg border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-50 transition-colors cursor-pointer">취소</button>
-            <button type="submit"
-                    class="flex-1 py-3 rounded-lg bg-[#F37321] text-white text-sm font-bold hover:bg-[#e0661d] transition-colors shadow-sm cursor-pointer">저장</button>
+            <button
+              type="submit"
+              :disabled="!isFormValid"
+              :class="[!isFormValid ? 'bg-gray-300 cursor-not-allowed' : 'bg-[#F37321] hover:bg-[#e0661d] cursor-pointer']"
+              class="flex-1 py-3 rounded-lg text-white text-sm font-bold transition-colors shadow-sm"
+            >
+              저장
+            </button>
           </div>
         </form>
       </div>
+    </div>
+    <!-- Pagination UI -->
+    <div class="flex items-center justify-center gap-3 mt-8 pb-10">
+      <!-- 이전 페이지 버튼 (작게) -->
+      <button
+        @click="changePage(pagination.currentPage - 1)"
+        :disabled="pagination.currentPage === 0"
+        class="w-7 h-7 flex items-center justify-center rounded border border-gray-200 bg-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors cursor-pointer"
+      >
+        <span class="text-[10px] text-gray-500">◀</span>
+      </button>
+
+      <!-- 페이지 번호 -->
+      <div class="flex items-center gap-1">
+        <button
+          v-for="pageIdx in visiblePages"
+          :key="pageIdx"
+          @click="changePage(pageIdx)"
+          class="min-w-[28px] h-7 px-2 flex items-center justify-center rounded text-xs font-bold transition-all cursor-pointer"
+          :class="pagination.currentPage === pageIdx
+        ? 'text-[#F37321] border-b-2 border-[#F37321] rounded-none'
+        : 'text-gray-400 hover:text-gray-600'"
+        >
+          {{ pageIdx + 1 }}
+        </button>
+      </div>
+
+      <!-- 다음 페이지 버튼 (작게) -->
+      <button
+        @click="changePage(pagination.currentPage + 1)"
+        :disabled="pagination.currentPage >= pagination.totalPage - 1"
+        class="w-7 h-7 flex items-center justify-center rounded border border-gray-200 bg-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors cursor-pointer"
+      >
+        <span class="text-[10px] text-gray-500">▶</span>
+      </button>
     </div>
   </div>
 </template>

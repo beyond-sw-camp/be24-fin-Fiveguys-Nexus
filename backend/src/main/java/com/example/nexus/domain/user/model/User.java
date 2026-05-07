@@ -37,4 +37,10 @@ public class User {
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted;
 
+    // 가맹점 수정 시 회원 이름과 이메일 수정
+    public void updateOwner(String name, String email) {
+        this.userName = name; //
+        this.email = email;
+    }
+
 }

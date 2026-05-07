@@ -1,10 +1,7 @@
 package com.example.nexus.domain.menu.model;
 
-import com.example.nexus.domain.store.model.Store;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +9,7 @@ import java.util.List;
 @Entity
 @Table(name = "menu")
 @Getter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Menu {
@@ -32,4 +30,22 @@ public class Menu {
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted = false;
 
+    @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<MenuItem> menuItemList = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "menu_category_idx")
+    private MenuCategory menuCategory;
+
+    public void update(String menuName, Integer price, String imgPath, MenuCategory category) {
+        this.menuName = menuName;
+        this.price = price;
+        this.imgPath = imgPath;
+        this.menuCategory = category;
+    }
+
+    public void deleteTrue() {
+        this.isDeleted = true;
+    }
 }

@@ -29,7 +29,9 @@ public class GlobalExceptionHandler {
         BaseResponseStatus status = e.getStatus();
         int errorCode = status.getCode();
         int statusCode = statusCodeMapper(errorCode);
-        BaseResponse response = BaseResponse.fail(status);
+        BaseResponse<?> response = e.getResult() != null
+                ? BaseResponse.fail(status, e.getResult())
+                : BaseResponse.fail(status);
 
         return ResponseEntity.status(statusCode).body(response);
     }

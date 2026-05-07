@@ -120,8 +120,9 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import api from '@/plugins/axiosinterceptor'
 
 const auth = useAuthStore()
 const isEditing = ref(false)
@@ -133,6 +134,29 @@ const userInfo = ref(
 )
 
 const pwForm = ref({ current: '', next: '', confirm: '' })
+
+async function loadMyPage() {
+  try {
+    const response = await api.get('/user/mypage')
+    const data = response.data
+
+    if (!data) return
+
+    userInfo.value.name = data.userName ?? userInfo.value.name
+    userInfo.value.email = data.email ?? userInfo.value.email
+    userInfo.value.phone = data.tel ?? userInfo.value.phone
+
+    if (auth.isAdmin) {
+      userInfo.value.dept = userInfo.value.dept || 'SCM 통제센터'
+    } else {
+      userInfo.value.dept = auth.user?.storeName ?? userInfo.value.dept
+    }
+  } catch (error) {
+    console.error('Failed to load mypage data:', error)
+  }
+}
+
+onMounted(loadMyPage)
 
 function saveProfile() {
   alert('프로필 정보가 업데이트되었습니다.')

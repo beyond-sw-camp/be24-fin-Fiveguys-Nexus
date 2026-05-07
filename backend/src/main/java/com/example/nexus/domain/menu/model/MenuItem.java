@@ -2,13 +2,12 @@ package com.example.nexus.domain.menu.model;
 
 import com.example.nexus.domain.product.model.Product;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "menu_item")
 @Getter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class MenuItem {
@@ -29,5 +28,6 @@ public class MenuItem {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_idx", nullable = false)
+    @Setter
     private Product product;
 }

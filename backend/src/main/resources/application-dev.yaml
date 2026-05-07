@@ -10,6 +10,15 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: false
+    defer-datasource-initialization: true
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: gpt-4o
+          temperature: 0.3
 
   cloud:
     aws:
@@ -21,7 +30,9 @@ spring:
         menu-bucket: ${AWS_S3_MENU_BUCKET}
       region:
         static: ${AWS_S3_STATIC}
-
+  sql:
+    init:
+      mode: never
 
 server:
   port: 8080
@@ -29,3 +40,20 @@ server:
 logging:
   level:
     org.springframework.security: DEBUG
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_ADDR}
+    password: ${MAIL_PASS}
+    properties:
+      mail:
+        smtp:
+          starttls:
+            enable: true
+            required: true
+          auth: true
+          timeout: 5000
+
+portone:
+  portone_secret: ${PORTONE_SECRET}

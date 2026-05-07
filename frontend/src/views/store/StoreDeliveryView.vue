@@ -5,6 +5,7 @@
         <h1 class="text-xl font-bold text-gray-900 tracking-tight">배송 현황</h1>
       </div>
 
+      <!-- 검색 & 날짜 필터 -->
       <div class="flex flex-wrap gap-3 items-center">
         <div class="relative w-full sm:w-80">
           <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -15,6 +16,7 @@
           <input
             type="text"
             v-model="searchQuery"
+            @input="onSearchInput"
             class="bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none block w-full pl-10 p-2.5 transition-colors shadow-sm"
             placeholder="발주 번호로 검색..."
           >
@@ -22,111 +24,182 @@
 
         <div class="flex flex-wrap gap-2">
           <div class="relative w-32">
-            <select v-model="selectedYear" class="bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none block w-full p-2.5 cursor-pointer shadow-sm">
-              <option value="전체">연도 전체</option>
-              <option v-for="y in uniqueYears" :key="y" :value="y">{{ y }}년</option>
+            <select
+              v-model="selectedYear"
+              @change="fetchDeliveries"
+              class="bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none block w-full p-2.5 cursor-pointer shadow-sm">
+              <option value="">연도 전체</option>
+              <option v-for="y in yearOptions" :key="y" :value="y">{{ y }}년</option>
             </select>
           </div>
           <div class="relative w-28">
-            <select v-model="selectedMonth" class="bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none block w-full p-2.5 cursor-pointer shadow-sm">
-              <option value="전체">월 전체</option>
-              <option v-for="m in uniqueMonths" :key="m" :value="m">{{ m }}월</option>
+            <select
+              v-model="selectedMonth"
+              @change="fetchDeliveries"
+              class="bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none block w-full p-2.5 cursor-pointer shadow-sm">
+              <option value="">월 전체</option>
+              <option v-for="m in 12" :key="m" :value="m">{{ m }}월</option>
             </select>
           </div>
           <div class="relative w-28">
-            <select v-model="selectedDay" class="bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none block w-full p-2.5 cursor-pointer shadow-sm">
-              <option value="전체">일 전체</option>
-              <option v-for="d in uniqueDays" :key="d" :value="d">{{ d }}일</option>
+            <select
+              v-model="selectedDay"
+              @change="fetchDeliveries"
+              class="bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none block w-full p-2.5 cursor-pointer shadow-sm">
+              <option value="">일 전체</option>
+              <option v-for="d in 31" :key="d" :value="d">{{ d }}일</option>
             </select>
           </div>
         </div>
       </div>
 
+      <!-- 상태 필터 버튼 -->
       <div class="flex gap-2 flex-wrap pt-1">
-        <button v-for="f in filterOptions" :key="f"
-                @click="currentFilter = f"
-                class="px-3.5 py-1.5 text-sm font-semibold border rounded-lg transition-colors cursor-pointer"
-                :class="currentFilter === f
+        <button
+          v-for="f in statusFilters"
+          :key="f.value"
+          @click="onStatusFilter(f.value)"
+          class="px-3.5 py-1.5 text-sm font-semibold border rounded-lg transition-colors cursor-pointer"
+          :class="currentFilter === f.value
             ? 'bg-blue-500 text-white border-blue-500 shadow-sm'
             : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'">
-          {{ f }}
-          <span class="ml-1 text-xs font-bold opacity-80">({{ getFilteredCount(f) }})</span>
+          {{ f.label }}
+          <span class="ml-1 text-xs font-bold opacity-80">({{ countByStatus(f.value) }})</span>
         </button>
       </div>
     </div>
 
-    <div v-if="filteredDeliveries.length > 0" class="space-y-3">
-      <div v-for="d in filteredDeliveries" :key="d.id"
-           @click="d.status === '지연' ? openModal(d) : null"
-           class="bg-white border overflow-hidden rounded-lg transition-all duration-200"
-           :class="[
-          d.status === '지연'
+    <!-- 로딩 -->
+    <div v-if="isLoading" class="bg-white border border-gray-200 py-16 text-center rounded-lg shadow-sm">
+      <div class="flex flex-col items-center gap-3">
+        <svg class="w-6 h-6 text-blue-500 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        </svg>
+        <p class="text-gray-400 text-sm">배송 정보를 불러오는 중...</p>
+      </div>
+    </div>
+
+    <!-- 에러 -->
+    <div v-else-if="fetchError" class="bg-red-50 border border-red-200 py-12 text-center rounded-lg">
+      <p class="text-red-500 text-sm font-medium">데이터를 불러오는 데 실패했습니다.</p>
+      <button
+        @click="fetchDeliveries"
+        class="mt-3 px-4 py-1.5 text-xs font-semibold bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors cursor-pointer">
+        다시 시도
+      </button>
+    </div>
+
+    <!-- 배송 카드 목록 -->
+    <div v-else-if="deliveries.length > 0" class="space-y-3">
+      <div
+        v-for="d in deliveries"
+        :key="d.deliveryIdx"
+        @click="d.statusEnum === 'DELAY' ? openModal(d) : null"
+        class="bg-white border overflow-hidden rounded-lg transition-all duration-200"
+        :class="[
+          d.statusEnum === 'DELAY'
             ? 'border-red-300 cursor-pointer hover:border-red-400 hover:shadow-md'
             : 'border-gray-200 shadow-sm'
         ]">
-        <div class="px-5 py-3 border-b flex justify-between items-center"
-             :class="d.status === '지연' ? 'bg-red-50/60 border-red-200' : 'bg-gray-50/60 border-gray-100'">
+
+        <!-- 카드 헤더 -->
+        <div
+          class="px-5 py-3 border-b flex justify-between items-center"
+          :class="d.statusEnum === 'DELAY' ? 'bg-red-50/60 border-red-200' : 'bg-gray-50/60 border-gray-100'">
           <div class="flex items-center gap-4">
             <div class="flex flex-col">
               <span class="text-[10px] font-bold text-blue-500 mb-0.5">{{ d.date }}</span>
-              <span class="text-xs font-mono text-gray-400">{{ d.id }}</span>
+              <span class="text-xs font-mono text-gray-400">발주 # {{ d.orderIdx }}</span>
             </div>
-            <span class="font-bold text-gray-900 text-sm">{{ d.items.join(' · ') }}</span>
+            <span class="font-bold text-gray-900 text-sm">{{ d.storeName }}</span>
           </div>
-          <div class="flex items-center gap-4">
-            <div class="flex items-center">
-            </div>
-            <span class="text-xs font-bold px-2 py-0.5 rounded whitespace-nowrap"
-                  :class="statusClass(d.status)">{{ d.status }}</span>
-          </div>
+          <span
+            class="text-xs font-bold px-2 py-0.5 rounded whitespace-nowrap"
+            :class="statusClass(d.statusEnum)">
+            {{ d.statusLabel }}
+          </span>
         </div>
 
+        <!-- 타임라인 -->
         <div class="px-5 py-4 flex items-center gap-0 overflow-x-auto hide-scrollbar">
           <div v-for="(step, idx) in d.timeline" :key="idx" class="flex items-center">
             <div class="flex flex-col items-center">
-              <div class="w-3 h-3 border-2 border-white rounded-full shadow-sm"
-                   :class="step.done ? 'bg-blue-400' : step.current ? 'bg-blue-600 ring-2 ring-blue-500/20' : 'bg-gray-200'">
+              <div
+                class="w-3 h-3 border-2 border-white rounded-full shadow-sm"
+                :class="step.done
+                  ? 'bg-blue-400'
+                  : step.current
+                    ? 'bg-blue-600 ring-2 ring-blue-500/20'
+                    : 'bg-gray-200'">
               </div>
-              <p class="text-xs font-medium mt-1.5 text-center w-20 sm:w-24 truncate"
-                 :class="step.done ? 'text-gray-800' : step.current ? 'text-blue-600' : 'text-gray-400'">
+              <p
+                class="text-xs font-medium mt-1.5 text-center w-20 sm:w-24 truncate"
+                :class="step.done
+                  ? 'text-gray-800'
+                  : step.current
+                    ? 'text-blue-600'
+                    : 'text-gray-400'">
                 {{ step.label }}
               </p>
               <p class="text-[10px] text-gray-400 mt-0.5">{{ step.time }}</p>
             </div>
-            <div v-if="idx < d.timeline.length - 1"
-                 class="h-px w-8 sm:w-16 mx-1 sm:mx-2 mb-6"
-                 :class="step.done ? 'bg-blue-300' : 'bg-gray-200'">
+            <div
+              v-if="idx < d.timeline.length - 1"
+              class="h-px w-8 sm:w-16 mx-1 sm:mx-2 mb-6"
+              :class="step.done ? 'bg-blue-300' : 'bg-gray-200'">
             </div>
           </div>
         </div>
 
-        <div v-if="d.status === '지연'" class="px-5 py-2.5 bg-red-50/30 border-t border-red-100 flex items-center justify-between">
+        <!-- 지연 안내 바 -->
+        <div
+          v-if="d.statusEnum === 'DELAY'"
+          class="px-5 py-2.5 bg-red-50/30 border-t border-red-100 flex items-center justify-between">
           <span class="text-xs text-red-500 font-medium flex items-center gap-1.5">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
             배송 지연 상세 사유를 확인하려면 클릭하세요.
           </span>
         </div>
       </div>
     </div>
 
+    <!-- 빈 결과 -->
     <div v-else class="bg-white border border-gray-200 py-16 text-center rounded-lg shadow-sm">
       <p class="text-sm text-gray-400 font-medium">조건에 맞는 배송 내역이 없습니다.</p>
     </div>
 
-    <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm" @click="closeModal">
+    <!-- 지연 사유 조회 모달 (가맹점은 읽기 전용) -->
+    <div
+      v-if="isModalOpen"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm"
+      @click="closeModal">
       <div class="bg-white rounded-xl border border-gray-200 shadow-xl w-full max-w-sm overflow-hidden" @click.stop>
         <div class="px-6 py-4 border-b border-red-100 bg-red-50 flex justify-between items-center">
           <h3 class="text-base font-bold text-red-700">배송 지연 안내</h3>
-          <button @click="closeModal" class="text-red-400 hover:text-red-600 cursor-pointer">✕</button>
+          <button @click="closeModal" class="text-red-400 hover:text-red-600 cursor-pointer">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
         </div>
+
         <div class="p-6 space-y-4">
           <div class="flex flex-col gap-1">
-            <span class="text-xs font-semibold text-gray-500">주문 번호</span>
-            <span class="text-sm font-mono text-gray-900 bg-gray-50 px-2 py-1.5 rounded border border-gray-100 w-fit">{{ selectedDelivery?.id }}</span>
+            <span class="text-xs font-semibold text-gray-500">발주 번호</span>
+            <span class="text-sm font-mono text-gray-900 bg-gray-50 px-2 py-1.5 rounded border border-gray-100 w-fit">
+              # {{ selectedDelivery?.orderIdx }}
+            </span>
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-xs font-semibold text-gray-500">배송 물품</span>
-            <span class="text-sm text-gray-900 font-medium">{{ selectedDelivery?.items.join(', ') }}</span>
+            <span class="text-xs font-semibold text-gray-500">매장명</span>
+            <span class="text-sm text-gray-900 font-medium">{{ selectedDelivery?.storeName }}</span>
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="text-xs font-semibold text-gray-500">출발일</span>
+            <span class="text-sm text-gray-900">{{ selectedDelivery?.date || '-' }}</span>
           </div>
           <div class="flex flex-col gap-2 mt-2">
             <span class="text-xs font-semibold text-red-600">지연 사유</span>
@@ -135,8 +208,11 @@
             </div>
           </div>
         </div>
+
         <div class="px-6 py-4 border-t border-gray-100 flex justify-end">
-          <button @click="closeModal" class="px-4 py-2 bg-blue-500 text-white text-sm font-bold hover:bg-blue-600 rounded cursor-pointer transition-colors shadow-sm">
+          <button
+            @click="closeModal"
+            class="px-4 py-2 bg-blue-500 text-white text-sm font-bold hover:bg-blue-600 rounded cursor-pointer transition-colors shadow-sm">
             확인
           </button>
         </div>
@@ -146,99 +222,199 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { getMyStoreDeliveries } from '@/api/delivery'
 
-const isModalOpen = ref(false)
+// 상태
+const deliveries  = ref([])
+const isLoading   = ref(false)
+const fetchError  = ref(false)
+const currentFilter  = ref('')
+const searchQuery    = ref('')
+const selectedYear   = ref('')
+const selectedMonth  = ref('')
+const selectedDay    = ref('')
+
+const isModalOpen      = ref(false)
 const selectedDelivery = ref(null)
 
-const searchQuery = ref('')
-const selectedYear = ref('전체')
-const selectedMonth = ref('전체')
-const selectedDay = ref('전체')
-const currentFilter = ref('전체')
-const filterOptions = ['전체', '출고대기', '배송중', '지연', '배송 완료']
+let searchDebounceTimer = null
 
-const deliveries = ref([
-  {
-    id: 'DLV-20260413-001', date: '2026-04-13', status: '배송중',
-    items: ['한우 등심 20kg', '버터 5kg'],
-    timeline: [
-      { label: '발주 확정', time: '08:00', done: true },
-      { label: '출고 완료', time: '08:30', done: true },
-      { label: '배송 중',   time: '10:15', done: false, current: true },
-      { label: '배송 완료', time: '예정 14:30', done: false },
-    ],
-  },
-  {
-    id: 'DLV-20260413-003', date: '2026-04-13', status: '지연',
-    items: ['연어 15kg', '올리브오일 5L'],
-    delayReason: '교통 정체로 인한 배송 지연',
-    timeline: [
-      { label: '발주 확정', time: '06:00', done: true },
-      { label: '출고 완료', time: '07:00', done: true },
-      { label: '배송 지연', time: '10:00', done: false, current: true },
-      { label: '배송 완료', time: '미정', done: false },
-    ],
-  },
-  {
-    id: 'DLV-20260412-099', date: '2026-04-12', status: '배송 완료',
-    items: ['양파 30kg', '생수 10박스'],
-    timeline: [
-      { label: '발주 확정', time: '07:00', done: true },
-      { label: '출고 완료', time: '07:45', done: true },
-      { label: '배송 완료', time: '11:20', done: true },
-    ],
-  }
-])
+// DeliveryStatus enum -> 레이블 매핑
+const STATUS_LABEL_MAP = {
+  READY:       '출고대기',
+  START:       '출고중',
+  DELIVERYING: '배송중',
+  DELIVERED:   '배송완료',
+  DELAY:       '지연',
+}
 
-const uniqueYears = computed(() => [...new Set(deliveries.value.map(d => d.date.split('-')[0]))].sort().reverse())
-const uniqueMonths = computed(() => [...new Set(deliveries.value.map(d => d.date.split('-')[1]))].sort())
-const uniqueDays = computed(() => [...new Set(deliveries.value.map(d => d.date.split('-')[2]))].sort())
+// 상태 필터 버튼 목록
+const statusFilters = [
+  { value: '',            label: '전체'    },
+  { value: 'READY',       label: '출고대기' },
+  { value: 'START',       label: '출고중'   },
+  { value: 'DELIVERYING', label: '배송중'   },
+  { value: 'DELIVERED',   label: '배송완료' },
+  { value: 'DELAY',       label: '지연'    },
+]
 
-const filteredDeliveries = computed(() => {
-  return deliveries.value
-    .filter(d => {
-      const [year, month, day] = d.date.split('-')
-      const matchesSearch = d.id.includes(searchQuery.value) || d.items.join('').includes(searchQuery.value)
-      const matchesYear = selectedYear.value === '전체' || year === selectedYear.value
-      const matchesMonth = selectedMonth.value === '전체' || month === selectedMonth.value
-      const matchesDay = selectedDay.value === '전체' || day === selectedDay.value
-      const matchesStatus = currentFilter.value === '전체' || d.status === currentFilter.value
-      return matchesSearch && matchesYear && matchesMonth && matchesDay && matchesStatus
-    })
-    .sort((a, b) => b.id.localeCompare(a.id))
+// 연도 옵션
+const yearOptions = computed(() => {
+  const cur = new Date().getFullYear()
+  return [cur, cur - 1, cur - 2]
 })
 
-function getFilteredCount(status) {
-  return deliveries.value.filter(d => {
-    const [year, month, day] = d.date.split('-')
-    const matchesYear = selectedYear.value === '전체' || year === selectedYear.value
-    const matchesMonth = selectedMonth.value === '전체' || month === selectedMonth.value
-    const matchesDay = selectedDay.value === '전체' || day === selectedDay.value
-    const matchesStatus = status === '전체' || d.status === status
-    return matchesYear && matchesMonth && matchesDay && matchesStatus
-  }).length
+// LocalDateTime 포맷
+function formatDatetime(val) {
+  if (!val) return null
+  return String(val).replace('T', ' ').substring(0, 16)
 }
 
-function statusClass(status) {
-  const map = {
-    '출고대기': 'bg-gray-100 text-gray-600 border border-gray-200',
-    '배송중':   'bg-blue-50 text-blue-600 border border-blue-200',
-    '배송 완료': 'bg-green-50 text-green-600 border border-green-200',
-    '지연':     'bg-red-50 text-red-600 border border-red-200',
+function extractDate(val) {
+  if (!val) return null
+  return String(val).substring(0, 10) // "YYYY-MM-DD"
+}
+
+// DeliveryDto -> 프론트엔드 포맷 매핑
+// DeliveryStatus enum 순서 기반 타임라인 구성
+function mapDelivery(dto) {
+  const statusEnum  = dto.deliveryStatus
+  const statusLabel = STATUS_LABEL_MAP[statusEnum] || statusEnum
+
+  const departureFormatted = formatDatetime(dto.departureDate)
+  const estimatedFormatted = formatDatetime(dto.estimatedArrivalAt)
+  const deliveredFormatted = formatDatetime(dto.deliveredDate)
+  const dateStr            = extractDate(dto.departureDate)
+
+  // READY -> START -> DELIVERYING -> DELIVERED
+  // DELAY 는 DELIVERYING 단계에서 발생
+  const ORDER = ['READY', 'START', 'DELIVERYING', 'DELIVERED']
+  const currentIdx = statusEnum === 'DELAY'
+    ? 2  // DELIVERYING 위치에서 지연 표시
+    : ORDER.indexOf(statusEnum)
+
+  const timeline = [
+    {
+      label:   '발주 확정',
+      time:    departureFormatted ? `${departureFormatted} 이전` : '-',
+      done:    currentIdx > 0,
+      current: currentIdx === 0,
+    },
+    {
+      label:   '출고 완료',
+      time:    departureFormatted || '-',
+      done:    currentIdx > 1,
+      current: currentIdx === 1,
+    },
+    {
+      label:   statusEnum === 'DELAY' ? '배송 지연' : '배송 중',
+      time:    statusEnum === 'DELAY'
+        ? '지연 발생'
+        : estimatedFormatted
+          ? `예정 ${estimatedFormatted}`
+          : '-',
+      done:    currentIdx > 2,
+      current: currentIdx === 2,
+    },
+    {
+      label:   '배송 완료',
+      time:    deliveredFormatted
+        ? deliveredFormatted
+        : estimatedFormatted
+          ? `예정 ${estimatedFormatted}`
+          : '예정',
+      done:    statusEnum === 'DELIVERED',
+      current: false,
+    },
+  ]
+
+  return {
+    deliveryIdx:  dto.deliveryIdx,
+    orderIdx:     dto.orderIdx,
+    storeName:    dto.storeName    || '-',
+    date:         dateStr          || '-',
+    statusEnum,
+    statusLabel,
+    delayReason:  dto.delayReason  || '',
+    timeline,
   }
-  return map[status] || 'bg-gray-100 text-gray-500 border border-gray-200'
 }
 
+// API 호출
+async function fetchDeliveries() {
+  isLoading.value  = true
+  fetchError.value = false
+
+  try {
+    const params = {}
+
+    // 발주번호 검색: 숫자만 허용 (Long 타입)
+    const parsed = parseInt(searchQuery.value.trim(), 10)
+    if (!isNaN(parsed) && searchQuery.value.trim() !== '') {
+      params.orderIdx = parsed
+    }
+
+    if (currentFilter.value)  params.status = currentFilter.value
+    if (selectedYear.value)   params.year   = Number(selectedYear.value)
+    if (selectedMonth.value)  params.month  = Number(selectedMonth.value)
+    if (selectedDay.value)    params.day    = Number(selectedDay.value)
+
+    const { data } = await getMyStoreDeliveries(params)
+    deliveries.value = (data || []).map(mapDelivery)
+  } catch (err) {
+    console.error('[StoreDeliveryView] 배송 현황 조회 실패:', err)
+    fetchError.value = true
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// 검색어 디바운스 (400ms)
+function onSearchInput() {
+  clearTimeout(searchDebounceTimer)
+  searchDebounceTimer = setTimeout(fetchDeliveries, 400)
+}
+
+// 상태 필터 클릭
+function onStatusFilter(value) {
+  currentFilter.value = value
+  fetchDeliveries()
+}
+
+// 상태별 카운트 (현재 로드된 목록 기준)
+function countByStatus(value) {
+  if (!value) return deliveries.value.length
+  return deliveries.value.filter(d => d.statusEnum === value).length
+}
+
+// 상태별 배지 스타일
+function statusClass(statusEnum) {
+  const map = {
+    READY:       'bg-gray-100 text-gray-600 border border-gray-200',
+    START:       'bg-orange-50 text-orange-600 border border-orange-200',
+    DELIVERYING: 'bg-blue-50 text-blue-600 border border-blue-200',
+    DELIVERED:   'bg-green-50 text-green-600 border border-green-200',
+    DELAY:       'bg-red-50 text-red-600 border border-red-200',
+  }
+  return map[statusEnum] || 'bg-gray-100 text-gray-500 border border-gray-200'
+}
+
+// 모달 제어
 function openModal(delivery) {
   selectedDelivery.value = delivery
-  isModalOpen.value = true
+  isModalOpen.value      = true
 }
 
 function closeModal() {
   isModalOpen.value = false
   setTimeout(() => { selectedDelivery.value = null }, 200)
 }
+
+//초기 로드
+onMounted(() => {
+  fetchDeliveries()
+})
 </script>
 
 <style scoped>

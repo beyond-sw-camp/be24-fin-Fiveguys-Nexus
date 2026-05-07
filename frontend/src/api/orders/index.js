@@ -21,7 +21,7 @@ const createStoreManualOrder = (data) => {
 }
 
 const cancelOrder = (ordersIdx) => {
-  return api.put(`/orders/${ordersIdx}/cancel`)
+  return api.put(`/orders/store/${ordersIdx}/cancel`)
 }
 
 const getOrderHistory = (params = {}) => {
@@ -49,6 +49,34 @@ const rejectDangerOrder = (ordersIdx) => {
   return api.put(`/orders/${ordersIdx}/reject`)
 }
 
+const getStoreOrderListPaged = (page = 0, size = 10) => {
+  return api.get('/orders/store/list/paged', { params: { page, size } })
+}
+
+const getStorePendingOrders = () => {
+  return api.get('/orders/store/find')
+}
+
+const confirmStoreOrder = (ordersIdx) => {
+  return api.put(`/orders/store/${ordersIdx}/confirm`)
+}
+
+const addStoreOrderItem = (ordersIdx, data) => {
+  return api.post(`/orders/store/${ordersIdx}/items`, data)
+}
+
+const rejectStoreOrder = (ordersIdx) => {
+  return api.put(`/orders/store/${ordersIdx}/reject`)
+}
+
+const updateStoreItemCount = (ordersItemIdx, data) => {
+  return api.put(`/orders/store/${ordersItemIdx}/items`, data)
+}
+
+const deleteStoreItem = (ordersItemIdx) => {
+  return api.delete(`/orders/store/${ordersItemIdx}/items`)
+}
+
 export default {
   getAutoOrders,
   getOrderDetail,
@@ -62,4 +90,11 @@ export default {
   approveAllConfirmed,
   approveDangerOrder,
   rejectDangerOrder,
+  getStoreOrderListPaged,
+  getStorePendingOrders,
+  confirmStoreOrder,
+  addStoreOrderItem,
+  rejectStoreOrder,
+  updateStoreItemCount,
+  deleteStoreItem,
 }

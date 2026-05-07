@@ -19,13 +19,21 @@ public enum BaseResponseStatus {
     PASSWORD_WRONG(false, 3007, "비밀번호가 일치하지 않습니다."),
 
 
-    // 3100번대 ~ 가맹점 등록 클라이언트 오류
-    NOT_FOUND_USER(false, 3101, "해당 이메일로 등록된 점주 정보를 찾을 수 없습니다."),
-    STORE_NAME_ALREADY_EXISTS(false, 3102, "이미 등록된 매장명입니다."),
+    // 3100번대 ~ 가맹점 클라이언트 오류
+    NOT_FOUND_USER(false, 3101, "등록되지 않은 점주 정보입니다."),
+    STORE_NAME_ALREADY_EXISTS(false, 3102, "이미 사용중인 가맹점명입니다."),
     BUSINESS_NUMBER_ALREADY_EXISTS(false, 3103, "이미 등록된 사업자 번호입니다."),
-    ALREADY_HAS_STORE(false, 3104, "이미 매장을 보유한 점주입니다."),
+    ALREADY_HAS_STORE(false, 3104, "해당 점주는 이미 등록된 가맹점이 존재합니다."),
+    STORE_NOT_FOUND(false, 3105, "해당 가맹점 정보를 찾을 수 없습니다."),
+    STORE_ALREADY_CLOSED(false, 3106, "폐업 처리되어 수정할 수 없는 가맹점입니다."),
+    DUPLICATE_EMAIL(false, 3107, "이미 다른 계정에서 사용중인 이메일입니다."),
+    S3_DELETE_FAILED(false, 3108, "S3 삭제 실패했습니다."),
 
-
+    // 3200번대 ~ 메뉴 클라이언트 오류
+    NOT_FOUND_CATEGORY(false, 3201, "존재하지 않는 카테고리입니다."),
+    NOT_FOUND_PRODUCT(false, 3202, "제품을 찾을 수 없습니다."),
+    DUPLICATE_MENU_NAME(false, 3203, "이미 사용중인 메뉴명입니다."),
+    NOT_FOUND_MENU(false, 3204, "존재하지 않는 메뉴입니다."),
 
 
     // 4000번대 실패
@@ -46,6 +54,8 @@ public enum BaseResponseStatus {
     PAYMENT_BILLING_INVALID_OWNER(false, 4104, "결제 수단의 소유자가 아닙니다."),
     PAYMENT_BILLING_REQUIRED(false, 4105, "최소 1개의 결제 수단이 필요합니다."),
     PAYMENT_DEFAULT_BILLING_REQUIRED(false, 4106, "기본 결제 수단이 존재하지 않습니다."),
+    STORE_INVENTORY_INSUFFICIENT(false, 4107, "본사 재고가 부족합니다."),
+    POS_STORE_INVENTORY_INSUFFICIENT(false, 4108, "POS 재고가 부족합니다."),
 
     // 5000번대 실패
     FAIL(false, 5000, "요청 실패");

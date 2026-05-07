@@ -39,7 +39,7 @@ public class Store {
     private String business;
 
     @Column(nullable = false)
-    private Integer postcode;
+    private String postcode;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -53,5 +53,18 @@ public class Store {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_idx", nullable = false)
     private User user;
+
+    public void update(StoreDto.StoreUpdateReq dto) {
+        this.storeName = dto.getStoreName();
+        this.postcode = dto.getPostcode();
+        this.address = dto.getAddress();
+        this.addressDetail = dto.getAddressDetail();
+        this.filePath = dto.getFilePath();
+
+        if (dto.getClosedAt() != null) {
+            this.closedAt = dto.getClosedAt();
+            this.isDeleted = true;
+        }
+    }
 
 }

@@ -21,6 +21,7 @@ TRUNCATE TABLE delivery;
 TRUNCATE TABLE orders_item;
 TRUNCATE TABLE orders;
 TRUNCATE TABLE menu_item;
+TRUNCATE TABLE menu_category;
 TRUNCATE TABLE menu;
 TRUNCATE TABLE store_inventory;
 TRUNCATE TABLE head_inventory;
@@ -43,17 +44,33 @@ INSERT INTO user (email, password, user_name, tel, role, is_deleted) VALUES
 ('store02@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '최유진', '010-4567-8901', 'STORE', false),
 ('store03@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '정수아', '010-5678-9012', 'STORE', false),
 ('store04@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '한지민', '010-6789-0123', 'STORE', false),
-('store05@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '윤서준', '010-7890-1234', 'STORE', false);
+('store05@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '윤서준', '010-7890-1234', 'STORE', false),
+('store06@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '강도훈', '010-8901-2345', 'STORE', false),
+('store07@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '조예은', '010-9012-3456', 'STORE', false),
+('store08@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '임지우', '010-0123-4567', 'STORE', false),
+('store09@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '서현우', '010-1122-3344', 'STORE', false),
+('store10@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '오지현', '010-5566-7788', 'STORE', false),
+('store11@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '권태윤', '010-9988-7766', 'STORE', false),
+('store12@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '송민경', '010-4433-2211', 'STORE', false),
+('store13@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '백승호', '010-6677-8899', 'STORE', false),
+('store14@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '신아름', '010-2233-4455', 'STORE', false),
+('store15@theventi.co.kr', '{bcrypt}$2b$10$lvGJMgshX87086lRcSRGT.NXXzXyKXIXc2PgpAgAeK10LKeWfW2MS', '유재혁', '010-8877-6655', 'STORE', false);
+
 
 -- ============================================================
 -- 2. Store (가맹점 5개)
 -- ============================================================
-INSERT INTO store (user_idx, store_name, postcode, address, address_detail, file_path, business, created_at, closed_at, is_deleted) VALUES
-(3, '더벤티 강남역점', '06232', '서울특별시 강남구 강남대로 396', '1층 101호', '/uploads/store/gangnam.jpg', '123-45-67890', '2023-03-15 09:00:00', NULL, false),
-(4, '더벤티 홍대입구점', '04050', '서울특별시 마포구 양화로 160', '1층', '/uploads/store/hongdae.jpg', '234-56-78901', '2023-06-01 09:00:00', '2023-09-10 09:00:00', true),
-(5, '더벤티 신촌점', '03785', '서울특별시 서대문구 신촌로 141', '지하1층 B102호', '/uploads/store/sinchon.jpg', '345-67-89012', '2023-09-10 09:00:00', NULL, false),
-(6, '더벤티 건대입구점', '05029', '서울특별시 광진구 능동로 120', '1층 103호', '/uploads/store/konkuk.jpg', '456-78-90123', '2024-01-08 09:00:00', '2024-04-20 09:00:00', true),
-(7, '더벤티 잠실점', '05554', '서울특별시 송파구 올림픽로 240', '1층', '/uploads/store/jamsil.jpg', '567-89-01234', '2024-04-20 09:00:00', NULL, false);
+INSERT INTO store (user_idx, store_name, address, address_detail, file_path, business, postcode, created_at, closed_at, is_deleted) VALUES
+(3, '더벤티 강남역점', '서울특별시 강남구 강남대로 396', '1층 101호', '/uploads/store/gangnam.jpg', '123-45-67890', 06232, '2023-03-15 09:00:00', NULL, false),
+(4, '더벤티 홍대입구점', '서울특별시 마포구 양화로 160', '1층', '/uploads/store/hongdae.jpg', '234-56-78901', 04051, '2023-06-01 09:00:00', '2023-09-10 09:00:00', true),
+(5, '더벤티 신촌점', '서울특별시 서대문구 신촌로 141', '지하1층 B102호', '/uploads/store/sinchon.jpg', '345-67-89012', 03780, '2023-09-10 09:00:00', NULL, false),
+(6, '더벤티 건대입구점', '서울특별시 광진구 능동로 120', '1층 103호', '/uploads/store/konkuk.jpg', '456-78-90123', 05029, '2024-01-08 09:00:00', '2024-04-20 09:00:00', true),
+(7, '더벤티 잠실점', '서울특별시 송파구 올림픽로 240', '1층', '/uploads/store/jamsil.jpg', '567-89-01234', 05554, '2024-04-20 09:00:00', NULL, false),
+(8, '더벤티 부산역점', '부산광역시 동구 중앙대로 206', '1층', '/uploads/store/busan.jpg', '678-90-12345', 48733, '2024-05-01 09:00:00', NULL, false),
+(9, '더벤티 대구중앙로점', '대구광역시 중구 국채보상로 585', '1층 105호', '/uploads/store/daegu.jpg', '789-01-23456', 41907, '2024-05-02 10:00:00', NULL, false),
+(10, '더벤티 광주상무점', '광주광역시 서구 상무중앙로 80', '1층', '/uploads/store/gwangju.jpg', '890-12-34567', 61947, '2024-05-03 09:30:00', '2024-06-10 18:00:00', true),
+(11, '더벤티 수원인계점', '경기도 수원시 팔달구 인계로 138', '1층', '/uploads/store/suwon.jpg', '234-56-78902', 16488, '2024-05-15 09:00:00', '2024-07-01 09:00:00', true),
+(12, '더벤티 천안터미널점', '충청남도 천안시 동남구 만남로 43', '1층 106호', '/uploads/store/cheonan.jpg', '567-89-01235', 31120, '2024-05-25 09:00:00', '2024-05-30 09:00:00', true);
 
 
 
@@ -113,24 +130,41 @@ INSERT INTO product (category_idx, product_name, product_unit, max_stock, min_st
 (7, '연유', 'kg', 10, 2, 8000, '30', false);
 
 -- ============================================================
+-- 5. MenuCategoryItem (메뉴별 원자재 레시피)
+-- ============================================================
+INSERT INTO menu_category (menu_category_name, is_deleted) VALUES
+('커피', false),
+('베버리지', false),
+('아이스블렌디드', false),
+('티 & 에이드', false);
+
+-- ============================================================
 -- 5. Menu (더벤티 대표 메뉴)
 -- ============================================================
-INSERT INTO menu (menu_name, price, img_path, is_deleted) VALUES
-('아메리카노', 1500, '/uploads/menu/americano.jpg', false),
-('카페라떼', 2500, '/uploads/menu/cafelatte.jpg', false),
-('바닐라라떼', 3000, '/uploads/menu/vanillalatte.jpg', false),
-('카라멜마끼아또', 3500, '/uploads/menu/caramelmacchiato.jpg', false),
-('카푸치노', 2500, '/uploads/menu/cappuccino.jpg', false),
-('딸기스무디', 3500, '/uploads/menu/strawberrysmoothie.jpg', false),
-('망고스무디', 3500, '/uploads/menu/mangosmoothie.jpg', false),
-('복숭아아이스티', 2500, '/uploads/menu/peachicedtea.jpg', false),
-('레몬에이드', 2500, '/uploads/menu/lemonade.jpg', false),
-('자몽에이드', 3000, '/uploads/menu/grapefruitade.jpg', false),
-('녹차라떼', 3000, '/uploads/menu/greentealatte.jpg', false),
-('초코라떼', 3000, '/uploads/menu/chocolatte.jpg', false),
-('얼그레이티', 2000, '/uploads/menu/earlgrey.jpg', false),
-('캐모마일티', 2000, '/uploads/menu/chamomile.jpg', false),
-('히비스커스티', 2000, '/uploads/menu/hibiscus.jpg', false);
+INSERT INTO menu (menu_name, price, img_path, is_deleted, menu_category_idx) VALUES
+-- 커피 (idx: 1)
+('아메리카노', 1500, '/uploads/menu/americano.jpg', false, 1),
+('카페라떼', 2500, '/uploads/menu/cafelatte.jpg', false, 1),
+('바닐라라떼', 3000, '/uploads/menu/vanillalatte.jpg', false, 1),
+('카라멜마끼아또', 3500, '/uploads/menu/caramelmacchiato.jpg', false, 1),
+('카푸치노', 2500, '/uploads/menu/cappuccino.jpg', false, 1),
+
+-- 베버리지 (idx: 2)
+('녹차라떼', 3000, '/uploads/menu/greentealatte.jpg', false, 2),
+('초코라떼', 3000, '/uploads/menu/chocolatte.jpg', false, 2),
+
+-- 아이스블렌디드 (idx: 3)
+('딸기스무디', 3500, '/uploads/menu/strawberrysmoothie.jpg', false, 3),
+('망고스무디', 3500, '/uploads/menu/mangosmoothie.jpg', false, 3),
+
+-- 티 & 에이드 (idx: 4)
+('복숭아아이스티', 2500, '/uploads/menu/peachicedtea.jpg', false, 4),
+('레몬에이드', 2500, '/uploads/menu/lemonade.jpg', false, 4),
+('자몽에이드', 3000, '/uploads/menu/grapefruitade.jpg', false, 4),
+('얼그레이티', 2000, '/uploads/menu/earlgrey.jpg', false, 4),
+('캐모마일티', 2000, '/uploads/menu/chamomile.jpg', false, 4),
+('히비스커스티', 2000, '/uploads/menu/hibiscus.jpg', false, 4);
+
 
 -- ============================================================
 -- 6. MenuItem (메뉴별 원자재 레시피)
@@ -251,44 +285,46 @@ INSERT INTO head_inventory (product_idx, count, status, manufactured_date) VALUE
 -- ============================================================
 -- 9. StoreInventory (가맹점 재고 - 5개 매장)
 -- ============================================================
--- 강남역점 (store 1) - 재고 넉넉
+    -- 강남역점 (store 1) - 데모·통합 테스트용 초과 재고 (pos_store_inventory와 동일 스냅샷)
 INSERT INTO store_inventory (store_idx, product_idx, count, status, manufactured_date, avg_stock) VALUES
-(1, 1, 20, 'NORMAL', '2026-04-25 08:00:00', 30),
-(1, 1, 15, 'NORMAL', '2026-04-27 08:00:00', 30),
-(1, 2, 15, 'NORMAL', '2026-04-25 08:00:00', 12),
-(1, 3, 50, 'NORMAL', '2026-04-28 06:00:00', 60),
-(1, 3, 30, 'NORMAL', '2026-04-29 06:00:00', 60),
-(1, 4, 30, 'NORMAL', '2026-04-28 06:00:00', 25),
-(1, 5, 25, 'NORMAL', '2026-04-26 06:00:00', 20),
-(1, 6, 15, 'NORMAL', '2026-04-27 06:00:00', 12),
-(1, 7, 10, 'NORMAL', '2026-04-10 08:00:00', 8),
-(1, 8, 10, 'NORMAL', '2026-04-10 08:00:00', 8),
-(1, 9, 7, 'NORMAL', '2026-04-10 08:00:00', 6),
-(1, 10, 6, 'NORMAL', '2026-04-15 08:00:00', 5),
-(1, 11, 6, 'NORMAL', '2026-04-15 08:00:00', 5),
-(1, 12, 10, 'NORMAL', '2026-04-26 08:00:00', 8),
-(1, 13, 10, 'NORMAL', '2026-04-26 08:00:00', 8),
-(1, 14, 10, 'NORMAL', '2026-04-26 08:00:00', 8),
-(1, 15, 8, 'NORMAL', '2026-04-20 08:00:00', 6),
-(1, 16, 8, 'NORMAL', '2026-04-20 08:00:00', 6),
-(1, 17, 5, 'NORMAL', '2026-03-01 08:00:00', 4),
-(1, 18, 8, 'NORMAL', '2026-03-01 08:00:00', 6),
-(1, 19, 5, 'NORMAL', '2026-02-01 08:00:00', 4),
-(1, 20, 4, 'NORMAL', '2026-02-01 08:00:00', 3),
-(1, 21, 4, 'NORMAL', '2026-02-01 08:00:00', 3),
-(1, 22, 6, 'NORMAL', '2026-04-15 08:00:00', 5),
-(1, 23, 6, 'NORMAL', '2026-04-15 08:00:00', 5),
-(1, 24, 6, 'NORMAL', '2026-04-15 08:00:00', 5),
-(1, 25, 5, 'NORMAL', '2026-04-15 08:00:00', 4),
-(1, 26, 5, 'NORMAL', '2026-04-15 08:00:00', 4),
-(1, 27, 150, 'NORMAL', '2026-04-29 05:00:00', 120),
-(1, 28, 10, 'NORMAL', '2026-01-15 08:00:00', 8),
-(1, 29, 5, 'NORMAL', '2026-04-15 08:00:00', 4);
+(1, 1, 20000, 'NORMAL', '2026-04-25 08:00:00', 800),
+(1, 1, 20000, 'NORMAL', '2026-04-27 08:00:00', 800),
+(1, 2, 8000, 'NORMAL', '2026-04-25 08:00:00', 400),
+(1, 3, 20000, 'NORMAL', '2026-04-28 06:00:00', 800),
+(1, 3, 20000, 'NORMAL', '2026-04-29 06:00:00', 800),
+(1, 4, 8000, 'NORMAL', '2026-04-28 06:00:00', 400),
+(1, 5, 8000, 'NORMAL', '2026-04-26 06:00:00', 400),
+(1, 6, 8000, 'NORMAL', '2026-04-27 06:00:00', 400),
+(1, 7, 15000, 'NORMAL', '2026-04-10 08:00:00', 600),
+(1, 7, 15000, 'NORMAL', '2026-04-12 08:00:00', 600),
+(1, 8, 8000, 'NORMAL', '2026-04-10 08:00:00', 400),
+(1, 9, 8000, 'NORMAL', '2026-04-10 08:00:00', 400),
+(1, 10, 8000, 'NORMAL', '2026-04-15 08:00:00', 400),
+(1, 11, 8000, 'NORMAL', '2026-04-15 08:00:00', 400),
+(1, 12, 8000, 'NORMAL', '2026-04-26 08:00:00', 400),
+(1, 13, 8000, 'NORMAL', '2026-04-26 08:00:00', 400),
+(1, 14, 8000, 'NORMAL', '2026-04-26 08:00:00', 400),
+(1, 15, 8000, 'NORMAL', '2026-04-20 08:00:00', 400),
+(1, 16, 8000, 'NORMAL', '2026-04-20 08:00:00', 400),
+(1, 17, 8000, 'NORMAL', '2026-03-01 08:00:00', 400),
+(1, 18, 8000, 'NORMAL', '2026-03-01 08:00:00', 400),
+(1, 19, 8000, 'NORMAL', '2026-02-01 08:00:00', 400),
+(1, 20, 8000, 'NORMAL', '2026-02-01 08:00:00', 400),
+(1, 21, 8000, 'NORMAL', '2026-02-01 08:00:00', 400),
+(1, 22, 8000, 'NORMAL', '2026-04-15 08:00:00', 400),
+(1, 23, 8000, 'NORMAL', '2026-04-15 08:00:00', 400),
+(1, 24, 8000, 'NORMAL', '2026-04-15 08:00:00', 400),
+(1, 25, 8000, 'NORMAL', '2026-04-15 08:00:00', 400),
+(1, 26, 8000, 'NORMAL', '2026-04-15 08:00:00', 400),
+(1, 27, 50000, 'NORMAL', '2026-04-28 05:00:00', 2000),
+(1, 27, 50000, 'NORMAL', '2026-04-29 05:00:00', 2000),
+(1, 28, 8000, 'NORMAL', '2026-01-15 08:00:00', 400),
+(1, 29, 8000, 'NORMAL', '2026-04-15 08:00:00', 400);
 
--- 홍대입구점 (store 2) - 일부 재고 부족
+-- 홍대입구점 (store 2) - 일부 재고 부족 (원두만 마감 테스트용으로 보강)
 INSERT INTO store_inventory (store_idx, product_idx, count, status, manufactured_date, avg_stock) VALUES
-(2, 1, 3, 'LOW', '2026-04-23 08:00:00', 30),
-(2, 1, 5, 'LOW', '2026-04-26 08:00:00', 30),
+(2, 1, 400, 'LOW', '2026-04-23 08:00:00', 30),
+(2, 1, 400, 'LOW', '2026-04-26 08:00:00', 30),
 (2, 2, 10, 'NORMAL', '2026-04-23 08:00:00', 8),
 (2, 3, 18, 'LOW', '2026-04-27 06:00:00', 60),
 (2, 4, 12, 'NORMAL', '2026-04-27 06:00:00', 10),
@@ -359,39 +395,41 @@ INSERT INTO store_inventory (store_idx, product_idx, count, status, manufactured
 -- 10. PosStoreInventory (POS 재고 — store_inventory와 동일 행, avg_stock 제외)
 -- ============================================================
 INSERT INTO pos_store_inventory (store_idx, product_idx, count, status, manufactured_date) VALUES
-(1, 1, 20, 'NORMAL', '2026-04-25 08:00:00'),
-(1, 1, 15, 'NORMAL', '2026-04-27 08:00:00'),
-(1, 2, 15, 'NORMAL', '2026-04-25 08:00:00'),
-(1, 3, 50, 'NORMAL', '2026-04-28 06:00:00'),
-(1, 3, 30, 'NORMAL', '2026-04-29 06:00:00'),
-(1, 4, 30, 'NORMAL', '2026-04-28 06:00:00'),
-(1, 5, 25, 'NORMAL', '2026-04-26 06:00:00'),
-(1, 6, 15, 'NORMAL', '2026-04-27 06:00:00'),
-(1, 7, 10, 'NORMAL', '2026-04-10 08:00:00'),
-(1, 8, 10, 'NORMAL', '2026-04-10 08:00:00'),
-(1, 9, 7, 'NORMAL', '2026-04-10 08:00:00'),
-(1, 10, 6, 'NORMAL', '2026-04-15 08:00:00'),
-(1, 11, 6, 'NORMAL', '2026-04-15 08:00:00'),
-(1, 12, 10, 'NORMAL', '2026-04-26 08:00:00'),
-(1, 13, 10, 'NORMAL', '2026-04-26 08:00:00'),
-(1, 14, 10, 'NORMAL', '2026-04-26 08:00:00'),
-(1, 15, 8, 'NORMAL', '2026-04-20 08:00:00'),
-(1, 16, 8, 'NORMAL', '2026-04-20 08:00:00'),
-(1, 17, 5, 'NORMAL', '2026-03-01 08:00:00'),
-(1, 18, 8, 'NORMAL', '2026-03-01 08:00:00'),
-(1, 19, 5, 'NORMAL', '2026-02-01 08:00:00'),
-(1, 20, 4, 'NORMAL', '2026-02-01 08:00:00'),
-(1, 21, 4, 'NORMAL', '2026-02-01 08:00:00'),
-(1, 22, 6, 'NORMAL', '2026-04-15 08:00:00'),
-(1, 23, 6, 'NORMAL', '2026-04-15 08:00:00'),
-(1, 24, 6, 'NORMAL', '2026-04-15 08:00:00'),
-(1, 25, 5, 'NORMAL', '2026-04-15 08:00:00'),
-(1, 26, 5, 'NORMAL', '2026-04-15 08:00:00'),
-(1, 27, 150, 'NORMAL', '2026-04-29 05:00:00'),
-(1, 28, 10, 'NORMAL', '2026-01-15 08:00:00'),
-(1, 29, 5, 'NORMAL', '2026-04-15 08:00:00'),
-(2, 1, 3, 'LOW', '2026-04-23 08:00:00'),
-(2, 1, 5, 'LOW', '2026-04-26 08:00:00'),
+(1, 1, 20000, 'NORMAL', '2026-04-25 08:00:00'),
+(1, 1, 20000, 'NORMAL', '2026-04-27 08:00:00'),
+(1, 2, 8000, 'NORMAL', '2026-04-25 08:00:00'),
+(1, 3, 20000, 'NORMAL', '2026-04-28 06:00:00'),
+(1, 3, 20000, 'NORMAL', '2026-04-29 06:00:00'),
+(1, 4, 8000, 'NORMAL', '2026-04-28 06:00:00'),
+(1, 5, 8000, 'NORMAL', '2026-04-26 06:00:00'),
+(1, 6, 8000, 'NORMAL', '2026-04-27 06:00:00'),
+(1, 7, 15000, 'NORMAL', '2026-04-10 08:00:00'),
+(1, 7, 15000, 'NORMAL', '2026-04-12 08:00:00'),
+(1, 8, 8000, 'NORMAL', '2026-04-10 08:00:00'),
+(1, 9, 8000, 'NORMAL', '2026-04-10 08:00:00'),
+(1, 10, 8000, 'NORMAL', '2026-04-15 08:00:00'),
+(1, 11, 8000, 'NORMAL', '2026-04-15 08:00:00'),
+(1, 12, 8000, 'NORMAL', '2026-04-26 08:00:00'),
+(1, 13, 8000, 'NORMAL', '2026-04-26 08:00:00'),
+(1, 14, 8000, 'NORMAL', '2026-04-26 08:00:00'),
+(1, 15, 8000, 'NORMAL', '2026-04-20 08:00:00'),
+(1, 16, 8000, 'NORMAL', '2026-04-20 08:00:00'),
+(1, 17, 8000, 'NORMAL', '2026-03-01 08:00:00'),
+(1, 18, 8000, 'NORMAL', '2026-03-01 08:00:00'),
+(1, 19, 8000, 'NORMAL', '2026-02-01 08:00:00'),
+(1, 20, 8000, 'NORMAL', '2026-02-01 08:00:00'),
+(1, 21, 8000, 'NORMAL', '2026-02-01 08:00:00'),
+(1, 22, 8000, 'NORMAL', '2026-04-15 08:00:00'),
+(1, 23, 8000, 'NORMAL', '2026-04-15 08:00:00'),
+(1, 24, 8000, 'NORMAL', '2026-04-15 08:00:00'),
+(1, 25, 8000, 'NORMAL', '2026-04-15 08:00:00'),
+(1, 26, 8000, 'NORMAL', '2026-04-15 08:00:00'),
+(1, 27, 50000, 'NORMAL', '2026-04-28 05:00:00'),
+(1, 27, 50000, 'NORMAL', '2026-04-29 05:00:00'),
+(1, 28, 8000, 'NORMAL', '2026-01-15 08:00:00'),
+(1, 29, 8000, 'NORMAL', '2026-04-15 08:00:00'),
+(2, 1, 400, 'LOW', '2026-04-23 08:00:00'),
+(2, 1, 400, 'LOW', '2026-04-26 08:00:00'),
 (2, 2, 10, 'NORMAL', '2026-04-23 08:00:00'),
 (2, 3, 18, 'LOW', '2026-04-27 06:00:00'),
 (2, 4, 12, 'NORMAL', '2026-04-27 06:00:00'),
@@ -540,6 +578,11 @@ INSERT INTO orders (store_idx, price, order_type, order_status, is_danger, creat
 -- 신촌점 4월 추가
 INSERT INTO orders (store_idx, price, order_type, order_status, is_danger, created_at) VALUES
 (3, 110500, 'MANUAL', 'APPROVE', false, '2026-04-15 11:00:00');
+
+-- 강남역점 제안 발주서 (WAITING)
+INSERT INTO orders (store_idx, price, order_type, order_status, is_danger, created_at) VALUES
+(1, 280000, 'AUTO', 'WAITING', false, '2026-05-01 07:00:00'),
+(1, 126500, 'AUTO', 'WAITING', false, '2026-05-02 07:00:00');
 
 -- ============================================================
 -- 12. OrdersItem (발주 항목)
@@ -749,10 +792,22 @@ INSERT INTO orders_item (orders_idx, product_idx, count) VALUES
 (34, 8, 5),
 (34, 9, 3);
 
+-- 강남역점 제안 발주서 1 (orders 35): 원두+우유+바닐라시럽 = 237000
+INSERT INTO orders_item (orders_idx, product_idx, count) VALUES
+(35, 1, 8),
+(35, 3, 30),
+(35, 7, 10);
+
+-- 강남역점 제안 발주서 2 (orders 36): 카라멜시럽+딸기퓨레+초코파우더 = 149500
+INSERT INTO orders_item (orders_idx, product_idx, count) VALUES
+(36, 8, 5),
+(36, 12, 4),
+(36, 18, 3);
+
 -- ============================================================
 -- 13. Delivery (배송)
 -- ============================================================
-INSERT INTO delivery (orders_idx, delivery_status, delay_reason, dep_date, est_des_date, deliveryed_date) VALUES
+INSERT INTO delivery (orders_idx, delivery_status, delay_reason, dep_date, est_des_date, delivered_date) VALUES
 -- 강남역점 1차: 배송완료
 (1, 'DELIVERED', NULL, '2026-04-10 14:00:00', '2026-04-11 10:00:00', '2026-04-11 09:30:00'),
 -- 강남역점 2차: 배송완료
@@ -1010,39 +1065,37 @@ INSERT INTO news_summary (store_idx, summary_date, target, summary_title, summar
 INSERT INTO head_income (store_idx, orders_idx, price, status) VALUES
 (1, 1, 310000, true),
 (1, 2, 180000, true),
-(1, 3, 106000, true),
-(2, 4, 481000, true),
-(3, 7, 161000, true),
+(1, 3, 106000, false),
+(2, 4, 481000, false),
+(3, 7, 161000, false),
 (4, 8, 756000, false),
 (5, 10, 242500, true),
 -- 추가 발주 수익
 (1, 12, 220000, true),
 (2, 14, 255000, true),
-(3, 16, 347500, true),
-(3, 17, 116000, true),
-(4, 18, 357500, true),
-(5, 20, 285000, true),
-(1, 22, 180000, true),
+(3, 16, 347500, false),
+(3, 17, 116000, false),
+(4, 18, 357500, false),
+(5, 20, 285000, false),
+(1, 22, 180000, false),
 (1, 23, 112000, true),
 (2, 24, 276500, true),
-(3, 26, 222000, true),
-(4, 28, 285500, true),
-(4, 29, 224000, true),
+(3, 26, 222000, false),
+(4, 28, 285500, false),
+(4, 29, 224000, false),
 (5, 30, 211500, true),
-(2, 33, 216000, true),
+(2, 33, 216000, false),
 (3, 34, 110500, true);
 
 -- ============================================================
 -- 19. HeadNotification (본사 알림)
 -- ============================================================
-INSERT INTO head_notification (type, is_read, created_at) VALUES
-('CRITICAL', true, '2026-04-22 07:05:00'),
-('APPROVE', true, '2026-04-22 07:10:00'),
-('DELAY', true, '2026-04-24 11:00:00'),
-('DELIVERED', true, '2026-04-25 15:05:00'),
-('LOW', false, '2026-04-28 07:00:00'),
-('CRITICAL', false, '2026-04-29 07:00:00'),
-('ABNORMAL', false, '2026-04-29 07:05:00');
+INSERT INTO head_notification (type, title, content, is_read, created_at) VALUES
+('LOW_STOCK', '재고 위험 - 한우 등심', '본사 창고 재고가 위험 수준입니다. 현재 수량: 5kg', true, '2026-04-22 07:05:00'),
+('DELIVERY_DELAY', '배송 지연 - 홍대입구점', '발주 #1031 배송이 1일 지연되고 있습니다.', true, '2026-04-24 11:00:00'),
+('LOW_STOCK', '재고 부족 - 올리브오일', '본사 창고 재고가 최소 기준 이하입니다. 현재 수량: 3L', false, '2026-04-28 07:00:00'),
+('EXPIRY', '유통기한 임박 - 생크림', '유통기한 3일 이내 제품이 있습니다.', false, '2026-04-29 07:00:00'),
+('ABNORMAL_ORDER', '비정상 발주 감지 - 역삼점', '한우 등심 50kg 발주 (평균 대비 250% 초과)', false, '2026-04-29 07:05:00');
 
 -- ============================================================
 -- 20. StoreNotification (가맹점 알림)

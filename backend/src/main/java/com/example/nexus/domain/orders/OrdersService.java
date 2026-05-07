@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -177,7 +178,7 @@ public class OrdersService {
 
         applyOutboundForOrder(orders, "발주 승인(이상) ordersIdx=");
         orders.approve();
-        deliveryService.createDelivery(orders);
+        deliveryService.startDeliveryByOrders(orders);
     }
 
     // 본사 - 이상 발주 개별 반려
@@ -201,7 +202,7 @@ public class OrdersService {
         for (Orders orders : confirmedOrders) {
             applyOutboundForOrder(orders, "발주 일괄승인 ordersIdx=");
             orders.approve();
-            deliveryService.createDelivery(orders);
+            deliveryService.startDeliveryByOrders(orders);
         }
     }
 
@@ -253,14 +254,14 @@ public class OrdersService {
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
 
         // 3. Product 조회 및 총 가격 계산
-        long totalprice = 0;
+        long totalPrice = 0;
         List<OrdersItem> itemList = new ArrayList<>();
 
         for (OrdersItemDto.OrdersItemReq itemReq : req.getOrdersItemList()) {
             Product product = productRepository.findById(itemReq.getProductIdx())
                     .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
 
-            totalprice += (long) product.getUnitPrice() * itemReq.getCount();
+            totalPrice += (long) product.getUnitPrice() * itemReq.getCount();
 
             itemList.add(OrdersItem.builder()
                     .count(itemReq.getCount())
@@ -289,7 +290,7 @@ public class OrdersService {
 
         // 5. Orders 저장
         Orders orders = ordersRepository.save(Orders.builder()
-                .price(totalprice)
+                .price(totalPrice)
                 .ordersType(OrdersType.MANUAL)
                 .ordersStatus(OrdersStatus.CONFIRMED)
                 .isDanger(isDanger)
@@ -305,6 +306,9 @@ public class OrdersService {
                     .orders(orders)
                     .build());
         }
+
+        // 7. 배송 생성 (READY 상태)
+        deliveryService.createDelivery(orders);
     }
 
     // 점주 - 제안 발주서 목록 조회 (WAITING 상태, 현재 재고 포함)
@@ -313,10 +317,17 @@ public class OrdersService {
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
 
         List<StoreInventory> inventoryList = storeInventoryRepository.findByStoreIdx(store.getIdx());
-        Map<Long, Integer> stockMap = inventoryList.stream()
-                .collect(Collectors.toMap(inv -> inv.getProduct().getIdx(), StoreInventory::getCount, Integer::sum));
+        Map<Long, Integer> stockMap = new HashMap<>();
+        for (StoreInventory inv : inventoryList) {
+            Long productIdx = inv.getProduct().getIdx();
+            if (stockMap.containsKey(productIdx)) {
+                stockMap.put(productIdx, stockMap.get(productIdx) + inv.getCount());
+            } else {
+                stockMap.put(productIdx, inv.getCount());
+            }
+        }
 
-        return ordersRepository.findAllByStore_IdxAndOrdersStatus(store.getIdx(), OrdersStatus.WAITING).stream()
+        return ordersRepository.findAllByStore_IdxAndOrdersStatusAndOrdersTypeOrderByCreatedAtDesc(store.getIdx(), OrdersStatus.WAITING, OrdersType.AUTO).stream()
                 .map(order -> OrdersDto.OrdersRes.fromWithStock(order, stockMap))
                 .toList();
     }
@@ -359,6 +370,7 @@ public class OrdersService {
         }
 
         orders.confirm();
+        deliveryService.createDelivery(orders);
     }
 
     // 점주 - 제안 발주서에 품목 추가 (가격 자동 반영)

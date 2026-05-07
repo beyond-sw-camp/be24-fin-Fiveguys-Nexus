@@ -30,7 +30,7 @@ public class OrdersController {
     private final OrdersService orderService;
 
     /**
-     * 자동 발주 목록 조회
+     * 자동 발주 목록 조회 겸 검색
      *
      * @param keyword 검색 키워드 (선택)
      * @param page 페이지 번호 (기본값: 0)
@@ -43,12 +43,14 @@ public class OrdersController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        Page<OrdersDto.OrderListRes> result = orderService.findAllAuto(keyword, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+        Page<OrdersDto.OrderListRes> result = orderService.findAllAuto(
+                keyword, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+
         return ResponseEntity.ok(BaseResponse.success(PageResponse.from(result)));
     }
 
     /**
-     * 확정 발주 목록 조회
+     * 확정 발주 목록 조회 겸 검색
      *
      * @param keyword 검색 키워드 (선택)
      * @param page 페이지 번호 (기본값: 0)
@@ -67,7 +69,18 @@ public class OrdersController {
     }
 
     /**
-     * 발주 이력 목록 조회
+     * 확정 발주 일괄 승인
+     *
+     * @return ResponseEntity 일괄 승인 결과 메시지
+     */
+    @PutMapping("/confirmed/approve")
+    public ResponseEntity approveAll() {
+        orderService.approveAllConfirmed();
+        return ResponseEntity.ok(BaseResponse.success("update success"));
+    }
+
+    /**
+     * 발주 이력 목록 조회 겸 검색
      *
      * @param ordersType 발주 유형 필터 (선택)
      * @param startDate 조회 시작일 (선택)
@@ -93,7 +106,7 @@ public class OrdersController {
     }
 
     /**
-     * 위험 발주 목록 조회
+     * 이상 발주 목록 조회 겸 검색
      *
      * @param startDate 조회 시작일 (선택)
      * @param endDate 조회 종료일 (선택)
@@ -129,7 +142,7 @@ public class OrdersController {
     }
 
     /**
-     * 위험 발주 기준 설정 조회
+     * 이상 발주 기준 설정 조회
      *
      * @return ResponseEntity 위험 발주 기준 설정 정보
      */
@@ -140,7 +153,7 @@ public class OrdersController {
     }
 
     /**
-     * 위험 발주 기준 설정 수정
+     * 이상 발주 기준 설정 수정
      *
      * @param req 위험 발주 기준 설정 요청 데이터
      * @return ResponseEntity 수정 결과 메시지
@@ -172,17 +185,6 @@ public class OrdersController {
     @PutMapping("/{ordersIdx}/reject")
     public ResponseEntity reject(@PathVariable Long ordersIdx) {
         orderService.reject(ordersIdx);
-        return ResponseEntity.ok(BaseResponse.success("update success"));
-    }
-
-    /**
-     * 확정 발주 일괄 승인
-     *
-     * @return ResponseEntity 일괄 승인 결과 메시지
-     */
-    @PutMapping("/confirmed/approve")
-    public ResponseEntity approveAll() {
-        orderService.approveAllConfirmed();
         return ResponseEntity.ok(BaseResponse.success("update success"));
     }
 

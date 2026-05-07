@@ -38,24 +38,24 @@ public class DashboardController {
     }
 
     /**
-     * 배송 현황 KPI 조회
+     * 재고 위험 KPI 조회
      *
-     * @return ResponseEntity 진행중 배송 건수, 지연 건수, 지연 배송 목록
+     * @return ResponseEntity LOW/CRITICAL 상태 품목 수
      */
-    @GetMapping("/delivery/kpi")
-    public ResponseEntity<BaseResponse> getDeliveryKpi() {
-        DashboardDto.DeliveryKpiRes result = dashboardService.getDeliveryKpi();
+    @GetMapping("/inventory/kpi")
+    public ResponseEntity<BaseResponse> getInventoryKpi() {
+        DashboardDto.InventoryKpiRes result = dashboardService.getInventoryKpi();
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 
     /**
-     * 이상 발주 통계 조회
+     * 배송 현황 KPI 조회
      *
-     * @return ResponseEntity 최근 6개월 월별 이상 발주 상태별 건수
+     * @return ResponseEntity 진행중 배송 건수, 지연 배송 목록
      */
-    @GetMapping("/orders/danger/stats")
-    public ResponseEntity<BaseResponse> getDangerStats() {
-        DashboardDto.DangerStatsRes result = dashboardService.getDangerStats();
+    @GetMapping("/delivery/kpi")
+    public ResponseEntity<BaseResponse> getDeliveryKpi() {
+        DashboardDto.DeliveryKpiRes result = dashboardService.getDeliveryKpi();
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 
@@ -67,28 +67,6 @@ public class DashboardController {
     @GetMapping("/orders/weekly/stats")
     public ResponseEntity<BaseResponse> getWeeklyOrderStats() {
         DashboardDto.WeeklyOrderStatsRes result = dashboardService.getWeeklyOrderStats();
-        return ResponseEntity.ok(BaseResponse.success(result));
-    }
-
-    /**
-     * 배송 비율 조회
-     *
-     * @return ResponseEntity 배송 상태별 건수
-     */
-    @GetMapping("/delivery/ratio")
-    public ResponseEntity<BaseResponse> getDeliveryRatio() {
-        DashboardDto.DeliveryRatioRes result = dashboardService.getDeliveryRatio();
-        return ResponseEntity.ok(BaseResponse.success(result));
-    }
-
-    /**
-     * 재고 위험 KPI 조회
-     *
-     * @return ResponseEntity LOW/CRITICAL 상태 품목 수
-     */
-    @GetMapping("/inventory/kpi")
-    public ResponseEntity<BaseResponse> getInventoryKpi() {
-        DashboardDto.InventoryKpiRes result = dashboardService.getInventoryKpi();
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 
@@ -108,6 +86,17 @@ public class DashboardController {
     }
 
     /**
+     * 이상 발주 통계 조회
+     *
+     * @return ResponseEntity 최근 6개월 월별 이상 발주 상태별 건수
+     */
+    @GetMapping("/orders/danger/stats")
+    public ResponseEntity<BaseResponse> getOrdersDangerStats() {
+        DashboardDto.DangerStatsRes result = dashboardService.getOrdersDangerStats();
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
+
+    /**
      * 지연 배송 목록 조회
      *
      * @param page 페이지 번호 (0부터 시작, 기본값 0)
@@ -119,6 +108,17 @@ public class DashboardController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "4") int size) {
         DashboardDto.DelayDeliveryRes result = dashboardService.getDelayDeliveryList(page, size);
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
+
+    /**
+     * 배송 비율 조회
+     *
+     * @return ResponseEntity 배송 상태별 건수
+     */
+    @GetMapping("/delivery/ratio")
+    public ResponseEntity<BaseResponse> getDeliveryRatio() {
+        DashboardDto.DeliveryRatioRes result = dashboardService.getDeliveryRatio();
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 }

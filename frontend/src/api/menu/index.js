@@ -16,3 +16,10 @@ export const getProductList = () => api.get('/product/list')
 export const getCategoryList = () => api.get('/menu/category/list')
 
 export const getMenuItemList = (menuIdx) => api.get(`/menu/item/list/${menuIdx}`)
+
+export const getPresignedUrl = (fileName) =>
+  api.get(`/store/presignedUrl/${fileName}`)
+
+export const postNewRegister = (MenuRegReq) =>
+  api.post('/menu/new/register', MenuRegReq)
+

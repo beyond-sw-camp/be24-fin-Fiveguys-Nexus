@@ -1,29 +1,3 @@
-<template>
-  <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="font-bold text-gray-900">배송 비율</h2>
-      <span class="text-xs text-gray-400">최근 1개월</span>
-    </div>
-    <div class="relative mx-auto" style="width:140px;height:140px">
-      <canvas ref="donutCanvas"></canvas>
-      <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-        <p class="text-2xl font-bold text-gray-900">{{ deliveryRate }}%</p>
-        <p class="text-xs text-gray-400 mt-0.5">배송완료율</p>
-      </div>
-    </div>
-    <div class="mt-4 space-y-2">
-      <div v-for="item in donutLegend" :key="item.label" class="flex items-center gap-2">
-        <span class="w-2 h-2 rounded-full shrink-0" :style="{ background: item.color }"></span>
-        <span class="text-xs text-gray-500 flex-1">{{ item.label }}</span>
-        <div class="w-16 h-1 rounded-full bg-gray-100 overflow-hidden">
-          <div class="h-full rounded-full" :style="{ width: item.pct + '%', background: item.color }"></div>
-        </div>
-        <span class="text-xs font-semibold text-gray-700 w-7 text-right">{{ item.pct }}%</span>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { Chart } from 'chart.js/auto'
@@ -99,3 +73,29 @@ onUnmounted(() => {
   }
 })
 </script>
+
+<template>
+  <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="font-bold text-gray-900">배송 비율</h2>
+      <span class="text-xs text-gray-400">최근 1개월</span>
+    </div>
+    <div class="relative mx-auto" style="width:140px;height:140px">
+      <canvas ref="donutCanvas"></canvas>
+      <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+        <p class="text-2xl font-bold text-gray-900">{{ deliveryRate }}%</p>
+        <p class="text-xs text-gray-400 mt-0.5">배송완료율</p>
+      </div>
+    </div>
+    <div class="mt-4 space-y-2">
+      <div v-for="item in donutLegend" :key="item.label" class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full shrink-0" :style="{ background: item.color }"></span>
+        <span class="text-xs text-gray-500 flex-1">{{ item.label }}</span>
+        <div class="w-16 h-1 rounded-full bg-gray-100 overflow-hidden">
+          <div class="h-full rounded-full" :style="{ width: item.pct + '%', background: item.color }"></div>
+        </div>
+        <span class="text-xs font-semibold text-gray-700 w-7 text-right">{{ item.pct }}%</span>
+      </div>
+    </div>
+  </div>
+</template>

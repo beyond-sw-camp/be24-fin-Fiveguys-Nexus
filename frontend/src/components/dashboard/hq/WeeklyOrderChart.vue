@@ -1,24 +1,3 @@
-<template>
-  <div class="col-span-2 bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col"
-    style="min-height:280px">
-    <div class="flex items-center justify-between mb-5 shrink-0">
-      <div>
-        <h2 class="font-bold text-gray-900">주간 발주 통계</h2>
-        <p class="text-xs text-gray-400 mt-0.5">이번 주 vs 지난 주 (단위: 건)</p>
-      </div>
-      <div class="flex items-center gap-4 text-xs text-gray-500">
-        <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-orange-500 inline-block rounded"></span>이번
-          주</span>
-        <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-gray-300 inline-block rounded"></span>지난
-          주</span>
-      </div>
-    </div>
-    <div class="flex-1 min-h-0 relative" style="height:200px">
-      <canvas ref="lineCanvas" style="display:block; width:100%; height:100%;"></canvas>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { Chart } from 'chart.js/auto'
@@ -119,3 +98,24 @@ onUnmounted(() => {
   }
 })
 </script>
+
+<template>
+  <div class="col-span-2 bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col"
+    style="min-height:280px">
+    <div class="flex items-center justify-between mb-5 shrink-0">
+      <div>
+        <h2 class="font-bold text-gray-900">주간 발주 통계</h2>
+        <p class="text-xs text-gray-400 mt-0.5">이번 주 vs 지난 주 (단위: 건)</p>
+      </div>
+      <div class="flex items-center gap-4 text-xs text-gray-500">
+        <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-orange-500 inline-block rounded"></span>이번
+          주</span>
+        <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-gray-300 inline-block rounded"></span>지난
+          주</span>
+      </div>
+    </div>
+    <div class="flex-1 min-h-0 relative" style="height:200px">
+      <canvas ref="lineCanvas" style="display:block; width:100%; height:100%;"></canvas>
+    </div>
+  </div>
+</template>

@@ -101,29 +101,43 @@ public class MenuService {
 
     @Transactional
     public void menuRegister(MenuDto.MenuRegReq dto) {
+        String newFilePath = dto.getImgPath();
 
-        if (menuRepository.existsByMenuName(dto.getMenuName())) {
-            throw new BaseException(DUPLICATE_MENU_NAME);
+        try {
+            if (menuRepository.existsByMenuName(dto.getMenuName())) {
+                throw new BaseException(DUPLICATE_MENU_NAME);
+            }
+
+            // 카테고리 존재 여부 확인
+            MenuCategory category = menuCategoryRepository.findById(dto.getMenuCategoryIdx())
+                    .orElseThrow(() -> new BaseException(NOT_FOUND_CATEGORY));
+
+
+            List<Long> productIds = Collections.emptyList();
+            List<Product> products = Collections.emptyList();
+
+            if (dto.getMenuItemList() != null && !dto.getMenuItemList().isEmpty()) {
+                productIds = dto.getMenuItemList().stream()
+                        .map(MenuDto.MenuItemReq::getProductIdx).toList();
+                products = productRepository.findAllById(productIds);
+            }
+
+
+            Menu menu = dto.toEntity(category, products);
+            menuRepository.save(menu);
+
+        } catch (Exception e) {
+            // 4. 예외 발생 시 S3 롤백 삭제
+            // 등록 중 에러가 나면 DB는 롤백되지만, 이미 업로드된 파일은 좀비가 되므로 삭제 처리
+            if (newFilePath != null && !newFilePath.isEmpty()) {
+                deleteS3Object(newFilePath);
+            }
+
+            // 5. 예외 다시 던지기
+            if (e instanceof BaseException) throw (BaseException) e;
+            throw new RuntimeException(e);
         }
 
-        // 카테고리 존재 여부 확인
-        MenuCategory category = menuCategoryRepository.findById(dto.getMenuCategoryIdx())
-                .orElseThrow(() -> new BaseException(NOT_FOUND_CATEGORY));
-
-
-        List<Long> productIds = Collections.emptyList();
-        List<Product> products = Collections.emptyList();
-
-        if (dto.getMenuItemList() != null && !dto.getMenuItemList().isEmpty()) {
-            productIds = dto.getMenuItemList().stream()
-                    .map(MenuDto.MenuItemReq::getProductIdx).toList();
-            products = productRepository.findAllById(productIds);
-        }
-
-
-        Menu menu = dto.toEntity(category, products);
-
-        menuRepository.save(menu);
     }
 
     @Transactional

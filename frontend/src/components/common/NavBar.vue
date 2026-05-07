@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { ChevronDown, User, LogOut } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
-import NotificationBell from '@/components/NotificationBell.vue'
+import NotificationBell from '@/components/common/NotificationBell.vue'
 
 const router = useRouter()
 const auth   = useAuthStore()

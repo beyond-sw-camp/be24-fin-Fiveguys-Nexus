@@ -20,11 +20,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { Chart } from 'chart.js/auto'
 import { getWeeklyOrderStats } from '@/api/dashboard'
 
 const lineCanvas = ref(null)
+let chartInstance = null
 
 onMounted(async () => {
   let labels = []
@@ -41,7 +42,7 @@ onMounted(async () => {
     console.error('주간 발주 통계 조회 실패', e)
   }
 
-  new Chart(lineCanvas.value, {
+  chartInstance = new Chart(lineCanvas.value, {
     type: 'line',
     data: {
       labels,
@@ -109,5 +110,12 @@ onMounted(async () => {
       },
     },
   })
+})
+
+onUnmounted(() => {
+  if (chartInstance) {
+    chartInstance.destroy()
+    chartInstance = null
+  }
 })
 </script>

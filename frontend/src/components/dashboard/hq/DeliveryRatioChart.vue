@@ -25,11 +25,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { Chart } from 'chart.js/auto'
 import { getDeliveryRatio } from '@/api/dashboard'
 
 const donutCanvas = ref(null)
+let chartInstance = null
 
 const donutLegend = ref([
   { label: '배송완료', pct: 0, color: '#f97316' },
@@ -59,7 +60,7 @@ onMounted(async () => {
     console.error('배송 비율 조회 실패', e)
   }
 
-  new Chart(donutCanvas.value, {
+  chartInstance = new Chart(donutCanvas.value, {
     type: 'doughnut',
     data: {
       labels: donutLegend.value.map(d => d.label),
@@ -89,5 +90,12 @@ onMounted(async () => {
       },
     },
   })
+})
+
+onUnmounted(() => {
+  if (chartInstance) {
+    chartInstance.destroy()
+    chartInstance = null
+  }
 })
 </script>

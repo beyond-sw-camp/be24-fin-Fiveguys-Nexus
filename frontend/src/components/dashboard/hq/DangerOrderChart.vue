@@ -22,11 +22,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { Chart } from 'chart.js/auto'
 import { getDangerStats } from '@/api/dashboard'
 
 const barCanvas = ref(null)
+let chartInstance = null
 
 onMounted(async () => {
   let labels = []
@@ -45,7 +46,7 @@ onMounted(async () => {
     console.error('이상 발주 통계 조회 실패', e)
   }
 
-  new Chart(barCanvas.value, {
+  chartInstance = new Chart(barCanvas.value, {
     type: 'bar',
     data: {
       labels,
@@ -103,5 +104,12 @@ onMounted(async () => {
       },
     },
   })
+})
+
+onUnmounted(() => {
+  if (chartInstance) {
+    chartInstance.destroy()
+    chartInstance = null
+  }
 })
 </script>

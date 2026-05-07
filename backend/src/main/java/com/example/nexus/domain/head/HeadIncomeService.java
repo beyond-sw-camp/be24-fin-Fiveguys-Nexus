@@ -6,8 +6,10 @@ import com.example.nexus.domain.orders.model.Orders;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -48,5 +50,35 @@ public class HeadIncomeService {
     }
 
 
+    public List<HeadIncomeDto.ListRes> getIncomeList(
+            String storeName, Boolean status, LocalDate startDate, LocalDate endDate) {
 
+        List<HeadIncome> incomes = headIncomeRepository.findByFilters(storeName, status, startDate, endDate);
+
+        List<HeadIncomeDto.ListRes> result = new ArrayList<>();
+
+        for (HeadIncome income : incomes) {
+
+            LocalDate orderDate = LocalDate.now();
+            if (income.getOrders() != null && income.getOrders().getCreatedAt() != null) {
+                orderDate = income.getOrders().getCreatedAt().toLocalDate();
+            }
+
+            HeadIncomeDto.ListRes dto = HeadIncomeDto.ListRes.builder()
+                    .headIncomeIdx(income.getIdx())
+                    .storeIdx(income.getStore().getIdx())
+                    .storeName(income.getStore().getStoreName())
+                    .periodStart(orderDate.withDayOfMonth(1))
+                    .periodEnd(orderDate.withDayOfMonth(orderDate.lengthOfMonth()))
+                    .totalPrice(income.getPrice())
+                    .status(income.getStatus())
+                    .settlementIdx(income.getSettlementIdx())
+                    .orderCount(1)
+                    .build();
+
+            result.add(dto);
+        }
+
+        return result;
+    }
 }

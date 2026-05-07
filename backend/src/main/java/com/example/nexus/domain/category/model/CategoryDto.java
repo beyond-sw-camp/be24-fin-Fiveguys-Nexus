@@ -1,11 +1,16 @@
 package com.example.nexus.domain.category.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 public class CategoryDto {
     @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class RegReq {
+        private Long idx;
         private String categoryName;
 
         public Category toEntity() {

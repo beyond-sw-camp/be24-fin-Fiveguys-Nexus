@@ -37,6 +37,7 @@ public class DeliveryDto {
     @Getter
     @NoArgsConstructor
     public static class DelayReasonRequest {
+        private Long deliveryIdx;
         private String delayReason;
     }
 }

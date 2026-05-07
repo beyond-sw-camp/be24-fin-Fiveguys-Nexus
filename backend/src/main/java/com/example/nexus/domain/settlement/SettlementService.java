@@ -13,7 +13,6 @@ import io.portone.sdk.server.payment.Payment;
 import io.portone.sdk.server.payment.PaymentClient;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 
 import java.time.YearMonth;
@@ -32,7 +31,7 @@ public class SettlementService {
     private final HeadIncomeService headIncomeService;
 
     @Transactional
-    public void verify(AuthUserDetails authUserDetails, SettlementDto.VerifyReq dto) {
+    public void verify(AuthUserDetails authUserDetails, SettlementDto.VerifyReq dto, YearMonth lastMonth) {
         CompletableFuture<Payment> completableFuture = pg.getPayment(dto.getPaymentIdx());
         Payment payment = completableFuture.join();
 
@@ -43,8 +42,6 @@ public class SettlementService {
 
             Long ordersIdx = Long.parseLong(customData.get("headIncomeIdx").toString());
             Settlement settlement = settlementRepository.findById(ordersIdx).orElseThrow();
-
-
 
             int totalPrice = 0;
             List<HeadIncome> headIncomeList = headIncomeRepository.findBySettlementIdx(settlement.getIdx());

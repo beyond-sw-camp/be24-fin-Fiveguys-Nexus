@@ -1,209 +1,3 @@
-<template>
-  <div class="flex-1 overflow-auto p-5 space-y-4">
-    <!-- Header -->
-    <div>
-      <h1 class="text-[22px] font-bold text-gray-900 tracking-tight">ESG 대시보드</h1>
-    </div>
-
-    <!-- 탭 -->
-    <div class="flex gap-1 border-b border-gray-200">
-      <button
-        v-for="tab in tabs"
-        :key="tab.value"
-        type="button"
-        @click="activeTab = tab.value"
-        class="px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px cursor-pointer"
-        :class="activeTab === tab.value
-          ? 'border-[#F37321] text-[#F37321]'
-          : 'border-transparent text-gray-500 hover:text-gray-700'"
-      >
-        {{ tab.label }}
-      </button>
-    </div>
-
-    <!-- 탭 1: 폐기 최소화 -->
-    <template v-if="activeTab === 'waste'">
-      <!-- 요약 카드 -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div
-          v-for="card in wasteCards"
-          :key="card.title"
-          class="rounded-2xl border border-gray-200 bg-white p-5 shadow-[0_2px_8px_rgba(15,23,42,0.03)]"
-        >
-          <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.12em]">{{ card.title }}</p>
-          <div class="flex items-end gap-1 mt-2.5">
-            <p class="text-[26px] leading-none font-extrabold tracking-tight" :class="card.valueClass ?? 'text-gray-900'">
-              {{ card.value }}
-            </p>
-            <span v-if="card.unit" class="text-sm text-gray-400 mb-0.5">{{ card.unit }}</span>
-          </div>
-          <p class="text-xs text-gray-500 mt-3">{{ card.sub }}</p>
-        </div>
-      </div>
-
-      <!-- 차트 영역 -->
-      <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
-        <!-- 월별 폐기량 추이 -->
-        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col" style="min-height: 300px">
-          <div class="mb-4 shrink-0">
-            <h2 class="font-bold text-gray-900">월별 폐기량 추이</h2>
-            <p class="text-xs text-gray-400 mt-0.5">최근 6개월 폐기 수량 (kg)</p>
-          </div>
-          <div class="flex-1 min-h-0 relative" style="height: 220px">
-            <canvas ref="wasteMonthlyCanvas" class="block w-full h-full"></canvas>
-          </div>
-        </div>
-
-        <!-- 품목별 폐기 비중 -->
-        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col" style="min-height: 300px">
-          <div class="mb-4 shrink-0">
-            <h2 class="font-bold text-gray-900">품목별 폐기 비중</h2>
-            <p class="text-xs text-gray-400 mt-0.5">이번달 카테고리별 폐기 비중</p>
-          </div>
-          <div class="flex-1 min-h-0 relative flex items-center justify-center" style="height: 220px">
-            <canvas ref="wasteCategoryCanvas" class="max-w-full" style="max-height: 200px"></canvas>
-          </div>
-        </div>
-      </div>
-
-      <!-- 유통기한 경고 후 소진 현황 -->
-      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
-        <div class="mb-4">
-          <h2 class="font-bold text-gray-900">유통기한 경고 후 소진 현황</h2>
-          <p class="text-xs text-gray-400 mt-0.5">경고 발생 후 소진 성공 / 실패 입점 매장 현황</p>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="border-b border-gray-100 bg-gray-50/70">
-                <th class="text-left px-4 py-3 font-semibold text-gray-600">매장명</th>
-                <th class="text-center px-4 py-3 font-semibold text-gray-600">경고 횟수</th>
-                <th class="text-center px-4 py-3 font-semibold text-gray-600">소진 성공</th>
-                <th class="text-center px-4 py-3 font-semibold text-gray-600">소진 실패</th>
-                <th class="text-center px-4 py-3 font-semibold text-gray-600">성공률</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-50">
-              <tr
-                v-for="row in expiryRows"
-                :key="row.store"
-                class="hover:bg-gray-50/50 transition-colors"
-              >
-                <td class="px-4 py-3 font-medium text-gray-800">{{ row.store }}</td>
-                <td class="px-4 py-3 text-center text-gray-600">{{ row.warned }}</td>
-                <td class="px-4 py-3 text-center text-green-600 font-semibold">{{ row.success }}</td>
-                <td class="px-4 py-3 text-center text-red-500 font-semibold">{{ row.fail }}</td>
-                <td class="px-4 py-3 text-center">
-                  <span
-                    class="inline-block px-2 py-0.5 rounded-full text-xs font-bold"
-                    :class="row.rate >= 80 ? 'bg-green-100 text-green-700' : row.rate >= 60 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-600'"
-                  >
-                    {{ row.rate }}%
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </template>
-
-    <!-- 탭 2: 재고 효율 -->
-    <template v-if="activeTab === 'inventory'">
-      <!-- 요약 카드 -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div
-          v-for="card in inventoryCards"
-          :key="card.title"
-          class="rounded-2xl border border-gray-200 bg-white p-5 shadow-[0_2px_8px_rgba(15,23,42,0.03)]"
-        >
-          <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.12em]">{{ card.title }}</p>
-          <div class="flex items-end gap-1 mt-2.5">
-            <p class="text-[26px] leading-none font-extrabold tracking-tight" :class="card.valueClass ?? 'text-gray-900'">
-              {{ card.value }}
-            </p>
-            <span v-if="card.unit" class="text-sm text-gray-400 mb-0.5">{{ card.unit }}</span>
-          </div>
-          <p class="text-xs text-gray-500 mt-3">{{ card.sub }}</p>
-        </div>
-      </div>
-
-      <!-- 차트 영역 -->
-      <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
-        <!-- 매장별 재고 회전율 -->
-        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col" style="min-height: 300px">
-          <div class="mb-4 shrink-0">
-            <h2 class="font-bold text-gray-900">매장별 재고 회전율</h2>
-            <p class="text-xs text-gray-400 mt-0.5">이번달 기준 (회/월)</p>
-          </div>
-          <div class="flex-1 min-h-0 relative" style="height: 220px">
-            <canvas ref="turnoverCanvas" class="block w-full h-full"></canvas>
-          </div>
-        </div>
-
-        <!-- 과잉 재고 발생 횟수 -->
-        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col" style="min-height: 300px">
-          <div class="mb-4 shrink-0">
-            <h2 class="font-bold text-gray-900">과잉 재고 발생 횟수</h2>
-            <p class="text-xs text-gray-400 mt-0.5">최근 6개월 매장별 과잉 재고 발생 건수</p>
-          </div>
-          <div class="flex-1 min-h-0 relative" style="height: 220px">
-            <canvas ref="overStockCanvas" class="block w-full h-full"></canvas>
-          </div>
-        </div>
-      </div>
-
-      <!-- 매장별 적정 재고 유지 현황 -->
-      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
-        <div class="mb-4">
-          <h2 class="font-bold text-gray-900">매장별 적정 재고 유지 현황</h2>
-          <p class="text-xs text-gray-400 mt-0.5">이번달 기준 적정 재고 유지율 및 자동발주 정확도</p>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="border-b border-gray-100 bg-gray-50/70">
-                <th class="text-left px-4 py-3 font-semibold text-gray-600">매장명</th>
-                <th class="text-center px-4 py-3 font-semibold text-gray-600">적정 재고 유지율</th>
-                <th class="text-center px-4 py-3 font-semibold text-gray-600">재고 회전율</th>
-                <th class="text-center px-4 py-3 font-semibold text-gray-600">과잉 재고 건수</th>
-                <th class="text-center px-4 py-3 font-semibold text-gray-600">자동발주 정확도</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-50">
-              <tr
-                v-for="row in inventoryRows"
-                :key="row.store"
-                class="hover:bg-gray-50/50 transition-colors"
-              >
-                <td class="px-4 py-3 font-medium text-gray-800">{{ row.store }}</td>
-                <td class="px-4 py-3 text-center">
-                  <span
-                    class="inline-block px-2 py-0.5 rounded-full text-xs font-bold"
-                    :class="row.stockRate >= 80 ? 'bg-green-100 text-green-700' : row.stockRate >= 60 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-600'"
-                  >
-                    {{ row.stockRate }}%
-                  </span>
-                </td>
-                <td class="px-4 py-3 text-center text-gray-600">{{ row.turnover }}회</td>
-                <td class="px-4 py-3 text-center text-gray-600">{{ row.overStock }}건</td>
-                <td class="px-4 py-3 text-center">
-                  <span
-                    class="inline-block px-2 py-0.5 rounded-full text-xs font-bold"
-                    :class="row.autoOrderAcc >= 90 ? 'bg-green-100 text-green-700' : row.autoOrderAcc >= 75 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-600'"
-                  >
-                    {{ row.autoOrderAcc }}%
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </template>
-  </div>
-</template>
-
 <script setup>
 import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { Chart } from 'chart.js/auto'
@@ -464,3 +258,209 @@ watch(activeTab, (tab) => {
 onMounted(() => nextTick(renderWasteCharts))
 onBeforeUnmount(() => destroyCharts())
 </script>
+
+<template>
+  <div class="flex-1 overflow-auto p-5 space-y-4">
+    <!-- Header -->
+    <div>
+      <h1 class="text-[22px] font-bold text-gray-900 tracking-tight">ESG 대시보드</h1>
+    </div>
+
+    <!-- 탭 -->
+    <div class="flex gap-1 border-b border-gray-200">
+      <button
+        v-for="tab in tabs"
+        :key="tab.value"
+        type="button"
+        @click="activeTab = tab.value"
+        class="px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px cursor-pointer"
+        :class="activeTab === tab.value
+          ? 'border-[#F37321] text-[#F37321]'
+          : 'border-transparent text-gray-500 hover:text-gray-700'"
+      >
+        {{ tab.label }}
+      </button>
+    </div>
+
+    <!-- 탭 1: 폐기 최소화 -->
+    <template v-if="activeTab === 'waste'">
+      <!-- 요약 카드 -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div
+          v-for="card in wasteCards"
+          :key="card.title"
+          class="rounded-2xl border border-gray-200 bg-white p-5 shadow-[0_2px_8px_rgba(15,23,42,0.03)]"
+        >
+          <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.12em]">{{ card.title }}</p>
+          <div class="flex items-end gap-1 mt-2.5">
+            <p class="text-[26px] leading-none font-extrabold tracking-tight" :class="card.valueClass ?? 'text-gray-900'">
+              {{ card.value }}
+            </p>
+            <span v-if="card.unit" class="text-sm text-gray-400 mb-0.5">{{ card.unit }}</span>
+          </div>
+          <p class="text-xs text-gray-500 mt-3">{{ card.sub }}</p>
+        </div>
+      </div>
+
+      <!-- 차트 영역 -->
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <!-- 월별 폐기량 추이 -->
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col" style="min-height: 300px">
+          <div class="mb-4 shrink-0">
+            <h2 class="font-bold text-gray-900">월별 폐기량 추이</h2>
+            <p class="text-xs text-gray-400 mt-0.5">최근 6개월 폐기 수량 (kg)</p>
+          </div>
+          <div class="flex-1 min-h-0 relative" style="height: 220px">
+            <canvas ref="wasteMonthlyCanvas" class="block w-full h-full"></canvas>
+          </div>
+        </div>
+
+        <!-- 품목별 폐기 비중 -->
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col" style="min-height: 300px">
+          <div class="mb-4 shrink-0">
+            <h2 class="font-bold text-gray-900">품목별 폐기 비중</h2>
+            <p class="text-xs text-gray-400 mt-0.5">이번달 카테고리별 폐기 비중</p>
+          </div>
+          <div class="flex-1 min-h-0 relative flex items-center justify-center" style="height: 220px">
+            <canvas ref="wasteCategoryCanvas" class="max-w-full" style="max-height: 200px"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- 유통기한 경고 후 소진 현황 -->
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+        <div class="mb-4">
+          <h2 class="font-bold text-gray-900">유통기한 경고 후 소진 현황</h2>
+          <p class="text-xs text-gray-400 mt-0.5">경고 발생 후 소진 성공 / 실패 입점 매장 현황</p>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-gray-100 bg-gray-50/70">
+                <th class="text-left px-4 py-3 font-semibold text-gray-600">매장명</th>
+                <th class="text-center px-4 py-3 font-semibold text-gray-600">경고 횟수</th>
+                <th class="text-center px-4 py-3 font-semibold text-gray-600">소진 성공</th>
+                <th class="text-center px-4 py-3 font-semibold text-gray-600">소진 실패</th>
+                <th class="text-center px-4 py-3 font-semibold text-gray-600">성공률</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+              <tr
+                v-for="row in expiryRows"
+                :key="row.store"
+                class="hover:bg-gray-50/50 transition-colors"
+              >
+                <td class="px-4 py-3 font-medium text-gray-800">{{ row.store }}</td>
+                <td class="px-4 py-3 text-center text-gray-600">{{ row.warned }}</td>
+                <td class="px-4 py-3 text-center text-green-600 font-semibold">{{ row.success }}</td>
+                <td class="px-4 py-3 text-center text-red-500 font-semibold">{{ row.fail }}</td>
+                <td class="px-4 py-3 text-center">
+                  <span
+                    class="inline-block px-2 py-0.5 rounded-full text-xs font-bold"
+                    :class="row.rate >= 80 ? 'bg-green-100 text-green-700' : row.rate >= 60 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-600'"
+                  >
+                    {{ row.rate }}%
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </template>
+
+    <!-- 탭 2: 재고 효율 -->
+    <template v-if="activeTab === 'inventory'">
+      <!-- 요약 카드 -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div
+          v-for="card in inventoryCards"
+          :key="card.title"
+          class="rounded-2xl border border-gray-200 bg-white p-5 shadow-[0_2px_8px_rgba(15,23,42,0.03)]"
+        >
+          <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.12em]">{{ card.title }}</p>
+          <div class="flex items-end gap-1 mt-2.5">
+            <p class="text-[26px] leading-none font-extrabold tracking-tight" :class="card.valueClass ?? 'text-gray-900'">
+              {{ card.value }}
+            </p>
+            <span v-if="card.unit" class="text-sm text-gray-400 mb-0.5">{{ card.unit }}</span>
+          </div>
+          <p class="text-xs text-gray-500 mt-3">{{ card.sub }}</p>
+        </div>
+      </div>
+
+      <!-- 차트 영역 -->
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <!-- 매장별 재고 회전율 -->
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col" style="min-height: 300px">
+          <div class="mb-4 shrink-0">
+            <h2 class="font-bold text-gray-900">매장별 재고 회전율</h2>
+            <p class="text-xs text-gray-400 mt-0.5">이번달 기준 (회/월)</p>
+          </div>
+          <div class="flex-1 min-h-0 relative" style="height: 220px">
+            <canvas ref="turnoverCanvas" class="block w-full h-full"></canvas>
+          </div>
+        </div>
+
+        <!-- 과잉 재고 발생 횟수 -->
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col" style="min-height: 300px">
+          <div class="mb-4 shrink-0">
+            <h2 class="font-bold text-gray-900">과잉 재고 발생 횟수</h2>
+            <p class="text-xs text-gray-400 mt-0.5">최근 6개월 매장별 과잉 재고 발생 건수</p>
+          </div>
+          <div class="flex-1 min-h-0 relative" style="height: 220px">
+            <canvas ref="overStockCanvas" class="block w-full h-full"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- 매장별 적정 재고 유지 현황 -->
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+        <div class="mb-4">
+          <h2 class="font-bold text-gray-900">매장별 적정 재고 유지 현황</h2>
+          <p class="text-xs text-gray-400 mt-0.5">이번달 기준 적정 재고 유지율 및 자동발주 정확도</p>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-gray-100 bg-gray-50/70">
+                <th class="text-left px-4 py-3 font-semibold text-gray-600">매장명</th>
+                <th class="text-center px-4 py-3 font-semibold text-gray-600">적정 재고 유지율</th>
+                <th class="text-center px-4 py-3 font-semibold text-gray-600">재고 회전율</th>
+                <th class="text-center px-4 py-3 font-semibold text-gray-600">과잉 재고 건수</th>
+                <th class="text-center px-4 py-3 font-semibold text-gray-600">자동발주 정확도</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+              <tr
+                v-for="row in inventoryRows"
+                :key="row.store"
+                class="hover:bg-gray-50/50 transition-colors"
+              >
+                <td class="px-4 py-3 font-medium text-gray-800">{{ row.store }}</td>
+                <td class="px-4 py-3 text-center">
+                  <span
+                    class="inline-block px-2 py-0.5 rounded-full text-xs font-bold"
+                    :class="row.stockRate >= 80 ? 'bg-green-100 text-green-700' : row.stockRate >= 60 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-600'"
+                  >
+                    {{ row.stockRate }}%
+                  </span>
+                </td>
+                <td class="px-4 py-3 text-center text-gray-600">{{ row.turnover }}회</td>
+                <td class="px-4 py-3 text-center text-gray-600">{{ row.overStock }}건</td>
+                <td class="px-4 py-3 text-center">
+                  <span
+                    class="inline-block px-2 py-0.5 rounded-full text-xs font-bold"
+                    :class="row.autoOrderAcc >= 90 ? 'bg-green-100 text-green-700' : row.autoOrderAcc >= 75 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-600'"
+                  >
+                    {{ row.autoOrderAcc }}%
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </template>
+  </div>
+</template>

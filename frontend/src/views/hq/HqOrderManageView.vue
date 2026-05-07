@@ -1,26 +1,24 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Settings, CheckCheck } from 'lucide-vue-next'
 import ordersApi from '@/api/orders'
-import HqAutoOrderTable from '@/components/orders/HqAutoOrderTable.vue'
-import HqConfirmedOrderTable from '@/components/orders/HqConfirmedOrderTable.vue'
-import HqOrderHistoryTable from '@/components/orders/HqOrderHistoryTable.vue'
-import HqAbnormalOrderTable from '@/components/orders/HqAbnormalOrderTable.vue'
-import HqOrderDetailModal from '@/components/orders/HqOrderDetailModal.vue'
-import HqDangerSettingsModal from '@/components/orders/HqDangerSettingsModal.vue'
+import HqAutoOrderTable from '@/components/orders/hq/HqAutoOrderTable.vue'
+import HqConfirmedOrderTable from '@/components/orders/hq/HqConfirmedOrderTable.vue'
+import HqOrderHistoryTable from '@/components/orders/hq/HqOrderHistoryTable.vue'
+import HqAbnormalOrderTable from '@/components/orders/hq/HqAbnormalOrderTable.vue'
+import HqOrderDetailModal from '@/components/orders/hq/HqOrderDetailModal.vue'
+import HqDangerSettingsModal from '@/components/orders/hq/HqDangerSettingsModal.vue'
 
 const route = useRoute()
 const router = useRouter()
 
-const abnormalCount = computed(() => abnormalOrders.value.filter(o => o.status !== 'APPROVE' && o.status !== 'REJECT').length)
-
-const tabs = computed(() => [
+const tabs = [
   { id: 'auto',      label: '자동 발주 제안' },
   { id: 'confirmed', label: '확정 발주' },
   { id: 'history',   label: '발주 이력' },
-  { id: 'abnormal',  label: '이상 발주', badge: abnormalCount.value || null },
-])
+  { id: 'abnormal',  label: '이상 발주' },
+]
 const activeTab = ref('auto')
 
 const autoOrders = ref([])
@@ -181,19 +179,20 @@ function applyOrderRouteQuery() {
 
 onMounted(() => {
   applyOrderRouteQuery()
-  fetchAutoOrders()
-  fetchConfirmedOrders()
-  fetchOrderHistory()
-  fetchAbnormalOrders()
+  fetchTabData(activeTab.value)
 })
+
+function fetchTabData(id) {
+  if (id === 'auto') fetchAutoOrders()
+  if (id === 'confirmed') fetchConfirmedOrders()
+  if (id === 'history') fetchOrderHistory()
+  if (id === 'abnormal') fetchAbnormalOrders()
+}
 
 function setOrderViewTab(id) {
   activeTab.value = id
   router.replace({ path: '/order', query: { tab: id } })
-  if (id === 'confirmed') fetchConfirmedOrders()
-  if (id === 'auto') fetchAutoOrders()
-  if (id === 'history') fetchOrderHistory()
-  if (id === 'abnormal') fetchAbnormalOrders()
+  fetchTabData(id)
 }
 
 // Detail modal
@@ -294,11 +293,6 @@ async function rejectAbnormal(o) {
           ? 'border-[#F37321] text-[#F37321]'
           : 'border-transparent text-gray-500 hover:text-gray-700'">
         {{ tab.label }}
-        <span v-if="tab.badge"
-          class="ml-1.5 text-xs font-bold px-1.5 py-0.5 rounded"
-          :class="activeTab === tab.id ? 'bg-orange-100 text-[#F37321]' : 'bg-gray-100 text-gray-500'">
-          {{ tab.badge }}
-        </span>
       </button>
     </div>
 

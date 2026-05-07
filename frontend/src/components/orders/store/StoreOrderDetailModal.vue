@@ -1,5 +1,5 @@
 <script setup>
-import { ORDER_STATUS_LABEL, ORDER_TYPE_LABEL, storeStatusClass } from './orderUtils'
+import { ORDER_STATUS_LABEL, ORDER_TYPE_LABEL, storeStatusClass } from '../orderUtils'
 
 defineProps({
   order: { type: Object, default: null },

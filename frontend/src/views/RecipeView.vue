@@ -156,7 +156,7 @@ async function deleteCategoryAction(idx, name) {
   try {
     await deleteCategory(idx)
     await categoryRes()
-    if (selectedCategoryIdx.value === name) selectedCategoryIdx.value = '전체'
+    if (selectedCategoryIdx.value === idx) selectedCategoryIdx.value = null
   } catch (error) {
     alert('삭제 실패: 해당 카테고리를 사용하는 데이터가 있을 수 있습니다.')
   }
@@ -167,14 +167,12 @@ async function deleteCategoryAction(idx, name) {
 // 상세 모달 창
 async function openIngredientModal(menuIdx) {
   const res = await getMenuItemList(menuIdx)
-  console.log(res.data.result)
   selectedMenu.value = res.data.result
   showIngredientModal.value = true
 }
 
 function getProductName(productIdx) {
-  return products.value.find(p => p.idx === productIdx)?.name ?? productIdx
-
+  return products.value.find(p => p.idx === productIdx)?.productName ?? productIdx
 }
 
 //  삭제 확인 모달
@@ -275,7 +273,7 @@ onMounted(() => {
         </button>
 
         <button v-for="cat in categories"
-                :key="cat.idx"
+                :key="cat.categoryIdx"
                 @click="selectCategory(cat.categoryIdx)"
                 class="px-3 py-1.5 text-sm font-semibold border rounded-lg transition-colors shadow-sm cursor-pointer"
                 :class="selectedCategoryIdx === cat.categoryIdx
@@ -375,7 +373,7 @@ onMounted(() => {
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">카테고리</label>
             <div class="flex items-center gap-2 flex-wrap">
-              <button v-for="cat in categories.filter(c => c !== '전체')" :key="cat"
+              <button v-for="cat in categories" :key="cat.categoryIdx"
                       type="button"
                       @click="menuForm.category = cat.menuCategoryName"
                       :class="menuForm.category === cat.menuCategoryName
@@ -496,7 +494,7 @@ onMounted(() => {
                    @error="(e) => e.target.src = 'https://nexus-menu-assets.s3.ap-northeast-2.amazonaws.com/theVenti_logo.png'" />
               <img v-else
                    :src="'https://nexus-menu-assets.s3.ap-northeast-2.amazonaws.com/theVenti_logo.png'"
-                   :alt="NEXUS"
+                   alt="NEXUS"
                    class="w-full h-full object-cover" />
             </div>
           </div>
@@ -516,7 +514,7 @@ onMounted(() => {
               <tr v-for="(item, idx) in selectedMenu?.menuItemList" :key="idx"
                   class="hover:bg-gray-50/80 transition-colors">
                 <td class="px-3 py-3 font-mono text-xs text-gray-400">R-{{ String(idx + 1).padStart(3, '0') }}</td>
-                <td class="px-3 py-3 font-semibold text-gray-800">{{ getProductName(item.productName) }}</td>
+                <td class="px-3 py-3 font-semibold text-gray-800">{{ item.productName }}</td>
                 <td class="px-3 py-3 text-right text-gray-700 font-mono">{{ item.quantity }}</td>
                 <td class="px-3 py-3 text-gray-500">{{ item.menuUnit }}</td>
               </tr>
@@ -580,10 +578,10 @@ onMounted(() => {
               <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">카테고리 목록 ({{ categories.length }}개)</p>
             </div>
             <div class="divide-y divide-gray-100 max-h-64 overflow-y-auto">
-              <div v-for="cat in categories" :key="cat.idx"
+              <div v-for="cat in categories" :key="cat.categoryIdx"
                    class="flex items-center justify-between px-4 py-2.5 hover:bg-gray-50">
                 <span class="text-sm font-medium text-gray-700">{{ cat.menuCategoryName }}</span>
-                <button @click="deleteCategoryAction(cat.idx, cat.menuCategoryName)" class="text-gray-300 hover:text-red-500 transition-colors cursor-pointer">
+                <button @click="deleteCategoryAction(cat.categoryIdx, cat.menuCategoryName)" class="text-gray-300 hover:text-red-500 transition-colors cursor-pointer">
                   <Trash2 class="w-3.5 h-3.5" />
                 </button>
               </div>

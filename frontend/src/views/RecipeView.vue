@@ -1,7 +1,7 @@
 <script setup>
 import {ref, computed, onMounted, reactive} from 'vue'
 import {Plus, Search, Image as ImageIcon, ChevronDown, Tag} from 'lucide-vue-next'
-import { getProductList, getCategoryList } from '@/api/menu/index.js'
+import {getProductList, getCategoryList, getMenuList, getMenuItemList} from '@/api/menu/index.js'
 // ─────────────────────────────────────────────
 //  상태 관리 (카테고리 관리 관련 추가)
 // ─────────────────────────────────────────────
@@ -19,36 +19,29 @@ const productListRes = async () => {
 // ─────────────────────────────────────────────
 //  메뉴 데이터
 // ─────────────────────────────────────────────
-const menus = ref([
-  {
-    id: '1', name: '아인슈페너(반절커피)', price: 3500, imageName: '', category: '커피',
-    ingredients: [
-      { productId: '1', amount: 2, unit: '샷' },
-      { productId: '6', amount: 50, unit: 'ml' },
-    ]
-  },
-  {
-    id: '2', name: '바닐라라떼', price: 3500, imageName: '', category: '커피',
-    ingredients: [
-      { productId: '1', amount: 2, unit: '샷' },
-      { productId: '2', amount: 250, unit: 'ml' },
-      { productId: '3', amount: 3, unit: '펌프' },
-    ]
-  },
-  {
-    id: '3', name: '타로 버블티', price: 4300, imageName: '', category: '버블티',
-    ingredients: [
-      { productId: '2', amount: 200, unit: 'ml' },
-      { productId: '5', amount: 80, unit: 'g' },
-    ]
-  },
-])
+
+const menus = ref([])
+const pagination = reactive({
+  totalPage: 0,
+  totalCount: 0,
+  currentPage: 0,
+  currentSize: 10
+})
+const getMenuRes = async (page = 0)=>{
+  const searchReq = {
+    keyword : searchQuery.value,
+    categoryIdx: null
+  }
+
+  const res = await getMenuList(searchReq, page, pagination.currentSize)
+  menus.value = res.data.result.menuList
+}
 
 // ─────────────────────────────────────────────
 //  검색 및 필터링
 // ─────────────────────────────────────────────
 const searchQuery = ref('')
-const selectedProductId = ref('') // 제품 드롭다운 필터용 상태
+const selectedCategoryId = ref('') // 제품 드롭다운 필터용 상태
 
 // 카테고리
 const categories = ref([])
@@ -61,8 +54,8 @@ const filteredMenus = computed(() => {
   let list = menus.value
 
   // 제품 드롭다운 필터: 선택한 제품이 재료(ingredients)에 포함되어 있는지 확인
-  if (selectedProductId.value) {
-    list = list.filter(m => m.ingredients.some(ing => ing.productId === selectedProductId.value))
+  if (selectedCategoryId.value) {
+    list = list.filter(m => m.ingredients.some(ing => ing.productId === selectedCategoryId.value))
   }
 
   // 텍스트 검색 (메뉴명)
@@ -190,8 +183,11 @@ async function deleteCategoryAction(idx, name) {
 const showIngredientModal = ref(false)
 const selectedMenu = ref(null)
 
-function openIngredientModal(menu) {
-  selectedMenu.value = menu
+// 상세 모달 창
+async function openIngredientModal(menuIdx) {
+  const res = await getMenuItemList(menuIdx)
+  console.log(res.data.result)
+  selectedMenu.value = res.data.result
   showIngredientModal.value = true
 }
 
@@ -238,6 +234,7 @@ function formatPrice(price) {
   return '₩ ' + price.toLocaleString('ko-KR')
 }
 onMounted(() => {
+  getMenuRes()
   productListRes()
   fetchCategories()
   categoryRes()
@@ -284,12 +281,12 @@ onMounted(() => {
       <!-- 수정된 부분: 재료(제품명) 선택 드롭다운 -->
       <div class="relative w-64">
         <select
-          v-model="selectedProductId"
+          v-model="selectedCategoryId"
           class="w-full pl-4 pr-10 py-2 bg-white border border-gray-200 rounded-lg text-sm appearance-none outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316] transition-colors shadow-sm cursor-pointer text-gray-600"
         >
           <option value="">전체 제품 보기</option>
           <option v-for="product in products" :key="product.id" :value="product.id">
-            {{ product.productName }}
+            {{ categories.categoryName }}
           </option>
         </select>
         <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
@@ -313,20 +310,20 @@ onMounted(() => {
           </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
-          <tr v-for="menu in filteredMenus" :key="menu.id"
-              @click="openIngredientModal(menu)"
+          <tr v-for="menu in filteredMenus" :key="menu.idx"
+              @click="openIngredientModal(menu.idx)"
               class="hover:bg-gray-50/50 transition-colors cursor-pointer group">
-            <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ menu.id }}</td>
+            <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ menu.idx }}</td>
             <td class="px-5 py-3.5">
               <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-gray-100 text-gray-600 border border-gray-200">
-                {{ menu.category || '기타' }}
+                {{ menu.menuCategory || '기타' }}
               </span>
             </td>
-            <td class="px-5 py-3.5 font-bold text-gray-900 group-hover:text-[#F97316] transition-colors">{{ menu.name }}</td>
+            <td class="px-5 py-3.5 font-bold text-gray-900 group-hover:text-[#F97316] transition-colors">{{ menu.menuName }}</td>
             <td class="px-5 py-3.5 text-gray-700 font-semibold">{{ formatPrice(menu.price) }}</td>
             <td class="px-5 py-3.5 text-center">
                 <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-orange-50 text-orange-600">
-                  {{ menu.ingredients.length }}종
+                  {{ menu.menuItemCount }} 개
                 </span>
             </td>
 
@@ -395,7 +392,7 @@ onMounted(() => {
                         ? 'bg-[#F97316] text-white border-[#F97316]'
                         : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:bg-gray-50'"
                       class="px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all cursor-pointer">
-                {{ cat }}
+                {{ cat.menuCategoryName }}
               </button>
             </div>
           </div>
@@ -488,16 +485,27 @@ onMounted(() => {
 
         <div class="px-7 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
           <div>
-            <h3 class="font-bold text-gray-900 text-lg">{{ selectedMenu?.name }}</h3>
-            <p class="text-xs text-gray-400 mt-0.5">{{selectedMenu?.id}}</p>
+            <h3 class="font-bold text-gray-900 text-lg">{{ selectedMenu?.menuName }}</h3>
+            <p class="text-xs text-gray-400 mt-0.5">ID: {{ selectedMenu?.idx }}</p>
           </div>
-          <div class="flex items-center gap-4">
-            <!-- 추가 요청 사항: 재료 추가 버튼 -->
-
-            <button @click="showIngredientModal = false" class="text-gray-400 hover:text-gray-600 font-bold text-xl cursor-pointer">✕</button>
-          </div>
+          <button @click="showIngredientModal = false" class="text-gray-400 hover:text-gray-600 font-bold text-xl cursor-pointer">✕</button>
         </div>
 
+        <div class="p-7">
+          <div class="flex justify-center mb-8">
+            <div class="w-48 h-48 rounded-2xl border border-gray-100 overflow-hidden bg-white shadow-md">
+              <img v-if="selectedMenu?.imgPath"
+                   :src="'https://nexus-menu-assets.s3.ap-northeast-2.amazonaws.com/' + selectedMenu.imgPath"
+                   :alt="'nexus ' + selectedMenu?.menuName"
+                   class="w-full h-full object-cover"
+                   @error="(e) => e.target.src = 'https://nexus-menu-assets.s3.ap-northeast-2.amazonaws.com/theVenti_logo.png'" />
+              <img v-else
+                   :src="'https://nexus-menu-assets.s3.ap-northeast-2.amazonaws.com/theVenti_logo.png'"
+                   :alt="NEXUS"
+                   class="w-full h-full object-cover" />
+            </div>
+          </div>
+        </div>
         <div class="p-7">
           <table class="w-full text-sm text-left">
             <thead>
@@ -509,14 +517,14 @@ onMounted(() => {
             </tr>
             </thead>
             <tbody class="divide-y divide-gray-50">
-            <tr v-for="(item, idx) in selectedMenu?.ingredients" :key="idx"
+            <tr v-for="(item, idx) in selectedMenu?.menuItemList" :key="idx"
                 class="hover:bg-gray-50/80 transition-colors">
               <td class="px-3 py-3 font-mono text-xs text-gray-400">R-{{ String(idx + 1).padStart(3, '0') }}</td>
-              <td class="px-3 py-3 font-semibold text-gray-800">{{ getProductName(item.idx) }}</td>
-              <td class="px-3 py-3 text-right text-gray-700 font-mono">{{ item.amount }}</td>
-              <td class="px-3 py-3 text-gray-500">{{ item.unit }}</td>
+              <td class="px-3 py-3 font-semibold text-gray-800">{{ getProductName(item.productName) }}</td>
+              <td class="px-3 py-3 text-right text-gray-700 font-mono">{{ item.quantity }}</td>
+              <td class="px-3 py-3 text-gray-500">{{ item.menuUnit }}</td>
             </tr>
-            <tr v-if="!selectedMenu?.ingredients?.length">
+            <tr v-if="!selectedMenu?.menuItemList?.length">
               <td colspan="4" class="px-3 py-8 text-center text-gray-400 text-sm">등록된 재료가 없습니다.</td>
             </tr>
             </tbody>

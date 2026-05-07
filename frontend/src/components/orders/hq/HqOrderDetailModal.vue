@@ -1,5 +1,5 @@
 <script setup>
-import { statusClass, formatPrice } from './orderUtils'
+import { statusClass, formatPrice } from '../orderUtils'
 
 defineProps({
   order: { type: Object, default: null },

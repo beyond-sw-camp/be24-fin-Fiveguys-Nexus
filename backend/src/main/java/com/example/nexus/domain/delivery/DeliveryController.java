@@ -2,9 +2,13 @@ package com.example.nexus.domain.delivery;
 
 import com.example.nexus.common.enums.DeliveryStatus;
 import com.example.nexus.domain.delivery.model.DeliveryDto;
+import com.example.nexus.domain.user.model.AuthUserDetails;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -27,15 +31,25 @@ public class DeliveryController {
     }
 
     // 본인 가맹점 배송 현황 조회 (발주 번호 및 날짜/상태 필터 추가)
-    @GetMapping("/store/{storeIdx}")
-    public ResponseEntity<List<DeliveryDto>> getStoreDeliveries(
-            @PathVariable Long storeIdx,
+    @GetMapping("/store")
+    public ResponseEntity<List<DeliveryDto>> getMyStoreDeliveries(
+            @AuthenticationPrincipal AuthUserDetails authUserDetails,
             @RequestParam(required = false) Long orderIdx,
             @RequestParam(required = false) DeliveryStatus status,
             @RequestParam(required = false) Integer year,
             @RequestParam(required = false) Integer month,
             @RequestParam(required = false) Integer day) {
-        List<DeliveryDto> response = deliveryService.getDeliveriesForStore(storeIdx, orderIdx, status, year, month, day);
+
+        if (authUserDetails == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+
+        Long storeIdx = authUserDetails.getIdx();
+
+        List<DeliveryDto> response = deliveryService.getDeliveriesForStore(
+                storeIdx, orderIdx, status, year, month, day
+        );
+
         return ResponseEntity.ok(response);
     }
 

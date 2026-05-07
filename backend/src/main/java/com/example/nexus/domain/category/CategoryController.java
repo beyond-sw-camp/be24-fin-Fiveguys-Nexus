@@ -31,9 +31,9 @@ public class CategoryController {
     }
 
     // 카테고리 소프트 삭제
-    @DeleteMapping("/delete/{idx}")
-    public ResponseEntity deleteCategory(@PathVariable Long idx) {
-        categoryService.deleteCategory(idx);
+    @DeleteMapping("/delete")
+    public ResponseEntity<BaseResponse<String>> deleteCategory(@RequestBody CategoryDto.RegReq dto) {
+        categoryService.deleteCategory(dto.getIdx());
         return ResponseEntity.ok(BaseResponse.success("success delete category"));
     }
 }

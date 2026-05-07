@@ -143,27 +143,27 @@ INSERT INTO menu_category (menu_category_name, is_deleted) VALUES
 -- ============================================================
 INSERT INTO menu (menu_name, price, img_path, is_deleted, menu_category_idx) VALUES
 -- 커피 (idx: 1)
-('아메리카노', 1500, '/uploads/menu/americano.jpg', false, 1),
-('카페라떼', 2500, '/uploads/menu/cafelatte.jpg', false, 1),
-('바닐라라떼', 3000, '/uploads/menu/vanillalatte.jpg', false, 1),
-('카라멜마끼아또', 3500, '/uploads/menu/caramelmacchiato.jpg', false, 1),
-('카푸치노', 2500, '/uploads/menu/cappuccino.jpg', false, 1),
+('아메리카노', 1500, 'theVenti_logo.png ', false, 1),
+('카페라떼', 2500, 'theVenti_logo.png ', false, 1),
+('바닐라라떼', 3000, 'theVenti_logo.png ', false, 1),
+('카라멜마끼아또', 3500, 'theVenti_logo.png ', false, 1),
+('카푸치노', 2500, 'theVenti_logo.png ', false, 1),
 
 -- 베버리지 (idx: 2)
-('녹차라떼', 3000, '/uploads/menu/greentealatte.jpg', false, 2),
-('초코라떼', 3000, '/uploads/menu/chocolatte.jpg', false, 2),
+('녹차라떼', 3000, 'theVenti_logo.png ', false, 2),
+('초코라떼', 3000, 'theVenti_logo.png ', false, 2),
 
 -- 아이스블렌디드 (idx: 3)
-('딸기스무디', 3500, '/uploads/menu/strawberrysmoothie.jpg', false, 3),
-('망고스무디', 3500, '/uploads/menu/mangosmoothie.jpg', false, 3),
+('딸기스무디', 3500, 'theVenti_logo.png ', false, 3),
+('망고스무디', 3500, 'theVenti_logo.png ', false, 3),
 
 -- 티 & 에이드 (idx: 4)
-('복숭아아이스티', 2500, '/uploads/menu/peachicedtea.jpg', false, 4),
-('레몬에이드', 2500, '/uploads/menu/lemonade.jpg', false, 4),
-('자몽에이드', 3000, '/uploads/menu/grapefruitade.jpg', false, 4),
-('얼그레이티', 2000, '/uploads/menu/earlgrey.jpg', false, 4),
-('캐모마일티', 2000, '/uploads/menu/chamomile.jpg', false, 4),
-('히비스커스티', 2000, '/uploads/menu/hibiscus.jpg', false, 4);
+('복숭아아이스티', 2500, 'theVenti_logo.png ', false, 4),
+('레몬에이드', 2500, 'theVenti_logo.png ', false, 4),
+('자몽에이드', 3000, 'theVenti_logo.png ', false, 4),
+('얼그레이티', 2000, 'theVenti_logo.png ', false, 4),
+('캐모마일티', 2000, 'theVenti_logo.png ', false, 4),
+('히비스커스티', 2000, 'theVenti_logo.png ', false, 4);
 
 
 -- ============================================================

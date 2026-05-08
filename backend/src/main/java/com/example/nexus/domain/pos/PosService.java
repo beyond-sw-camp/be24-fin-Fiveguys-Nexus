@@ -50,7 +50,8 @@ public class PosService {
 
         Long storeIdx = store.getIdx();
 
-        List<PosStoreInventory> inventoryList = posStoreInventoryRepository.findByStoreIdx(storeIdx);
+        List<PosStoreInventory> inventoryList =
+                posStoreInventoryRepository.findByStoreIdxWithStoreAndProduct(storeIdx);
 
         return inventoryList.stream().map(PosStoreInventoryDto.ListRes::from).toList();
     }

@@ -1,13 +1,13 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { Plus } from 'lucide-vue-next'
-import StoreManualOrderModal from '@/components/orders/StoreManualOrderModal.vue'
-import StoreOrderHistoryTable from '@/components/orders/StoreOrderHistoryTable.vue'
-import StoreOrderDetailModal from '@/components/orders/StoreOrderDetailModal.vue'
-import StorePendingOrderList from '@/components/orders/StorePendingOrderList.vue'
-import StoreOrderConfirmModal from '@/components/orders/StoreOrderConfirmModal.vue'
-import StoreOrderRejectModal from '@/components/orders/StoreOrderRejectModal.vue'
-import StoreItemDeleteModal from '@/components/orders/StoreItemDeleteModal.vue'
+import StoreManualOrderModal from '@/components/orders/store/StoreManualOrderModal.vue'
+import StoreOrderHistoryTable from '@/components/orders/store/StoreOrderHistoryTable.vue'
+import StoreOrderDetailModal from '@/components/orders/store/StoreOrderDetailModal.vue'
+import StorePendingOrderList from '@/components/orders/store/StorePendingOrderList.vue'
+import StoreOrderConfirmModal from '@/components/orders/store/StoreOrderConfirmModal.vue'
+import StoreOrderRejectModal from '@/components/orders/store/StoreOrderRejectModal.vue'
+import StoreItemDeleteModal from '@/components/orders/store/StoreItemDeleteModal.vue'
 import ordersApi from '@/api/orders'
 
 const activeTab = ref('pending')

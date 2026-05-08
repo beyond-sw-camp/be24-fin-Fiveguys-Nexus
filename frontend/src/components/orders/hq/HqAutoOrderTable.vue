@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
-import { statusClass, formatPrice } from './orderUtils'
+import { statusClass, formatPrice } from '../orderUtils'
 
 const props = defineProps({
   orders: { type: Array, required: true },

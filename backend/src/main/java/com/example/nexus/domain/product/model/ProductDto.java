@@ -8,6 +8,7 @@ import lombok.Getter;
 public class ProductDto {
     @Getter
     public static class RegReq {
+        private Long idx;
         private String productName;
         private Long categoryIdx;
         private String productUnit;
@@ -26,6 +27,10 @@ public class ProductDto {
                     .unitPrice(this.unitPrice)
                     .dangerDays(this.dangerDays)
                     .build();
+        }
+
+        public Long getIdx() {
+            return idx;
         }
     }
 

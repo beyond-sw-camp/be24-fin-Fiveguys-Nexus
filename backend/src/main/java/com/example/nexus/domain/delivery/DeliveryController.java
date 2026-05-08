@@ -1,8 +1,10 @@
 package com.example.nexus.domain.delivery;
 
 import com.example.nexus.common.enums.DeliveryStatus;
+import com.example.nexus.common.model.BaseResponse;
 import com.example.nexus.domain.delivery.model.DeliveryDto;
 import com.example.nexus.domain.user.model.AuthUserDetails;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,18 +23,18 @@ public class DeliveryController {
     // 본사 배송 관리 페이지 전체 배송현황 리스트 조회
     // 검색 및 필터 포함
     @GetMapping("/head")
-    public ResponseEntity<List<DeliveryDto>> getAllDeliveries(
+    public ResponseEntity<BaseResponse<List<DeliveryDto>>> getAllDeliveries(
             @RequestParam(required = false) String storeName,
             @RequestParam(required = false) DeliveryStatus status,
             @RequestParam(required = false) Integer year,
             @RequestParam(required = false) Integer month,
             @RequestParam(required = false) Integer day) {
-        return ResponseEntity.ok(deliveryService.getDeliveriesByHead(storeName, status, year, month, day));
+        return ResponseEntity.ok(BaseResponse.success(deliveryService.getDeliveriesByHead(storeName, status, year, month, day)));
     }
 
     // 본인 가맹점 배송 현황 조회 (발주 번호 및 날짜/상태 필터 추가)
     @GetMapping("/store")
-    public ResponseEntity<List<DeliveryDto>> getMyStoreDeliveries(
+    public ResponseEntity<BaseResponse<List<DeliveryDto>>> getMyStoreDeliveries(
             @AuthenticationPrincipal AuthUserDetails authUserDetails,
             @RequestParam(required = false) Long orderIdx,
             @RequestParam(required = false) DeliveryStatus status,
@@ -50,21 +52,26 @@ public class DeliveryController {
                 storeIdx, orderIdx, status, year, month, day
         );
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(BaseResponse.success(response));
     }
 
     // 본사 배송 지연 사유 입력
-    @PatchMapping("/head/{deliveryIdx}/delayreason")
-    public ResponseEntity<String> updateDelayReason(
-            @PathVariable Long deliveryIdx,
-            @RequestBody DeliveryDto.DelayReasonRequest request) {
+    @PatchMapping("/head/delayreason")
+    public ResponseEntity<BaseResponse<String>> updateDelayReason(
+            @AuthenticationPrincipal AuthUserDetails authUserDetails,
+            @Valid @RequestBody DeliveryDto.DelayReasonRequest request) {
 
-        boolean isSuccess = deliveryService.updateDelayReason(deliveryIdx, request.getDelayReason());
+        if (authUserDetails == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+
+        boolean isSuccess = deliveryService.updateDelayReason(request.getDeliveryIdx(), request.getDelayReason());
 
         if (isSuccess) {
-            return ResponseEntity.ok("배송 지연 사유가 성공적으로 등록되었습니다.");
+            return ResponseEntity.ok(BaseResponse.success("배송 지연 사유가 성공적으로 등록되었습니다."));
         } else {
-            return ResponseEntity.badRequest().body("존재하지 않는 배송 정보입니다.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(BaseResponse.success("존재하지 않는 배송 정보이거나 권한이 없습니다."));
         }
     }
 }

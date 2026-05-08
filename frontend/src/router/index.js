@@ -19,13 +19,13 @@ const router = createRouter({
     {
       path: '/dashboard',
       name: 'dashboard',
-      component: () => import('@/views/DashboardView.vue'),
+      component: () => import('@/views/hq/DashboardView.vue'),
       meta: { role: 'ADMIN' },
     },
     {
       path: '/statistics',
       name: 'statistics',
-      component: () => import('@/views/StatisticsView.vue'),
+      component: () => import('@/views/hq/StatisticsView.vue'),
       meta: { role: 'ADMIN' },
     },
     {
@@ -43,19 +43,19 @@ const router = createRouter({
     {
       path: '/store',
       name: 'store',
-      component: () => import('@/views/StoreView.vue'),
+      component: () => import('@/views/hq/StoreView.vue'),
       meta: { role: 'ADMIN' },
     },
     {
       path: '/product',
       name: 'product',
-      component: () => import('@/views/ProductView.vue'),
+      component: () => import('@/views/hq/ProductView.vue'),
       meta: { role: 'ADMIN' },
     },
     {
       path: '/recipe',
       name: 'recipe',
-      component: () => import('@/views/RecipeView.vue'),
+      component: () => import('@/views/hq/RecipeView.vue'),
       meta: { role: 'ADMIN' },
     },
     {
@@ -68,37 +68,37 @@ const router = createRouter({
     {
       path: '/inventory/head-office',
       name: 'inventoryHeadOffice',
-      component: () => import('@/views/InventoryHeadOfficeView.vue'),
+      component: () => import('@/views/hq/InventoryHeadOfficeView.vue'),
       meta: { role: 'ADMIN' },
     },
     {
       path: '/inventory/franchise',
       name: 'inventoryFranchise',
-      component: () => import('@/views/InventoryView.vue'),
+      component: () => import('@/views/hq/InventoryView.vue'),
       meta: { role: 'ADMIN' },
     },
     {
       path: '/inventory/history',
       name: 'inventoryHistory',
-      component: () => import('@/views/InventoryHistoryView.vue'),
+      component: () => import('@/views/hq/InventoryHistoryView.vue'),
       meta: { role: 'ADMIN' },
     },
     {
       path: '/delivery',
       name: 'delivery',
-      component: () => import('@/views/DeliveryView.vue'),
+      component: () => import('@/views/hq/DeliveryView.vue'),
       meta: { role: 'ADMIN' },
     },
     {
       path: '/settlement',
       name: 'settlement',
-      component: () => import('@/views/SettlementView.vue'),
+      component: () => import('@/views/hq/SettlementView.vue'),
       meta: { role: 'ADMIN' },
     },
     {
       path: '/admin-account',
       name: 'adminAccount',
-      component: () => import('@/views/AdminAccountCreateView.vue'),
+      component: () => import('@/views/hq/AdminAccountCreateView.vue'),
       meta: { role: 'ADMIN' },
     },
 

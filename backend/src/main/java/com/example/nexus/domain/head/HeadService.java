@@ -13,7 +13,7 @@ public class HeadService {
     private final HeadInventoryRepository headInventoryRepository;
 
     public List<HeadInventoryDto.ListRes> list() {
-        List<HeadInventory> headInventoryList = headInventoryRepository.findAll();
+        List<HeadInventory> headInventoryList = headInventoryRepository.findAllWithProduct();
         return headInventoryList.stream().map(HeadInventoryDto.ListRes::from).toList();
     }
 }

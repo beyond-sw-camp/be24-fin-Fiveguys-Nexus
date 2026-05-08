@@ -9,12 +9,12 @@ import { useToast } from '@/composables/useToast'
 
 const { toast, showToast } = useToast()
 
-const confirmState = ref({ open: false, type: '', title: '', confirmText: '확인', action: null })
+const confirmState = ref({ open: false, type: 'info', title: '', confirmText: '확인', action: null })
 function openConfirm({ type, title, confirmText, action }) {
   confirmState.value = { open: true, type, title, confirmText, action }
 }
 function closeConfirm() {
-  confirmState.value = { open: false, type: '', title: '', confirmText: '확인', action: null }
+  confirmState.value = { open: false, type: 'info', title: '', confirmText: '확인', action: null }
 }
 async function handleConfirm() {
   const action = confirmState.value.action

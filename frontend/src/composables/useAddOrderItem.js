@@ -10,8 +10,8 @@ export function useAddOrderItem(fetchPendingOrders, showToast) {
     addItemForm.value = { ordersIdx: order.idx, productIdx: null, productName: '', keyword: '', showDropdown: false, count: 1 }
     if (productList.value.length === 0) {
       try {
-        const res = await getProductList()
-        productList.value = res.data || []
+        const res = await getProductList(0, 1000)
+        productList.value = res.data.result.productList ?? []
       } catch (e) {
         console.error('상품 목록 조회 실패', e)
       }

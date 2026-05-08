@@ -61,14 +61,8 @@ defineEmits(['close'])
                 <tr>
                   <th class="px-4 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase">품목명</th>
                   <th class="px-4 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase">수량</th>
-                  <template v-if="order.type === '이상'">
-                    <th class="px-4 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase">평균수량</th>
-                    <th class="px-4 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase">초과율</th>
-                  </template>
-                  <template v-else>
-                    <th class="px-4 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase">단가</th>
-                    <th class="px-4 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase">금액</th>
-                  </template>
+                  <th class="px-4 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase">단가</th>
+                  <th class="px-4 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase">금액</th>
                 </tr>
               </thead>
             </table>
@@ -90,17 +84,8 @@ defineEmits(['close'])
                       </div>
                     </td>
                     <td class="px-4 py-2.5 text-right font-semibold" :class="item.isAbnormal ? 'text-red-600' : 'text-gray-900'">{{ item.qty.toLocaleString() }}</td>
-                    <template v-if="order.type === '이상'">
-                      <td class="px-4 py-2.5 text-right text-gray-500">{{ item.avgQty?.toLocaleString() ?? '-' }}</td>
-                      <td class="px-4 py-2.5 text-right">
-                        <span v-if="item.isAbnormal" class="text-xs font-black px-2 py-0.5 rounded bg-red-50 text-red-600 border border-red-200">+{{ item.ratio }}%</span>
-                        <span v-else class="text-xs text-gray-400">+{{ item.ratio }}%</span>
-                      </td>
-                    </template>
-                    <template v-else>
-                      <td class="px-4 py-2.5 text-right text-xs text-gray-500">{{ item.unitPrice ? item.unitPrice.toLocaleString() + '원' : '-' }}</td>
-                      <td class="px-4 py-2.5 text-right font-bold text-[#F37321] whitespace-nowrap">{{ item.unitPrice ? formatPrice(item.unitPrice * item.qty) : '-' }}</td>
-                    </template>
+                    <td class="px-4 py-2.5 text-right text-xs text-gray-500">{{ item.unitPrice ? item.unitPrice.toLocaleString() + '원' : '-' }}</td>
+                    <td class="px-4 py-2.5 text-right font-bold text-[#F37321] whitespace-nowrap">{{ item.unitPrice ? formatPrice(item.unitPrice * item.qty) : '-' }}</td>
                   </tr>
                 </tbody>
               </table>
@@ -112,7 +97,7 @@ defineEmits(['close'])
                 <col class="w-[22%]" />
                 <col class="w-[28%]" />
               </colgroup>
-              <tfoot v-if="order.type !== '이상'" class="bg-gray-50 border-t border-gray-200">
+              <tfoot class="bg-gray-50 border-t border-gray-200">
                 <tr>
                   <td class="px-4 py-2.5 text-left text-xs font-bold text-gray-500">합계</td>
                   <td class="px-4 py-2.5"></td>

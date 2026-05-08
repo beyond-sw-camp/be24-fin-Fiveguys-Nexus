@@ -3,6 +3,10 @@ import { reactive, ref, onMounted } from 'vue'
 import { Plus } from 'lucide-vue-next'
 import { formatPrice } from '../orderUtils'
 import { getProductList } from '@/api/product'
+import Toast from '@/components/common/Toast.vue'
+import { useToast } from '@/composables/useToast'
+
+const { toast, showToast } = useToast()
 
 defineProps({
   visible: { type: Boolean, required: true },
@@ -47,12 +51,12 @@ function clearProduct(item) {
 
 function submit() {
   if (form.items.length === 0) {
-    alert('품목을 입력해주세요.')
+    showToast('품목을 입력해주세요.', 'error')
     return
   }
   const validItems = form.items.filter(i => i.product)
   if (validItems.length === 0) {
-    alert('품목을 선택해주세요.')
+    showToast('품목을 선택해주세요.', 'error')
     return
   }
   emit('submit', {
@@ -123,5 +127,6 @@ function submit() {
           class="flex-1 py-2.5 rounded bg-blue-500 text-white text-sm font-bold hover:bg-blue-600 cursor-pointer">발주 생성</button>
       </div>
     </div>
+    <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
   </div>
 </template>

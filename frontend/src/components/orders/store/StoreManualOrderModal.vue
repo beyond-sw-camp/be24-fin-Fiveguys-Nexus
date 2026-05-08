@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import { Plus } from 'lucide-vue-next'
 import { formatPrice } from '../orderUtils'
 import { getProductList } from '@/api/product'
@@ -8,7 +8,7 @@ import { useToast } from '@/composables/useToast'
 
 const { toast, showToast } = useToast()
 
-defineProps({
+const props = defineProps({
   visible: { type: Boolean, required: true },
 })
 
@@ -17,10 +17,12 @@ const emit = defineEmits(['close', 'submit'])
 const products = ref([])
 const form = reactive({ items: [] })
 
-onMounted(async () => {
+watch(() => props.visible, async (val) => {
+  if (!val) return
+  form.items = []
   try {
-    const productRes = await getProductList()
-    products.value = productRes.data
+    const productRes = await getProductList(0, 1000)
+    products.value = productRes.data.result.productList ?? []
   } catch (e) {
     console.error('상품 목록 조회 실패', e)
   }
@@ -90,7 +92,7 @@ function submit() {
               </div>
               <input v-else v-model="item.productKeyword" @input="item.showDropdown = true" @focus="item.showDropdown = true" @blur="item.showDropdown = false" placeholder="상품명 검색"
                 class="w-full px-3 py-2 rounded border border-gray-200 text-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none" />
-              <ul v-if="!item.product && item.showDropdown && filterProducts(item).length > 0"
+              <ul v-if="!item.product && item.showDropdown"
                 class="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded shadow-lg max-h-60 overflow-y-auto">
                 <li v-for="p in filterProducts(item)" :key="p.idx" @mousedown.prevent @click="selectProduct(item, p)"
                   class="px-3 py-2 text-sm hover:bg-blue-50 cursor-pointer">

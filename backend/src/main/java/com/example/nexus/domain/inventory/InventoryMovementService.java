@@ -16,7 +16,6 @@ import com.example.nexus.domain.store.StoreRepository;
 import com.example.nexus.domain.store.model.Store;
 import com.example.nexus.domain.store.model.StoreInventory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,7 +39,7 @@ public class InventoryMovementService {
 
         Product product = productRepository.findById(req.getProductIdx()).orElseThrow();
 
-        HeadInventory headInventory = headInventoryRepository.findByProductIdx(product.getIdx()).orElseThrow();
+        HeadInventory headInventory = headInventoryRepository.findByProductIdxForUpdate(product.getIdx()).orElseThrow();
 
         headInventory.setCount(headInventory.getCount() + req.getQuantity());
 
@@ -63,7 +62,7 @@ public class InventoryMovementService {
 
         Store store = storeRepository.findById(req.getStoreIdx()).orElseThrow();
 
-        HeadInventory headInventory = headInventoryRepository.findByProductIdx(product.getIdx()).orElseThrow();
+        HeadInventory headInventory = headInventoryRepository.findByProductIdxForUpdate(product.getIdx()).orElseThrow();
 
         headInventory.setCount(headInventory.getCount() - req.getQuantity());
         headInventoryRepository.save(headInventory);
@@ -115,7 +114,7 @@ public class InventoryMovementService {
     @Transactional(readOnly = true)
     public List<InventoryMovementDto.MovementListRes> findAllMovements() {
 
-        List<InventoryMovement> inventoryMovementList = inventoryMovementRepository.findAll();
+        List<InventoryMovement> inventoryMovementList = inventoryMovementRepository.findAllWithProduct();
 
         return inventoryMovementList.stream().map(InventoryMovementDto.MovementListRes::from).toList();
     }

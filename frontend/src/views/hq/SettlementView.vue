@@ -155,42 +155,28 @@
       </table>
     </div>
 
-    <Teleport to="body">
-      <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-        <div class="bg-white rounded-xl shadow-xl max-w-sm w-full overflow-hidden">
-          <div class="p-6 text-center">
-            <div class="mb-4 flex justify-center text-amber-500">
-              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            </div>
-            <h3 class="text-lg font-bold text-gray-900 mb-2">마감 확인</h3>
-            <p class="text-sm text-gray-600 leading-relaxed">
-              마감된 기간의 데이터는 입력 및 수정이 불가합니다.<br/>마감하시겠습니까?
-            </p>
-          </div>
-          <div class="flex border-t border-gray-100">
-            <button
-              @click="isModalOpen = false"
-              class="flex-1 px-4 py-3 text-sm font-semibold text-gray-500 hover:bg-gray-50 transition-colors"
-            >
-              아니오
-            </button>
-            <button
-              @click="confirmClosing"
-              class="flex-1 px-4 py-3 text-sm font-semibold text-[#F37321] hover:bg-orange-50 border-l border-gray-100 transition-colors"
-            >
-              예
-            </button>
-          </div>
-        </div>
-      </div>
-    </Teleport>
+    <ConfirmModal
+      :open="isModalOpen"
+      title="마감 확인"
+      :message="'마감된 기간의 데이터는 입력 및 수정이 불가합니다.\n마감하시겠습니까?'"
+      confirm-text="예"
+      cancel-text="아니오"
+      type="warning"
+      @close="isModalOpen = false"
+      @confirm="confirmClosing" />
 
+    <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
   </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
 import { Download } from 'lucide-vue-next'
+import Toast from '@/components/common/Toast.vue'
+import ConfirmModal from '@/components/common/ConfirmModal.vue'
+import { useToast } from '@/composables/useToast'
+
+const { toast, showToast } = useToast()
 
 const selectedMonth = ref('2026-04')
 const activeTab = ref('입점 매장 정산')
@@ -226,12 +212,12 @@ const filteredSettlements = computed(() => {
 })
 
 function downloadStatement(row) {
-  alert(`[INCOME_003] ${row.name} 거래 명세서(PDF) 다운로드`)
+  showToast(`${row.name} 거래 명세서(PDF) 다운로드`)
 }
 
 // 모달 '예' 클릭 시 실행 함수
 function confirmClosing() {
-  alert(`${selectedMonth.value} 재고 마감이 완료되었습니다.`)
+  showToast(`${selectedMonth.value} 재고 마감이 완료되었습니다.`)
   isModalOpen.value = false
 }
 

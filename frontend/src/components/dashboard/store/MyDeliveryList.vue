@@ -50,7 +50,7 @@ onMounted(async () => {
         @keydown.space.prevent="router.push('/store-delivery')">
         <div class="flex items-center justify-between gap-3">
           <div class="flex-1 min-w-0">
-            <p class="text-sm font-bold text-gray-900 font-mono">발주 #{{ d.ordersIdx }}</p>
+            <p class="text-sm font-bold text-gray-900">발주 <span class="font-mono">#{{ d.ordersIdx }}</span></p>
             <p class="text-xs text-gray-500 mt-0.5">도착 예정: {{ d.estimatedArrival }}</p>
           </div>
           <span class="text-xs px-2 py-0.5 rounded-full font-medium shrink-0 border"

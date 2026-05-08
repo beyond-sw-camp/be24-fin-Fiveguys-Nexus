@@ -1,6 +1,7 @@
 package com.example.nexus.domain.pos;
 
 import com.example.nexus.common.exception.BaseException;
+import com.example.nexus.common.model.PageResponse;
 import com.example.nexus.common.model.BaseResponseStatus;
 import com.example.nexus.domain.menu.MenuItemRepository;
 import com.example.nexus.domain.menu.MenuRepository;
@@ -17,6 +18,8 @@ import com.example.nexus.domain.store.StoreRepository;
 import com.example.nexus.domain.store.model.Store;
 import com.example.nexus.domain.store.model.StoreInventory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +28,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -50,9 +54,42 @@ public class PosService {
 
         Long storeIdx = store.getIdx();
 
-        List<PosStoreInventory> inventoryList = posStoreInventoryRepository.findByStoreIdx(storeIdx);
+        List<PosStoreInventory> inventoryList =
+                posStoreInventoryRepository.findByStoreIdxWithStoreAndProduct(storeIdx);
 
         return inventoryList.stream().map(PosStoreInventoryDto.ListRes::from).toList();
+    }
+
+    public PageResponse<PosStoreInventoryDto.ListRes> listByUserIdxPaged(Long idx, int page, int size) {
+        Store store = storeRepository.findByUserIdx(idx).orElseThrow();
+
+        Page<Long> productPage =
+                posStoreInventoryRepository.findPagedProductIdsByStoreIdx(store.getIdx(), PageRequest.of(page, size));
+
+        List<Long> productIds = productPage.getContent();
+
+        List<PosStoreInventory> lots = posStoreInventoryRepository.findByStoreIdxAndProductIds(store.getIdx(), productIds);
+
+        Map<Long, Integer> productOrder = new HashMap<>();
+
+        for (int i = 0; i < productIds.size(); i++) {
+            productOrder.put(productIds.get(i), i);
+        }
+
+        List<PosStoreInventoryDto.ListRes> content = lots.stream()
+                .map(PosStoreInventoryDto.ListRes::from)
+                .sorted(Comparator
+                        .comparingInt((PosStoreInventoryDto.ListRes dto) -> productOrder.getOrDefault(dto.getProductIdx(), Integer.MAX_VALUE))
+                        .thenComparing(PosStoreInventoryDto.ListRes::getManufacturedDate))
+                .toList();
+
+        return PageResponse.<PosStoreInventoryDto.ListRes>builder()
+                .content(content)
+                .number(productPage.getNumber())
+                .size(productPage.getSize())
+                .totalPages(productPage.getTotalPages())
+                .totalElements(productPage.getTotalElements())
+                .build();
     }
 
     public PosStoreInventoryDto.SyncCountRes changeCount(Long userIdx, Long posStoreInventoryIdx, Integer count) {
@@ -255,7 +292,7 @@ public class PosService {
             return;
         }
         List<PosStoreInventory> lots = posStoreInventoryRepository
-                .findByStore_IdxAndProduct_IdxOrderByManufacturedDateAsc(store.getIdx(), productIdx);
+                .findByStoreAndProductForUpdate(store.getIdx(), productIdx);
         int availableTotal = lots.stream().mapToInt(PosStoreInventory::getCount).sum();
         if (availableTotal < amount) {
             Map<String, Object> detail = new LinkedHashMap<>();

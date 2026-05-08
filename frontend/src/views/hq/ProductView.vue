@@ -210,6 +210,14 @@
         </div>
       </div>
     </div>
+    <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
+    <ConfirmModal
+      :open="confirmState.open"
+      :title="confirmState.title"
+      :confirm-text="confirmState.confirmText"
+      type="danger"
+      @close="closeConfirm"
+      @confirm="handleConfirm" />
   </div>
 </template>
 
@@ -218,6 +226,24 @@ import { ref, computed, onMounted } from 'vue'
 import { Trash2, Search, Tag, Plus, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import { createCategory, readCategoryList, deleteCategory } from '@/api/category'
 import { getProductList, addNewProduct, updateProduct, deleteProduct, searchProduct } from '@/api/product'
+import Toast from '@/components/common/Toast.vue'
+import ConfirmModal from '@/components/common/ConfirmModal.vue'
+import { useToast } from '@/composables/useToast'
+
+const { toast, showToast } = useToast()
+
+const confirmState = ref({ open: false, title: '', confirmText: '확인', action: null })
+function openConfirm({ title, confirmText, action }) {
+  confirmState.value = { open: true, title, confirmText, action }
+}
+function closeConfirm() {
+  confirmState.value = { open: false, title: '', confirmText: '확인', action: null }
+}
+async function handleConfirm() {
+  const action = confirmState.value.action
+  closeConfirm()
+  if (action) await action()
+}
 
 // --- 상태 관리 ---
 const categories = ref([])

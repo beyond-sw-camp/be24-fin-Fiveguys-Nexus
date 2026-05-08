@@ -29,7 +29,7 @@ const emit = defineEmits([
 const isDropdownOpen = ref(false)
 
 const shouldShowDropdown = computed(() => {
-  return isDropdownOpen.value && props.storeSearch.trim().length > 0
+  return isDropdownOpen.value
 })
 
 const onSearchFocus = () => {

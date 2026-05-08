@@ -1,6 +1,7 @@
 package com.example.nexus.domain.store;
 
 import com.example.nexus.common.exception.BaseException;
+import com.example.nexus.common.model.PageResponse;
 import com.example.nexus.domain.store.model.Store;
 import com.example.nexus.domain.store.model.StoreDto;
 import com.example.nexus.domain.store.model.StoreInventory;
@@ -42,10 +43,32 @@ public class StoreService {
     @Value("${spring.cloud.aws.s3.store-bucket}")
     private String storeBucket;
 
+    public PageResponse<StoreInventoryDto.ListRes> listByStoreIdxPaged(Long storeIdx, int page, int size) {
+        Page<Long> productPage = storeInventoryRepository.findPagedProductIdsByStoreIdx(storeIdx, PageRequest.of(page, size));
+        List<Long> productIds = productPage.getContent();
 
-    public List<StoreInventoryDto.ListRes> listByStoreIdx(Long storeIdx) {
-        List<StoreInventory> inventoryList = storeInventoryRepository.findByStoreIdx(storeIdx);
-        return inventoryList.stream().map(StoreInventoryDto.ListRes::from).toList();
+        List<StoreInventory> lots = storeInventoryRepository.findByStoreIdxAndProductIds(storeIdx, productIds);
+
+        Map<Long, Integer> productOrder = new HashMap<>();
+
+        for (int i = 0; i < productIds.size(); i++) {
+            productOrder.put(productIds.get(i), i);
+        }
+
+        List<StoreInventoryDto.ListRes> content = lots.stream()
+                .map(StoreInventoryDto.ListRes::from)
+                .sorted(Comparator
+                        .comparingInt((StoreInventoryDto.ListRes dto) -> productOrder.getOrDefault(dto.getProductIdx(), Integer.MAX_VALUE))
+                        .thenComparing(StoreInventoryDto.ListRes::getManufacturedDate))
+                .toList();
+
+        return PageResponse.<StoreInventoryDto.ListRes>builder()
+                .content(content)
+                .number(productPage.getNumber())
+                .size(productPage.getSize())
+                .totalPages(productPage.getTotalPages())
+                .totalElements(productPage.getTotalElements())
+                .build();
     }
 
     @Transactional(readOnly = true)

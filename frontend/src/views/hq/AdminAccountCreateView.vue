@@ -176,38 +176,26 @@
       </div>
     </div>
 
-    <div v-if="isDeleteModalOpen" class="fixed inset-0 z-50 flex items-center justify-center">
-      <div class="absolute inset-0 bg-black/40" @click="closeDeleteModal"></div>
-      <div class="relative w-full max-w-sm bg-white rounded-lg border border-gray-200 shadow-xl p-6">
-        <h3 class="text-base font-bold text-gray-900">계정 삭제</h3>
-        <p class="text-sm text-gray-600 mt-2">
-          <span class="font-semibold">{{ selectedAccount?.name }}</span> 계정을 삭제하시겠습니까?
-        </p>
-        <p class="text-xs text-gray-400 mt-1">삭제된 계정은 복구할 수 없습니다.</p>
-        <div class="flex gap-3 mt-5">
-          <button
-            type="button"
-            @click="closeDeleteModal"
-            class="flex-1 py-2.5 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 cursor-pointer"
-          >
-            취소
-          </button>
-          <button
-            type="button"
-            @click="confirmDelete"
-            class="flex-1 py-2.5 rounded bg-red-500 text-white text-sm font-bold hover:bg-red-600 cursor-pointer"
-          >
-            삭제
-          </button>
-        </div>
-      </div>
-    </div>
+    <ConfirmModal
+      :open="isDeleteModalOpen"
+      :title="`${selectedAccount?.name} 계정을 삭제하시겠습니까?`"
+      message="삭제된 계정은 복구할 수 없습니다."
+      confirm-text="삭제"
+      type="danger"
+      @close="closeDeleteModal"
+      @confirm="confirmDelete" />
+    <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
   </div>
 </template>
 
 <script setup>
 import { reactive, ref } from 'vue'
 import api from '@/plugins/axiosinterceptor'
+import Toast from '@/components/common/Toast.vue'
+import ConfirmModal from '@/components/common/ConfirmModal.vue'
+import { useToast } from '@/composables/useToast'
+
+const { toast, showToast } = useToast()
 
 const STORAGE_KEY = 'nexus_admin_accounts'
 
@@ -293,7 +281,7 @@ async function submitForm() {
 
   if (formMode.value === 'create') {
     if (accounts.value.some((account) => account.email.toLowerCase() === normalizedEmail)) {
-      alert('이미 존재하는 이메일 입니다.')
+      showToast('이미 존재하는 이메일 입니다.', 'error')
       return
     }
 
@@ -324,10 +312,10 @@ async function submitForm() {
         tempPassword = (match?.[1] ?? responseData).trim()
       }
 
-      if (tempPassword) alert(`임시 비밀번호: ${tempPassword}`)
-      else alert('계정이 생성되었습니다.')
+      if (tempPassword) showToast(`임시 비밀번호: ${tempPassword}`)
+      else showToast('계정이 생성되었습니다.')
     } catch (e) {
-      alert('계정 생성에 실패했습니다.')
+      showToast('계정 생성에 실패했습니다.', 'error')
       return
     }
   } else {
@@ -339,7 +327,7 @@ async function submitForm() {
           : account
       )
     )
-    alert('계정이 수정되었습니다.')
+    showToast('계정이 수정되었습니다.')
   }
 
   closeFormModal()
@@ -359,6 +347,6 @@ function confirmDelete() {
   if (!selectedAccount.value) return
   saveAccounts(accounts.value.filter((account) => account.id !== selectedAccount.value.id))
   closeDeleteModal()
-  alert('계정이 삭제되었습니다.')
+  showToast('계정이 삭제되었습니다.')
 }
 </script>

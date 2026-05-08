@@ -1,6 +1,7 @@
 package com.example.nexus.domain.store;
 
 import com.example.nexus.common.model.BaseResponse;
+import com.example.nexus.common.model.PageResponse;
 import com.example.nexus.domain.store.model.StoreDto;
 import com.example.nexus.domain.store.model.StoreInventoryDto;
 import lombok.RequiredArgsConstructor;
@@ -18,11 +19,10 @@ public class StoreController {
 
     // [본사] 선택한 가맹점 store_idx로 재고 조회
     @GetMapping("/inventory/list/{storeIdx}")
-    public ResponseEntity<List<StoreInventoryDto.ListRes>> listByStoreIdx(@PathVariable Long storeIdx) {
+    public ResponseEntity<BaseResponse<PageResponse<StoreInventoryDto.ListRes>>> listByStoreIdx(@PathVariable Long storeIdx, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        PageResponse<StoreInventoryDto.ListRes> result = storeService.listByStoreIdxPaged(storeIdx, page, size);
 
-        List<StoreInventoryDto.ListRes> result = storeService.listByStoreIdx(storeIdx);
-
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(BaseResponse.success(result));
     }
 
     // [본사] keyword로 가맹점 검색

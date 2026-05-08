@@ -100,21 +100,6 @@ public class MenuDto {
         }
     }
 
-    // 카테고리 조회
-    @Getter
-    @Builder
-    public static class MenuCategoryRes{
-        private Long categoryIdx;
-        private String menuCategoryName;
-
-        public static MenuDto.MenuCategoryRes from(MenuCategory entity){
-            return MenuCategoryRes.builder()
-                    .categoryIdx(entity.getIdx())
-                    .menuCategoryName(entity.getMenuCategoryName())
-                    .build();
-        }
-    }
-
     @Getter
     public static class MenuItemReq{
         private Integer quantity;
@@ -181,4 +166,26 @@ public class MenuDto {
         private String keyword;
         private Long categoryIdx;
     }
+
+    // 카테고리 조회
+    @Getter
+    @Builder
+    public static class MenuCategoryRes{
+        private Long categoryIdx;
+        private String menuCategoryName;
+
+        public static MenuDto.MenuCategoryRes from(MenuCategory entity){
+            return MenuCategoryRes.builder()
+                    .categoryIdx(entity.getIdx())
+                    .menuCategoryName(entity.getMenuCategoryName())
+                    .build();
+        }
+    }
+
+    // 카테고리 등록 Req
+    @Getter
+    public static class MenuCategoryRegReq{
+        private String menuCategoryName;
+    }
+
 }

@@ -52,4 +52,8 @@ public interface StoreRepository extends JpaRepository<Store,Long> {
 
     // 본사 대시보드용 - 이전 기간 매장 수 (증감률 계산)
     long countByIsDeletedFalseAndCreatedAtBefore(LocalDateTime until);
+
+
+    // 가맹점 폐점수 조회
+    long countByIsDeletedTrue();
 }

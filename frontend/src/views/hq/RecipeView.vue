@@ -4,9 +4,18 @@ import {Plus, Search, Image as ImageIcon, Tag, Trash2, ChevronRight, ChevronLeft
 import {getProductList, getCategoryList, getMenuList, getMenuItemList, getPresignedUrl, postNewRegister, putMenuUpdate, putMenuDelete, postMenuCategoryRegister, deleteCategory} from '@/api/menu/index.js'
 import axios from 'axios'
 import Toast from '@/components/common/Toast.vue'
+import ConfirmModal from '@/components/common/ConfirmModal.vue'
 import { useToast } from '@/composables/useToast'
 
 const { toast, showToast } = useToast()
+
+const confirmState = ref({ open: false, idx: null, name: '' })
+function openDeleteCategoryConfirm(idx, name) {
+  confirmState.value = { open: true, idx, name }
+}
+function closeConfirm() {
+  confirmState.value = { open: false, idx: null, name: '' }
+}
 
 const showCategoryModal = ref(false)
 const newCategoryInput = ref('')
@@ -284,8 +293,9 @@ async function addCategoryAction() {
 }
 
 // 카테고리 삭제
-async function deleteCategoryAction(idx, name) {
-  if (!confirm(`'${name}' 카테고리를 삭제하시겠습니까?`)) return
+async function deleteCategoryAction() {
+  const { idx, name } = confirmState.value
+  closeConfirm()
   try {
     const res = await deleteCategory(idx)
     if (res.data.code === 2000) {
@@ -371,6 +381,13 @@ onMounted(() => {
 <template>
   <div class="p-5 space-y-4">
     <Toast :toast="toast" />
+    <ConfirmModal
+      :open="confirmState.open"
+      :title="`'${confirmState.name}' 카테고리를 삭제하시겠습니까?`"
+      confirm-text="삭제"
+      type="danger"
+      @close="closeConfirm"
+      @confirm="deleteCategoryAction" />
     <div class="flex items-center justify-between">
       <div>
         <h1 class="text-xl font-bold text-gray-900 tracking-tight">메뉴 관리</h1>
@@ -637,7 +654,7 @@ onMounted(() => {
               <div v-for="cat in categories" :key="cat.categoryIdx"
                    class="flex items-center justify-between px-4 py-2.5 hover:bg-gray-50">
                 <span class="text-sm font-medium text-gray-700">{{ cat.menuCategoryName }}</span>
-                <button @click="deleteCategoryAction(cat.categoryIdx, cat.menuCategoryName)" class="text-gray-300 hover:text-red-500 transition-colors cursor-pointer">
+                <button @click="openDeleteCategoryConfirm(cat.categoryIdx, cat.menuCategoryName)" class="text-gray-300 hover:text-red-500 transition-colors cursor-pointer">
                   <Trash2 class="w-3.5 h-3.5" />
                 </button>
               </div>

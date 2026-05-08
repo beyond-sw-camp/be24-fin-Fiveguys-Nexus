@@ -188,6 +188,13 @@
       </div>
     </div>
     <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
+    <ConfirmModal
+      :open="confirmState.open"
+      :title="confirmState.title"
+      :confirm-text="confirmState.confirmText"
+      type="danger"
+      @close="closeConfirm"
+      @confirm="handleConfirm" />
   </div>
 </template>
 
@@ -197,9 +204,23 @@ import { Trash2, Search, Tag, Plus } from 'lucide-vue-next'
 import { createCategory, readCategoryList, deleteCategory } from '@/api/category'
 import { getProductList, addNewProduct, updateProduct, deleteProduct, searchProduct } from '@/api/product'
 import Toast from '@/components/common/Toast.vue'
+import ConfirmModal from '@/components/common/ConfirmModal.vue'
 import { useToast } from '@/composables/useToast'
 
 const { toast, showToast } = useToast()
+
+const confirmState = ref({ open: false, title: '', confirmText: '확인', action: null })
+function openConfirm({ title, confirmText, action }) {
+  confirmState.value = { open: true, title, confirmText, action }
+}
+function closeConfirm() {
+  confirmState.value = { open: false, title: '', confirmText: '확인', action: null }
+}
+async function handleConfirm() {
+  const action = confirmState.value.action
+  closeConfirm()
+  if (action) await action()
+}
 
 // --- 상태 관리 ---
 const categories = ref([])
@@ -321,15 +342,20 @@ async function handleSaveProduct() {
   }
 }
 
-async function handleDeleteProduct(idx) {
-  if (!confirm('이 제품을 삭제하시겠습니까?')) return
-  try {
-    await deleteProduct(idx)
-    await fetchProducts()
-  } catch (error) {
-    console.error('삭제 실패:', error)
-    showToast('삭제 중 오류가 발생했습니다.', 'error')
-  }
+function handleDeleteProduct(idx) {
+  openConfirm({
+    title: '이 제품을 삭제하시겠습니까?',
+    confirmText: '삭제',
+    action: async () => {
+      try {
+        await deleteProduct(idx)
+        await fetchProducts()
+      } catch (error) {
+        console.error('삭제 실패:', error)
+        showToast('삭제 중 오류가 발생했습니다.', 'error')
+      }
+    },
+  })
 }
 
 // --- 카테고리 액션 (기존 코드 유지) ---
@@ -345,14 +371,19 @@ async function addCategoryAction() {
   }
 }
 
-async function deleteCategoryAction(idx, name) {
-  if (!confirm(`'${name}' 카테고리를 삭제하시겠습니까?`)) return
-  try {
-    await deleteCategory(idx)
-    await fetchCategories()
-    if (selectedCategory.value === name) selectedCategory.value = '전체'
-  } catch (error) {
-    showToast('삭제 실패: 해당 카테고리를 사용하는 제품이 있을 수 있습니다.', 'error')
-  }
+function deleteCategoryAction(idx, name) {
+  openConfirm({
+    title: `'${name}' 카테고리를 삭제하시겠습니까?`,
+    confirmText: '삭제',
+    action: async () => {
+      try {
+        await deleteCategory(idx)
+        await fetchCategories()
+        if (selectedCategory.value === name) selectedCategory.value = '전체'
+      } catch (error) {
+        showToast('삭제 실패: 해당 카테고리를 사용하는 제품이 있을 수 있습니다.', 'error')
+      }
+    },
+  })
 }
 </script>

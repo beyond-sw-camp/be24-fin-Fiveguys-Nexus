@@ -52,7 +52,9 @@
       :is-expiring-soon="isExpiringSoon"
       :get-subtitle="getSubtitle"
       :editable="true"
+      :waste-enabled="true"
       @apply-adjustments="applyLotAdjustments"
+      @apply-waste="applyWasteAdjustments"
       @close="closeDetail"
     />
     <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
@@ -63,6 +65,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import { changePosInventoryCount, getPosInventoryList } from '@/api/pos'
+import { createPosWasteLog } from '@/api/wastelog'
 import InventoryDetailModal from '@/components/inventory/InventoryDetailModal.vue'
 import StoreInventoryTable from '@/components/inventory/StoreInventoryTable.vue'
 import Toast from '@/components/common/Toast.vue'
@@ -186,12 +189,39 @@ async function applyLotAdjustments(changes) {
     await Promise.all(
       changes.map((row) => changePosInventoryCount(row.id, row.adjustTo)),
     )
-    await fetchInventory()
+    await fetchInventory(currentPage.value)
     closeDetail()
     showToast('lot 재고 보정이 완료되었습니다.')
   } catch (error) {
     console.error('Failed to update POS inventory:', error)
     showToast('lot 재고 보정에 실패했습니다.', 'error')
+  }
+}
+
+async function applyWasteAdjustments(changes) {
+  if (!detailItem.value) return
+  if (!Array.isArray(changes) || changes.length === 0) return
+
+  const input = window.prompt('폐기 사유를 입력해 주세요.', '유통기한 임박')
+  if (input === null) return
+  const wasteReason = input.trim() || '기타'
+
+  try {
+    await Promise.all(
+      changes.map((row) =>
+        createPosWasteLog({
+          posStoreInventoryIdx: row.id,
+          quantity: Number(row.wasteQty),
+          wasteReason,
+        }),
+      ),
+    )
+    await fetchInventory(currentPage.value)
+    closeDetail()
+    showToast('폐기 처리가 완료되었습니다.')
+  } catch (error) {
+    console.error('Failed to create waste log:', error)
+    showToast('폐기 처리에 실패했습니다.', 'error')
   }
 }
 

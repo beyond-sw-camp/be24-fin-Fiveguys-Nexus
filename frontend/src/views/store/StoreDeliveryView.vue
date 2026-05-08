@@ -171,39 +171,36 @@
     </div>
 
     <!-- 페이지네이션 -->
-    <div v-if="totalPages > 1" class="flex justify-center items-center gap-1 pt-2">
-      <!-- 이전 버튼 -->
+    <div v-if="totalPages > 1" class="flex justify-center items-center gap-2 mt-6">
       <button
         @click="fetchDeliveries(currentPage - 1)"
         :disabled="currentPage === 0"
-        class="px-3 py-1.5 text-sm rounded-lg border transition-colors"
-        :class="currentPage === 0
-      ? 'text-gray-300 border-gray-100 cursor-not-allowed'
-      : 'text-gray-600 border-gray-200 hover:bg-gray-50 cursor-pointer'">
-        ←
+        class="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path d="M15 19l-7-7 7-7" stroke-width="2"/>
+        </svg>
       </button>
 
-      <!-- 페이지 번호 -->
-      <button
-        v-for="p in totalPages"
-        :key="p"
-        @click="fetchDeliveries(p - 1)"
-        class="px-3 py-1.5 text-sm rounded-lg border transition-colors cursor-pointer"
-        :class="currentPage === p - 1
-      ? 'bg-blue-500 text-white border-blue-500 font-bold'
-      : 'text-gray-600 border-gray-200 hover:bg-gray-50'">
-        {{ p }}
-      </button>
+      <div class="flex gap-1">
+        <button
+          v-for="p in totalPages"
+          :key="p"
+          @click="fetchDeliveries(p - 1)"
+          class="w-9 h-9 text-sm font-semibold rounded-lg transition-colors cursor-pointer"
+          :class="currentPage === p - 1
+        ? 'bg-blue-500 text-white'
+        : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'">
+          {{ p }}
+        </button>
+      </div>
 
-      <!-- 다음 버튼 -->
       <button
         @click="fetchDeliveries(currentPage + 1)"
         :disabled="currentPage === totalPages - 1"
-        class="px-3 py-1.5 text-sm rounded-lg border transition-colors"
-        :class="currentPage === totalPages - 1
-      ? 'text-gray-300 border-gray-100 cursor-not-allowed'
-      : 'text-gray-600 border-gray-200 hover:bg-gray-50 cursor-pointer'">
-        →
+        class="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path d="M9 5l7 7-7 7" stroke-width="2"/>
+        </svg>
       </button>
     </div>
 

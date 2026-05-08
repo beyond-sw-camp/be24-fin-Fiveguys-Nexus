@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, onMounted, computed, nextTick } from 'vue'
+import {ref, reactive, onMounted, computed, nextTick, watch} from 'vue'
 import { Plus, Search, FileText } from 'lucide-vue-next'
 import { getStoreList , getStoreDetailList, getPresignedUrl, postNewRegister, putStoreUpdate, getStoreTotal} from '@/api/store/index.js'
 import axios from 'axios'
@@ -49,38 +49,43 @@ const changePage = (page) => {
   storeListRes(page)
 }
 
-const filteredStores = computed(() => {
-  let list = [...storesList.value];
-
-  list = list.filter(s => {
-    if (filterStatus.value === '폐점') {
-      return s.status === '폐점'; // '폐점' 필터일 때는 폐점인 것만 반환
-    } else if (filterStatus.value === '입점') {
-      return s.status === '입점'; // '입점' 필터일 때는 폐점이 아닌 것(운영중)만 반환
-    }
-    return true; // '전체'일 때는 모두 반환
-  })
-
-// 2. 검색어 필터링 (storeName, ownerName, address 기준)
-  const q = searchQuery.value.trim().toLowerCase()
-  if (q) {
-    list = list.filter(s =>
-      (s.storeName?.toLowerCase().includes(q)) ||
-      (s.ownerName?.toLowerCase().includes(q)) ||
-      (s.address?.toLowerCase().includes(q))
-    )
-  }
-
-  // 3. 정렬 (입점 중인 매장 우선)
-  return list.sort((a, b) => {
-    // a가 폐점이고 b가 입점이면, a를 뒤로 보냄 (1)
-    if (a.status === "폐점" && b.status === "입점") return 1
-    // a가 입점이고 b가 폐점이면, a를 앞으로 보냄 (-1)
-    if (a.status === "입점" && b.status === "폐점") return -1
-    // 상태가 같으면 순서를 유지함
-    return 0
-  })
+// searchQuery가 변할 때마다 자동으로 getMenuRes 실행
+watch(searchQuery, () => {
+  storeListRes(0)
 })
+
+// const filteredStores = computed(() => {
+//   let list = [...storesList.value];
+//
+//   list = list.filter(s => {
+//     if (filterStatus.value === '폐점') {
+//       return s.status === '폐점'; // '폐점' 필터일 때는 폐점인 것만 반환
+//     } else if (filterStatus.value === '입점') {
+//       return s.status === '입점'; // '입점' 필터일 때는 폐점이 아닌 것(운영중)만 반환
+//     }
+//     return true; // '전체'일 때는 모두 반환
+//   })
+//
+// // 2. 검색어 필터링 (storeName, ownerName, address 기준)
+//   const q = searchQuery.value.trim().toLowerCase()
+//   if (q) {
+//     list = list.filter(s =>
+//       (s.storeName?.toLowerCase().includes(q)) ||
+//       (s.ownerName?.toLowerCase().includes(q)) ||
+//       (s.address?.toLowerCase().includes(q))
+//     )
+//   }
+//
+//   // 3. 정렬 (입점 중인 매장 우선)
+//   return list.sort((a, b) => {
+//     // a가 폐점이고 b가 입점이면, a를 뒤로 보냄 (1)
+//     if (a.status === "폐점" && b.status === "입점") return 1
+//     // a가 입점이고 b가 폐점이면, a를 앞으로 보냄 (-1)
+//     if (a.status === "입점" && b.status === "폐점") return -1
+//     // 상태가 같으면 순서를 유지함
+//     return 0
+//   })
+// })
 
 const formatBusinessNumber = (e) => {
   // 1. 숫자 이외의 문자(한글, 영문 등)를 모두 제거
@@ -383,10 +388,6 @@ const selectStatus = (status) => {
   storeListRes(0);
 };
 
-// 검색 처리 함수
-const handleSearch = () => {
-  storeListRes(0);
-};
 
 onMounted(() => {
   storeListRes()
@@ -428,12 +429,9 @@ onMounted(() => {
       <div class="flex items-center gap-2 flex-1 max-w-md">
         <div class="relative">
           <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="가맹점명 검색"
-            @keyup.enter="handleSearch"
-            class="pl-10 pr-4 py-2 rounded-lg border border-gray-200 text-sm w-52
+          <input v-model="searchQuery" type="text" placeholder="가맹점명 검색" @keyup.enter="storeListRes(0)"
+
+                 class="pl-10 pr-4 py-2 rounded-lg border border-gray-200 text-sm w-52
              bg-white shadow-sm
              focus:border-[#F37321] focus:ring-1 focus:ring-[#F37321]
              outline-none transition-colors"
@@ -469,7 +467,7 @@ onMounted(() => {
         </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
-        <tr v-for="store in filteredStores" :key="store.idx"
+        <tr v-for="store in storesList" :key="store.idx"
             @click="openDetail(store.idx)"
             class="hover:bg-gray-50/50 transition-colors cursor-pointer group"
             :class="{ 'bg-gray-50/40 opacity-70': store.status === '폐점' }">

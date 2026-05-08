@@ -2,7 +2,7 @@
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { RouterLink } from 'vue-router'
 import { History } from 'lucide-vue-next'
-import { getStoreList, getStoreInventoryByStore, searchStoreList } from '@/api/store'
+import { getStoreInventoryByStore, searchStoreList } from '@/api/store'
 import { useInventoryCommon } from '@/composables/useInventoryCommon'
 import InventoryStatusFilters from '@/components/inventory/InventoryStatusFilters.vue'
 import InventoryDetailModal from '@/components/inventory/InventoryDetailModal.vue'
@@ -114,7 +114,7 @@ async function loadStoreList(keyword = '') {
 }
 
 function fetchStoreListByKeyword(keyword = '') {
-  return keyword ? searchStoreList(keyword) : getStoreList()
+  return searchStoreList(keyword)
 }
 
 function resetStoreListError() {
@@ -136,7 +136,7 @@ async function fetchStoreInventory() {
   listError.value = ''
   try {
     const { data } = await getStoreInventoryByStore(selectedStoreIdx.value)
-    const list = Array.isArray(data) ? data : []
+    const list = Array.isArray(data?.result) ? data.result : []
     items.value = aggregateInventoryRows(list)
   } catch (error) {
     console.error('Failed to fetch store inventory:', error)

@@ -102,7 +102,7 @@ function aggregateInventoryRows(list) {
 async function fetchInventory() {
   try {
     const { data } = await getPosInventoryList()
-    const list = Array.isArray(data) ? data : []
+    const list = Array.isArray(data?.result) ? data.result : []
     inventory.value = aggregateInventoryRows(list)
   } catch (error) {
     console.error('Failed to fetch POS inventory:', error)

@@ -30,8 +30,6 @@ const storeListRes = async (page = 0)=>{
     keyword: searchQuery.value, // ref로 선언된 검색어
     status: filterStatus.value === '입점' ? 'ACTIVE' : filterStatus.value === '폐점' ? 'CLOSED' : null
   }
-  const totalRes = await getStoreTotal()
-  storeTotalCount.value = totalRes.data.result
 
   const res = await getStoreList(searchReq, page, pagination.currentSize)
   storesList.splice(0, storesList.length, ...res.data.result.storeList)
@@ -40,6 +38,9 @@ const storeListRes = async (page = 0)=>{
   pagination.totalCount = res.data.result.totalCount
   pagination.currentPage = res.data.result.currentPage
 
+  const totalRes = await getStoreTotal()
+  storeTotalCount.value = totalRes.data.result
+  console.log(storeTotalCount.value)
 }
 
 const changePage = (page) => {
@@ -375,6 +376,18 @@ const visiblePages = computed(() => {
   return pages;
 });
 
+// 상태 선택 함수 (버튼 전용)
+const selectStatus = (status) => {
+  filterStatus.value = status;
+  // 필터가 바뀌면 무조건 0페이지(첫 페이지)부터 다시 서버 데이터를 불러와야 합니다.
+  storeListRes(0);
+};
+
+// 검색 처리 함수
+const handleSearch = () => {
+  storeListRes(0);
+};
+
 onMounted(() => {
   storeListRes()
 })
@@ -426,29 +439,18 @@ onMounted(() => {
              outline-none transition-colors"
           />
         </div>
-        <button @click="handleSearch"
-                class="px-4 py-2 bg-white border border-gray-300 text-gray-600 text-sm font-bold rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-colors shadow-sm whitespace-nowrap cursor-pointer">
-          검색
+        <button
+          v-for="s in statusOptions"
+          :key="s"
+          @click="selectStatus(s)"
+          class="px-3 py-1.5 text-sm font-semibold border rounded-lg transition-colors shadow-sm cursor-pointer"
+          :class="filterStatus === s
+        ? 'bg-[#F37321] text-white border-[#F37321]'
+        : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'"
+        >
+          {{ s }}
         </button>
       </div>
-
-      <div class="flex items-center gap-3">
-        <div class="relative">
-          <button @click="toggleDropdown('status')"
-                  class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:border-gray-300 transition-all shadow-sm min-w-[120px] justify-between cursor-pointer">
-            <span>상태: {{ filterStatus }}</span>
-            <ChevronDown class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-180': activeDropdown === 'status' }" />
-          </button>
-          <div v-if="activeDropdown === 'status'" class="absolute right-0 mt-1 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-20 py-1 animate-in fade-in zoom-in-95 duration-100">
-            <button v-for="s in statusOptions" :key="s" @click="selectFilter('status', s)"
-                    class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors cursor-pointer"
-                    :class="filterStatus === s ? 'text-[#F37321] font-bold' : 'text-gray-600'">
-              {{ s }}
-            </button>
-          </div>
-        </div>
-      </div>
-      <div v-if="activeDropdown" class="fixed inset-0 z-10" @click="activeDropdown = null"></div>
     </div>
 
     <!-- Table Section -->

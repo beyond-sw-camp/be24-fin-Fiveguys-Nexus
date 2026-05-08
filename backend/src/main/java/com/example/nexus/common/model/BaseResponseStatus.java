@@ -52,6 +52,7 @@ public enum BaseResponseStatus {
     POS_INVENTORY_NOT_FOUND(false, 3301, "POS 재고 항목을 찾을 수 없습니다."),
     STORE_INVENTORY_NOT_FOUND(false, 3302, "가맹점 재고 항목을 찾을 수 없습니다."),
     STORE_INVENTORY_NOT_AUTHORIZED(false, 3303, "해당 재고에 대한 권한이 없습니다."),
+    WASTE_QUANTITY_EXCEEDS_STOCK(false, 3304, "폐기 수량이 현재 재고 수량을 초과합니다."),
 
     // 4100번대~ 결제 관련
     PAYMENT_UNAUTHENTICATED_USER(false, 4100, "인증받지 않은 사용자입니다."),

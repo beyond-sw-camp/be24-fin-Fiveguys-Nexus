@@ -77,7 +77,7 @@ public class MenuController {
 
     // 메뉴 카테고리 등록
     @PostMapping("/category/register")
-    public ResponseEntity menuCategoryReg(@Valid @RequestBody MenuDto.MenuCategoryRegReq dto){
+    public ResponseEntity<BaseResponse> menuCategoryReg(@Valid @RequestBody MenuDto.MenuCategoryRegReq dto){
         menuService.menucategoryReg(dto);
         return ResponseEntity.ok(BaseResponse.success("성공"));
     }

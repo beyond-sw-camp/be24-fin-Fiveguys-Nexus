@@ -1,13 +1,13 @@
 <script setup>
-import {ref, computed, onMounted, reactive} from 'vue'
-import {Plus, Search, Image as ImageIcon, Tag, Trash2} from 'lucide-vue-next'
-import {getProductList, getCategoryList, getMenuList, getMenuItemList, getPresignedUrl, postNewRegister, putMenuUpdate, putMenuDelete} from '@/api/menu/index.js'
+import {ref, computed, onMounted, reactive, watch} from 'vue'
+import {Plus, Search, Image as ImageIcon, Tag, Trash2, ChevronRight, ChevronLeft} from 'lucide-vue-next'
+import {getProductList, getCategoryList, getMenuList, getMenuItemList, getPresignedUrl, postNewRegister, putMenuUpdate, putMenuDelete, postMenuCategoryRegister, deleteCategory} from '@/api/menu/index.js'
 import axios from 'axios'
 
 const showCategoryModal = ref(false)
 const newCategoryInput = ref('')
 const searchQuery = ref('')
-const selectedCategoryIdx = ref('')
+const selectedCategoryIdx = ref(null)
 const showIngredientModal = ref(false)
 const selectedMenu = ref(null)
 const showDeleteConfirm = ref(false)
@@ -34,7 +34,6 @@ const getInFrom = () => ({
   imgPath: '',
   imgName:'',
   menuCategoryIdx: null,
-  // MenuItemReq 구조에 맞춘 배열
   menuItemList: [
     {
       productIdx: '',
@@ -101,22 +100,16 @@ async function openEditMenuModal(menu) {
 
     // 2. getInFrom()의 표준 구조를 가져와서 데이터를 '재조립' 합니다.
     const form = getInFrom();
-
-    // [중요] 응답 데이터에 맞춰 필드 매핑
     form.menuName = detail.menuName;
     form.price = detail.price;
 
-    // 이미지 경로의 경우 공백이 포함될 수 있으므로 trim() 처리
     form.imgPath = detail.imgPath ? detail.imgPath.trim() : "";
     form.imgName = detail.imgPath ? detail.imgPath.trim() : "";
 
-    // [카테고리] v-model은 IDX(숫자)를 바라보므로, 목록(menu)에서 가져온 idx를 사용합니다.
     form.menuCategoryIdx = categories.value.find(
       c => c.menuCategoryName === detail.menuCategory
     )?.categoryIdx ?? null;
 
-
-    // [재료 목록] 응답의 'idx'를 'productIdx'로 매핑
     form.menuItemList = detail.menuItemList.map(i => {
       const isStandardUnit = UNIT_OPTIONS.includes(i.menuUnit);
       return {
@@ -127,11 +120,9 @@ async function openEditMenuModal(menu) {
       };
     });
 
-    // 3. 폼 상태 업데이트
     menuForm.value = form;
     console.log(menuForm.value)
 
-    // 가격 표시 업데이트 (toLocaleString은 숫자에만 작동하므로 안전하게 처리)
     formattedPriceInput.value = (detail.price || 0).toLocaleString('ko-KR');
 
     showMenuModal.value = true;
@@ -164,7 +155,7 @@ function removeIngredientRow(idx) {
   menuForm.value.menuItemList.splice(idx, 1)
 }
 
-// 이미지
+// 이미지 등록
 function handleImageChange(e) {
   const file = e.target.files[0]
   if (!file) return;
@@ -268,13 +259,23 @@ async function saveMenu() {
 // 카테고리 추가
 async function addCategoryAction() {
   const name = newCategoryInput.value.trim()
+  console.log(name)
   if (!name) return
   try {
-    await createCategory(name)
-    newCategoryInput.value = ''
-    await categoryRes()
+    const categoryName = {
+      menuCategoryName: name
+    }
+    const res = await postMenuCategoryRegister(categoryName)
+    console.log(res)
+    if (res.data.code === 2000) {
+      alert("카테고리가 등록되었습니다.");
+
+      newCategoryInput.value = ''
+      await categoryRes()
+    }
   } catch (error) {
-    alert('카테고리 등록 실패')
+    const serverMessage = error.response?.data?.message || error.message;
+    alert(`등록 실패 : ${serverMessage}`);
   }
 }
 
@@ -282,11 +283,15 @@ async function addCategoryAction() {
 async function deleteCategoryAction(idx, name) {
   if (!confirm(`'${name}' 카테고리를 삭제하시겠습니까?`)) return
   try {
-    await deleteCategory(idx)
-    await categoryRes()
-    if (selectedCategoryIdx.value === idx) selectedCategoryIdx.value = null
+    const res = await deleteCategory(idx)
+    if (res.data.code === 2000) {
+      alert("카테고리가 삭제되었습니다.");
+      await categoryRes()
+    }
+
   } catch (error) {
-    alert('삭제 실패: 해당 카테고리를 사용하는 데이터가 있을 수 있습니다.')
+    const serverMessage = error.response?.data?.message || error.message;
+    alert(`등록 실패 : ${serverMessage}`);
   }
 }
 
@@ -323,6 +328,11 @@ const isAlreadySelected = (productIdx, currentItem) => {
   );
 };
 
+// searchQuery가 변할 때마다 자동으로 getMenuRes 실행
+watch(searchQuery, () => {
+  getMenuRes(0)
+})
+
 //  가격 유틸
 function formatPrice(price) {
   return '₩ ' + price.toLocaleString('ko-KR')
@@ -330,7 +340,7 @@ function formatPrice(price) {
 
 // 페이지 번호
 const visiblePages = computed(() => {
-  const range = 10; // 한 번에 보여줄 페이지 개수
+  const range = 10;
   const currentGroup = Math.floor(pagination.currentPage / range);
   const start = currentGroup * range;
   const end = Math.min(start + range, pagination.totalPage);
@@ -374,12 +384,14 @@ onMounted(() => {
     <div class="flex items-center gap-3 mb-4 flex-wrap">
       <div class="relative">
         <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-        <input v-model="searchQuery" type="text" placeholder="메뉴명 검색"
+        <input v-model="searchQuery" type="text" placeholder="메뉴명 검색" @keyup.enter="getMenuRes(0)"
                class="pl-10 pr-4 py-2 rounded-lg border border-gray-200 text-sm w-52 bg-white shadow-sm focus:border-[#F37321] focus:ring-1 focus:ring-[#F37321] outline-none transition-colors"/>
       </div>
       <div class="flex gap-1.5 flex-wrap">
-        <button @click="selectCategory(null)" class="px-3 py-1.5 text-sm font-semibold border rounded-lg transition-colors shadow-sm cursor-pointer"
-                :class="selectedCategoryIdx === null ? 'bg-[#F37321] text-white border-[#F37321]' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'">전체
+        <button @click="selectCategory(null)"
+                class="px-3 py-1.5 text-sm font-semibold border rounded-lg transition-colors shadow-sm cursor-pointer"
+                :class="!selectedCategoryIdx ? 'bg-[#F37321] text-white border-[#F37321]' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'">
+          전체
         </button>
         <button v-for="cat in categories" :key="cat.categoryIdx" @click="selectCategory(cat.categoryIdx)" class="px-3 py-1.5 text-sm font-semibold border rounded-lg transition-colors shadow-sm cursor-pointer"
                 :class="selectedCategoryIdx === cat.categoryIdx
@@ -631,24 +643,28 @@ onMounted(() => {
         </div>
       </div>
     </div>
-    <!-- 페이지 버튼 -->
-    <div class="flex items-center justify-center gap-3 mt-8 pb-10">
-      <button @click="changePage(pagination.currentPage - 1)" :disabled="pagination.currentPage === 0"
-              class="w-7 h-7 flex items-center justify-center rounded border border-gray-200 bg-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors cursor-pointer">
-        <span class="text-[10px] text-gray-500">◀</span>
+    <div v-if="pagination.totalPage > 1" class="flex justify-center items-center gap-2 pt-2">
+      <button
+        class="p-2 rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+        :disabled="pagination.currentPage === 0"
+        @click="changePage(pagination.currentPage - 1)">
+        <ChevronLeft class="w-4 h-4" />
       </button>
-      <div class="flex items-center gap-1">
-        <button v-for="pageIdx in visiblePages" :key="pageIdx" @click="changePage(pageIdx)"
-                class="min-w-[28px] h-7 px-2 flex items-center justify-center rounded text-xs font-bold transition-all cursor-pointer"
-                :class="pagination.currentPage === pageIdx
-        ? 'text-[#F37321] border-b-2 border-[#F37321] rounded-none'
-        : 'text-gray-400 hover:text-gray-600'">
-          {{ pageIdx + 1 }}
-        </button>
-      </div>
-      <button @click="changePage(pagination.currentPage + 1)" :disabled="pagination.currentPage >= pagination.totalPage - 1"
-              class="w-7 h-7 flex items-center justify-center rounded border border-gray-200 bg-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors cursor-pointer">
-        <span class="text-[10px] text-gray-500">▶</span>
+
+      <button v-for="pageIdx in visiblePages" :key="pageIdx"
+              class="w-8 h-8 rounded text-sm font-semibold cursor-pointer transition-colors"
+              :class="pagination.currentPage === pageIdx
+          ? 'bg-[#F37321] text-white'
+          : 'text-gray-500 hover:bg-gray-50'"
+              @click="changePage(pageIdx)">
+        {{ pageIdx + 1 }}
+      </button>
+
+      <button
+        class="p-2 rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+        :disabled="pagination.currentPage >= pagination.totalPage - 1"
+        @click="changePage(pagination.currentPage + 1)">
+        <ChevronRight class="w-4 h-4" />
       </button>
     </div>
   </div>

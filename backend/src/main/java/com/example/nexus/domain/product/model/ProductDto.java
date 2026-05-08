@@ -2,8 +2,13 @@ package com.example.nexus.domain.product.model;
 
 import com.example.nexus.domain.category.model.Category;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.springframework.data.domain.Page;
+
+import java.util.List;
 
 public class ProductDto {
     @Getter
@@ -71,6 +76,26 @@ public class ProductDto {
                     .minStock(entity.getMinStock())
                     .unitPrice(entity.getUnitPrice())
                     .dangerDays(entity.getDangerDays())
+                    .build();
+        }
+    }
+
+    @Getter
+    @Builder
+    public static class ProductPageRes {
+        private List<ListRes> productList;
+        private int totalPage;
+        private long totalCount;
+        private int currentPage;
+        private int currentSize;
+
+        public static ProductPageRes from(Page<Product> entity) {
+            return ProductPageRes.builder()
+                    .productList(entity.map(ListRes::from).getContent())
+                    .totalPage(entity.getTotalPages())
+                    .totalCount(entity.getTotalElements())
+                    .currentPage(entity.getPageable().getPageNumber())
+                    .currentSize(entity.getPageable().getPageSize())
                     .build();
         }
     }

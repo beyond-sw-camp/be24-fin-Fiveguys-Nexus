@@ -18,6 +18,32 @@
       @open-detail="openDetail"
     />
 
+    <div v-if="totalPages > 1" class="flex justify-center items-center gap-2 pt-2">
+      <button
+        class="p-2 rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+        :disabled="currentPage === 0"
+        @click="fetchInventory(currentPage - 1)"
+      >
+        <ChevronLeft class="w-4 h-4" />
+      </button>
+      <button
+        v-for="page in totalPages"
+        :key="page"
+        class="w-8 h-8 rounded text-sm font-semibold cursor-pointer"
+        :class="currentPage === page - 1 ? 'bg-[#F37321] text-white' : 'text-gray-500 hover:bg-gray-50'"
+        @click="fetchInventory(page - 1)"
+      >
+        {{ page }}
+      </button>
+      <button
+        class="p-2 rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+        :disabled="currentPage === totalPages - 1"
+        @click="fetchInventory(currentPage + 1)"
+      >
+        <ChevronRight class="w-4 h-4" />
+      </button>
+    </div>
+
     <InventoryDetailModal
       :item="detailItem"
       :detail-title-id="detailTitleId"
@@ -34,6 +60,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import { changePosInventoryCount, getPosInventoryList } from '@/api/pos'
 import InventoryDetailModal from '@/components/inventory/InventoryDetailModal.vue'
 import StoreInventoryTable from '@/components/inventory/StoreInventoryTable.vue'
@@ -41,6 +68,9 @@ import StoreInventoryTable from '@/components/inventory/StoreInventoryTable.vue'
 const detailTitleId = 'store-inv-detail-title'
 const detailItem = ref(null)
 const inventory = ref([])
+const currentPage = ref(0)
+const totalPages = ref(0)
+const PAGE_SIZE = 10
 
 function formatDate(value) {
   if (!value) return null
@@ -99,13 +129,18 @@ function aggregateInventoryRows(list) {
   )
 }
 
-async function fetchInventory() {
+async function fetchInventory(page = 0) {
   try {
-    const { data } = await getPosInventoryList()
-    const list = Array.isArray(data?.result) ? data.result : []
+    const { data } = await getPosInventoryList(page, PAGE_SIZE)
+    const pageResult = data?.result
+    const list = Array.isArray(pageResult?.content) ? pageResult.content : []
+    currentPage.value = Number(pageResult?.number ?? 0)
+    totalPages.value = Number(pageResult?.totalPages ?? 0)
     inventory.value = aggregateInventoryRows(list)
   } catch (error) {
     console.error('Failed to fetch POS inventory:', error)
+    currentPage.value = 0
+    totalPages.value = 0
     inventory.value = []
   }
 }
@@ -180,6 +215,6 @@ function getStatusClass(item) {
 }
 
 onMounted(() => {
-  fetchInventory()
+  fetchInventory(0)
 })
 </script>

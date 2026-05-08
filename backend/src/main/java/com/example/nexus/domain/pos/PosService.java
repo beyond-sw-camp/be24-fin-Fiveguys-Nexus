@@ -256,7 +256,7 @@ public class PosService {
             return;
         }
         List<PosStoreInventory> lots = posStoreInventoryRepository
-                .findByStore_IdxAndProduct_IdxOrderByManufacturedDateAsc(store.getIdx(), productIdx);
+                .findByStoreAndProductForUpdate(store.getIdx(), productIdx);
         int availableTotal = lots.stream().mapToInt(PosStoreInventory::getCount).sum();
         if (availableTotal < amount) {
             Map<String, Object> detail = new LinkedHashMap<>();

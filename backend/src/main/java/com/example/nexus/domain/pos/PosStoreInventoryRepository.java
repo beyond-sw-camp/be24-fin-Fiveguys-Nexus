@@ -1,7 +1,9 @@
 package com.example.nexus.domain.pos;
 
 import com.example.nexus.domain.pos.model.PosStoreInventory;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -17,5 +19,17 @@ public interface PosStoreInventoryRepository extends JpaRepository<PosStoreInven
             """)
     List<PosStoreInventory> findByStoreIdxWithStoreAndProduct(@Param("storeIdx") Long storeIdx);
 
-    List<PosStoreInventory> findByStore_IdxAndProduct_IdxOrderByManufacturedDateAsc(Long storeIdx, Long productIdx);
+    // 결제 FIFO 차감 시 동시성 제어
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+            SELECT p FROM PosStoreInventory p
+            WHERE p.store.idx = :storeIdx
+              AND p.product.idx = :productIdx
+            ORDER BY p.manufacturedDate ASC
+            """)
+    List<PosStoreInventory> findByStoreAndProductForUpdate(
+            @Param("storeIdx") Long storeIdx,
+            @Param("productIdx") Long productIdx
+    );
+
 }

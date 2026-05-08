@@ -97,7 +97,9 @@ public class OrdersService {
     // 기간, 키워드 조건으로 필터링 + 페이징 처리
     // 각 발주에 대해 같은 매장의 최근 N개월 평균 수량 계산
     public Page<DangerDto.DangerListRes> findDangerOrders(LocalDate startDate, LocalDate endDate, String keyword, Pageable pageable) {
-        Specification<Orders> spec = OrdersSpecification.isDangerTrue();
+        Specification<Orders> spec = OrdersSpecification.isDangerTrue()
+                .and(OrdersSpecification.statusIn(List.of(
+                        OrdersStatus.CONFIRMED, OrdersStatus.APPROVE, OrdersStatus.REJECT)));
 
         if (startDate != null) {
             spec = spec.and(OrdersSpecification.createdAfter(startDate));

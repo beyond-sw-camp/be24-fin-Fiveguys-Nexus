@@ -324,7 +324,7 @@
               <div v-for="cat in categoriesList" :key="cat.idx"
                    class="flex items-center justify-between px-4 py-2.5 hover:bg-gray-50 transition-colors">
                 <span class="text-sm font-medium text-gray-700">{{ cat.categoryName }}</span>
-                <button @click="deleteCategoryAction(cat.idx, cat.categoryName)" class="text-gray-300 hover:text-red-500 transition-colors cursor-pointer">
+                <button @click="openDeleteCategoryConfirm(cat.idx, cat.categoryName)" class="text-gray-300 hover:text-red-500 transition-colors cursor-pointer">
                   <Trash2 class="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -339,6 +339,13 @@
       </div>
     </div>
     <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
+    <ConfirmModal
+      :open="confirmState.open"
+      :title="`'${confirmState.name}' 카테고리를 삭제하시겠습니까?`"
+      confirm-text="삭제"
+      type="danger"
+      @close="closeConfirm"
+      @confirm="deleteCategoryAction" />
   </div>
 </template>
 
@@ -346,9 +353,18 @@
 import { ref, computed , onMounted} from 'vue'
 import {Plus, Trash2, Search, Image as ImageIcon, ChevronDown, Tag} from 'lucide-vue-next'
 import Toast from '@/components/common/Toast.vue'
+import ConfirmModal from '@/components/common/ConfirmModal.vue'
 import { useToast } from '@/composables/useToast'
 
 const { toast, showToast } = useToast()
+
+const confirmState = ref({ open: false, idx: null, name: '' })
+function openDeleteCategoryConfirm(idx, name) {
+  confirmState.value = { open: true, idx, name }
+}
+function closeConfirm() {
+  confirmState.value = { open: false, idx: null, name: '' }
+}
 
 // ─────────────────────────────────────────────
 //  상품 목록 (매장 제품 관리의 제품코드와 동일하게 맞춤)
@@ -569,8 +585,9 @@ async function addCategoryAction() {
   }
 }
 
-async function deleteCategoryAction(idx, name) {
-  if (!confirm(`'${name}' 카테고리를 삭제하시겠습니까?`)) return
+async function deleteCategoryAction() {
+  const { idx } = confirmState.value
+  closeConfirm()
   try {
     await deleteCategory(idx)
     await fetchCategories()

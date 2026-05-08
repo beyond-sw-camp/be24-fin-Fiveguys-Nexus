@@ -250,7 +250,7 @@ public class MenuService {
             if (!category.isDeleted()) {
                 throw new BaseException(DUPLICATE_CATEGORY_NAME);
             }
-            category.remenu();
+            category.recategory();
         } else {
             menuCategoryRepository.save(MenuCategory.builder()
                     .menuCategoryName(dto.getMenuCategoryName())

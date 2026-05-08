@@ -28,7 +28,7 @@ public class MenuCategory {
         this.menuCategoryName = menuCategoryName;
     }
 
-    public void remenu() {
+    public void recategory() {
         this.isDeleted = false;
     }
 

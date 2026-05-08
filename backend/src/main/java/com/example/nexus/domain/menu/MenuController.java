@@ -77,13 +77,13 @@ public class MenuController {
 
     // 메뉴 카테고리 등록
     @PostMapping("/category/register")
-    public ResponseEntity menuCategoryReg(@RequestBody MenuDto.MenuCategoryRegReq dto){
+    public ResponseEntity menuCategoryReg(@Valid @RequestBody MenuDto.MenuCategoryRegReq dto){
         menuService.menucategoryReg(dto);
         return ResponseEntity.ok(BaseResponse.success("성공"));
     }
 
     // 메뉴 카테고리 삭제
-    @PutMapping("/category/delete/{categoryIdx}")
+    @DeleteMapping("/category/delete/{categoryIdx}")
     public ResponseEntity menuCategoryDelete(@PathVariable Long categoryIdx ){
         menuService.menuCategoryDelete(categoryIdx);
         return ResponseEntity.ok(BaseResponse.success("성공"));

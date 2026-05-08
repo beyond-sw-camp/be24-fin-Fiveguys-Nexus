@@ -48,6 +48,15 @@
       :loading="isClosingStore"
       @close="showCloseModal = false"
       @confirm="confirmClose" />
+
+    <ConfirmModal
+      :open="confirmState.open"
+      :title="confirmState.title"
+      :message="confirmState.message"
+      :confirm-text="confirmState.confirmText"
+      :type="confirmState.type"
+      @close="closeConfirm"
+      @confirm="handleConfirm" />
   </div>
 </template>
 
@@ -64,6 +73,7 @@ import Toast from '@/components/common/Toast.vue'
 import { useToast } from '@/composables/useToast'
 import PosPaymentMethodModal from '@/components/pos/PosPaymentMethodModal.vue'
 import PosCloseStoreModal from '@/components/pos/PosCloseStoreModal.vue'
+import ConfirmModal from '@/components/common/ConfirmModal.vue'
 
 const auth = useAuthStore()
 
@@ -75,6 +85,18 @@ const showCloseModal = ref(false)
 const isClosingStore = ref(false)
 const currentTime = ref('')
 const { toast, showToast } = useToast()
+const confirmState = ref({ open: false, title: '', message: '', type: 'info', confirmText: '확인', action: null })
+function openConfirm({ title, message, type, confirmText, action }) {
+  confirmState.value = { open: true, title, message: message || '', type: type || 'info', confirmText: confirmText || '확인', action }
+}
+function closeConfirm() {
+  confirmState.value = { open: false, title: '', message: '', type: 'info', confirmText: '확인', action: null }
+}
+async function handleConfirm() {
+  const action = confirmState.value.action
+  closeConfirm()
+  if (action) await action()
+}
 const loadingMenus = ref(true)
 
 let timer = null
@@ -266,7 +288,13 @@ function removeFromCart(menuIdx) {
 }
 
 function clearCart() {
-  if (cart.value.length > 0 && confirm('장바구니를 모두 비우시겠습니까?')) cart.value = []
+  if (cart.value.length === 0) return
+  openConfirm({
+    title: '장바구니를 모두 비우시겠습니까?',
+    type: 'warning',
+    confirmText: '비우기',
+    action: () => { cart.value = [] },
+  })
 }
 
 function openPaymentModal() {
@@ -299,11 +327,19 @@ async function processPayment(method) {
 function toggleStoreStatus() {
   if (!salesData.value.isClosed) {
     showCloseModal.value = true
-  } else if (confirm('새로운 영업을 시작하시겠습니까?\n기존 매출 및 결제 내역이 모두 초기화됩니다.')) {
-    Object.assign(salesData.value, { isClosed: false, total: 0, card: 0, cash: 0, count: 0 })
-    saveClosedStatus(false)
-    paymentHistory.value = []
-    showToast('새로운 영업이 시작되었습니다.')
+  } else {
+    openConfirm({
+      title: '새로운 영업을 시작하시겠습니까?',
+      message: '기존 매출 및 결제 내역이 모두 초기화됩니다.',
+      type: 'warning',
+      confirmText: '영업 시작',
+      action: () => {
+        Object.assign(salesData.value, { isClosed: false, total: 0, card: 0, cash: 0, count: 0 })
+        saveClosedStatus(false)
+        paymentHistory.value = []
+        showToast('새로운 영업이 시작되었습니다.')
+      },
+    })
   }
 }
 

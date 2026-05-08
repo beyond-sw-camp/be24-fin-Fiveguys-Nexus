@@ -10,9 +10,23 @@ import StoreOrderRejectModal from '@/components/orders/store/StoreOrderRejectMod
 import StoreItemDeleteModal from '@/components/orders/store/StoreItemDeleteModal.vue'
 import ordersApi from '@/api/orders'
 import Toast from '@/components/common/Toast.vue'
+import ConfirmModal from '@/components/common/ConfirmModal.vue'
 import { useToast } from '@/composables/useToast'
 
 const { toast, showToast } = useToast()
+
+const confirmState = ref({ open: false, title: '', confirmText: '확인', action: null })
+function openConfirm({ title, confirmText, action }) {
+  confirmState.value = { open: true, title, confirmText, action }
+}
+function closeConfirm() {
+  confirmState.value = { open: false, title: '', confirmText: '확인', action: null }
+}
+async function handleConfirm() {
+  const action = confirmState.value.action
+  closeConfirm()
+  if (action) await action()
+}
 
 const activeTab = ref('pending')
 const selectedOrder = ref(null)
@@ -129,16 +143,21 @@ async function confirmDeleteItem() {
   }
 }
 
-async function cancelOrder(order) {
-  if (!confirm('발주를 취소하시겠습니까?')) return
-  try {
-    await ordersApi.cancelOrder(order.idx)
-    order.ordersStatus = 'CANCELLED'
-    showToast('발주가 취소되었습니다.')
-  } catch (e) {
-    console.error('발주 취소 실패', e)
-    showToast('발주 취소에 실패했습니다.', 'error')
-  }
+function cancelOrder(order) {
+  openConfirm({
+    title: '발주를 취소하시겠습니까?',
+    confirmText: '취소',
+    action: async () => {
+      try {
+        await ordersApi.cancelOrder(order.idx)
+        order.ordersStatus = 'CANCELLED'
+        showToast('발주가 취소되었습니다.')
+      } catch (e) {
+        console.error('발주 취소 실패', e)
+        showToast('발주 취소에 실패했습니다.', 'error')
+      }
+    },
+  })
 }
 
 const showManualForm = ref(false)
@@ -199,5 +218,12 @@ async function submitManualOrder(data) {
     <StoreItemDeleteModal :item="deleteTarget.item" :visible="isDeleteModalOpen"
       @close="isDeleteModalOpen = false" @confirm="confirmDeleteItem" />
     <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
+    <ConfirmModal
+      :open="confirmState.open"
+      :title="confirmState.title"
+      :confirm-text="confirmState.confirmText"
+      type="danger"
+      @close="closeConfirm"
+      @confirm="handleConfirm" />
   </div>
 </template>

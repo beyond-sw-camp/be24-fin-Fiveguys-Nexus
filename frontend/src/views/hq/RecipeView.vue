@@ -4,9 +4,18 @@ import {Plus, Search, Image as ImageIcon, Tag, Trash2, ChevronRight, ChevronLeft
 import {getProductList, getCategoryList, getMenuList, getMenuItemList, getPresignedUrl, postNewRegister, putMenuUpdate, putMenuDelete, postMenuCategoryRegister, deleteCategory} from '@/api/menu/index.js'
 import axios from 'axios'
 import Toast from '@/components/common/Toast.vue'
+import ConfirmModal from '@/components/common/ConfirmModal.vue'
 import { useToast } from '@/composables/useToast'
 
 const { toast, showToast } = useToast()
+
+const confirmState = ref({ open: false, idx: null, name: '' })
+function openDeleteCategoryConfirm(idx, name) {
+  confirmState.value = { open: true, idx, name }
+}
+function closeConfirm() {
+  confirmState.value = { open: false, idx: null, name: '' }
+}
 
 const showCategoryModal = ref(false)
 const newCategoryInput = ref('')
@@ -284,8 +293,9 @@ async function addCategoryAction() {
 }
 
 // 카테고리 삭제
-async function deleteCategoryAction(idx, name) {
-  if (!confirm(`'${name}' 카테고리를 삭제하시겠습니까?`)) return
+async function deleteCategoryAction() {
+  const { idx, name } = confirmState.value
+  closeConfirm()
   try {
     const res = await deleteCategory(idx)
     if (res.data.code === 2000) {
@@ -371,6 +381,13 @@ onMounted(() => {
 <template>
   <div class="p-5 space-y-4">
     <Toast :toast="toast" />
+    <ConfirmModal
+      :open="confirmState.open"
+      :title="`'${confirmState.name}' 카테고리를 삭제하시겠습니까?`"
+      confirm-text="삭제"
+      type="danger"
+      @close="closeConfirm"
+      @confirm="deleteCategoryAction" />
     <div class="flex items-center justify-between">
       <div>
         <h1 class="text-xl font-bold text-gray-900 tracking-tight">메뉴 관리</h1>
@@ -601,21 +618,14 @@ onMounted(() => {
         </div>
       </div>
     </div>
-    <!-- 삭제 확인 모달-->
-    <div v-if="showDeleteConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-black/40 " @click="showDeleteConfirm = false"></div>
-      <div class="relative bg-white rounded-xl w-full max-w-sm border border-gray-200 shadow-xl p-8 text-center animate-in fade-in zoom-in-95 duration-200">
-        <div class="text-4xl mb-4">🗑️</div>
-        <h3 class="font-bold text-gray-900 text-base mb-2">메뉴를 삭제하시겠습니까?</h3>
-        <p class="text-xs text-gray-400 mb-6">이 작업은 되돌릴 수 없습니다.</p>
-        <div class="flex gap-3">
-          <button @click="showDeleteConfirm = false" class="flex-1 py-2.5 rounded-lg border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-50 transition-colors cursor-pointer">취소
-          </button>
-          <button @click="confirmDelete" class="flex-1 py-2.5 rounded-lg bg-red-500 text-white text-sm font-bold hover:bg-red-600 transition-colors cursor-pointer">삭제
-          </button>
-        </div>
-      </div>
-    </div>
+    <ConfirmModal
+      :open="showDeleteConfirm"
+      title="메뉴를 삭제하시겠습니까?"
+      message="이 작업은 되돌릴 수 없습니다."
+      confirm-text="삭제"
+      type="danger"
+      @close="showDeleteConfirm = false"
+      @confirm="confirmDelete" />
     <div v-if="showCategoryModal" class="fixed inset-0 z-50 flex items-center justify-center">
       <div class="absolute inset-0 bg-black/40" @click="showCategoryModal = false"></div>
       <div class="relative bg-white rounded-lg w-full max-w-md border border-gray-200 shadow-xl">
@@ -637,7 +647,7 @@ onMounted(() => {
               <div v-for="cat in categories" :key="cat.categoryIdx"
                    class="flex items-center justify-between px-4 py-2.5 hover:bg-gray-50">
                 <span class="text-sm font-medium text-gray-700">{{ cat.menuCategoryName }}</span>
-                <button @click="deleteCategoryAction(cat.categoryIdx, cat.menuCategoryName)" class="text-gray-300 hover:text-red-500 transition-colors cursor-pointer">
+                <button @click="openDeleteCategoryConfirm(cat.categoryIdx, cat.menuCategoryName)" class="text-gray-300 hover:text-red-500 transition-colors cursor-pointer">
                   <Trash2 class="w-3.5 h-3.5" />
                 </button>
               </div>

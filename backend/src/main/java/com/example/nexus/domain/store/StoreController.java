@@ -18,11 +18,11 @@ public class StoreController {
 
     // [본사] 선택한 가맹점 store_idx로 재고 조회
     @GetMapping("/inventory/list/{storeIdx}")
-    public ResponseEntity<List<StoreInventoryDto.ListRes>> listByStoreIdx(@PathVariable Long storeIdx) {
+    public ResponseEntity<BaseResponse<List<StoreInventoryDto.ListRes>>> listByStoreIdx(@PathVariable Long storeIdx) {
 
         List<StoreInventoryDto.ListRes> result = storeService.listByStoreIdx(storeIdx);
 
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(BaseResponse.success(result));
     }
 
     // [본사] keyword로 가맹점 검색

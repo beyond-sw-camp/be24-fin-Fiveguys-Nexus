@@ -79,8 +79,12 @@ const applyAdjustments = () => {
 
 const applyWaste = () => {
   const changes = draftLots.value
-    .map((row) => ({ ...row, wasteQty: Number(row.wasteQty) }))
-    .filter((row) => Number.isFinite(row.wasteQty) && row.wasteQty > 0 && row.wasteQty <= Number(row.qty))
+    .map((row) => {
+      const qty = Number(row.qty ?? 0)
+      const wasteQty = Number(row.wasteQty ?? 0)
+      return { ...row, qty, wasteQty }
+    })
+    .filter((row) => Number.isFinite(row.wasteQty) && row.wasteQty > 0 && row.wasteQty <= row.qty)
 
   if (!changes.length) return
   emit('apply-waste', changes)

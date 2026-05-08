@@ -79,6 +79,14 @@ const inventory = ref([])
 const currentPage = ref(0)
 const totalPages = ref(0)
 const PAGE_SIZE = 10
+const API_BATCH_SIZE = 5
+
+async function runBatchedRequests(items, requestFn, batchSize = API_BATCH_SIZE) {
+  for (let i = 0; i < items.length; i += batchSize) {
+    const chunk = items.slice(i, i + batchSize)
+    await Promise.all(chunk.map(requestFn))
+  }
+}
 
 function formatDate(value) {
   if (!value) return null
@@ -186,9 +194,7 @@ async function applyLotAdjustments(changes) {
   if (!Array.isArray(changes) || changes.length === 0) return
 
   try {
-    await Promise.all(
-      changes.map((row) => changePosInventoryCount(row.id, row.adjustTo)),
-    )
+    await runBatchedRequests(changes, (row) => changePosInventoryCount(row.id, row.adjustTo))
     await fetchInventory(currentPage.value)
     closeDetail()
     showToast('lot 재고 보정이 완료되었습니다.')
@@ -207,14 +213,12 @@ async function applyWasteAdjustments(changes) {
   const wasteReason = input.trim() || '기타'
 
   try {
-    await Promise.all(
-      changes.map((row) =>
-        createPosWasteLog({
-          posStoreInventoryIdx: row.id,
-          quantity: Number(row.wasteQty),
-          wasteReason,
-        }),
-      ),
+    await runBatchedRequests(changes, (row) =>
+      createPosWasteLog({
+        posStoreInventoryIdx: row.id,
+        quantity: Number(row.wasteQty),
+        wasteReason,
+      }),
     )
     await fetchInventory(currentPage.value)
     closeDetail()

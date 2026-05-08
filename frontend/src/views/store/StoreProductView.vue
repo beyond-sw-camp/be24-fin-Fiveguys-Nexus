@@ -12,16 +12,16 @@
           type="text"
           placeholder="제품명 검색..."
           @input="handleSearch"
-          class="pl-10 pr-4 py-2 rounded-lg border border-gray-200 text-sm w-64 bg-white shadow-sm
-                 focus:border-[#F37321] focus:ring-1 focus:ring-[#F37321] outline-none transition-colors"
+          class="pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 text-sm w-64 bg-white shadow-sm
+                 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none block transition-colors cursor-pointer"
         />
       </div>
       <div class="flex gap-1.5 flex-wrap">
         <button
           @click="changeCategory('전체')"
-          class="px-3 py-1.5 text-sm font-semibold border rounded-lg transition-colors shadow-sm cursor-pointer"
+          class="px-4 py-2 text-sm font-semibold border rounded-lg transition-colors shadow-sm cursor-pointer"
           :class="selectedCategory === '전체'
-            ? 'bg-[#F37321] text-white border-[#F37321]'
+            ? 'bg-blue-500 text-white border-blue-500'
             : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'"
         >
           전체
@@ -30,9 +30,9 @@
           v-for="cat in categories"
           :key="cat.idx"
           @click="changeCategory(cat.categoryName)"
-          class="px-3 py-1.5 text-sm font-semibold border rounded-lg transition-colors shadow-sm cursor-pointer"
+          class="px-4 py-2 text-sm font-semibold border rounded-lg transition-colors shadow-sm cursor-pointer"
           :class="selectedCategory === cat.categoryName
-            ? 'bg-[#F37321] text-white border-[#F37321]'
+            ? 'bg-blue-500 text-white border-blue-500'
             : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'"
         >
           {{ cat.categoryName }}
@@ -61,7 +61,7 @@
           </td>
           <td class="px-5 py-3.5 text-gray-600">{{ p.productUnit }}</td>
           <td class="px-5 py-3.5 font-medium text-gray-900">₩ {{ p.unitPrice?.toLocaleString() }}</td>
-          <td class="px-5 py-3.5 text-xs font-mono" :class="p.dangerDays ? 'text-amber-600 font-semibold' : 'text-gray-400'">
+          <td class="px-5 py-3.5 text-xs font-mono" :class="p.dangerDays ? 'text-blue-600 font-semibold' : 'text-gray-400'">
             {{ p.dangerDays ? `D-${p.dangerDays}` : '-' }}
           </td>
         </tr>
@@ -85,7 +85,7 @@
           v-for="page in totalPages"
           :key="page"
           class="w-8 h-8 rounded text-sm font-semibold cursor-pointer"
-          :class="currentPage === page - 1 ? 'bg-[#F37321] text-white' : 'text-gray-500 hover:bg-gray-50'"
+          :class="currentPage === page - 1 ? 'bg-blue-500 text-white' : 'text-gray-500 hover:bg-gray-50'"
           @click="goToPage(page - 1)"
         >
           {{ page }}
@@ -103,26 +103,23 @@
 </template>
 
 <script setup>
+// 스크립트 로직은 이전과 동일하므로 유지됩니다.
 import { ref, computed, onMounted } from 'vue'
 import { Search, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import { getStoreProductList, searchStoreProduct } from '@/api/product'
 import { readCategoryList } from '@/api/category'
 
-// --- 상태 관리 ---
 const categories = ref([])
-const products = ref({ productList: [] }) // 데이터 구조 통일
+const products = ref({ productList: [] })
 const selectedCategory = ref('전체')
 const searchQuery = ref('')
-
 const currentPage = ref(0)
 const pageSize = ref(10)
 const totalPages = ref(1)
 
-// --- 데이터 로딩 ---
 const fetchCategories = async () => {
   try {
     const response = await readCategoryList()
-    // BaseResponse의 result 필드에서 데이터 추출
     categories.value = response.data.result || []
   } catch (error) {
     console.error('카테고리 로드 실패:', error)
@@ -132,13 +129,11 @@ const fetchCategories = async () => {
 const fetchStoreProducts = async () => {
   try {
     const response = await getStoreProductList(currentPage.value, pageSize.value)
-    const result = response.data.result // Page 객체 (content, totalPages 포함)
-
+    const result = response.data.result
     if (result && result.content) {
       products.value = { productList: result.content }
       totalPages.value = result.totalPages
     } else {
-      // 혹시나 Page 구조가 아닐 경우의 예외 처리
       products.value = { productList: result || [] }
       totalPages.value = 1
     }
@@ -152,7 +147,6 @@ onMounted(() => {
   fetchStoreProducts()
 })
 
-// --- 페이징 및 카테고리 변경 ---
 const goToPage = (page) => {
   if (page < 0 || page >= totalPages.value) return
   currentPage.value = page
@@ -161,23 +155,17 @@ const goToPage = (page) => {
 
 const changeCategory = (name) => {
   selectedCategory.value = name
-  // 백엔드 API가 카테고리별 조회를 지원하지 않는다면 프론트에서 필터링(computed)만 수행
 }
 
-// --- 검색 (백엔드 연동) ---
 const handleSearch = async () => {
-  // 검색어가 없으면 일반 목록 재조회
   if (!searchQuery.value.trim()) {
     currentPage.value = 0
     await fetchStoreProducts()
     return
   }
-
   try {
     const response = await searchStoreProduct(searchQuery.value)
-    const searchResult = response.data.result || [] // List<ListRes> 형식
-
-    // 검색 결과 구조 맞춤 (검색은 보통 페이징 없이 전체 리스트로 옴)
+    const searchResult = response.data.result || []
     products.value = { productList: searchResult }
     totalPages.value = 1
     currentPage.value = 0
@@ -186,7 +174,6 @@ const handleSearch = async () => {
   }
 }
 
-// --- 최종 필터링된 결과 ---
 const filteredProducts = computed(() => {
   const list = products.value.productList || []
   if (selectedCategory.value === '전체') return list

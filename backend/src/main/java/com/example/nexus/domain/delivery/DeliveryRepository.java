@@ -3,6 +3,7 @@ package com.example.nexus.domain.delivery;
 import com.example.nexus.common.enums.DeliveryStatus;
 import com.example.nexus.domain.delivery.model.Delivery;
 import com.example.nexus.domain.orders.model.Orders;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -39,12 +40,13 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
             "AND (:year IS NULL OR FUNCTION('YEAR', d.departureDate) = :year) " +
             "AND (:month IS NULL OR FUNCTION('MONTH', d.departureDate) = :month) " +
             "AND (:day IS NULL OR FUNCTION('DAY', d.departureDate) = :day)")
-    List<Delivery> findAllByFilters(
+    Page<Delivery> findAllByHeadFilters(
             @Param("storeName") String storeName,
             @Param("status") DeliveryStatus status,
             @Param("year") Integer year,
             @Param("month") Integer month,
-            @Param("day") Integer day);
+            @Param("day") Integer day,
+            Pageable pageable);
 
     // 가맹점 배송 현황 - 전체 조회
     @Query("SELECT d FROM Delivery d JOIN FETCH d.orders o JOIN FETCH o.store s WHERE s.idx = :storeIdx")
@@ -60,13 +62,14 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
             "AND (:year IS NULL OR FUNCTION('YEAR', d.departureDate) = :year) " +
             "AND (:month IS NULL OR FUNCTION('MONTH', d.departureDate) = :month) " +
             "AND (:day IS NULL OR FUNCTION('DAY', d.departureDate) = :day)")
-    List<Delivery> findAllByStoreFilters(
+    Page<Delivery> findAllByStoreFilters(
             @Param("storeIdx") Long storeIdx,
             @Param("orderIdx") Long orderIdx,
             @Param("status") DeliveryStatus status,
             @Param("year") Integer year,
             @Param("month") Integer month,
-            @Param("day") Integer day);
+            @Param("day") Integer day,
+            Pageable pageable);
 
     // 본사 대시보드 - 진행중 배송 건수 KPI (여러 상태 합산)
     long countByDeliveryStatusIn(List<DeliveryStatus> statuses);

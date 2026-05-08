@@ -231,7 +231,7 @@ public class MenuService {
 
     @Transactional(readOnly = true)
     public List<MenuDto.MenuCategoryRes> menucategory() {
-        List<MenuCategory> res = menuCategoryRepository.findAll();
+        List<MenuCategory> res = menuCategoryRepository.findAllByIsDeletedFalse();
         List<MenuDto.MenuCategoryRes> result = new ArrayList<>();
 
         for (MenuCategory data: res){

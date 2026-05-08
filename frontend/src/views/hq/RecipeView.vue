@@ -1,7 +1,7 @@
 <script setup>
 import {ref, computed, onMounted, reactive} from 'vue'
 import {Plus, Search, Image as ImageIcon, Tag, Trash2} from 'lucide-vue-next'
-import {getProductList, getCategoryList, getMenuList, getMenuItemList, getPresignedUrl, postNewRegister, putMenuUpdate, putMenuDelete} from '@/api/menu/index.js'
+import {getProductList, getCategoryList, getMenuList, getMenuItemList, getPresignedUrl, postNewRegister, putMenuUpdate, putMenuDelete, postMenuCategoryRegister} from '@/api/menu/index.js'
 import axios from 'axios'
 
 const showCategoryModal = ref(false)
@@ -34,7 +34,6 @@ const getInFrom = () => ({
   imgPath: '',
   imgName:'',
   menuCategoryIdx: null,
-  // MenuItemReq 구조에 맞춘 배열
   menuItemList: [
     {
       productIdx: '',
@@ -101,22 +100,16 @@ async function openEditMenuModal(menu) {
 
     // 2. getInFrom()의 표준 구조를 가져와서 데이터를 '재조립' 합니다.
     const form = getInFrom();
-
-    // [중요] 응답 데이터에 맞춰 필드 매핑
     form.menuName = detail.menuName;
     form.price = detail.price;
 
-    // 이미지 경로의 경우 공백이 포함될 수 있으므로 trim() 처리
     form.imgPath = detail.imgPath ? detail.imgPath.trim() : "";
     form.imgName = detail.imgPath ? detail.imgPath.trim() : "";
 
-    // [카테고리] v-model은 IDX(숫자)를 바라보므로, 목록(menu)에서 가져온 idx를 사용합니다.
     form.menuCategoryIdx = categories.value.find(
       c => c.menuCategoryName === detail.menuCategory
     )?.categoryIdx ?? null;
 
-
-    // [재료 목록] 응답의 'idx'를 'productIdx'로 매핑
     form.menuItemList = detail.menuItemList.map(i => {
       const isStandardUnit = UNIT_OPTIONS.includes(i.menuUnit);
       return {
@@ -127,11 +120,9 @@ async function openEditMenuModal(menu) {
       };
     });
 
-    // 3. 폼 상태 업데이트
     menuForm.value = form;
     console.log(menuForm.value)
 
-    // 가격 표시 업데이트 (toLocaleString은 숫자에만 작동하므로 안전하게 처리)
     formattedPriceInput.value = (detail.price || 0).toLocaleString('ko-KR');
 
     showMenuModal.value = true;
@@ -164,7 +155,7 @@ function removeIngredientRow(idx) {
   menuForm.value.menuItemList.splice(idx, 1)
 }
 
-// 이미지
+// 이미지 등록
 function handleImageChange(e) {
   const file = e.target.files[0]
   if (!file) return;
@@ -268,13 +259,23 @@ async function saveMenu() {
 // 카테고리 추가
 async function addCategoryAction() {
   const name = newCategoryInput.value.trim()
+  console.log(name)
   if (!name) return
   try {
-    await createCategory(name)
-    newCategoryInput.value = ''
-    await categoryRes()
+    const categoryName = {
+      menuCategoryName: name
+    }
+    const res = await postMenuCategoryRegister(categoryName)
+    console.log(res)
+    if (res.data.code === 2000) {
+      alert("카테고리가 등록되었습니다.");
+
+      newCategoryInput.value = ''
+      await categoryRes()
+    }
   } catch (error) {
-    alert('카테고리 등록 실패')
+    const serverMessage = error.response?.data?.message || error.message;
+    alert(`등록 실패 : ${serverMessage}`);
   }
 }
 

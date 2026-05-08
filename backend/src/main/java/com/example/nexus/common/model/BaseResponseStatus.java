@@ -34,6 +34,7 @@ public enum BaseResponseStatus {
     NOT_FOUND_PRODUCT(false, 3202, "제품을 찾을 수 없습니다."),
     DUPLICATE_MENU_NAME(false, 3203, "이미 사용중인 메뉴명입니다."),
     NOT_FOUND_MENU(false, 3204, "존재하지 않는 메뉴입니다."),
+    DUPLICATE_CATEGORY_NAME(false, 3205, "이미 존재하는 카테고리입니다."),
 
 
     // 4000번대 실패

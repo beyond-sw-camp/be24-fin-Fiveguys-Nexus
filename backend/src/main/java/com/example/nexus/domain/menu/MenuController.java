@@ -36,14 +36,6 @@ public class MenuController {
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 
-
-    // 메뉴 카테고리 조회
-    @GetMapping("/category/list")
-    public ResponseEntity menuCategory(){
-        List<MenuDto.MenuCategoryRes> result =  menuService.menucategory();
-        return ResponseEntity.ok(BaseResponse.success(result));
-    }
-
     // S3 Pre-signed URL 요청
     @GetMapping("/presignedUrl/{fileName}")
     public ResponseEntity presignedUrl(@PathVariable(name = "fileName") String fileName){
@@ -73,6 +65,20 @@ public class MenuController {
     @PutMapping("/delete/{menuIdx}")
     public ResponseEntity menuDelete(@PathVariable(name = "menuIdx") Long menuIdx){
         menuService.menuDelete(menuIdx);
+        return ResponseEntity.ok(BaseResponse.success("성공"));
+    }
+
+    // 메뉴 카테고리 조회
+    @GetMapping("/category/list")
+    public ResponseEntity menuCategory(){
+        List<MenuDto.MenuCategoryRes> result =  menuService.menucategory();
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
+
+    // 메뉴 카테고리 등록
+    @PostMapping("/category/register")
+    public ResponseEntity menuCategoryReg(@RequestBody MenuDto.MenuCategoryRegReq dto){
+        menuService.menucategoryReg(dto);
         return ResponseEntity.ok(BaseResponse.success("성공"));
     }
 }

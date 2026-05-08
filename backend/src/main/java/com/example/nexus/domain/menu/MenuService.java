@@ -236,4 +236,21 @@ public class MenuService {
 
         menu.deleteTrue();
     }
+
+    @Transactional
+    public void menucategoryReg(MenuDto.MenuCategoryRegReq dto) {
+        Optional<MenuCategory> existing = menuCategoryRepository.findByMenuCategoryName(dto.getMenuCategoryName());
+
+        if (existing.isPresent()) {
+            MenuCategory category = existing.get();
+            if (!category.isDeleted()) {
+                throw new BaseException(DUPLICATE_CATEGORY_NAME);
+            }
+            category.remenu();
+        } else {
+            menuCategoryRepository.save(MenuCategory.builder()
+                    .menuCategoryName(dto.getMenuCategoryName())
+                    .build());
+        }
+    }
 }

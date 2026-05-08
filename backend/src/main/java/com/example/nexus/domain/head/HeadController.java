@@ -23,9 +23,10 @@ public class HeadController {
 
     // 본사 재고 조회
     @GetMapping("/inventory/list")
-    public ResponseEntity<List<HeadInventoryDto.ListRes>> list(){
+    public ResponseEntity<BaseResponse<List<HeadInventoryDto.ListRes>>> list(){
         List<HeadInventoryDto.ListRes> result = headService.list();
-        return ResponseEntity.ok(result);
+
+        return ResponseEntity.ok(BaseResponse.success(result));
     }
 
     // 본사 정산 내역 조회

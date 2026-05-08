@@ -37,7 +37,7 @@ public class SettlementService {
 //                .sum();
 
         List<HeadIncome> headIncomePriceList = new ArrayList<>();
-        headIncomePriceList = headIncomeRepository.findBySettlementIdx(dto.getSettlementIdx() + 1);
+        headIncomePriceList = headIncomeRepository.findBySettlementIdx(dto.getSettlementIdx());
 
         long totalPrice = 0;
 
@@ -52,7 +52,7 @@ public class SettlementService {
             settlement.setPgPaymentId(dto.getPaymentId());
 
             // 관련 head_income도 status=true로 업데이트 (paid 상태로 표시)
-            List<HeadIncome> headIncomeList = headIncomeRepository.findBySettlementIdx(dto.getSettlementIdx() + 1);
+            List<HeadIncome> headIncomeList = headIncomeRepository.findBySettlementIdx(dto.getSettlementIdx());
             for (HeadIncome headIncome : headIncomeList) {
                 headIncome.setStatus(true);
                 headIncomeRepository.save(headIncome);

@@ -1,10 +1,10 @@
 import api from '@/plugins/axiosinterceptor'
 
-export const getStoreList = (searchReq, page, size) => {
+export const getStoreList = (searchReq = {}, page = 0, size = 10) => {
   return api.get('/store/list', {
     params: {
-      keyword: searchReq.keyword,
-      status: searchReq.status,
+      keyword: searchReq?.keyword ?? '',
+      status: searchReq?.status ?? null,
       page: page,
       size: size
     }

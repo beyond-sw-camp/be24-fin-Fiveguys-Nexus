@@ -24,7 +24,7 @@ import { ref, computed, onMounted } from 'vue'
 import InventoryHistoryHeader from '@/components/inventory/InventoryHistoryHeader.vue'
 import InventoryHistoryFilters from '@/components/inventory/InventoryHistoryFilters.vue'
 import InventoryHistoryTable from '@/components/inventory/InventoryHistoryTable.vue'
-import { getStoreList } from '@/api/store/index.js'
+import { searchStoreList } from '@/api/store/index.js'
 import { getInventoryMovements } from '@/api/inventory/index.js'
 import { resolveDisplayTypeLabel } from '@/constants/inventoryHistoryDisplay.js'
 
@@ -76,7 +76,7 @@ async function loadData() {
   loadError.value = ''
   loading.value = true
   try {
-    const [storesRes, movRes] = await Promise.all([getStoreList(), getInventoryMovements()])
+    const [storesRes, movRes] = await Promise.all([searchStoreList(''), getInventoryMovements()])
     const storeRows = storesRes.data?.result ?? []
     stores.value = storeRows
     const storeNameByIdx = new Map(storeRows.map((s) => [Number(s.idx), s.storeName]))

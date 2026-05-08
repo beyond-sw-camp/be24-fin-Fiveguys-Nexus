@@ -96,6 +96,19 @@ public class StoreService {
         return StoreDto.StorePageRes.from(result);
     }
 
+    // 리스트 total 리스트
+    @Transactional(readOnly = true)
+    public StoreDto.StoreTotalRes storeTotalList() {
+        Long activeCount = storeRepository.countByIsDeletedFalse();
+        Long closedCount = storeRepository.countByIsDeletedTrue();
+
+        return StoreDto.StoreTotalRes.builder()
+                .totalCount(activeCount+closedCount)
+                .activeCount(activeCount)
+                .closedCount(closedCount)
+                .build();
+    }
+
     public List<StoreDto.StoreSearchRes> searchByStoreName(StoreDto.StoreSearchReq reqDto) {
         String keyword = reqDto.getKeyword();
         String searchKeyword = keyword.trim();

@@ -46,6 +46,12 @@ public class StoreController {
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 
+    @GetMapping("/totalCount/list")
+    public ResponseEntity storeTotalList(){
+        StoreDto.StoreTotalRes result = storeService.storeTotalList();
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
+
 
     // 가맹점 목록 상세 조회
     @GetMapping("/detail/list/{storeIdx}")

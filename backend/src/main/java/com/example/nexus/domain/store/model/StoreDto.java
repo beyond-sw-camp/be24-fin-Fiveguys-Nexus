@@ -60,6 +60,15 @@ public class StoreDto {
         }
     }
 
+    // 가맹점 수 조회
+    @Getter
+    @Builder
+    public static class StoreTotalRes{
+        private Long totalCount;   // 총 가맹점 수
+        private Long activeCount;  // 입점
+        private Long closedCount;  // 폐점
+    }
+
     @Builder
     @Getter
     // 가맹점 목록 상세 조회

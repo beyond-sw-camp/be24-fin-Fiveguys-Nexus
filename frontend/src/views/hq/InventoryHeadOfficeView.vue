@@ -60,7 +60,7 @@ function formatDate(value) {
 async function fetchInventoryList() {
   try {
     const response = await api.getHeadInventoryList()
-    const inventoryList = response?.data
+    const inventoryList = response?.data?.result
     items.value = Array.isArray(inventoryList) ? inventoryList.map(toItem) : []
   } catch (error) {
     console.error('Failed to fetch inventory list:', error)

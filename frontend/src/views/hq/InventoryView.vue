@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { RouterLink } from 'vue-router'
-import { History } from 'lucide-vue-next'
+import { ChevronLeft, ChevronRight, History } from 'lucide-vue-next'
 import { getStoreInventoryByStore, searchStoreList } from '@/api/store'
 import { useInventoryCommon } from '@/composables/useInventoryCommon'
 import InventoryStatusFilters from '@/components/inventory/InventoryStatusFilters.vue'
@@ -18,6 +18,9 @@ const storeList = ref([])
 const items = ref([])
 const listLoading = ref(false)
 const listError = ref('')
+const currentPage = ref(0)
+const totalPages = ref(0)
+const PAGE_SIZE = 10
 let searchDebounceTimer = null
 const SEARCH_DEBOUNCE_MS = 250
 
@@ -127,20 +130,27 @@ function handleStoreListError(error) {
   listError.value = '매장 목록을 불러오지 못했습니다.'
 }
 
-async function fetchStoreInventory() {
+async function fetchStoreInventory(page = 0) {
   if (!selectedStoreIdx.value) {
     items.value = []
+    currentPage.value = 0
+    totalPages.value = 0
     return
   }
   listLoading.value = true
   listError.value = ''
   try {
-    const { data } = await getStoreInventoryByStore(selectedStoreIdx.value)
-    const list = Array.isArray(data?.result) ? data.result : []
+    const { data } = await getStoreInventoryByStore(selectedStoreIdx.value, page, PAGE_SIZE)
+    const pageResult = data?.result
+    const list = Array.isArray(pageResult?.content) ? pageResult.content : []
+    currentPage.value = Number(pageResult?.number ?? 0)
+    totalPages.value = Number(pageResult?.totalPages ?? 0)
     items.value = aggregateInventoryRows(list)
   } catch (error) {
     console.error('Failed to fetch store inventory:', error)
     items.value = []
+    currentPage.value = 0
+    totalPages.value = 0
     listError.value = '해당 매장 재고를 불러오지 못했습니다.'
   } finally {
     listLoading.value = false
@@ -190,7 +200,7 @@ watch(storeSearch, (keyword) => {
 watch(selectedStoreIdx, (value) => {
   // 매장 선택이 바뀌면 해당 매장 재고를 즉시 조회한다.
   if (!value) return
-  fetchStoreInventory()
+  fetchStoreInventory(0)
 })
 
 function getStatus(item) {
@@ -265,6 +275,32 @@ onBeforeUnmount(() => {
       :get-status-class="getStatusClass"
       @open-detail="openDetail"
     />
+
+    <div v-if="totalPages > 1" class="flex justify-center items-center gap-2 pt-2">
+      <button
+        class="p-2 rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+        :disabled="currentPage === 0"
+        @click="fetchStoreInventory(currentPage - 1)"
+      >
+        <ChevronLeft class="w-4 h-4" />
+      </button>
+      <button
+        v-for="page in totalPages"
+        :key="page"
+        class="w-8 h-8 rounded text-sm font-semibold cursor-pointer"
+        :class="currentPage === page - 1 ? 'bg-[#F37321] text-white' : 'text-gray-500 hover:bg-gray-50'"
+        @click="fetchStoreInventory(page - 1)"
+      >
+        {{ page }}
+      </button>
+      <button
+        class="p-2 rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+        :disabled="currentPage === totalPages - 1"
+        @click="fetchStoreInventory(currentPage + 1)"
+      >
+        <ChevronRight class="w-4 h-4" />
+      </button>
+    </div>
 
     <InventoryDetailModal
       :item="detailItem"

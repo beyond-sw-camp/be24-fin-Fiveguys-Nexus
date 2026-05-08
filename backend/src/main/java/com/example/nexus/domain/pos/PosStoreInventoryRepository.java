@@ -2,6 +2,8 @@ package com.example.nexus.domain.pos;
 
 import com.example.nexus.domain.pos.model.PosStoreInventory;
 import jakarta.persistence.LockModeType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -18,6 +20,34 @@ public interface PosStoreInventoryRepository extends JpaRepository<PosStoreInven
             WHERE p.store.idx = :storeIdx
             """)
     List<PosStoreInventory> findByStoreIdxWithStoreAndProduct(@Param("storeIdx") Long storeIdx);
+
+    @Query(
+            value = """
+                    SELECT DISTINCT p.product.idx
+                    FROM PosStoreInventory p
+                    WHERE p.store.idx = :storeIdx
+                    ORDER BY p.product.idx
+                    """,
+            countQuery = """
+                    SELECT COUNT(DISTINCT p.product.idx)
+                    FROM PosStoreInventory p
+                    WHERE p.store.idx = :storeIdx
+                    """
+    )
+    Page<Long> findPagedProductIdsByStoreIdx(@Param("storeIdx") Long storeIdx, Pageable pageable);
+
+    @Query("""
+            SELECT p FROM PosStoreInventory p
+            JOIN FETCH p.store
+            JOIN FETCH p.product
+            WHERE p.store.idx = :storeIdx
+              AND p.product.idx IN :productIds
+            ORDER BY p.product.idx, p.manufacturedDate
+            """)
+    List<PosStoreInventory> findByStoreIdxAndProductIds(
+            @Param("storeIdx") Long storeIdx,
+            @Param("productIds") List<Long> productIds
+    );
 
     // 결제 FIFO 차감 시 동시성 제어
     @Lock(LockModeType.PESSIMISTIC_WRITE)

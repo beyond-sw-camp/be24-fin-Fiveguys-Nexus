@@ -30,4 +30,6 @@ public interface MenuRepository extends JpaRepository<Menu, Long> {
     Page<Menu> findMenusBySearch(@Param("keyword") String keyword,
                                  @Param("categoryIdx") Long categoryIdx,
                                  Pageable pageable);
+
+    boolean existsByMenuCategoryIdxAndIsDeletedFalse(Long categoryIdx);
 }

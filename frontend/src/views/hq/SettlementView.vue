@@ -185,12 +185,17 @@
       </div>
     </Teleport>
 
+    <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
   </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
 import { Download } from 'lucide-vue-next'
+import Toast from '@/components/common/Toast.vue'
+import { useToast } from '@/composables/useToast'
+
+const { toast, showToast } = useToast()
 
 const selectedMonth = ref('2026-04')
 const activeTab = ref('입점 매장 정산')
@@ -226,12 +231,12 @@ const filteredSettlements = computed(() => {
 })
 
 function downloadStatement(row) {
-  alert(`[INCOME_003] ${row.name} 거래 명세서(PDF) 다운로드`)
+  showToast(`${row.name} 거래 명세서(PDF) 다운로드`)
 }
 
 // 모달 '예' 클릭 시 실행 함수
 function confirmClosing() {
-  alert(`${selectedMonth.value} 재고 마감이 완료되었습니다.`)
+  showToast(`${selectedMonth.value} 재고 마감이 완료되었습니다.`)
   isModalOpen.value = false
 }
 

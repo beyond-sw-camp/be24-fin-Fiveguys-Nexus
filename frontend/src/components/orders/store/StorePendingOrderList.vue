@@ -2,6 +2,10 @@
 import { ClipboardList } from 'lucide-vue-next'
 import { useAddOrderItem } from '@/composables/useAddOrderItem'
 import ordersApi from '@/api/orders'
+import Toast from '@/components/common/Toast.vue'
+import { useToast } from '@/composables/useToast'
+
+const { toast, showToast } = useToast()
 
 defineProps({
   orders: { type: Array, required: true },
@@ -26,7 +30,7 @@ function onCountChange(item) {
       await ordersApi.updateStoreItemCount(item.idx, { count: item.count })
     } catch (e) {
       console.error('수량 수정 실패', e)
-      alert('수량 수정에 실패했습니다.')
+      showToast('수량 수정에 실패했습니다.', 'error')
       emit('refresh')
     }
   }, 500))
@@ -190,5 +194,6 @@ function onCountChange(item) {
       <p class="text-sm">현재 검토 대기 중인 발주서가 없습니다.</p>
       <p class="text-xs mt-1 text-gray-400">발주가 필요한 경우 본사에 문의하세요.</p>
     </div>
+    <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
   </div>
 </template>

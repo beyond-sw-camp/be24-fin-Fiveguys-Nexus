@@ -116,6 +116,7 @@
         </div>
       </div>
     </div>
+    <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
   </div>
 </template>
 
@@ -123,6 +124,10 @@
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/plugins/axiosinterceptor'
+import Toast from '@/components/common/Toast.vue'
+import { useToast } from '@/composables/useToast'
+
+const { toast, showToast } = useToast()
 
 const auth = useAuthStore()
 const isEditing = ref(false)
@@ -159,15 +164,15 @@ async function loadMyPage() {
 onMounted(loadMyPage)
 
 function saveProfile() {
-  alert('프로필 정보가 업데이트되었습니다.')
+  showToast('프로필 정보가 업데이트되었습니다.')
   isEditing.value = false
 }
 
 function changePassword() {
-  if (!pwForm.value.current) { alert('현재 비밀번호를 입력해주세요.'); return }
-  if (pwForm.value.next.length < 8) { alert('새 비밀번호는 8자 이상이어야 합니다.'); return }
-  if (pwForm.value.next !== pwForm.value.confirm) { alert('새 비밀번호가 일치하지 않습니다.'); return }
-  alert('비밀번호가 변경되었습니다.')
+  if (!pwForm.value.current) { showToast('현재 비밀번호를 입력해주세요.', 'error'); return }
+  if (pwForm.value.next.length < 8) { showToast('새 비밀번호는 8자 이상이어야 합니다.', 'error'); return }
+  if (pwForm.value.next !== pwForm.value.confirm) { showToast('새 비밀번호가 일치하지 않습니다.', 'error'); return }
+  showToast('비밀번호가 변경되었습니다.')
   pwForm.value = { current: '', next: '', confirm: '' }
 }
 </script>

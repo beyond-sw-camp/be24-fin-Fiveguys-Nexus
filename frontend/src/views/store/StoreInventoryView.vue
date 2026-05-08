@@ -55,6 +55,7 @@
       @apply-adjustments="applyLotAdjustments"
       @close="closeDetail"
     />
+    <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
   </div>
 </template>
 
@@ -64,6 +65,10 @@ import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import { changePosInventoryCount, getPosInventoryList } from '@/api/pos'
 import InventoryDetailModal from '@/components/inventory/InventoryDetailModal.vue'
 import StoreInventoryTable from '@/components/inventory/StoreInventoryTable.vue'
+import Toast from '@/components/common/Toast.vue'
+import { useToast } from '@/composables/useToast'
+
+const { toast, showToast } = useToast()
 
 const detailTitleId = 'store-inv-detail-title'
 const detailItem = ref(null)
@@ -183,10 +188,10 @@ async function applyLotAdjustments(changes) {
     )
     await fetchInventory()
     closeDetail()
-    alert('lot 재고 보정이 완료되었습니다.')
+    showToast('lot 재고 보정이 완료되었습니다.')
   } catch (error) {
     console.error('Failed to update POS inventory:', error)
-    alert('lot 재고 보정에 실패했습니다.')
+    showToast('lot 재고 보정에 실패했습니다.', 'error')
   }
 }
 

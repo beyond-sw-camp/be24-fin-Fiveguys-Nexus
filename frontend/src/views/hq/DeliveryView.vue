@@ -240,12 +240,17 @@
         </div>
       </div>
     </div>
+    <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { getAllDeliveries, updateDelayReason } from '@/api/delivery'
+import Toast from '@/components/common/Toast.vue'
+import { useToast } from '@/composables/useToast'
+
+const { toast, showToast } = useToast()
 
 // 상태
 const deliveries   = ref([])
@@ -437,7 +442,7 @@ async function saveDelayReason() {
     closeModal()
   } catch (err) {
     console.error('[DeliveryView] 지연 사유 저장 실패:', err)
-    alert('지연 사유 저장에 실패했습니다. 다시 시도해 주세요.')
+    showToast('지연 사유 저장에 실패했습니다. 다시 시도해 주세요.', 'error')
   } finally {
     isSaving.value = false
   }

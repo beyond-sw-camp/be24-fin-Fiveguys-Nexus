@@ -618,21 +618,14 @@ onMounted(() => {
         </div>
       </div>
     </div>
-    <!-- 삭제 확인 모달-->
-    <div v-if="showDeleteConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-black/40 " @click="showDeleteConfirm = false"></div>
-      <div class="relative bg-white rounded-xl w-full max-w-sm border border-gray-200 shadow-xl p-8 text-center animate-in fade-in zoom-in-95 duration-200">
-        <div class="text-4xl mb-4">🗑️</div>
-        <h3 class="font-bold text-gray-900 text-base mb-2">메뉴를 삭제하시겠습니까?</h3>
-        <p class="text-xs text-gray-400 mb-6">이 작업은 되돌릴 수 없습니다.</p>
-        <div class="flex gap-3">
-          <button @click="showDeleteConfirm = false" class="flex-1 py-2.5 rounded-lg border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-50 transition-colors cursor-pointer">취소
-          </button>
-          <button @click="confirmDelete" class="flex-1 py-2.5 rounded-lg bg-red-500 text-white text-sm font-bold hover:bg-red-600 transition-colors cursor-pointer">삭제
-          </button>
-        </div>
-      </div>
-    </div>
+    <ConfirmModal
+      :open="showDeleteConfirm"
+      title="메뉴를 삭제하시겠습니까?"
+      message="이 작업은 되돌릴 수 없습니다."
+      confirm-text="삭제"
+      type="danger"
+      @close="showDeleteConfirm = false"
+      @confirm="confirmDelete" />
     <div v-if="showCategoryModal" class="fixed inset-0 z-50 flex items-center justify-center">
       <div class="absolute inset-0 bg-black/40" @click="showCategoryModal = false"></div>
       <div class="relative bg-white rounded-lg w-full max-w-md border border-gray-200 shadow-xl">

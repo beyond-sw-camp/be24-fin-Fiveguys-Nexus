@@ -1,5 +1,5 @@
 <template>
-  <div v-if="open" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" @click.self="$emit('close')">
+  <div v-if="open" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4" @click.self="$emit('close')">
     <div class="bg-white rounded-xl border border-gray-200 shadow-xl w-full max-w-sm text-center p-8">
       <div
         class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5"
@@ -7,7 +7,7 @@
         <component :is="iconComponent" class="w-8 h-8" :class="iconColorClass" />
       </div>
       <h2 class="text-xl font-bold text-gray-900 mb-2">{{ title }}</h2>
-      <p v-if="message" class="text-sm text-gray-500 mb-8 leading-relaxed">{{ message }}</p>
+      <p v-if="message" class="text-sm text-gray-500 mb-8 leading-relaxed whitespace-pre-line">{{ message }}</p>
       <div class="flex gap-3">
         <button
           type="button"

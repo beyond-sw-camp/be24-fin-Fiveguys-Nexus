@@ -176,32 +176,14 @@
       </div>
     </div>
 
-    <div v-if="isDeleteModalOpen" class="fixed inset-0 z-50 flex items-center justify-center">
-      <div class="absolute inset-0 bg-black/40" @click="closeDeleteModal"></div>
-      <div class="relative w-full max-w-sm bg-white rounded-lg border border-gray-200 shadow-xl p-6">
-        <h3 class="text-base font-bold text-gray-900">계정 삭제</h3>
-        <p class="text-sm text-gray-600 mt-2">
-          <span class="font-semibold">{{ selectedAccount?.name }}</span> 계정을 삭제하시겠습니까?
-        </p>
-        <p class="text-xs text-gray-400 mt-1">삭제된 계정은 복구할 수 없습니다.</p>
-        <div class="flex gap-3 mt-5">
-          <button
-            type="button"
-            @click="closeDeleteModal"
-            class="flex-1 py-2.5 rounded border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 cursor-pointer"
-          >
-            취소
-          </button>
-          <button
-            type="button"
-            @click="confirmDelete"
-            class="flex-1 py-2.5 rounded bg-red-500 text-white text-sm font-bold hover:bg-red-600 cursor-pointer"
-          >
-            삭제
-          </button>
-        </div>
-      </div>
-    </div>
+    <ConfirmModal
+      :open="isDeleteModalOpen"
+      :title="`${selectedAccount?.name} 계정을 삭제하시겠습니까?`"
+      message="삭제된 계정은 복구할 수 없습니다."
+      confirm-text="삭제"
+      type="danger"
+      @close="closeDeleteModal"
+      @confirm="confirmDelete" />
     <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
   </div>
 </template>
@@ -210,6 +192,7 @@
 import { reactive, ref } from 'vue'
 import api from '@/plugins/axiosinterceptor'
 import Toast from '@/components/common/Toast.vue'
+import ConfirmModal from '@/components/common/ConfirmModal.vue'
 import { useToast } from '@/composables/useToast'
 
 const { toast, showToast } = useToast()

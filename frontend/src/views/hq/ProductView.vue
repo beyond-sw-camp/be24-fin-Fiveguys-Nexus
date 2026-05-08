@@ -187,6 +187,7 @@
         </div>
       </div>
     </div>
+    <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
   </div>
 </template>
 
@@ -195,6 +196,10 @@ import { ref, computed, onMounted } from 'vue'
 import { Trash2, Search, Tag, Plus } from 'lucide-vue-next'
 import { createCategory, readCategoryList, deleteCategory } from '@/api/category'
 import { getProductList, addNewProduct, updateProduct, deleteProduct, searchProduct } from '@/api/product'
+import Toast from '@/components/common/Toast.vue'
+import { useToast } from '@/composables/useToast'
+
+const { toast, showToast } = useToast()
 
 // --- 상태 관리 ---
 const categories = ref([])
@@ -302,17 +307,17 @@ async function handleSaveProduct() {
     if (form.value.idx) {
       // 수정 (PUT)
       await updateProduct(form.value.idx, dto)
-      alert('제품 정보가 수정되었습니다.')
+      showToast('제품 정보가 수정되었습니다.')
     } else {
       // 신규 등록 (POST)
       await addNewProduct(dto)
-      alert('새 제품이 등록되었습니다.')
+      showToast('새 제품이 등록되었습니다.')
     }
     showModal.value = false
     await fetchProducts() // 목록 새로고침
   } catch (error) {
     console.error('제품 저장 실패:', error)
-    alert('저장 중 오류가 발생했습니다.')
+    showToast('저장 중 오류가 발생했습니다.', 'error')
   }
 }
 
@@ -323,7 +328,7 @@ async function handleDeleteProduct(idx) {
     await fetchProducts()
   } catch (error) {
     console.error('삭제 실패:', error)
-    alert('삭제 중 오류가 발생했습니다.')
+    showToast('삭제 중 오류가 발생했습니다.', 'error')
   }
 }
 
@@ -336,7 +341,7 @@ async function addCategoryAction() {
     newCategoryInput.value = ''
     await fetchCategories()
   } catch (error) {
-    alert('카테고리 등록 실패')
+    showToast('카테고리 등록 실패', 'error')
   }
 }
 
@@ -347,7 +352,7 @@ async function deleteCategoryAction(idx, name) {
     await fetchCategories()
     if (selectedCategory.value === name) selectedCategory.value = '전체'
   } catch (error) {
-    alert('삭제 실패: 해당 카테고리를 사용하는 제품이 있을 수 있습니다.')
+    showToast('삭제 실패: 해당 카테고리를 사용하는 제품이 있을 수 있습니다.', 'error')
   }
 }
 </script>

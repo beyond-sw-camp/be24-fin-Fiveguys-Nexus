@@ -202,12 +202,17 @@
         </div>
       </div>
     </div>
+    <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
   </div>
 </template>
 
 <script setup>
 import { reactive, ref } from 'vue'
 import api from '@/plugins/axiosinterceptor'
+import Toast from '@/components/common/Toast.vue'
+import { useToast } from '@/composables/useToast'
+
+const { toast, showToast } = useToast()
 
 const STORAGE_KEY = 'nexus_admin_accounts'
 
@@ -293,7 +298,7 @@ async function submitForm() {
 
   if (formMode.value === 'create') {
     if (accounts.value.some((account) => account.email.toLowerCase() === normalizedEmail)) {
-      alert('이미 존재하는 이메일 입니다.')
+      showToast('이미 존재하는 이메일 입니다.', 'error')
       return
     }
 
@@ -324,10 +329,10 @@ async function submitForm() {
         tempPassword = (match?.[1] ?? responseData).trim()
       }
 
-      if (tempPassword) alert(`임시 비밀번호: ${tempPassword}`)
-      else alert('계정이 생성되었습니다.')
+      if (tempPassword) showToast(`임시 비밀번호: ${tempPassword}`)
+      else showToast('계정이 생성되었습니다.')
     } catch (e) {
-      alert('계정 생성에 실패했습니다.')
+      showToast('계정 생성에 실패했습니다.', 'error')
       return
     }
   } else {
@@ -339,7 +344,7 @@ async function submitForm() {
           : account
       )
     )
-    alert('계정이 수정되었습니다.')
+    showToast('계정이 수정되었습니다.')
   }
 
   closeFormModal()
@@ -359,6 +364,6 @@ function confirmDelete() {
   if (!selectedAccount.value) return
   saveAccounts(accounts.value.filter((account) => account.id !== selectedAccount.value.id))
   closeDeleteModal()
-  alert('계정이 삭제되었습니다.')
+  showToast('계정이 삭제되었습니다.')
 }
 </script>

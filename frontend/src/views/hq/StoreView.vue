@@ -3,6 +3,10 @@ import { ref, reactive, onMounted, computed, nextTick } from 'vue'
 import { Plus, Search, FileText, ChevronDown } from 'lucide-vue-next'
 import { getStoreList , getStoreDetailList, getPresignedUrl, postNewRegister, putStoreUpdate} from '@/api/store/index.js'
 import axios from 'axios'
+import Toast from '@/components/common/Toast.vue'
+import { useToast } from '@/composables/useToast'
+
+const { toast, showToast } = useToast()
 
 
 const searchQuery = ref('')
@@ -225,7 +229,7 @@ async function saveStore() {
       const res = await putStoreUpdate(editTarget.value.idx, updateData);
 
       if (res.data.code === 2000) {
-        alert("가맹점 정보가 수정되었습니다.");
+        showToast('가맹점 정보가 수정되었습니다.');
         await storeListRes(pagination.currentPage); // 현재 페이지 목록 새로고침[cite: 14]
         showModal.value = false;
       }
@@ -246,7 +250,7 @@ async function saveStore() {
       const res = await postNewRegister(storeRegDto);
 
       if (res.data.code === 2000) {
-        alert("가맹점이 등록되었습니다.");
+        showToast('가맹점이 등록되었습니다.');
         storesList.length = 0;
         await storeListRes();
       }
@@ -261,7 +265,7 @@ async function saveStore() {
     const serverCode = error.response?.data?.code || "Unknown Code";
 
     console.error("서버 에러 상세:", error.response?.data);
-    alert(`등록 실패 (${serverCode}): ${serverMessage}`);
+    showToast(`등록 실패 (${serverCode}): ${serverMessage}`, 'error');
   }
 }
 // <script setup> 내부에 추가
@@ -285,7 +289,7 @@ const isFormValid = computed(() => {
 // S3 미리보기 (뷰어)
 function viewPdf() {
   const filePath = detailTarget.value?.filePath;
-  if (!filePath) return alert('파일이 없습니다.');
+  if (!filePath) return showToast('파일이 없습니다.', 'error');
 
   const s3BaseUrl = 'https://nexus-store-archive.s3.ap-northeast-2.amazonaws.com/';
   window.open(s3BaseUrl + filePath, '_blank'); // 새 탭에서 열기
@@ -294,7 +298,7 @@ function viewPdf() {
 // S3 다운로드
 async function downloadPdf() {
   const filePath = detailTarget.value?.filePath;
-  if (!filePath) return alert('파일이 없습니다.');
+  if (!filePath) return showToast('파일이 없습니다.', 'error');
 
   const s3BaseUrl = 'https://nexus-store-archive.s3.ap-northeast-2.amazonaws.com/';
   const fileUrl = s3BaseUrl + filePath;
@@ -324,7 +328,7 @@ async function downloadPdf() {
   } catch (error) {
     console.error('다운로드 중 오류 발생:', error);
     // 만약 CORS 에러가 난다면, 가장 단순한 방법인 window.open을 백업으로 사용합니다.
-    alert('브라우저 보안 정책으로 인해 직접 다운로드가 제한되었습니다. 새 탭에서 파일을 엽니다.');
+    showToast('브라우저 보안 정책으로 인해 직접 다운로드가 제한되었습니다. 새 탭에서 파일을 엽니다.', 'error');
     window.open(fileUrl, '_blank');
   }
 }
@@ -763,6 +767,6 @@ onMounted(() => {
         <span class="text-[10px] text-gray-500">▶</span>
       </button>
     </div>
+    <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
   </div>
 </template>
-

@@ -3,8 +3,10 @@ package com.example.nexus.domain.head;
 import com.example.nexus.common.enums.InventoryStatus;
 import com.example.nexus.domain.head.model.HeadInventory;
 import jakarta.persistence.LockModeType;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -17,6 +19,9 @@ public interface HeadInventoryRepository extends JpaRepository<HeadInventory, Lo
     // 본사 재고 조회 & N+1 방지
     @Query("SELECT h FROM HeadInventory h JOIN FETCH h.product")
     List<HeadInventory> findAllWithProduct();
+
+    @EntityGraph(attributePaths = "product")
+    Page<HeadInventory> findAllBy(Pageable pageable);
 
     // 입·출고 등 count 갱신 시 동시성 제어
     @Lock(LockModeType.PESSIMISTIC_WRITE)

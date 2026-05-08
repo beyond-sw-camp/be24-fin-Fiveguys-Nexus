@@ -1,6 +1,7 @@
 package com.example.nexus.domain.store;
 
 import com.example.nexus.common.exception.BaseException;
+import com.example.nexus.common.model.PageResponse;
 import com.example.nexus.domain.store.model.Store;
 import com.example.nexus.domain.store.model.StoreDto;
 import com.example.nexus.domain.store.model.StoreInventory;
@@ -46,6 +47,11 @@ public class StoreService {
     public List<StoreInventoryDto.ListRes> listByStoreIdx(Long storeIdx) {
         List<StoreInventory> inventoryList = storeInventoryRepository.findByStoreIdx(storeIdx);
         return inventoryList.stream().map(StoreInventoryDto.ListRes::from).toList();
+    }
+
+    public PageResponse<StoreInventoryDto.ListRes> listByStoreIdxPaged(Long storeIdx, int page, int size) {
+        Page<StoreInventory> inventoryPage = storeInventoryRepository.findByStoreIdxPaged(storeIdx, PageRequest.of(page, size));
+        return PageResponse.from(inventoryPage.map(StoreInventoryDto.ListRes::from));
     }
 
     @Transactional(readOnly = true)

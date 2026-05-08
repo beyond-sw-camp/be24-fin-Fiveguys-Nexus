@@ -1,8 +1,7 @@
 package com.example.nexus.domain.pos;
 
-import com.example.nexus.common.exception.BaseException;
 import com.example.nexus.common.model.BaseResponse;
-import com.example.nexus.common.model.BaseResponseStatus;
+import com.example.nexus.common.model.PageResponse;
 import com.example.nexus.domain.pos.model.PosCloseDto;
 import com.example.nexus.domain.pos.model.PosPayDto;
 import com.example.nexus.domain.pos.model.PosStoreInventoryDto;
@@ -17,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -30,9 +30,9 @@ public class PosController {
 
     // [가맹점] 로그인한 가맹점주(STORE)의 user_idx로 해당 매장 재고 조회
     @GetMapping("/inventory/list")
-    public ResponseEntity<BaseResponse<List<PosStoreInventoryDto.ListRes>>> list(@AuthenticationPrincipal AuthUserDetails userDetails) {
+    public ResponseEntity<BaseResponse<PageResponse<PosStoreInventoryDto.ListRes>>> list(@AuthenticationPrincipal AuthUserDetails userDetails, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
 
-        List<PosStoreInventoryDto.ListRes> result = posService.listByUserIdx(userDetails.getIdx());
+        PageResponse<PosStoreInventoryDto.ListRes> result = posService.listByUserIdxPaged(userDetails.getIdx(), page, size);
 
         return ResponseEntity.ok(BaseResponse.success(result));
     }

@@ -1,6 +1,7 @@
 package com.example.nexus.domain.pos;
 
 import com.example.nexus.common.exception.BaseException;
+import com.example.nexus.common.model.PageResponse;
 import com.example.nexus.common.model.BaseResponseStatus;
 import com.example.nexus.domain.menu.MenuItemRepository;
 import com.example.nexus.domain.menu.MenuRepository;
@@ -17,6 +18,8 @@ import com.example.nexus.domain.store.StoreRepository;
 import com.example.nexus.domain.store.model.Store;
 import com.example.nexus.domain.store.model.StoreInventory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,6 +57,13 @@ public class PosService {
                 posStoreInventoryRepository.findByStoreIdxWithStoreAndProduct(storeIdx);
 
         return inventoryList.stream().map(PosStoreInventoryDto.ListRes::from).toList();
+    }
+
+    public PageResponse<PosStoreInventoryDto.ListRes> listByUserIdxPaged(Long idx, int page, int size) {
+        Store store = storeRepository.findByUserIdx(idx).orElseThrow();
+        Page<PosStoreInventory> inventoryPage =
+                posStoreInventoryRepository.findByStoreIdxPaged(store.getIdx(), PageRequest.of(page, size));
+        return PageResponse.from(inventoryPage.map(PosStoreInventoryDto.ListRes::from));
     }
 
     public PosStoreInventoryDto.SyncCountRes changeCount(Long userIdx, Long posStoreInventoryIdx, Integer count) {

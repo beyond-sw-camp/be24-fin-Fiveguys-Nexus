@@ -20,10 +20,8 @@ import com.example.nexus.domain.store.model.StoreInventory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -49,19 +47,9 @@ public class PosService {
     private final PosPayRepository posPayRepository;
     private final PosOrdersItemRepository posOrdersItemRepository;
 
-    public List<PosStoreInventoryDto.ListRes> listByUserIdx(Long idx) {
-        Store store = storeRepository.findByUserIdx(idx).orElseThrow();
-
-        Long storeIdx = store.getIdx();
-
-        List<PosStoreInventory> inventoryList =
-                posStoreInventoryRepository.findByStoreIdxWithStoreAndProduct(storeIdx);
-
-        return inventoryList.stream().map(PosStoreInventoryDto.ListRes::from).toList();
-    }
-
     public PageResponse<PosStoreInventoryDto.ListRes> listByUserIdxPaged(Long idx, int page, int size) {
-        Store store = storeRepository.findByUserIdx(idx).orElseThrow();
+        Store store = storeRepository.findByUserIdx(idx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
 
         Page<Long> productPage =
                 posStoreInventoryRepository.findPagedProductIdsByStoreIdx(store.getIdx(), PageRequest.of(page, size));
@@ -93,13 +81,16 @@ public class PosService {
     }
 
     public PosStoreInventoryDto.SyncCountRes changeCount(Long userIdx, Long posStoreInventoryIdx, Integer count) {
-        Store myStore = storeRepository.findByUserIdx(userIdx).orElseThrow();
+        Store myStore = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
 
-        PosStoreInventory posInventory = posStoreInventoryRepository.findById(posStoreInventoryIdx).orElseThrow();
-        StoreInventory hqInventory = storeInventoryRepository.findById(posStoreInventoryIdx).orElseThrow();
+        PosStoreInventory posInventory = posStoreInventoryRepository.findById(posStoreInventoryIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.POS_INVENTORY_NOT_FOUND));
+        StoreInventory hqInventory = storeInventoryRepository.findById(posStoreInventoryIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_INVENTORY_NOT_FOUND));
 
         if (!posInventory.getStore().getIdx().equals(myStore.getIdx())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인 매장 POS 재고만 수정할 수 있습니다.");
+            throw new BaseException(BaseResponseStatus.STORE_INVENTORY_NOT_AUTHORIZED);
         }
 
         posInventory.setCount(count);
@@ -113,7 +104,8 @@ public class PosService {
 
     @Transactional(readOnly = true)
     public List<PosPayDto.TodayPayRes> listTodayPayHistory(Long userIdx) {
-        Store store = storeRepository.findByUserIdx(userIdx).orElseThrow();
+        Store store = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
 
         LocalDateTime from = LocalDate.now().atStartOfDay();
         LocalDateTime to = from.plusDays(1);
@@ -149,7 +141,8 @@ public class PosService {
 
     @Transactional
     public PosCloseDto.CloseRes deductOnClose(Long userIdx) {
-        Store store = storeRepository.findByUserIdx(userIdx).orElseThrow();
+        Store store = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
 
         LocalDateTime from = LocalDate.now().atStartOfDay();
         LocalDateTime to = from.plusDays(1);
@@ -177,7 +170,8 @@ public class PosService {
 
         List<MenuOrderLine> lines = new ArrayList<>();
         for (Map.Entry<Long, Integer> e : menuQty.entrySet()) {
-            Menu menu = menuRepository.findById(e.getKey()).orElseThrow();
+            Menu menu = menuRepository.findById(e.getKey())
+                    .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_MENU));
             lines.add(new MenuOrderLine(menu, e.getValue()));
         }
 
@@ -208,15 +202,17 @@ public class PosService {
 
     @Transactional
     public PosPayDto.PayRes pay(Long userIdx, PosPayDto.PayReq req) {
-        Store store = storeRepository.findByUserIdx(userIdx).orElseThrow();
+        Store store = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
 
         List<MenuOrderLine> lines = new ArrayList<>();
 
         for (PosPayDto.PayLineReq line : req.getItems()) {
-            Menu menu = menuRepository.findById(line.getMenuIdx()).orElseThrow();
+            Menu menu = menuRepository.findById(line.getMenuIdx())
+                    .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_MENU));
 
             if (menu.isDeleted()) {
-                throw new BaseException(BaseResponseStatus.NOT_FOUND_DATA);
+                throw new BaseException(BaseResponseStatus.NOT_FOUND_MENU);
             }
             lines.add(new MenuOrderLine(menu, line.getQuantity()));
         }

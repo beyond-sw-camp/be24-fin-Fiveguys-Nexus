@@ -48,6 +48,11 @@ public enum BaseResponseStatus {
     DRIVER_ROLE_REQUIRED(false, 4007, "드라이버 계정만 로그인할 수 있습니다."),
     ADMIN_ONLY_ACCESS(false, 4008, "관리자 계정만 공지사항 작업을 할 수 있습니다."),
 
+    // 3300번대 ~ POS / 재고 클라이언트 오류
+    POS_INVENTORY_NOT_FOUND(false, 3301, "POS 재고 항목을 찾을 수 없습니다."),
+    STORE_INVENTORY_NOT_FOUND(false, 3302, "가맹점 재고 항목을 찾을 수 없습니다."),
+    STORE_INVENTORY_NOT_AUTHORIZED(false, 3303, "해당 재고에 대한 권한이 없습니다."),
+
     // 4100번대~ 결제 관련
     PAYMENT_UNAUTHENTICATED_USER(false, 4100, "인증받지 않은 사용자입니다."),
     PAYMENT_ENROLL_INVALID_USER(false, 4101, "결제 수단을 등록할 수 없는 사용자입니다."),

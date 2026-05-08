@@ -1,6 +1,6 @@
 <script setup>
 import { ref, reactive, onMounted, computed, nextTick } from 'vue'
-import { Plus, Search, FileText, ChevronDown } from 'lucide-vue-next'
+import { Plus, Search, FileText } from 'lucide-vue-next'
 import { getStoreList , getStoreDetailList, getPresignedUrl, postNewRegister, putStoreUpdate, getStoreTotal} from '@/api/store/index.js'
 import axios from 'axios'
 import Toast from '@/components/common/Toast.vue'
@@ -16,7 +16,7 @@ const activeDropdown = ref(null)
 const statusOptions = ['전체', '입점', '폐점']
 
 // --- 가맹점 목록 리스트 ---
-const storesList = reactive([])
+const storesList = ref([])
 const storeTotalCount = ref()
 const pagination = reactive({
   totalPage: 0,
@@ -32,7 +32,7 @@ const storeListRes = async (page = 0)=>{
   }
 
   const res = await getStoreList(searchReq, page, pagination.currentSize)
-  storesList.splice(0, storesList.length, ...res.data.result.storeList)
+  storesList.value.splice(0, storesList.value.length, ...res.data.result.storeList)
 
   pagination.totalPage = res.data.result.totalPage
   pagination.totalCount = res.data.result.totalCount
@@ -50,7 +50,7 @@ const changePage = (page) => {
 }
 
 const filteredStores = computed(() => {
-  let list = [...storesList];
+  let list = [...storesList.value];
 
   list = list.filter(s => {
     if (filterStatus.value === '폐점') {
@@ -255,7 +255,7 @@ async function saveStore() {
 
       if (res.data.code === 2000) {
         showToast('가맹점이 등록되었습니다.');
-        storesList.length = 0;
+        storesList.value.length = 0;
         await storeListRes();
       }
     }

@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -153,7 +154,8 @@ public class OrdersService {
         List<Orders> dangerOrders = ordersRepository.findAllByIsDangerTrue();
 
         for (Orders orders : dangerOrders) {
-            int totalQty = orders.getOrdersItemList().stream().mapToInt(OrdersItem::getCount).sum();
+            List<OrdersItem> items = orders.getOrdersItemList() != null ? orders.getOrdersItemList() : Collections.emptyList();
+            int totalQty = items.stream().mapToInt(OrdersItem::getCount).sum();
 
             LocalDateTime since = orders.getCreatedAt().minusMonths(req.getPeriod());
 
@@ -352,7 +354,8 @@ public class OrdersService {
         }
 
         // 이상 발주 재판정: 점주가 아이템을 수정했을 수 있으므로 확정 시점에 재평가
-        int totalQty = orders.getOrdersItemList().stream().mapToInt(OrdersItem::getCount).sum();
+        List<OrdersItem> items = orders.getOrdersItemList() != null ? orders.getOrdersItemList() : Collections.emptyList();
+        int totalQty = items.stream().mapToInt(OrdersItem::getCount).sum();
         boolean isDanger = evaluateDanger(store.getIdx(), totalQty, orders.getCreatedAt(), orders.getIdx());
         orders.markDanger(isDanger);
 

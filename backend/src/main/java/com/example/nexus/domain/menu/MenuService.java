@@ -136,6 +136,7 @@ public class MenuService {
     public void menuUpdate(Long menuIdx, MenuDto.MenuRegReq dto) {
         String newFilePath = dto.getImgPath();
         String oldFilePath = "";
+        String defaultImage = "theVenti_logo.png";
 
         try{
             Menu menu = menuRepository.findByIdxAndIsDeletedFalse(menuIdx)
@@ -158,7 +159,10 @@ public class MenuService {
             List<Product> products = productRepository.findAllById(productIds);
 
             // 새 파일이 들어왔고, 기존 파일과 다를 경우에만 동기화 등록
-            if (newFilePath != null && !newFilePath.equals(oldFilePath) && oldFilePath != null && !oldFilePath.isBlank()) {
+            if (newFilePath != null && !newFilePath.equals(oldFilePath)
+                    && oldFilePath != null && !oldFilePath.isBlank()
+                    && !oldFilePath.equals(defaultImage)) { // 기존 파일이 기본 로고가 아닐 때만 삭제 등록
+
                 String finalOldFile = oldFilePath;
                 TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                     @Override
@@ -187,11 +191,13 @@ public class MenuService {
             }
 
         }catch (Exception e) {
-            if (newFilePath != null && !newFilePath.isEmpty() && !newFilePath.equals(oldFilePath)) {
+            if (newFilePath != null && !newFilePath.isEmpty()
+                    && !newFilePath.equals(oldFilePath)
+                    && !newFilePath.equals(defaultImage)) { // 새 파일이 기본 로고가 아닐 때만 롤백 삭제
+
                 try {
                     deleteS3Object(newFilePath);
                 } catch (Exception ignored) {
-                    // 롤백 중 S3 삭제 실패는 무시하여 원래 예외를 보존합니다.
                 }
             }
 

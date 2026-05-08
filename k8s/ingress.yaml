@@ -17,6 +17,13 @@ spec:
     - host: www.nexusscm.kro.kr
       http:
         paths:
+          - path: /actuator(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: nexus-backend-service
+                port:
+                  number: 8080
           - path: /api(/|$)(.*)
             pathType: ImplementationSpecific
             backend:

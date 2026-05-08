@@ -44,6 +44,9 @@ public class StoreService {
     private String storeBucket;
 
     public PageResponse<StoreInventoryDto.ListRes> listByStoreIdxPaged(Long storeIdx, int page, int size) {
+        storeRepository.findById(storeIdx)
+                .orElseThrow(() -> new BaseException(STORE_NOT_FOUND));
+
         Page<Long> productPage = storeInventoryRepository.findPagedProductIdsByStoreIdx(storeIdx, PageRequest.of(page, size));
         List<Long> productIds = productPage.getContent();
 
@@ -110,9 +113,8 @@ public class StoreService {
     }
 
     public List<StoreDto.StoreSearchRes> searchByStoreName(StoreDto.StoreSearchReq reqDto) {
-        String keyword = reqDto.getKeyword();
-        String searchKeyword = keyword.trim();
-        List<Store> res = storeRepository.findByStoreNameContainingIgnoreCase(searchKeyword);
+        String keyword = reqDto.getKeyword() != null ? reqDto.getKeyword().trim() : "";
+        List<Store> res = storeRepository.findByStoreNameContainingIgnoreCase(keyword);
 
         return res.stream().map(StoreDto.StoreSearchRes::from).toList();
     }

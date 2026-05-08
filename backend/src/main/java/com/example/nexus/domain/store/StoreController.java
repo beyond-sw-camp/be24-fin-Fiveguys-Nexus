@@ -6,10 +6,15 @@ import com.example.nexus.domain.store.model.StoreDto;
 import com.example.nexus.domain.store.model.StoreInventoryDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
+
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @RequestMapping("/store")
 @RestController
@@ -19,7 +24,11 @@ public class StoreController {
 
     // [본사] 선택한 가맹점 store_idx로 재고 조회
     @GetMapping("/inventory/list/{storeIdx}")
-    public ResponseEntity<BaseResponse<PageResponse<StoreInventoryDto.ListRes>>> listByStoreIdx(@PathVariable Long storeIdx, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+    public ResponseEntity<BaseResponse<PageResponse<StoreInventoryDto.ListRes>>> listByStoreIdx(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long storeIdx, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        if (userDetails == null) {
+            throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+
         PageResponse<StoreInventoryDto.ListRes> result = storeService.listByStoreIdxPaged(storeIdx, page, size);
 
         return ResponseEntity.ok(BaseResponse.success(result));
@@ -27,7 +36,11 @@ public class StoreController {
 
     // [본사] keyword로 가맹점 검색
     @GetMapping("/search")
-    public ResponseEntity searchStore(@RequestParam(value = "keyword", required = false, defaultValue = "") String keyword) {
+    public ResponseEntity searchStore(@AuthenticationPrincipal UserDetails userDetails, @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword) {
+        if (userDetails == null) {
+            throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+
         StoreDto.StoreSearchReq reqDto = new StoreDto.StoreSearchReq(keyword);
 
         List<StoreDto.StoreSearchRes> result = storeService.searchByStoreName(reqDto);

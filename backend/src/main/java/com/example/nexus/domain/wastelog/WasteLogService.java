@@ -1,6 +1,8 @@
 package com.example.nexus.domain.wastelog;
 
 import com.example.nexus.common.enums.InventoryStatus;
+import com.example.nexus.common.exception.BaseException;
+import com.example.nexus.common.model.BaseResponseStatus;
 import com.example.nexus.domain.pos.PosStoreInventoryRepository;
 import com.example.nexus.domain.pos.model.PosStoreInventory;
 import com.example.nexus.domain.store.StoreInventoryRepository;
@@ -26,11 +28,24 @@ public class WasteLogService {
 
     @Transactional
     public WasteLogDto.WasteRes createWaste(Long userIdx, WasteLogDto.PosWasteReq req) {
-        Store store = storeRepository.findByUserIdx(userIdx).orElseThrow();
+        Store store = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
 
-        PosStoreInventory posLot = posStoreInventoryRepository.findById(req.getPosStoreInventoryIdx()).orElseThrow();
+        PosStoreInventory posLot = posStoreInventoryRepository.findById(req.getPosStoreInventoryIdx())
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.POS_INVENTORY_NOT_FOUND));
 
-        StoreInventory hqLot = storeInventoryRepository.findByStore_IdxAndProduct_IdxAndManufacturedDate(store.getIdx(), posLot.getProduct().getIdx(), posLot.getManufacturedDate()).orElseThrow();
+        if (!posLot.getStore().getIdx().equals(store.getIdx())) {
+            throw new BaseException(BaseResponseStatus.STORE_INVENTORY_NOT_AUTHORIZED);
+        }
+
+        if (posLot.getCount() < req.getQuantity()) {
+            throw new BaseException(BaseResponseStatus.WASTE_QUANTITY_EXCEEDS_STOCK);
+        }
+
+        StoreInventory hqLot = storeInventoryRepository
+                .findByStore_IdxAndProduct_IdxAndManufacturedDate(
+                        store.getIdx(), posLot.getProduct().getIdx(), posLot.getManufacturedDate())
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_INVENTORY_NOT_FOUND));
 
         posLot.setCount(posLot.getCount() - req.getQuantity());
         hqLot.setCount(hqLot.getCount() - req.getQuantity());

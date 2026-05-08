@@ -81,9 +81,7 @@ spec:
             steps {
                 container('kubectl') {
                     script {
-                        // 1) blue/green 매니페스트, service, ingress 적용
-                        sh 'kubectl apply -f k8s/frontend/deployment-blue.yaml'
-                        sh 'kubectl apply -f k8s/frontend/deployment-green.yaml'
+                        // 1) service, ingress 적용
                         sh 'kubectl apply -f k8s/frontend/service.yaml'
                         sh 'kubectl apply -f k8s/ingress.yaml'
 
@@ -93,8 +91,9 @@ spec:
                             returnStdout: true
                         ).trim()
 
-                        // 3) 비활성 슬롯에 새 이미지 배포
+                        // 3) 비활성 슬롯만 매니페스트 적용 후 새 이미지 배포
                         def newSlot = (currentSlot == 'blue') ? 'green' : 'blue'
+                        sh "kubectl apply -f k8s/frontend/deployment-${newSlot}.yaml"
                         sh "kubectl set image deployment/nexus-frontend-${newSlot} nexus-frontend=${IMAGE_REPO}:${BUILD_NUMBER}"
 
                         // 4) 새 pod가 Ready 상태가 될 때까지 대기

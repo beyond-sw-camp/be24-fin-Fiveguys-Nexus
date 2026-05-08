@@ -5,6 +5,7 @@ import com.example.nexus.domain.head.model.HeadIncome;
 import com.example.nexus.domain.head.model.HeadIncomeDto;
 import com.example.nexus.domain.orders.OrdersService;
 import com.example.nexus.domain.orders.model.Orders;
+import com.example.nexus.domain.settlement.model.Settlement;
 import com.example.nexus.domain.settlement.model.SettlementDto;
 import com.example.nexus.domain.store.StoreService;
 import com.example.nexus.domain.user.model.AuthUserDetails;
@@ -32,68 +33,80 @@ public class SettlementController {
     private final SettlementService settlementService;
     private final OrdersService ordersService;
 
+    @GetMapping("/unpaid/list")
+    public ResponseEntity getUnpaidList(
+            @AuthenticationPrincipal AuthUserDetails authUserDetails) {
 
-    @PostMapping("/pay")
-    public ResponseEntity pay (@AuthenticationPrincipal AuthUserDetails authUserDetails) {
-
-        // 로그인 한 사용자의  storeIdx 가져오기
         Long storeIdx = storeService.findStoreIdx(authUserDetails.getIdx());
 
-        LocalDateTime now = LocalDateTime.now();
-        YearMonth currentYearMonth = YearMonth.from(now);
+        YearMonth lastMonth = YearMonth.from(LocalDateTime.now()).minusMonths(1);
 
+        // storeIdx로 모든 주문 찾기
         List<Orders> ordersList = ordersService.findByStoreIdx(storeIdx);
 
-        List<Orders> lastMonthOrderList = new ArrayList<>();
-
-        YearMonth lastMonth = currentYearMonth.minusMonths(1);
-        for (Orders orders : ordersList) {
-
-            YearMonth orderYearMonth = YearMonth.from(orders.getCreatedAt());
+        // 지불하지 않은 HeadIncome 가져오기
+        List<HeadIncomeDto.FindHeadIncomeRes> unpaidList = new ArrayList<>();
+        Long settlementIdx = 0L;
+        for (Orders order : ordersList) {
+            YearMonth orderYearMonth = YearMonth.from(order.getCreatedAt());
 
             if (lastMonth.equals(orderYearMonth)) {
-                // 이번 달에 결제/생성된 주문 처리 로직 작성
-
-                lastMonthOrderList.add(orders);
+                HeadIncomeDto.FindHeadIncomeRes resDto = headIncomeService.findByOrdersIdx(order.getIdx());
+                if (resDto != null && !resDto.isPaid()) {
+                    unpaidList.add(resDto);
+                    settlementIdx = resDto.getSettlementIdx();
+                }
             }
         }
 
-        // 여기까지는 지난 달 발주서 제대로 불러왔음
-
-        int totalPrice = 0;
-        List<Long> notPaidHeadIncomeIdxList = new ArrayList<>();
-        for (Orders orders : lastMonthOrderList) {
-            HeadIncomeDto.FindHeadIncomeRes resDto = headIncomeService.findByOrdersIdx(orders.getIdx());
-            if (resDto != null && !resDto.isPaid()) {
-                totalPrice += resDto.getPrice();
-                notPaidHeadIncomeIdxList.add(resDto.getIdx());
-            }
-        }
-        SettlementDto.PayReq reqDto = SettlementDto.PayReq.builder()
-                .paymentPrice((long)totalPrice)
-                .headIncomeidxList(notPaidHeadIncomeIdxList)
+        SettlementDto.unPaid dto = SettlementDto.unPaid.builder()
+                .settlementIdx(settlementIdx)
+                .unpaidList(unpaidList)
                 .build();
 
+
+        return ResponseEntity.ok(dto);
+    }
+
+    @PostMapping("/pay")
+    public ResponseEntity pay (@AuthenticationPrincipal AuthUserDetails authUserDetails, @RequestBody SettlementDto.PayReq reqDto) {
+
+        // 로그인 한 사용자의 storeIdx 가져오기
+        Long storeIdx = storeService.findStoreIdx(authUserDetails.getIdx());
 
         // verify 전 단계 완료
         Long settlementIdx = settlementService.pay(storeIdx, reqDto);
 
-        for (Long idx : notPaidHeadIncomeIdxList) {
-            headIncomeService.findByOrdersIdx(idx);
-        }
+        List<HeadIncomeDto.FindHeadIncomeRes> headIncomeResList = new ArrayList<>();
 
-        return ResponseEntity.ok("");
+        long headIncome = 0L;
+
+
+        for (Long idx : reqDto.getHeadIncomeidxList()) {
+            HeadIncome headIncome = headIncomeService.findById(idx);
+            HeadIncomeDto.FindHeadIncomeRes headIncomeResDto = HeadIncomeDto.FindHeadIncomeRes.builder()
+                    .idx(headIncome.getIdx())
+                    .price(headIncome.getPrice())
+                    .paid(headIncome.getStatus())
+                    .settlementIdx(headIncome.getSettlementIdx())
+                    .storeIdx(headIncome.getStore().getIdx())
+                    .ordersIdx(headIncome.getOrders().getIdx())
+                    .build();
+            headIncomeResList.add(headIncomeResDto);
+        }
+        System.out.println("범인 찾기" + headIncome.getSettlementIdx);
+        return ResponseEntity.ok(headIncomeResList);
     }
 
     @PostMapping("/verify")
     public ResponseEntity verify (@AuthenticationPrincipal AuthUserDetails authUserDetails, @RequestBody SettlementDto.VerifyReq dto) {
 
         LocalDateTime now = LocalDateTime.now();
-
         YearMonth currentYearMonth = YearMonth.from(now);
-
         YearMonth lastMonth = currentYearMonth.minusMonths(1);
-
+        System.out.println(dto.getSettlementIdx());
+        System.out.println(dto.getPaymentId());
+        // dto 에서 1이 줄어들어서 들어옴
         settlementService.verify(authUserDetails, dto, lastMonth);
         return ResponseEntity.ok("결제 성공");
     }

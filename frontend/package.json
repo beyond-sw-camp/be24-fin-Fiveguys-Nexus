@@ -12,6 +12,7 @@
     "lint:eslint": "eslint . --fix --cache"
   },
   "dependencies": {
+    "@portone/browser-sdk": "^0.1.6",
     "axios": "^1.15.2",
     "chart.js": "^4.5.1",
     "lucide-vue-next": "^1.0.0",

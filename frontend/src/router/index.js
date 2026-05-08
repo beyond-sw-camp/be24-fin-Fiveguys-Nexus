@@ -151,6 +151,12 @@ const router = createRouter({
       component: () => import('@/views/store/StoreSettlementView.vue'),
       meta: { role: 'STORE_OWNER' },
     },
+    {
+      path: '/store-payment-test',
+      name: 'storePaymentTest',
+      component: () => import('@/views/store/PaymentTestView.vue'),
+      meta: { role: 'STORE_OWNER' },
+    },
 
     {
       path: '/notification',

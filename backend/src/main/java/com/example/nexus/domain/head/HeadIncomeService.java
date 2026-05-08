@@ -84,4 +84,8 @@ public class HeadIncomeService {
 
         return result;
     }
+
+    public HeadIncome findById(Long idx) {
+        return headIncomeRepository.findById(idx).orElse(null);
+    }
 }

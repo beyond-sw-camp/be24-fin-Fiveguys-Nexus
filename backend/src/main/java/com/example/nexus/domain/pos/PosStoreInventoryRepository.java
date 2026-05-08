@@ -23,17 +23,31 @@ public interface PosStoreInventoryRepository extends JpaRepository<PosStoreInven
 
     @Query(
             value = """
-                    SELECT p FROM PosStoreInventory p
-                    JOIN FETCH p.store
-                    JOIN FETCH p.product
+                    SELECT DISTINCT p.product.idx
+                    FROM PosStoreInventory p
                     WHERE p.store.idx = :storeIdx
+                    ORDER BY p.product.idx
                     """,
             countQuery = """
-                    SELECT COUNT(p) FROM PosStoreInventory p
+                    SELECT COUNT(DISTINCT p.product.idx)
+                    FROM PosStoreInventory p
                     WHERE p.store.idx = :storeIdx
                     """
     )
-    Page<PosStoreInventory> findByStoreIdxPaged(@Param("storeIdx") Long storeIdx, Pageable pageable);
+    Page<Long> findPagedProductIdsByStoreIdx(@Param("storeIdx") Long storeIdx, Pageable pageable);
+
+    @Query("""
+            SELECT p FROM PosStoreInventory p
+            JOIN FETCH p.store
+            JOIN FETCH p.product
+            WHERE p.store.idx = :storeIdx
+              AND p.product.idx IN :productIds
+            ORDER BY p.product.idx, p.manufacturedDate
+            """)
+    List<PosStoreInventory> findByStoreIdxAndProductIds(
+            @Param("storeIdx") Long storeIdx,
+            @Param("productIds") List<Long> productIds
+    );
 
     // 결제 FIFO 차감 시 동시성 제어
     @Lock(LockModeType.PESSIMISTIC_WRITE)

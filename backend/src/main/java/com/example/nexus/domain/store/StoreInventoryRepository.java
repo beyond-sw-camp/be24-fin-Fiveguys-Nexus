@@ -13,21 +13,33 @@ import java.util.List;
 import java.util.Optional;
 
 public interface StoreInventoryRepository extends JpaRepository<StoreInventory, Long> {
+
     List<StoreInventory> findByStoreIdx(Long storeIdx);
+
     @Query(
             value = """
-                    SELECT s FROM StoreInventory s
-                    JOIN FETCH s.store
-                    JOIN FETCH s.product
+                    SELECT DISTINCT s.product.idx
+                    FROM StoreInventory s
                     WHERE s.store.idx = :storeIdx
+                    ORDER BY s.product.idx
                     """,
             countQuery = """
-                    SELECT COUNT(s) FROM StoreInventory s
+                    SELECT COUNT(DISTINCT s.product.idx)
+                    FROM StoreInventory s
                     WHERE s.store.idx = :storeIdx
                     """
     )
-    Page<StoreInventory> findByStoreIdxPaged(@Param("storeIdx") Long storeIdx, Pageable pageable);
-    Optional<StoreInventory> findByStoreIdxAndProductIdx(Long storeIdx, Long productIdx);
+    Page<Long> findPagedProductIdsByStoreIdx(@Param("storeIdx") Long storeIdx, Pageable pageable);
+
+    @Query("""
+            SELECT s FROM StoreInventory s
+            JOIN FETCH s.store
+            JOIN FETCH s.product
+            WHERE s.store.idx = :storeIdx
+              AND s.product.idx IN :productIds
+            ORDER BY s.product.idx, s.manufacturedDate
+            """)
+    List<StoreInventory> findByStoreIdxAndProductIds(@Param("storeIdx") Long storeIdx, @Param("productIds") List<Long> productIds);
 
     // 점주 대시보드용 - 재고 위험 품목 KPI 카드 (상태별 개수)
     long countByStore_IdxAndStatus(Long storeIdx, InventoryStatus status);

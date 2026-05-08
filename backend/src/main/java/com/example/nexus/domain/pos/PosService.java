@@ -28,6 +28,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -61,9 +62,34 @@ public class PosService {
 
     public PageResponse<PosStoreInventoryDto.ListRes> listByUserIdxPaged(Long idx, int page, int size) {
         Store store = storeRepository.findByUserIdx(idx).orElseThrow();
-        Page<PosStoreInventory> inventoryPage =
-                posStoreInventoryRepository.findByStoreIdxPaged(store.getIdx(), PageRequest.of(page, size));
-        return PageResponse.from(inventoryPage.map(PosStoreInventoryDto.ListRes::from));
+
+        Page<Long> productPage =
+                posStoreInventoryRepository.findPagedProductIdsByStoreIdx(store.getIdx(), PageRequest.of(page, size));
+
+        List<Long> productIds = productPage.getContent();
+
+        List<PosStoreInventory> lots = posStoreInventoryRepository.findByStoreIdxAndProductIds(store.getIdx(), productIds);
+
+        Map<Long, Integer> productOrder = new HashMap<>();
+
+        for (int i = 0; i < productIds.size(); i++) {
+            productOrder.put(productIds.get(i), i);
+        }
+
+        List<PosStoreInventoryDto.ListRes> content = lots.stream()
+                .map(PosStoreInventoryDto.ListRes::from)
+                .sorted(Comparator
+                        .comparingInt((PosStoreInventoryDto.ListRes dto) -> productOrder.getOrDefault(dto.getProductIdx(), Integer.MAX_VALUE))
+                        .thenComparing(PosStoreInventoryDto.ListRes::getManufacturedDate))
+                .toList();
+
+        return PageResponse.<PosStoreInventoryDto.ListRes>builder()
+                .content(content)
+                .number(productPage.getNumber())
+                .size(productPage.getSize())
+                .totalPages(productPage.getTotalPages())
+                .totalElements(productPage.getTotalElements())
+                .build();
     }
 
     public PosStoreInventoryDto.SyncCountRes changeCount(Long userIdx, Long posStoreInventoryIdx, Integer count) {

@@ -1,7 +1,7 @@
 <script setup>
 import {ref, computed, onMounted, reactive} from 'vue'
 import {Plus, Search, Image as ImageIcon, Tag, Trash2} from 'lucide-vue-next'
-import {getProductList, getCategoryList, getMenuList, getMenuItemList, getPresignedUrl, postNewRegister, putMenuUpdate, putMenuDelete, postMenuCategoryRegister} from '@/api/menu/index.js'
+import {getProductList, getCategoryList, getMenuList, getMenuItemList, getPresignedUrl, postNewRegister, putMenuUpdate, putMenuDelete, postMenuCategoryRegister, deleteCategory} from '@/api/menu/index.js'
 import axios from 'axios'
 
 const showCategoryModal = ref(false)
@@ -283,11 +283,15 @@ async function addCategoryAction() {
 async function deleteCategoryAction(idx, name) {
   if (!confirm(`'${name}' 카테고리를 삭제하시겠습니까?`)) return
   try {
-    await deleteCategory(idx)
-    await categoryRes()
-    if (selectedCategoryIdx.value === idx) selectedCategoryIdx.value = null
+    const res = await deleteCategory(idx)
+    if (res.data.code === 2000) {
+      alert("카테고리가 삭제되었습니다.");
+      await categoryRes()
+    }
+
   } catch (error) {
-    alert('삭제 실패: 해당 카테고리를 사용하는 데이터가 있을 수 있습니다.')
+    const serverMessage = error.response?.data?.message || error.message;
+    alert(`등록 실패 : ${serverMessage}`);
   }
 }
 

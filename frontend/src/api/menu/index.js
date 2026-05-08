@@ -32,3 +32,5 @@ export const putMenuDelete  = (menuIdx) =>
 export const postMenuCategoryRegister = (categoryName) =>
   api.post('/menu/category/register', categoryName)
 
+export const deleteCategory = (categoryIdx) =>
+  api.delete(`/menu/category/delete/${categoryIdx}`)

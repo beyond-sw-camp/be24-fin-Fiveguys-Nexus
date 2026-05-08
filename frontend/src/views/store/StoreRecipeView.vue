@@ -338,12 +338,17 @@
         </div>
       </div>
     </div>
+    <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
   </div>
 </template>
 
 <script setup>
 import { ref, computed , onMounted} from 'vue'
 import {Plus, Trash2, Search, Image as ImageIcon, ChevronDown, Tag} from 'lucide-vue-next'
+import Toast from '@/components/common/Toast.vue'
+import { useToast } from '@/composables/useToast'
+
+const { toast, showToast } = useToast()
 
 // ─────────────────────────────────────────────
 //  상품 목록 (매장 제품 관리의 제품코드와 동일하게 맞춤)
@@ -560,7 +565,7 @@ async function addCategoryAction() {
     newCategoryInput.value = ''
     await fetchCategories()
   } catch (error) {
-    alert('카테고리 등록 실패')
+    showToast('카테고리 등록 실패', 'error')
   }
 }
 
@@ -570,7 +575,7 @@ async function deleteCategoryAction(idx, name) {
     await deleteCategory(idx)
     await fetchCategories()
   } catch (error) {
-    alert('삭제 실패: 해당 카테고리를 사용하는 데이터가 있을 수 있습니다.')
+    showToast('삭제 실패: 해당 카테고리를 사용하는 데이터가 있을 수 있습니다.', 'error')
   }
 }
 

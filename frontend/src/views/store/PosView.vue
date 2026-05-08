@@ -35,7 +35,7 @@
       :payment-history="paymentHistory"
       @toggle-store-status="toggleStoreStatus" />
 
-    <PosToast :show="toast.show" :message="toast.message" />
+    <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
 
     <PosPaymentMethodModal
       :open="showPaymentModal"
@@ -60,7 +60,8 @@ import PosHeaderBar from '@/components/pos/PosHeaderBar.vue'
 import PosMenuBoard from '@/components/pos/PosMenuBoard.vue'
 import PosCartPanel from '@/components/pos/PosCartPanel.vue'
 import PosSettlementPanel from '@/components/pos/PosSettlementPanel.vue'
-import PosToast from '@/components/pos/PosToast.vue'
+import Toast from '@/components/common/Toast.vue'
+import { useToast } from '@/composables/useToast'
 import PosPaymentMethodModal from '@/components/pos/PosPaymentMethodModal.vue'
 import PosCloseStoreModal from '@/components/pos/PosCloseStoreModal.vue'
 
@@ -73,11 +74,10 @@ const showPaymentModal = ref(false)
 const showCloseModal = ref(false)
 const isClosingStore = ref(false)
 const currentTime = ref('')
-const toast = ref({ show: false, message: '' })
+const { toast, showToast } = useToast()
 const loadingMenus = ref(true)
 
 let timer = null
-let toastTimer = null
 
 const categories = ref(['전체'])
 const menus = ref([])
@@ -186,10 +186,8 @@ const filteredMenus = computed(() => {
 const totalPrice = computed(() => cart.value.reduce((s, i) => s + i.price * i.quantity, 0))
 const totalQuantity = computed(() => cart.value.reduce((s, i) => s + i.quantity, 0))
 
-function showToastMsg(msg) {
-  toast.value = { show: true, message: msg }
-  clearTimeout(toastTimer)
-  toastTimer = setTimeout(() => { toast.value.show = false }, 3000)
+function showToastMsg(msg, type = 'success') {
+  showToast(msg, type)
 }
 
 function extractApiErrorMessage(error, fallback = '영업 마감 처리에 실패했습니다. 잠시 후 다시 시도해 주세요.') {
@@ -239,7 +237,7 @@ async function loadMenusAndCategories() {
 
 function addToCart(menu) {
   if (salesData.value.isClosed) {
-    alert('영업이 마감되어 주문을 추가할 수 없습니다.')
+    showToast('영업이 마감되어 주문을 추가할 수 없습니다.', 'error')
     return
   }
   const existing = cart.value.find((i) => i.menuIdx === menu.idx)
@@ -349,6 +347,5 @@ onMounted(() => {
 
 onUnmounted(() => {
   clearInterval(timer)
-  clearTimeout(toastTimer)
 })
 </script>

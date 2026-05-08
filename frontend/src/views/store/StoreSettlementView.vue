@@ -203,12 +203,17 @@
         </div>
       </div>
     </div>
+    <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
   </div>
 </template>
 
 <script setup>
 import { Download } from 'lucide-vue-next'
 import { ref, computed } from 'vue'
+import Toast from '@/components/common/Toast.vue'
+import { useToast } from '@/composables/useToast'
+
+const { toast, showToast } = useToast()
 
 const activeTab = ref('sales')
 
@@ -318,6 +323,6 @@ const paidAmount = computed(() =>
 )
 
 function downloadStatement(row){
-  alert(`${row.item} 다운로드`)
+  showToast(`${row.item} 다운로드`)
 }
 </script>

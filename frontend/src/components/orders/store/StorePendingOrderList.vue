@@ -13,7 +13,7 @@ defineProps({
 
 const emit = defineEmits(['confirm', 'reject', 'refresh', 'delete-item'])
 
-const { addItemForm, openAddItemForm, filteredProducts, selectAddItemProduct, clearAddItemProduct, submitAddItem } = useAddOrderItem(() => emit('refresh'))
+const { addItemForm, openAddItemForm, filteredProducts, selectAddItemProduct, clearAddItemProduct, submitAddItem } = useAddOrderItem(() => emit('refresh'), showToast)
 
 function sortedItems(order) {
   return [...(order.ordersItemList || [])].sort((a, b) => b.idx - a.idx)

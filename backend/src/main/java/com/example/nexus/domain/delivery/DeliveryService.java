@@ -7,6 +7,10 @@ import com.example.nexus.domain.delivery.model.DeliveryDto;
 import com.example.nexus.domain.notification.HeadNotificationService;
 import com.example.nexus.domain.notification.StoreNotificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,21 +57,23 @@ public class DeliveryService {
                 orders.getStore());
     }
 
-    public List<DeliveryDto> getDeliveriesByHead(
-            String storeName, DeliveryStatus status, Integer year, Integer month, Integer day) {
-        return deliveryRepository.findAllByFilters(storeName, status, year, month, day)
-                .stream()
-                .map(DeliveryDto::from)
-                .collect(Collectors.toList());
+    public DeliveryDto.DeliveryPageRes getDeliveriesByHead(
+            String storeName, DeliveryStatus status, Integer year, Integer month, Integer day, int page, int size) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("departureDate").descending());
+        Page<Delivery> deliveryPage = deliveryRepository.findAllByHeadFilters(storeName, status, year, month, day, pageable);
+
+        return DeliveryDto.DeliveryPageRes.from(deliveryPage);
     }
 
     // 가맹점 배송 현황 조회
-    public List<DeliveryDto> getDeliveriesForStore(
-            Long storeIdx, Long orderIdx, DeliveryStatus status, Integer year, Integer month, Integer day) {
-        return deliveryRepository.findAllByStoreFilters(storeIdx, orderIdx, status, year, month, day)
-                .stream()
-                .map(delivery -> DeliveryDto.from(delivery))
-                .collect(Collectors.toList());
+    public DeliveryDto.DeliveryPageRes getDeliveriesForStore(
+            Long storeIdx, Long orderIdx, DeliveryStatus status, Integer year, Integer month, Integer day, int page, int size) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("departureDate").descending());
+        Page<Delivery> deliveryPage = deliveryRepository.findAllByStoreFilters(storeIdx, orderIdx, status, year, month, day, pageable);
+
+        return DeliveryDto.DeliveryPageRes.from(deliveryPage);
     }
 
     // 본사 배송 지연 사유 입력 로직 (throw/Optional 제거 및 boolean 흐름 제어 적용)

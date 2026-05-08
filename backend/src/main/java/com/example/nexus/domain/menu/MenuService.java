@@ -117,7 +117,7 @@ public class MenuService {
 
         } catch (Exception e) {
             // 등록 중 에러가 나면 DB는 롤백되지만, 이미 업로드된 파일은 좀비가 되므로 삭제 처리
-            if (newFilePath != null && !newFilePath.isEmpty()) {
+            if (newFilePath != null && !newFilePath.isEmpty() && !"theVenti_logo.png".equals(newFilePath)) {
                 try {
                     deleteS3Object(newFilePath);
                 } catch (Exception ignored) {

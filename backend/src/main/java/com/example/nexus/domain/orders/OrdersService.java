@@ -8,6 +8,8 @@ import com.example.nexus.common.model.BaseResponseStatus;
 import com.example.nexus.domain.inventory.InventoryMovementService;
 import com.example.nexus.domain.inventory.model.InventoryMovementDto;
 import com.example.nexus.domain.delivery.DeliveryService;
+import com.example.nexus.domain.head.HeadIncomeRepository;
+import com.example.nexus.domain.head.model.HeadIncome;
 import com.example.nexus.domain.notification.HeadNotificationService;
 import com.example.nexus.domain.notification.StoreNotificationService;
 import com.example.nexus.domain.orders.model.*;
@@ -46,6 +48,7 @@ public class OrdersService {
     private final HeadNotificationService headNotificationService;
     private final StoreNotificationService storeNotificationService;
     private final DeliveryService deliveryService;
+    private final HeadIncomeRepository headIncomeRepository;
 
     // 자동 발주 제안 검색 조회 (AUTO + WAITING 상태 대상)
     // 매장명 키워드 검색 + 페이징 처리
@@ -182,6 +185,7 @@ public class OrdersService {
 
         applyOutboundForOrder(orders, "발주 승인(이상) ordersIdx=");
         orders.approve();
+        createHeadIncome(orders);
         deliveryService.startDeliveryByOrders(orders);
     }
 
@@ -206,8 +210,20 @@ public class OrdersService {
         for (Orders orders : confirmedOrders) {
             applyOutboundForOrder(orders, "발주 일괄승인 ordersIdx=");
             orders.approve();
+            createHeadIncome(orders);
             deliveryService.startDeliveryByOrders(orders);
         }
+    }
+
+    // 발주 승인 시 매출채권(HeadIncome) 생성
+    private void createHeadIncome(Orders orders) {
+        HeadIncome headIncome = new HeadIncome();
+        headIncome.setPrice(orders.getPrice());
+        headIncome.setStatus(false);
+        headIncome.setSettlementIdx(null);
+        headIncome.setStore(orders.getStore());
+        headIncome.setOrders(orders);
+        headIncomeRepository.save(headIncome);
     }
 
     // 발주 승인 시 품목별 출고 처리 (재고 차감)

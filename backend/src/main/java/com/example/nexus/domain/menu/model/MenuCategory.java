@@ -31,4 +31,8 @@ public class MenuCategory {
     public void remenu() {
         this.isDeleted = false;
     }
+
+    public void deleteTrue() {
+        this.isDeleted = true;
+    }
 }

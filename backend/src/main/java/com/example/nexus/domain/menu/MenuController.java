@@ -81,4 +81,11 @@ public class MenuController {
         menuService.menucategoryReg(dto);
         return ResponseEntity.ok(BaseResponse.success("성공"));
     }
+
+    // 메뉴 카테고리 삭제
+    @PutMapping("/category/delete/{categoryIdx}")
+    public ResponseEntity menuCategoryDelete(@PathVariable Long categoryIdx ){
+        menuService.menuCategoryDelete(categoryIdx);
+        return ResponseEntity.ok(BaseResponse.success("성공"));
+    }
 }

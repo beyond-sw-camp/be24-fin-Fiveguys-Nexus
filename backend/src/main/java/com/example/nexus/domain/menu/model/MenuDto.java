@@ -187,4 +187,5 @@ public class MenuDto {
     public static class MenuCategoryRegReq{
         private String menuCategoryName;
     }
+
 }

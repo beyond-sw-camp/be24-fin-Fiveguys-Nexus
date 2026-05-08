@@ -5,6 +5,9 @@ import com.example.nexus.domain.category.model.Category;
 import com.example.nexus.domain.product.model.Product;
 import com.example.nexus.domain.product.model.ProductDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,15 +33,11 @@ public class ProductService {
         return null;
     }
 
+    // 본사 전체 제품 조회 페이징처리
     @Transactional(readOnly = true)
-    public List<ProductDto.ListRes> findAllProduct() {
-        List<Product> entities = productRepository.findAll();
-        List<ProductDto.ListRes> dtos = new ArrayList<>();
-
-        for (Product entity : entities) {
-            dtos.add(ProductDto.ListRes.from(entity));
-        }
-        return dtos;
+    public ProductDto.ProductPageRes findAllProduct(Pageable pageable) {
+        Page<Product> productPage = productRepository.findAll(pageable);
+        return ProductDto.ProductPageRes.from(productPage);
     }
 
     @Transactional
@@ -77,10 +76,11 @@ public class ProductService {
     }
 
     // 가맹점별 제품 조회
-    public List<ProductDto.ListRes> findProductsByStore(Long storeIdx) {
-        return productRepository.findAllByStoreIdx(storeIdx).stream()
-                .map(ProductDto.ListRes::from)
-                .collect(Collectors.toList());
+    @Transactional
+    public Page<ProductDto.ListRes> findProductsByStore(Long storeIdx, Pageable pageable) {
+        Page<Product> productPage = productRepository.findAllByStoreIdx(storeIdx, pageable);
+
+        return productPage.map(product -> ProductDto.ListRes.from(product));
     }
 
     @Transactional(readOnly = true)

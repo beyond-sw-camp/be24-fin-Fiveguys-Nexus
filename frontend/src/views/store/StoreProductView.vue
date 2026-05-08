@@ -1,14 +1,10 @@
 <template>
   <div class="p-5 space-y-4">
-    <!-- Header -->
     <div class="flex justify-between items-center">
-      <div>
-        <h1 class="text-xl font-bold text-gray-900 tracking-tight">매장 제품 관리</h1>
-      </div>
+      <h1 class="text-xl font-bold text-gray-900 tracking-tight">매장 제품 관리</h1>
     </div>
 
-    <!-- Search + Category filter -->
-    <div class="flex gap-3 items-center flex-wrap">
+    <div class="flex gap-3 items-center flex-wrap mb-4">
       <div class="relative">
         <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         <input
@@ -16,130 +12,184 @@
           type="text"
           placeholder="제품명 검색..."
           @input="handleSearch"
-          class="pl-10 pr-4 py-2 rounded-lg border border-gray-200 text-sm w-52
-             bg-white shadow-sm
-             focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb]
-             outline-none transition-colors"
+          class="pl-10 pr-4 py-2 rounded-lg border border-gray-200 text-sm w-64 bg-white shadow-sm
+                 focus:border-[#F37321] focus:ring-1 focus:ring-[#F37321] outline-none transition-colors"
         />
       </div>
       <div class="flex gap-1.5 flex-wrap">
         <button
-          @click="selectedCategory = '전체'"
-          class="px-3 py-1.5 text-sm font-semibold border rounded-lg
-                transition-colors shadow-sm cursor-pointer"
+          @click="changeCategory('전체')"
+          class="px-3 py-1.5 text-sm font-semibold border rounded-lg transition-colors shadow-sm cursor-pointer"
           :class="selectedCategory === '전체'
-            ? 'bg-[#2563eb] text-white border-[#2563eb]'
-            : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'">
+            ? 'bg-[#F37321] text-white border-[#F37321]'
+            : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'"
+        >
           전체
         </button>
         <button
           v-for="cat in categories"
           :key="cat.idx"
-          @click="selectedCategory = cat.categoryName"
-          class="px-3 py-1.5 text-sm font-semibold border rounded-lg
-                transition-colors shadow-sm cursor-pointer"
+          @click="changeCategory(cat.categoryName)"
+          class="px-3 py-1.5 text-sm font-semibold border rounded-lg transition-colors shadow-sm cursor-pointer"
           :class="selectedCategory === cat.categoryName
-            ? 'bg-[#2563eb] text-white border-[#2563eb]'
-            : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'">
+            ? 'bg-[#F37321] text-white border-[#F37321]'
+            : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'"
+        >
           {{ cat.categoryName }}
         </button>
       </div>
     </div>
 
-    <!-- Table -->
-    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden pb-4">
       <table class="w-full text-sm text-left">
         <thead>
         <tr class="border-b border-gray-200 bg-gray-50">
-          <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">제품코드</th>
           <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">제품명</th>
           <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">카테고리</th>
           <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">단위</th>
-          <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">최대재고</th>
-          <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">최소재고</th>
           <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">단가</th>
           <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">위험 유통기한</th>
         </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
         <tr v-for="p in filteredProducts" :key="p.idx" class="hover:bg-gray-50/50 transition-colors">
-          <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ p.idx }}</td>
           <td class="px-5 py-3.5 font-semibold text-gray-900">{{ p.productName }}</td>
           <td class="px-5 py-3.5">
-            <span class="text-xs font-semibold px-2 py-0.5 bg-gray-100 text-gray-600 border border-gray-200 rounded">{{ p.categoryName }}</span>
+              <span class="text-xs font-semibold px-2 py-0.5 bg-gray-100 text-gray-600 border border-gray-200 rounded">
+                {{ p.categoryName }}
+              </span>
           </td>
           <td class="px-5 py-3.5 text-gray-600">{{ p.productUnit }}</td>
-          <td class="px-5 py-3.5 font-medium text-gray-900">{{ p.maxStock?.toLocaleString() }}</td>
-          <td class="px-5 py-3.5 font-semibold text-[#2563eb]">{{ p.minStock?.toLocaleString() }}</td>
           <td class="px-5 py-3.5 font-medium text-gray-900">₩ {{ p.unitPrice?.toLocaleString() }}</td>
-          <td class="px-5 py-3.5 text-xs font-mono"
-              :class="p.dangerDays ? 'text-amber-600 font-semibold' : 'text-gray-400'">
+          <td class="px-5 py-3.5 text-xs font-mono" :class="p.dangerDays ? 'text-amber-600 font-semibold' : 'text-gray-400'">
             {{ p.dangerDays ? `D-${p.dangerDays}` : '-' }}
           </td>
         </tr>
         <tr v-if="filteredProducts.length === 0">
-          <td colspan="8" class="px-5 py-12 text-center text-gray-400 text-sm">검색 결과가 없습니다.</td>
+          <td colspan="5" class="px-5 py-12 text-center text-gray-400 text-sm">
+            데이터가 없거나 검색 결과가 없습니다.
+          </td>
         </tr>
         </tbody>
       </table>
+
+      <div v-if="totalPages > 1 && !searchQuery" class="flex justify-center items-center gap-2 pt-6">
+        <button
+          class="p-2 rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+          :disabled="currentPage === 0"
+          @click="goToPage(currentPage - 1)"
+        >
+          <ChevronLeft class="w-4 h-4" />
+        </button>
+        <button
+          v-for="page in totalPages"
+          :key="page"
+          class="w-8 h-8 rounded text-sm font-semibold cursor-pointer"
+          :class="currentPage === page - 1 ? 'bg-[#F37321] text-white' : 'text-gray-500 hover:bg-gray-50'"
+          @click="goToPage(page - 1)"
+        >
+          {{ page }}
+        </button>
+        <button
+          class="p-2 rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+          :disabled="currentPage === totalPages - 1"
+          @click="goToPage(currentPage + 1)"
+        >
+          <ChevronRight class="w-4 h-4" />
+        </button>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { Search } from 'lucide-vue-next'
+import { Search, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import { getStoreProductList, searchStoreProduct } from '@/api/product'
 import { readCategoryList } from '@/api/category'
 
-
+// --- 상태 관리 ---
 const categories = ref([])
-const products = ref([])
+const products = ref({ productList: [] }) // 데이터 구조 통일
 const selectedCategory = ref('전체')
 const searchQuery = ref('')
 
-// 데이터 로드: 페이지가 열릴 때 해당 가맹점의 제품 목록을 가져옵니다.
-const loadData = async () => {
+const currentPage = ref(0)
+const pageSize = ref(10)
+const totalPages = ref(1)
+
+// --- 데이터 로딩 ---
+const fetchCategories = async () => {
   try {
-    // 카테고리 목록과 가맹점 전용 제품 목록을 병렬로 가져옴
-    const [catRes, prodRes] = await Promise.all([
-      readCategoryList(),
-      getStoreProductList()
-    ])
-    categories.value = catRes.data
-    products.value = prodRes.data
+    const response = await readCategoryList()
+    // BaseResponse의 result 필드에서 데이터 추출
+    categories.value = response.data.result || []
   } catch (error) {
-    console.error('데이터 호출 중 오류 발생:', error)
+    console.error('카테고리 로드 실패:', error)
   }
 }
 
-// 검색 핸들러
-const handleSearch = async () => {
-  // 검색어가 없으면 다시 가맹점별 목록 로드
-  if (!searchQuery.value.trim()) {
-    const response = await getStoreProductList(storeIdx.value)
-    products.value = response.data
-    return
-  }
-
+const fetchStoreProducts = async () => {
   try {
-    // 백엔드의 검색 API가 전체 검색인지 매장 내 검색인지에 따라 결과가 달라질 수 있습니다.
-    const response = await searchStoreProduct(searchQuery.value)
-    products.value = response.data
+    const response = await getStoreProductList(currentPage.value, pageSize.value)
+    const result = response.data.result // Page 객체 (content, totalPages 포함)
+
+    if (result && result.content) {
+      products.value = { productList: result.content }
+      totalPages.value = result.totalPages
+    } else {
+      // 혹시나 Page 구조가 아닐 경우의 예외 처리
+      products.value = { productList: result || [] }
+      totalPages.value = 1
+    }
   } catch (error) {
-    console.error('검색 실패:', error)
+    console.error('매장 제품 목록 로드 실패:', error)
   }
 }
 
 onMounted(() => {
-  // 컴포넌트 마운트 시 데이터 로드
-  loadData()
+  fetchCategories()
+  fetchStoreProducts()
 })
 
-// 카테고리 필터링 (클라이언트 사이드)
+// --- 페이징 및 카테고리 변경 ---
+const goToPage = (page) => {
+  if (page < 0 || page >= totalPages.value) return
+  currentPage.value = page
+  fetchStoreProducts()
+}
+
+const changeCategory = (name) => {
+  selectedCategory.value = name
+  // 백엔드 API가 카테고리별 조회를 지원하지 않는다면 프론트에서 필터링(computed)만 수행
+}
+
+// --- 검색 (백엔드 연동) ---
+const handleSearch = async () => {
+  // 검색어가 없으면 일반 목록 재조회
+  if (!searchQuery.value.trim()) {
+    currentPage.value = 0
+    await fetchStoreProducts()
+    return
+  }
+
+  try {
+    const response = await searchStoreProduct(searchQuery.value)
+    const searchResult = response.data.result || [] // List<ListRes> 형식
+
+    // 검색 결과 구조 맞춤 (검색은 보통 페이징 없이 전체 리스트로 옴)
+    products.value = { productList: searchResult }
+    totalPages.value = 1
+    currentPage.value = 0
+  } catch (error) {
+    console.error('매장 제품 검색 실패:', error)
+  }
+}
+
+// --- 최종 필터링된 결과 ---
 const filteredProducts = computed(() => {
-  return products.value.filter(p => {
-    return selectedCategory.value === '전체' || p.categoryName === selectedCategory.value
-  })
+  const list = products.value.productList || []
+  if (selectedCategory.value === '전체') return list
+  return list.filter(p => p.categoryName === selectedCategory.value)
 })
 </script>

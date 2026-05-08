@@ -39,7 +39,7 @@ public class InventoryMovementService {
 
         Product product = productRepository.findById(req.getProductIdx()).orElseThrow();
 
-        HeadInventory headInventory = headInventoryRepository.findByProductIdx(product.getIdx()).orElseThrow();
+        HeadInventory headInventory = headInventoryRepository.findByProductIdxForUpdate(product.getIdx()).orElseThrow();
 
         headInventory.setCount(headInventory.getCount() + req.getQuantity());
 
@@ -62,7 +62,7 @@ public class InventoryMovementService {
 
         Store store = storeRepository.findById(req.getStoreIdx()).orElseThrow();
 
-        HeadInventory headInventory = headInventoryRepository.findByProductIdx(product.getIdx()).orElseThrow();
+        HeadInventory headInventory = headInventoryRepository.findByProductIdxForUpdate(product.getIdx()).orElseThrow();
 
         headInventory.setCount(headInventory.getCount() - req.getQuantity());
         headInventoryRepository.save(headInventory);

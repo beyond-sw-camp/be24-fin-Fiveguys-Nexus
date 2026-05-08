@@ -76,7 +76,7 @@
         </form>
 
         <div class="mt-6 pt-5 border-t border-gray-100 text-center text-xs text-gray-400">
-          HANWHA Nexus SCM Platform v1.0 — Blue/Green 배포 테스트 v1
+          HANWHA Nexus SCM Platform v1.0 — Blue/Green 배포 테스트 v2
         </div>
       </div>
     </div>

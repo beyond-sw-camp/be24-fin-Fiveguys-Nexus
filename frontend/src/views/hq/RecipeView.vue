@@ -3,6 +3,10 @@ import {ref, computed, onMounted, reactive, watch} from 'vue'
 import {Plus, Search, Image as ImageIcon, Tag, Trash2, ChevronRight, ChevronLeft} from 'lucide-vue-next'
 import {getProductList, getCategoryList, getMenuList, getMenuItemList, getPresignedUrl, postNewRegister, putMenuUpdate, putMenuDelete, postMenuCategoryRegister, deleteCategory} from '@/api/menu/index.js'
 import axios from 'axios'
+import Toast from '@/components/common/Toast.vue'
+import { useToast } from '@/composables/useToast'
+
+const { toast, showToast } = useToast()
 
 const showCategoryModal = ref(false)
 const newCategoryInput = ref('')
@@ -128,7 +132,7 @@ async function openEditMenuModal(menu) {
     showMenuModal.value = true;
   } catch (error) {
     console.error("수정 데이터 로드 실패:", error);
-    alert("메뉴 상세 정보를 불러오는 중 오류가 발생했습니다.");
+    showToast("메뉴 상세 정보를 불러오는 중 오류가 발생했습니다.", 'error');
   }
 }
 
@@ -162,7 +166,7 @@ function handleImageChange(e) {
 
   const allowedTypes = ['image/jpg', 'image/jpeg', 'image/png'];
   if (!allowedTypes.includes(file.type)) {
-    alert('JPG, PNG 형식의 이미지 파일만 업로드할 수 있습니다.');
+    showToast('JPG, PNG 형식의 이미지 파일만 업로드할 수 있습니다.', 'error');
     e.target.value = '';
     return;
   }
@@ -184,7 +188,7 @@ async function uploadFileToS3() {
     });
     return s3Path;
   } catch {
-    alert("파일 업로드 중 오류가 발생했습니다. 다시 시도해주세요.")
+    showToast("파일 업로드 중 오류가 발생했습니다. 다시 시도해주세요.", 'error')
   }
 }
 
@@ -241,7 +245,7 @@ async function saveMenu() {
       : await postNewRegister(dto);
 
     if (res.data.code === 2000) {
-      alert(editTarget.value ? "메뉴가 수정되었습니다." : "신규 메뉴가 등록되었습니다.");
+      showToast(editTarget.value ? "메뉴가 수정되었습니다." : "신규 메뉴가 등록되었습니다.");
 
       if (!editTarget.value) menus.value.length = 0; // 등록일 때만 목록 초기화
       await getMenuRes();
@@ -252,7 +256,7 @@ async function saveMenu() {
 
   }catch (error) {
     const serverMessage = error.response?.data?.message || error.message;
-    alert(`등록 실패 : ${serverMessage}`);
+    showToast(`등록 실패 : ${serverMessage}`, 'error');
   }
 }
 
@@ -268,14 +272,14 @@ async function addCategoryAction() {
     const res = await postMenuCategoryRegister(categoryName)
     console.log(res)
     if (res.data.code === 2000) {
-      alert("카테고리가 등록되었습니다.");
+      showToast("카테고리가 등록되었습니다.");
 
       newCategoryInput.value = ''
       await categoryRes()
     }
   } catch (error) {
     const serverMessage = error.response?.data?.message || error.message;
-    alert(`등록 실패 : ${serverMessage}`);
+    showToast(`등록 실패 : ${serverMessage}`, 'error');
   }
 }
 
@@ -285,13 +289,13 @@ async function deleteCategoryAction(idx, name) {
   try {
     const res = await deleteCategory(idx)
     if (res.data.code === 2000) {
-      alert("카테고리가 삭제되었습니다.");
+      showToast("카테고리가 삭제되었습니다.");
       await categoryRes()
     }
 
   } catch (error) {
     const serverMessage = error.response?.data?.message || error.message;
-    alert(`등록 실패 : ${serverMessage}`);
+    showToast(`등록 실패 : ${serverMessage}`, 'error');
   }
 }
 
@@ -313,7 +317,7 @@ async function confirmDelete() {
   if (deleteTarget.value) {
     const res = await putMenuDelete(deleteTarget.value.idx)
     if (res.data.code === 2000) {
-      alert("메뉴가 삭제되었습니다.");
+      showToast("메뉴가 삭제되었습니다.");
       await getMenuRes();
     }
   }
@@ -366,6 +370,7 @@ onMounted(() => {
 
 <template>
   <div class="p-5 space-y-4">
+    <Toast :toast="toast" />
     <div class="flex items-center justify-between">
       <div>
         <h1 class="text-xl font-bold text-gray-900 tracking-tight">메뉴 관리</h1>

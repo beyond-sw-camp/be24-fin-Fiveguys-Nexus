@@ -1,6 +1,6 @@
 <script setup>
 import {ref, reactive, onMounted, computed, nextTick, watch} from 'vue'
-import { Plus, Search, FileText } from 'lucide-vue-next'
+import {Plus, Search, FileText, ChevronRight, ChevronLeft} from 'lucide-vue-next'
 import { getStoreList , getStoreDetailList, getPresignedUrl, postNewRegister, putStoreUpdate, getStoreTotal} from '@/api/store/index.js'
 import axios from 'axios'
 import Toast from '@/components/common/Toast.vue'
@@ -9,7 +9,6 @@ import { useToast } from '@/composables/useToast'
 const { toast, showToast } = useToast()
 const searchQuery = ref('')
 const filterStatus = ref('전체')
-const activeDropdown = ref(null)
 const statusOptions = ['전체', '입점', '폐점']
 const storesList = ref([])
 const storeTotalCount = ref()
@@ -23,7 +22,7 @@ const showModal = ref(false)
 const showDetailModal = ref(false)
 const editTarget = ref(null)
 const detailTarget = ref(null)
-
+const selectedFile = ref(null);
 // 초기화 하는 함수
 const getInitialForm = () => ({
   storeName: '',
@@ -84,7 +83,7 @@ const formatBusinessNumber = (e) => {
   if (val.length > 10) val = val.substring(0, 10);
 
   // 3. 포맷팅 로직 (000-00-00000)
-  let formatted = '';
+  let formatted;
   if (val.length <= 3) {
     formatted = val;
   } else if (val.length <= 5) {
@@ -127,13 +126,17 @@ async function openModal(idx =! null) {
 }
 
 // 선택 파일 감지
-const selectedFile = ref(null);
 async function handleFileChange(e) {
   const file = e.target.files[0]
-  if (file) {
-    selectedFile.value = file;
-    form.fileName = file.name;
+  if (!file) return;
+  const allowedTypes = ['application/pdf'];
+  if (!allowedTypes.includes(file.type)) {
+    showToast('사업자 등록증은 PDF 형식의 파일만 업로드할 수 있습니다.', 'error');
+    e.target.value = ''; // input 태그 초기화
+    return;
   }
+  selectedFile.value = file;
+  form.fileName = file.name;
 }
 
 // S3 업로드 로직만 담당하는 공통 함수
@@ -152,9 +155,8 @@ async function uploadFileToS3() {
     });
 
     return s3Path; // 업로드된 S3 파일 경로(DB 저장용) 반환
-  } catch (error) {
-    console.error("S3 업로드 실패:", error);
-    throw new Error("파일 업로드 중 오류가 발생했습니다.");
+  } catch {
+    showToast("파일 업로드 중 오류가 발생했습니다. 다시 시도해주세요.", 'error')
   }
 }
 
@@ -213,9 +215,7 @@ async function saveStore() {
 
   } catch (error) {
     const serverMessage = error.response?.data?.message || error.message;
-    const serverCode = error.response?.data?.code || "Unknown Code";
-    console.error("서버 에러 상세:", error.response?.data);
-    showToast(`등록 실패 (${serverCode}): ${serverMessage}`, 'error');
+    showToast(`등록 실패 : ${serverMessage}`, 'error');
   }
 }
 
@@ -485,7 +485,6 @@ onMounted(() => {
               </div>
             </div>
           </div>
-
           <div class="space-y-3 pt-2">
             <div v-if="detailTarget.closedAt && detailTarget.closedAt !== '운영 중'"
                  class="flex flex-col items-center p-3 bg-red-50 rounded-lg border border-red-100">
@@ -500,7 +499,7 @@ onMounted(() => {
             'w-full flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-bold transition-colors shadow-sm cursor-pointer',
             detailTarget.closedAt && detailTarget.closedAt !== '운영 중'
               ? 'bg-white border border-gray-200 text-gray-700 text-sm font-bold hover:bg-gray-50' // 폐업 시: 미리보기와 유사한 연회색 톤
-              : 'bg-[#F37321] text-white hover:bg-[#e0661d]' // 운영 중: 기존 주황색]">
+              : 'bg-[#F37321] text-white hover:bg-[#e0661d]' ]">
               <FileText :class="['w-4 h-4', detailTarget.closedAt && detailTarget.closedAt !== '운영 중' ? 'text-gray-400' : 'text-white']" />
               사업자 PDF 다운로드
             </button>
@@ -564,8 +563,7 @@ onMounted(() => {
           </div>
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">사업자번호</label>
-            <input :value="form.business" @input="formatBusinessNumber" type="text" placeholder="숫자만 입력하세요" maxlength="12"
-              class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all"/>
+            <input :value="form.business" @input="formatBusinessNumber" type="text" placeholder="숫자만 입력하세요" maxlength="12" class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all"/>
           </div>
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">사업자 PDF</label>
@@ -580,47 +578,35 @@ onMounted(() => {
           <div class="flex gap-3 pt-4">
             <button type="button" @click="showModal = false"
                     class="flex-1 py-3 rounded-lg border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-50 transition-colors cursor-pointer">취소</button>
-            <button type="submit" :disabled="!isFormValid" :class="[!isFormValid ? 'bg-gray-300 cursor-not-allowed' : 'bg-[#F37321] hover:bg-[#e0661d] cursor-pointer']"
-              class="flex-1 py-3 rounded-lg text-white text-sm font-bold transition-colors shadow-sm">
+            <button type="submit" :disabled="!isFormValid" :class="[!isFormValid ? 'bg-gray-300 cursor-not-allowed' : 'bg-[#F37321] hover:bg-[#e0661d] cursor-pointer']" class="flex-1 py-3 rounded-lg text-white text-sm font-bold transition-colors shadow-sm">
               저장
             </button>
           </div>
         </form>
       </div>
     </div>
-    <!-- Pagination UI -->
-    <div class="flex items-center justify-center gap-3 mt-8 pb-10">
-      <!-- 이전 페이지 버튼 (작게) -->
+    <div v-if="pagination.totalPage > 1" class="flex justify-center items-center gap-2 pt-2">
       <button
-        @click="changePage(pagination.currentPage - 1)"
+        class="p-2 rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
         :disabled="pagination.currentPage === 0"
-        class="w-7 h-7 flex items-center justify-center rounded border border-gray-200 bg-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors cursor-pointer"
-      >
-        <span class="text-[10px] text-gray-500">◀</span>
+        @click="changePage(pagination.currentPage - 1)">
+        <ChevronLeft class="w-4 h-4" />
       </button>
 
-      <!-- 페이지 번호 -->
-      <div class="flex items-center gap-1">
-        <button
-          v-for="pageIdx in visiblePages"
-          :key="pageIdx"
-          @click="changePage(pageIdx)"
-          class="min-w-[28px] h-7 px-2 flex items-center justify-center rounded text-xs font-bold transition-all cursor-pointer"
-          :class="pagination.currentPage === pageIdx
-        ? 'text-[#F37321] border-b-2 border-[#F37321] rounded-none'
-        : 'text-gray-400 hover:text-gray-600'"
-        >
-          {{ pageIdx + 1 }}
-        </button>
-      </div>
+      <button v-for="pageIdx in visiblePages" :key="pageIdx"
+              class="w-8 h-8 rounded text-sm font-semibold cursor-pointer transition-colors"
+              :class="pagination.currentPage === pageIdx
+          ? 'bg-[#F37321] text-white'
+          : 'text-gray-500 hover:bg-gray-50'"
+              @click="changePage(pageIdx)">
+        {{ pageIdx + 1 }}
+      </button>
 
-      <!-- 다음 페이지 버튼 (작게) -->
       <button
-        @click="changePage(pagination.currentPage + 1)"
+        class="p-2 rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
         :disabled="pagination.currentPage >= pagination.totalPage - 1"
-        class="w-7 h-7 flex items-center justify-center rounded border border-gray-200 bg-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors cursor-pointer"
-      >
-        <span class="text-[10px] text-gray-500">▶</span>
+        @click="changePage(pagination.currentPage + 1)">
+        <ChevronRight class="w-4 h-4" />
       </button>
     </div>
     <Toast :show="toast.show" :message="toast.message" :type="toast.type" />

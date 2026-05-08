@@ -1,27 +1,19 @@
 import api from '@/plugins/axiosinterceptor'
 
-const DEFAULT_STORE_LIST_FILTER = {
-  keyword: '',
-  status: undefined,
-}
-
-const normalizeStoreListFilter = (searchReq = {}) => {
-  const keyword = typeof searchReq.keyword === 'string' ? searchReq.keyword.trim() : DEFAULT_STORE_LIST_FILTER.keyword
-  const status = typeof searchReq.status === 'string' && searchReq.status.trim() ? searchReq.status.trim() : DEFAULT_STORE_LIST_FILTER.status
-  return { keyword, status }
-}
-
-export const getStoreList = (searchReq = DEFAULT_STORE_LIST_FILTER, page = 0, size = 10) => {
-  const filter = normalizeStoreListFilter(searchReq)
+export const getStoreList = (searchReq, page, size) => {
   return api.get('/store/list', {
     params: {
-      keyword: filter.keyword,
-      status: filter.status,
+      keyword: searchReq.keyword,
+      status: searchReq.status,
       page: page,
       size: size
     }
   });
 }
+
+export const getStoreTotal = () =>
+  api.get('/store/totalCount/list')
+
 export const getStoreDetailList = (storeIdx) => api.get(`/store/detail/list/${storeIdx}`)
 
 export const searchStoreList = (keyword = '') =>

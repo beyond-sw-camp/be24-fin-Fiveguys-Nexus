@@ -1,7 +1,7 @@
 <script setup>
 import { ref, reactive, onMounted, computed, nextTick } from 'vue'
 import { Plus, Search, FileText, ChevronDown } from 'lucide-vue-next'
-import { getStoreList , getStoreDetailList, getPresignedUrl, postNewRegister, putStoreUpdate} from '@/api/store/index.js'
+import { getStoreList , getStoreDetailList, getPresignedUrl, postNewRegister, putStoreUpdate, getStoreTotal} from '@/api/store/index.js'
 import axios from 'axios'
 import Toast from '@/components/common/Toast.vue'
 import { useToast } from '@/composables/useToast'
@@ -17,6 +17,7 @@ const statusOptions = ['전체', '입점', '폐점']
 
 // --- 가맹점 목록 리스트 ---
 const storesList = reactive([])
+const storeTotalCount = ref()
 const pagination = reactive({
   totalPage: 0,
   totalCount: 0,
@@ -29,14 +30,16 @@ const storeListRes = async (page = 0)=>{
     keyword: searchQuery.value, // ref로 선언된 검색어
     status: filterStatus.value === '입점' ? 'ACTIVE' : filterStatus.value === '폐점' ? 'CLOSED' : null
   }
+  const totalRes = await getStoreTotal()
+  storeTotalCount.value = totalRes.data.result
 
   const res = await getStoreList(searchReq, page, pagination.currentSize)
   storesList.splice(0, storesList.length, ...res.data.result.storeList)
 
-
   pagination.totalPage = res.data.result.totalPage
   pagination.totalCount = res.data.result.totalCount
   pagination.currentPage = res.data.result.currentPage
+
 }
 
 const changePage = (page) => {
@@ -395,15 +398,15 @@ onMounted(() => {
     <div class="grid grid-cols-3 gap-4">
       <div class="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
         <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">전체 입점 가맹점</p>
-        <p class="text-3xl font-black text-gray-900 mt-2">{{ storesList.length }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
+        <p class="text-3xl font-black text-gray-900 mt-2">{{ storeTotalCount?.totalCount }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
       </div>
       <div class="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
         <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">입점</p>
-        <p class="text-3xl font-black text-green-600 mt-2">{{storesList.filter(s => s.status === '입점').length }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
+        <p class="text-3xl font-black text-green-600 mt-2">{{ storeTotalCount?.activeCount }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
       </div>
       <div class="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
         <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">폐점 가맹점</p>
-        <p class="text-3xl font-black text-red-500 mt-2">{{ storesList.filter(s => s.status === '폐점').length }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
+        <p class="text-3xl font-black text-red-500 mt-2">{{ storeTotalCount?.closedCount }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
       </div>
     </div>
 

@@ -186,9 +186,6 @@ const filteredMenus = computed(() => {
 const totalPrice = computed(() => cart.value.reduce((s, i) => s + i.price * i.quantity, 0))
 const totalQuantity = computed(() => cart.value.reduce((s, i) => s + i.quantity, 0))
 
-function showToastMsg(msg, type = 'success') {
-  showToast(msg, type)
-}
 
 function extractApiErrorMessage(error, fallback = '영업 마감 처리에 실패했습니다. 잠시 후 다시 시도해 주세요.') {
   const message = error?.response?.data?.message
@@ -228,7 +225,7 @@ async function loadMenusAndCategories() {
     menus.value = menuAcc
   } catch (e) {
     console.error(e)
-    showToastMsg('메뉴를 불러오지 못했습니다. 로그인·API 주소를 확인해 주세요.')
+    showToast('메뉴를 불러오지 못했습니다. 로그인·API 주소를 확인해 주세요.')
     menus.value = []
   } finally {
     loadingMenus.value = false
@@ -292,10 +289,10 @@ async function processPayment(method) {
     showPaymentModal.value = false
     cart.value = []
     await loadTodaySettlement()
-    showToastMsg(`${methodKr} 결제가 완료되었습니다.`)
+    showToast(`${methodKr} 결제가 완료되었습니다.`)
   } catch (e) {
     console.error(e)
-    showToastMsg('결제 처리에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+    showToast('결제 처리에 실패했습니다. 잠시 후 다시 시도해 주세요.')
   }
 }
 
@@ -306,7 +303,7 @@ function toggleStoreStatus() {
     Object.assign(salesData.value, { isClosed: false, total: 0, card: 0, cash: 0, count: 0 })
     saveClosedStatus(false)
     paymentHistory.value = []
-    showToastMsg('새로운 영업이 시작되었습니다.')
+    showToast('새로운 영업이 시작되었습니다.')
   }
 }
 
@@ -320,11 +317,11 @@ async function confirmClose() {
     saveClosedStatus(true)
     showCloseModal.value = false
     await loadTodaySettlement()
-    showToastMsg(closeMessage || '영업이 마감되었습니다. AI 자동 발주서가 생성되었습니다.')
+    showToast(closeMessage || '영업이 마감되었습니다. AI 자동 발주서가 생성되었습니다.')
   } catch (e) {
     console.error(e)
     showCloseModal.value = false
-    showToastMsg(extractApiErrorMessage(e))
+    showToast(extractApiErrorMessage(e))
   } finally {
     isClosingStore.value = false
   }

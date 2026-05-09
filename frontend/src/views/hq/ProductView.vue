@@ -41,6 +41,7 @@
         </div>
       </div>
 
+      <!-- 제품 테이블 -->
       <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
         <table class="w-full text-sm text-left">
           <thead>
@@ -79,23 +80,22 @@
             </td>
           </tr>
           <tr v-if="filteredProducts.length === 0">
-            <td colspan="9" class="px-5 py-12 text-center text-gray-400 text-sm">데이터가 없습니다.</td>
+            <td colspan="9" class="px-5 py-12 text-center text-gray-400 text-sm">등록된 제품이 없거나 검색 결과가 없습니다.</td>
           </tr>
           </tbody>
         </table>
 
+        <!-- 페이징 -->
         <div class="px-5 py-4 bg-white border-t border-gray-100 relative flex items-center justify-center">
           <p class="absolute left-5 text-xs text-gray-500">
             총 <span class="font-bold text-[#F37321]">{{ pageInfo.totalCount }}</span>개
           </p>
-
           <div class="flex gap-1">
             <button @click="goToPage(pageInfo.currentPage - 1)"
                     :disabled="pageInfo.currentPage === 0"
                     class="p-2 rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors">
               <ChevronLeft class="w-4 h-4" />
             </button>
-
             <button v-for="pNum in pageNumbers" :key="pNum"
                     @click="goToPage(pNum - 1)"
                     class="min-w-[32px] h-8 text-xs font-bold rounded border transition-colors cursor-pointer"
@@ -104,7 +104,6 @@
                       : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'">
               {{ pNum }}
             </button>
-
             <button @click="goToPage(pageInfo.currentPage + 1)"
                     :disabled="pageInfo.currentPage + 1 >= pageInfo.totalPage"
                     class="p-2 rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors">
@@ -115,6 +114,7 @@
       </div>
     </div>
 
+    <!-- 제품 등록/수정 모달 -->
     <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center">
       <div class="absolute inset-0 bg-black/40" @click="showModal = false"></div>
       <div class="relative bg-white rounded-lg w-full max-w-lg border border-gray-200 shadow-xl">
@@ -176,6 +176,7 @@
       </div>
     </div>
 
+    <!-- 카테고리 관리 모달 -->
     <div v-if="showCategoryModal" class="fixed inset-0 z-50 flex items-center justify-center">
       <div class="absolute inset-0 bg-black/40" @click="showCategoryModal = false"></div>
       <div class="relative bg-white rounded-lg w-full max-w-md border border-gray-200 shadow-xl">
@@ -203,6 +204,9 @@
                   <Trash2 class="w-3.5 h-3.5" />
                 </button>
               </div>
+              <div v-if="categories.length === 0" class="px-4 py-6 text-center text-gray-400 text-sm">
+                등록된 카테고리가 없습니다.
+              </div>
             </div>
           </div>
           <button @click="showCategoryModal = false"
@@ -210,14 +214,6 @@
         </div>
       </div>
     </div>
-    <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
-    <ConfirmModal
-      :open="confirmState.open"
-      :title="confirmState.title"
-      :confirm-text="confirmState.confirmText"
-      type="danger"
-      @close="closeConfirm"
-      @confirm="handleConfirm" />
   </div>
 </template>
 
@@ -226,24 +222,6 @@ import { ref, computed, onMounted } from 'vue'
 import { Trash2, Search, Tag, Plus, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import { createCategory, readCategoryList, deleteCategory } from '@/api/category'
 import { getProductList, addNewProduct, updateProduct, deleteProduct, searchProduct } from '@/api/product'
-import Toast from '@/components/common/Toast.vue'
-import ConfirmModal from '@/components/common/ConfirmModal.vue'
-import { useToast } from '@/composables/useToast'
-
-const { toast, showToast } = useToast()
-
-const confirmState = ref({ open: false, title: '', confirmText: '확인', action: null })
-function openConfirm({ title, confirmText, action }) {
-  confirmState.value = { open: true, title, confirmText, action }
-}
-function closeConfirm() {
-  confirmState.value = { open: false, title: '', confirmText: '확인', action: null }
-}
-async function handleConfirm() {
-  const action = confirmState.value.action
-  closeConfirm()
-  if (action) await action()
-}
 
 // --- 상태 관리 ---
 const categories = ref([])
@@ -262,7 +240,7 @@ const pageInfo = ref({
   currentSize: 10
 })
 
-// 제품 등록/수정용 폼
+// 제품 등록/수정용 폼 상태
 const form = ref({
   idx: null,
   productName: '',
@@ -279,16 +257,27 @@ const fetchCategories = async () => {
   try {
     const res = await readCategoryList()
     categories.value = res.data.result || []
-  } catch (err) { console.error(err) }
+  } catch (error) {
+    console.error('카테고리 조회 실패:', error)
+  }
 }
 
+// 응답 구조 .productList로 수정
 const fetchProducts = async (page = 0) => {
   try {
-    const res = await getProductList(page, pageInfo.value.currentSize)
+    const categoryName = selectedCategory.value === '전체' ? null : selectedCategory.value
+
+    const res = await getProductList(page, 10, categoryName)
+
     if (res.data.success) {
-      pageInfo.value = res.data.result
+      pageInfo.value = {
+        ...res.data.result,
+        currentSize: 10
+      }
     }
-  } catch (err) { console.error(err) }
+  } catch (error) {
+    console.error('제품 목록 조회 실패:', error)
+  }
 }
 
 onMounted(() => {
@@ -296,56 +285,56 @@ onMounted(() => {
   fetchProducts(0)
 })
 
-// --- 페이징 로직 ---
+// --- 페이징 ---
 const pageNumbers = computed(() => {
-  const pages = []
-  // 페이지가 0개여도 최소 1개는 보이게 처리 (UI 방어)
   const total = Math.max(1, pageInfo.value.totalPage)
-  for (let i = 1; i <= total; i++) pages.push(i)
-  return pages
+  return Array.from({ length: total }, (_, i) => i + 1)
 })
 
+// 조건 제거로 3페이지 이상 클릭 가능하도록 수정
 const goToPage = (page) => {
-  if (page < 0 || page >= pageInfo.value.totalPage) return
+  if (page < 0) return
   fetchProducts(page)
 }
 
-// --- 검색 및 필터 보정 ---
+// --- 검색 ---
+let searchDebounceTimer = null
 const handleSearch = async () => {
-  // 검색 시 필터와 페이지 초기화
-  selectedCategory.value = '전체'
-  if (!searchQuery.value.trim()) {
-    await fetchProducts(0)
-    return
-  }
-  try {
-    const res = await searchProduct(searchQuery.value)
-    if (res.data.success) {
-      const result = res.data.result || []
-      // 검색 시에는 페이징 정보가 없으므로 1페이지로 강제 설정하여 UI 깨짐 방지
-      pageInfo.value = {
-        productList: result,
-        totalPage: 1,
-        totalCount: result.length,
-        currentPage: 0,
-        currentSize: 10
-      }
+  clearTimeout(searchDebounceTimer)
+  searchDebounceTimer = setTimeout(async () => {
+    selectedCategory.value = '전체'
+    if (!searchQuery.value.trim()) {
+      await fetchProducts(0)
+      return
     }
-  } catch (err) { console.error(err) }
+    try {
+      const res = await searchProduct(searchQuery.value)
+      if (res.data.success) {
+        const result = res.data.result || []
+        pageInfo.value = {
+          productList: result,
+          totalPage: 1,
+          totalCount: result.length,
+          currentPage: 0,
+          currentSize: 10
+        }
+      }
+    } catch (error) {
+      console.error('제품 검색 실패:', error)
+    }
+  }, 300)
 }
 
-const changeCategory = (catName) => {
+
+const changeCategory = async (catName) => {
   selectedCategory.value = catName
-  // 카테고리 변경 시 페이지를 0으로 초기화하지 않으면
-  // 현재 데이터 개수보다 큰 페이지에 머물 수 있어 리스트가 안 보일 수 있음
-  pageInfo.value.currentPage = 0
+  searchQuery.value = ''
+  await fetchProducts(0)
 }
 
-// 필터링된 결과 (화면 렌더링용)
+// 필터링 (화면 렌더링용)
 const filteredProducts = computed(() => {
-  const list = pageInfo.value.productList || []
-  if (selectedCategory.value === '전체') return list
-  return list.filter(p => p.categoryName === selectedCategory.value)
+  return pageInfo.value.productList || []
 })
 
 // --- 제품 관리 (C.U.D) ---
@@ -383,41 +372,52 @@ async function handleSaveProduct() {
     const dto = { ...form.value }
     if (form.value.idx) {
       await updateProduct(dto)
-      alert('수정 완료')
+      alert('제품이 수정되었습니다.')
     } else {
       await addNewProduct(dto)
-      alert('등록 완료')
+      alert('새 제품이 등록되었습니다.')
     }
     showModal.value = false
-    fetchProducts(pageInfo.value.currentPage)
-  } catch (err) { alert('실패') }
+    await fetchProducts(pageInfo.value.currentPage)
+  } catch (error) {
+    console.error('제품 저장 실패:', error)
+    alert('저장 중 오류가 발생했습니다.')
+  }
 }
 
+// deleteProduct({ idx }) 형태로 수정
 async function handleDeleteProduct(idx) {
-  if (!confirm('삭제하시겠습니까?')) return
+  if (!confirm('이 제품을 삭제하시겠습니까?')) return
   try {
     await deleteProduct({ idx })
-    fetchProducts(pageInfo.value.currentPage)
-  } catch (err) { alert('실패') }
+    await fetchProducts(pageInfo.value.currentPage)
+  } catch (error) {
+    console.error('삭제 실패:', error)
+    alert('삭제 중 오류가 발생했습니다.')
+  }
 }
 
-// --- 카테고리 관리 ---
+// --- 카테고리 액션 ---
 async function addCategoryAction() {
   const name = newCategoryInput.value.trim()
   if (!name) return
   try {
     await createCategory(name)
     newCategoryInput.value = ''
-    fetchCategories()
-  } catch (err) { alert('실패') }
+    await fetchCategories()
+  } catch (error) {
+    alert('카테고리 등록 실패')
+  }
 }
 
 async function deleteCategoryAction(idx, name) {
   if (!confirm(`'${name}' 카테고리를 삭제하시겠습니까?`)) return
   try {
     await deleteCategory(idx)
-    fetchCategories()
+    await fetchCategories()
     if (selectedCategory.value === name) selectedCategory.value = '전체'
-  } catch (err) { alert('실패') }
+  } catch (error) {
+    alert('삭제 실패: 해당 카테고리를 사용하는 제품이 있을 수 있습니다.')
+  }
 }
 </script>

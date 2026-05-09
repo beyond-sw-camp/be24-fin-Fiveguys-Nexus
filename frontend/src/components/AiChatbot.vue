@@ -1,3 +1,75 @@
+<script setup>
+import { ref, nextTick } from 'vue'
+import { Bot, X, Send } from 'lucide-vue-next'
+import { postReportGenerate } from '@/api/report/index.js'
+
+const isOpen = ref(false)
+const isLoading = ref(false)
+const input = ref('')
+const messageContainer = ref(null)
+const textareaRef = ref(null)
+
+function autoResize() {
+  const el = textareaRef.value
+  if (!el) return
+  el.style.height = 'auto'
+  el.style.height = el.scrollHeight + 'px'
+}
+
+const messages = ref([
+  {
+    id: 1,
+    role: 'ai',
+    text: '안녕하세요! Nexus AI 어시스턴트입니다. 보고서 생성을 요청해보세요. 예) "저번달 총 매출과 이번달 비교 보고서 만들어줘"',
+  },
+])
+
+let nextId = 2
+
+// 메세지 보내기
+async function sendMessage() {
+  const text = input.value.trim()
+  if (!text || isLoading.value) return
+
+  messages.value.push({ id: nextId++, role: 'user', text })
+  input.value = ''
+  await nextTick()
+  if (textareaRef.value) textareaRef.value.style.height = 'auto'
+  isLoading.value = true
+  await scrollToBottom()
+
+  try {
+    const ChatRequest = {
+      message: text
+    }
+    const res = await postReportGenerate(ChatRequest)
+    console.log(res.data.result)
+
+    messages.value.push({
+      id: nextId++,
+      role: 'ai',
+      text: res.data.result // 서버에서 내려준 응답 메시지 출력
+    })
+  } catch (error) {
+    messages.value.push({
+      id: nextId++,
+      role: 'ai',
+      text: '보고서 생성 요청 중 오류가 발생했습니다. 다시 시도해주세요.'
+    })
+  } finally {
+    isLoading.value = false
+    await scrollToBottom()
+  }
+}
+
+async function scrollToBottom() {
+  await nextTick()
+  if (messageContainer.value) {
+    messageContainer.value.scrollTop = messageContainer.value.scrollHeight
+  }
+}
+</script>
+
 <template>
   <!-- Floating button -->
   <div class="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
@@ -103,59 +175,4 @@
   </div>
 </template>
 
-<script setup>
-import { ref, nextTick } from 'vue'
-import { Bot, X, Send } from 'lucide-vue-next'
 
-const isOpen = ref(false)
-const isLoading = ref(false)
-const input = ref('')
-const messageContainer = ref(null)
-const textareaRef = ref(null)
-
-function autoResize() {
-  const el = textareaRef.value
-  if (!el) return
-  el.style.height = 'auto'
-  el.style.height = el.scrollHeight + 'px'
-}
-
-const messages = ref([
-  {
-    id: 1,
-    role: 'ai',
-    text: '안녕하세요! Nexus AI 어시스턴트입니다. 보고서 생성을 요청해보세요. 예) "저번달 총 매출과 이번달 비교 보고서 만들어줘"',
-  },
-])
-
-let nextId = 2
-
-async function sendMessage() {
-  const text = input.value.trim()
-  if (!text || isLoading.value) return
-
-  messages.value.push({ id: nextId++, role: 'user', text })
-  input.value = ''
-  await nextTick()
-  if (textareaRef.value) textareaRef.value.style.height = 'auto'
-  isLoading.value = true
-  await scrollToBottom()
-
-  // AI 응답 (API 연동 전 더미 응답)
-  await new Promise(r => setTimeout(r, 1500))
-  messages.value.push({
-    id: nextId++,
-    role: 'ai',
-    text: '보고서를 생성 중입니다. 완료되면 보고서 목록 페이지에서 확인하고 다운로드할 수 있습니다.',
-  })
-  isLoading.value = false
-  await scrollToBottom()
-}
-
-async function scrollToBottom() {
-  await nextTick()
-  if (messageContainer.value) {
-    messageContainer.value.scrollTop = messageContainer.value.scrollHeight
-  }
-}
-</script>

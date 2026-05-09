@@ -43,7 +43,6 @@ public class HeadIncomeService {
                     .idx(headIncome.getIdx())
                     .price(headIncome.getPrice())
                     .paid(headIncome.getStatus())
-                    .settlementIdx(headIncome.getSettlementIdx())
                     .storeIdx(headIncome.getStore().getIdx())
                     .ordersIdx(headIncome.getOrders().getIdx())
                     .build();

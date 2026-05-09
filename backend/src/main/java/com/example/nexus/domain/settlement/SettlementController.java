@@ -122,10 +122,13 @@ public class SettlementController {
         LocalDateTime now = LocalDateTime.now();
         YearMonth currentYearMonth = YearMonth.from(now);
         YearMonth lastMonth = currentYearMonth.minusMonths(1);
-        System.out.println(dto.getSettlementIdx());
+        Long storeIdx = storeService.findStoreIdx(authUserDetails.getIdx());
+        // service 에서 현재 날짜와 로그인 한 사용자의 store_idx 로 찾아서 settlementIdx 를 return 하는 api 찾기
+        System.out.println(storeIdx);
+        Long settlementIdx = settlementService.findSettlementIdx(storeIdx, lastMonth);
+
         System.out.println(dto.getPaymentId());
-        // dto 에서 1이 줄어들어서 들어옴
-        settlementService.verify(authUserDetails, dto, lastMonth);
+        settlementService.verify(authUserDetails, dto, settlementIdx);
         return ResponseEntity.ok("결제 성공");
     }
 

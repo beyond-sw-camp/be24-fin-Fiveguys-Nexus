@@ -94,6 +94,8 @@ const onPayment = async () => {
     await axios.post('http://localhost:8080/verify', {
       paymentId: payment.paymentId,
       settlementIdx: settlementIdx.value || firstItem.settlementIdx
+    }, {
+      withCredentials: true
     })
     isPaymentProcessing.value = false
   }

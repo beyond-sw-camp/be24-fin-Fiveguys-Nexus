@@ -89,7 +89,7 @@ public class WasteLogDto {
                     .productIdx(entity.getProduct().getIdx())
                     .productName(entity.getProduct().getProductName())
                     .quantity(entity.getQuantity())
-                    .amountLoss(entity.getAmountLoss())
+                    .amountLoss(Long.valueOf(entity.getAmountLoss()))
                     .wasteDate(entity.getWasteDate())
                     .wasteReason(entity.getWasteReason())
                     .build();

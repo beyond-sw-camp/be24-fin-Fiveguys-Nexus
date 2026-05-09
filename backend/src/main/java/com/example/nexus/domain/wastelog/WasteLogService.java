@@ -29,7 +29,8 @@ import java.util.List;
 public class WasteLogService {
 
     private final WasteLogRepository wasteLogRepository;
-
+    private final StoreRepository storeRepository;
+    private final PosStoreInventoryRepository posStoreInventoryRepository;
     private final StoreInventoryRepository storeInventoryRepository;
 
     public List<WasteLogDto.RegRes> registerOverDueDateInventories(List<Long> idxList) {
@@ -54,9 +55,7 @@ public class WasteLogService {
         return resList;
     }
 
-    private final StoreRepository storeRepository;
-    private final PosStoreInventoryRepository posStoreInventoryRepository;
-    private final StoreInventoryRepository storeInventoryRepository;
+
 
     @Transactional
     public WasteLogDto.WasteRes createWaste(Long userIdx, WasteLogDto.PosWasteReq req) {
@@ -89,7 +88,7 @@ public class WasteLogService {
 
         WasteLog wasteLog = new WasteLog();
         wasteLog.setQuantity(req.getQuantity());
-        wasteLog.setAmountLoss(amountLoss);
+        wasteLog.setAmountLoss((int) amountLoss);
         wasteLog.setWasteDate(LocalDateTime.now());
         wasteLog.setWasteReason(req.getWasteReason());
         wasteLog.setStore(store);

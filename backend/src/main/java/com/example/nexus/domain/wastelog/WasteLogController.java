@@ -58,7 +58,7 @@ public class WasteLogController {
         return ResponseEntity.ok("성공");
     }
 
-    private final WasteLogService wasteLogService;
+
 
     // [가맹점주] POS 재고 lot 기준 폐기
     @PostMapping("/waste/pos")

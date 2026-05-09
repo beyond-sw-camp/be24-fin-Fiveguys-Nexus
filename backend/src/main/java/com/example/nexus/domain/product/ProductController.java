@@ -33,12 +33,11 @@ public class ProductController {
     @GetMapping("/list")
     public ResponseEntity<BaseResponse<ProductDto.ProductPageRes>> readProductList(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String categoryName) {
 
         Pageable pageable = PageRequest.of(page, size);
-
-        ProductDto.ProductPageRes result = productService.findAllProduct(pageable);
-
+        ProductDto.ProductPageRes result = productService.findAllProduct(pageable, categoryName);
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 

@@ -62,6 +62,15 @@ management:
 portone:
   portone_secret: ${PORTONE_SECRET}
 
+
+# AI 챗봇의 시스템 프롬프트 메세지
+report:
+  ai:
+    system-prompt: >
+      당신은 프랜차이즈 본사의 데이터 분석 전문가입니다.
+      전달받은 수치 데이터를 바탕으로 전문적인 마크다운 형식의 보고서를 작성합니다.
+      친절하지만 간결한 비즈니스 톤을 유지하세요.
+
 logging:
   level:
     org.springframework.security: DEBUG

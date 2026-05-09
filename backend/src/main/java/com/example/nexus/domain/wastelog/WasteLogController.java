@@ -79,6 +79,11 @@ public class WasteLogController {
         long lastMonthWasteQuantitySum = wasteLogService.getInputMonthWasteSum(lastMonth);
         long thisMonthWasteQuantitySum = wasteLogService.getInputMonthWasteSum(thisMonth);
 
+        // - 유통기한 경고 알림 발송 후 실제 소진 성공/실패 여부를 집계하여 소진 성공률(%)을 표시한다.
+        // 유통기한 앙림 걸린건
+
+
+
         WasteLogDto.StatsRes resDto = WasteLogDto.StatsRes.builder()
                 .wasteSum(thisMonthWasteQuantitySum)
                 .wasteGradient((float) (thisMonthWasteQuantitySum/lastMonthWasteQuantitySum))

@@ -26,11 +26,10 @@ public class WasteLogController {
 
     // 유통기한 지난 재고 조회
     @GetMapping("/over/due-date")
-    public ResponseEntity<List<Long>> findOverDueDateProducts (@AuthenticationPrincipal AuthUserDetails authUserDetails) {
+    public ResponseEntity<List<Long>> findOverDueDateProducts () {
 
-        Long storeIdx = storeService.findStoreIdx(authUserDetails.getIdx());
 
-        List<StoreInventoryDto.ListRes> listRes = storeService.listByStoreIdx(storeIdx);
+        List<StoreInventoryDto.ListRes> listRes = storeService.findAllStoreInventory();
         // store_inventory 와 pos_store_inventory 테이블에서 manufactured_date와
         // product 테이블에서 danger_days 를 더해서
         // 오늘 날짜와 비교해서 이전이라면

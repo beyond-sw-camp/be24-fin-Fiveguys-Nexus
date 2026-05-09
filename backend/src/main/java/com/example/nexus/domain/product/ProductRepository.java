@@ -22,6 +22,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "AND s.product.productName LIKE %:productName%")
     List<Product> findByStoreIdxAndProductNameContaining(
             @Param("storeIdx") Long storeIdx,
-            @Param("productName") String productName
-    );
+            @Param("productName") String productName);
+
+    @Query("SELECT p FROM Product p JOIN p.category c WHERE c.categoryName = :categoryName")
+    Page<Product> findByCategoryName(@Param("categoryName") String categoryName, Pageable pageable);
 }

@@ -21,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
+import java.time.LocalTime;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -106,4 +108,16 @@ public class WasteLogService {
         return InventoryStatus.NORMAL;
     }
 
+    public Long getLastMonthWasteSum(YearMonth inputYearMonth) {
+
+        LocalDateTime startDateTime = inputYearMonth.atDay(1).atStartOfDay();
+
+        LocalDateTime endDateTime = inputYearMonth.atEndOfMonth().atTime(LocalTime.MAX);
+        List<WasteLog> logs = wasteLogRepository.findAllByWasteDateBetween(startDateTime, endDateTime);
+        Long wasteSum = 0L;
+        for (WasteLog log : logs) {
+            wasteSum += log.getQuantity();
+        }
+        return wasteSum;
+    }
 }

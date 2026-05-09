@@ -5,22 +5,18 @@ import com.example.nexus.domain.store.StoreService;
 import com.example.nexus.domain.store.model.StoreInventoryDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 import com.example.nexus.common.model.BaseResponse;
 import com.example.nexus.domain.user.model.AuthUserDetails;
 import com.example.nexus.domain.wastelog.model.WasteLogDto;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,6 +65,20 @@ public class WasteLogController {
 
         WasteLogDto.WasteRes result = wasteLogService.createWaste(userDetails.getIdx(), req);
         return ResponseEntity.ok(BaseResponse.success(result));
+    }
+
+
+
+    @GetMapping("/compare")
+        public ResponseEntity<BaseResponse<String>> compareWasteLog() {
+        YearMonth lastMonth = YearMonth.from(LocalDateTime.now()).minusMonths(1);
+        YearMonth thisMonth = YearMonth.from(LocalDateTime.now());
+
+        long lastMonthWasteQuantitySum = wasteLogService.getLastMonthWasteSum(lastMonth);
+        long thisMonthWasteQuantitySum = wasteLogService.getLastMonthWasteSum(thisMonth);
+
+        return ResponseEntity.ok(BaseResponse.success(lastMonthWasteQuantitySum/thisMonthWasteQuantitySum));
+        
     }
 
 }

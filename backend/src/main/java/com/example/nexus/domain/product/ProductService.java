@@ -35,8 +35,13 @@ public class ProductService {
 
     // 본사 전체 제품 조회 페이징처리
     @Transactional(readOnly = true)
-    public ProductDto.ProductPageRes findAllProduct(Pageable pageable) {
-        Page<Product> productPage = productRepository.findAll(pageable);
+    public ProductDto.ProductPageRes findAllProduct(Pageable pageable, String categoryName) {
+        Page<Product> productPage;
+        if (categoryName != null && !categoryName.isBlank()) {
+            productPage = productRepository.findByCategoryName(categoryName, pageable);
+        } else {
+            productPage = productRepository.findAll(pageable);
+        }
         return ProductDto.ProductPageRes.from(productPage);
     }
 

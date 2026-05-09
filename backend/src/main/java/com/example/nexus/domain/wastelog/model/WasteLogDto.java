@@ -95,4 +95,12 @@ public class WasteLogDto {
                     .build();
         }
     }
+
+    @Builder
+    @Getter
+    public static class StatsRes {
+        private Long wasteSum;
+        private Float wasteGradient;
+        private Float useSuccessRate;
+    }
 }

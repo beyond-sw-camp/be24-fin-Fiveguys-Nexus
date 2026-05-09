@@ -105,6 +105,7 @@ public class InventoryMovementService {
                 InventoryStatus.NORMAL,
                 headInventory.getManufacturedDate(),
                 req.getQuantity(),
+                false,
                 store,
                 product
         );

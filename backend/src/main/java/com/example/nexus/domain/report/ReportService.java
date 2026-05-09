@@ -1,20 +1,28 @@
 package com.example.nexus.domain.report;
 
-import lombok.RequiredArgsConstructor;
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
 public class ReportService {
     private final ReportRepository reportRepository;
+    private final ChatClient chatClient;
+
+    // AI에게 성격(프롬포트)를 고정해 두기 위해서 생성자를 직접 생성
+    public ReportService(ReportRepository reportRepository, ChatClient.Builder chatClientBuilder) {
+        this.reportRepository = reportRepository;
+
+        this.chatClient = chatClientBuilder
+                .defaultSystem("당신은 프랜차이즈 본사의 데이터 분석 전문가입니다. " +
+                        "전달받은 수치 데이터를 바탕으로 전문적인 마크다운 형식의 보고서를 작성합니다. " +
+                        "친절하지만 간결한 비즈니스 톤을 유지하세요.")
+                .build();
+    }
 
     public String handleChatbotRequest(String userMessage) {
-        // TODO: 1. 사용자의 질문(userMessage)을 분석해서 필요한 데이터 기간/매장을 파악한다.
-        // TODO: 2. DB에서 해당 매출/재고 데이터를 조회해온다.
-        // TODO: 3. 데이터를 프롬프트에 담아 AI에게 보고서 생성을 요청한다.
-        // TODO: 4. AI가 준 답변을 파일로 만들고 ReportRepository에 저장한다.
-
-        // 일단 프론트와 잘 연결되는지 확인하기 위한 임시 응답
-        return "요청하신 [" + userMessage + "]에 대한 보고서 생성을 시작합니다. 완료되면 보고서 목록에서 확인해주세요!";
+        return chatClient.prompt()
+                .user(userMessage)
+                .call()
+                .content();
     }
 }

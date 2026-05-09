@@ -43,7 +43,7 @@ public class PosStoreInventory {
     @Column(name = "manufactured_date", nullable = false)
     private LocalDateTime manufacturedDate;
 
-    @Column(name = "warned", nullable = false)
+    @Column(name = "warned")
     private boolean warned;
 
     @ManyToOne(fetch = FetchType.LAZY)

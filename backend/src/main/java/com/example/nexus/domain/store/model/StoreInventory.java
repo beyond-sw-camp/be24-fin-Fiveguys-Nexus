@@ -46,7 +46,7 @@ public class StoreInventory {
     @Column(name = "avg_stock", nullable = false)
     private Integer avgStock;
 
-    @Column(name = "warned", nullable = false)
+    @Column(name = "warned")
     private boolean warned;
 
     @ManyToOne(fetch = FetchType.LAZY)

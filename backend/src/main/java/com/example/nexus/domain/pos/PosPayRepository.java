@@ -23,6 +23,6 @@ public interface PosPayRepository extends JpaRepository<PosPay, Long> {
     List<Object[]> findDailySalesByStoreAndPeriod(@Param("storeIdx") Long storeIdx, @Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 
     // AI 보고서: 특정 기간 총 매출 합계
-    @Query("SELECT SUM(p.payAmount) FROM PosPay p WHERE p.paidAt BETWEEN :startDate AND :endDate")
+    @Query("SELECT COALESCE(SUM(p.payAmount), 0) FROM PosPay p WHERE p.paidAt BETWEEN :startDate AND :endDate")
     Long sumSalesByDateBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 }

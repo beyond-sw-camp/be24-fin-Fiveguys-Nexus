@@ -13,7 +13,7 @@ public interface PosOrdersItemRepository extends JpaRepository<PosOrdersItem, Lo
     List<PosOrdersItem> findByPosPay_IdxIn(List<Long> payIdxList);
 
     // AI 보고서: N+1 문제 없는 인기 메뉴 통계 (수량 quantity 합산)
-    @Query("SELECT m.menuName " +   // Menu 엔티티의 이름 필드명에 맞게 변경하세요 (예: m.menuName)
+    @Query("SELECT m.menuName " +
             "FROM PosOrdersItem poi " +
             "JOIN poi.menu m " +
             "JOIN poi.posPay p " +

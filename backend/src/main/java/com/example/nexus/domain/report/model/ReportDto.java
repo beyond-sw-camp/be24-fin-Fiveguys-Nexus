@@ -16,7 +16,7 @@ public class ReportDto {
     // DB에서 데이터를 가져올때 사용하는 DTO
     @Builder
     public record ReportDataSummaryDto(
-            Long totalSales,          // 최근 7일 총 매출액
+            Long totalSales,          // 최근 30일 총 매출액
             List<String> topProducts  // 인기 상품 TOP 3
     ) {}
 }

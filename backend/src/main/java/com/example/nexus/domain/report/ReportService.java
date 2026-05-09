@@ -63,9 +63,9 @@ public class ReportService {
     // DB에서 데이터 가지고 오기
     public ReportDto.ReportDataSummaryDto getRecentSummary() {
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime weekAgo = now.minusDays(30); // 최근 00일 기준
+        LocalDateTime startDate  = now.minusDays(30); // 최근 30일 기준
 
-        Long totalSales = posPayRepository.sumSalesByDateBetween(weekAgo, now);
+        Long totalSales = posPayRepository.sumSalesByDateBetween(startDate, now);
 
         // 매출이 아예 없는 경우 null이 반환될 수 있으므로 0으로 안전하게 처리
         if (totalSales == null) {
@@ -73,7 +73,7 @@ public class ReportService {
         }
 
         // PageRequest.of(0, 3)을 통해 LIMIT 3과 동일하게 3개만 가져옴
-        List<String> topProducts = posOrdersItemRepository.findTopSellingMenus(weekAgo, now, PageRequest.of(0, 3));
+        List<String> topProducts = posOrdersItemRepository.findTopSellingMenus(startDate, now, PageRequest.of(0, 3));
 
         return ReportDto.ReportDataSummaryDto.builder()
                 .totalSales(totalSales)

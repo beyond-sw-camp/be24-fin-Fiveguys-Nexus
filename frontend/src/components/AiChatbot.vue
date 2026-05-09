@@ -39,11 +39,10 @@ async function sendMessage() {
   await scrollToBottom()
 
   try {
-    const ChatRequest = {
+    const chatRequest  = {
       message: text
     }
-    const res = await postReportGenerate(ChatRequest)
-    console.log(res.data.result)
+    const res = await postReportGenerate(chatRequest )
 
     messages.value.push({
       id: nextId++,

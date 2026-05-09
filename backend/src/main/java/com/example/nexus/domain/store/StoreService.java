@@ -283,4 +283,15 @@ public class StoreService {
     public Long findStoreIdx(Long userIdx) {
         return storeRepository.findByUserIdx(userIdx).orElse(null).getIdx();
     }
+
+    // 모든 재고 조회
+    public List<StoreInventoryDto.ListRes> findAllStoreInventory() {
+        List<StoreInventory> storeInventoryList = storeInventoryRepository.findAll();
+        List<StoreInventoryDto.ListRes> resList = new ArrayList<>();
+        for (StoreInventory storeInventory : storeInventoryList) {
+            resList.add(StoreInventoryDto.ListRes.from(storeInventory));
+        }
+        return resList;
+    }
+
 }

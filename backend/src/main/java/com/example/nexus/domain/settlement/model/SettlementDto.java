@@ -27,7 +27,6 @@ public class SettlementDto {
     @Builder
     public static class VerifyReq {
         private String paymentId;
-        private Long settlementIdx;
     }
 
     @Getter

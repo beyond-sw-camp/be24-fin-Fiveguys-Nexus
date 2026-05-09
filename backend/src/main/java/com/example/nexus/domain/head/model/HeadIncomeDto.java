@@ -27,7 +27,6 @@ public class HeadIncomeDto {
         private Long idx;
         private Long price;
         private boolean paid;
-        private Long settlementIdx;
         private Long storeIdx;
         private Long ordersIdx;
     }

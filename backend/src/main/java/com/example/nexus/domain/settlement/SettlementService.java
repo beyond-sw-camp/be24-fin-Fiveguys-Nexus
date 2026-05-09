@@ -24,10 +24,10 @@ public class SettlementService {
     private final HeadIncomeRepository headIncomeRepository;
 
     @Transactional
-    public void verify(AuthUserDetails authUserDetails, SettlementDto.VerifyReq dto, YearMonth lastMonth) {
+    public void verify(AuthUserDetails authUserDetails, SettlementDto.VerifyReq dto, Long settlementIdx) {
         // 테스트용: PortOne SDK 호출 생략하고 바로 정산 처리
         // dto 에서 0이 들어옴
-        Settlement settlement = settlementRepository.findById(dto.getSettlementIdx())
+        Settlement settlement = settlementRepository.findById(settlementIdx)
                 .orElseThrow(() -> new IllegalArgumentException("정산 정보를 찾을 수 없습니다."));
 
         // 정산 금액 검증 (실제로는 PortOne 결제 금액과 비교)
@@ -37,7 +37,7 @@ public class SettlementService {
 //                .sum();
 
         List<HeadIncome> headIncomePriceList = new ArrayList<>();
-        headIncomePriceList = headIncomeRepository.findBySettlementIdx(dto.getSettlementIdx() + 1);
+        headIncomePriceList = headIncomeRepository.findBySettlementIdx(settlementIdx);
 
         long totalPrice = 0;
 
@@ -52,12 +52,15 @@ public class SettlementService {
             settlement.setPgPaymentId(dto.getPaymentId());
 
             // 관련 head_income도 status=true로 업데이트 (paid 상태로 표시)
-            List<HeadIncome> headIncomeList = headIncomeRepository.findBySettlementIdx(dto.getSettlementIdx() + 1);
+            List<HeadIncome> headIncomeList = headIncomeRepository.findBySettlementIdx(settlementIdx);
             for (HeadIncome headIncome : headIncomeList) {
                 headIncome.setStatus(true);
                 headIncomeRepository.save(headIncome);
 
         }
+
+            
+
     }
 
     @Transactional
@@ -87,4 +90,12 @@ public class SettlementService {
         return settlement.getIdx();
     }
 
+    public Long findSettlementIdx(Long storeIdx, YearMonth lastMonth) {
+        Settlement settlement = settlementRepository.findByStoreIdxAndSettlementYm(storeIdx, lastMonth.toString()).orElse(null);
+        if (settlement != null) {
+            return settlement.getIdx();
+        } else {
+            return null;
+        }
+    }
 }

@@ -3,7 +3,9 @@ package com.example.nexus.domain.store;
 import com.example.nexus.common.model.BaseResponse;
 import com.example.nexus.common.model.PageResponse;
 import com.example.nexus.domain.store.model.StoreDto;
+import com.example.nexus.domain.store.model.StoreIncomeDto;
 import com.example.nexus.domain.store.model.StoreInventoryDto;
+import com.example.nexus.domain.user.model.AuthUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,6 +23,8 @@ import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 @RequiredArgsConstructor
 public class StoreController {
     private final StoreService storeService;
+    private final StoreIncomeService storeIncomeService;
+
 
     // [본사] 선택한 가맹점 store_idx로 재고 조회
     @GetMapping("/inventory/list/{storeIdx}")
@@ -95,5 +99,17 @@ public class StoreController {
     public ResponseEntity storeUpdate(@PathVariable(name = "storeIdx") Long storeIdx, @RequestBody StoreDto.StoreUpdateReq dto){
         storeService.storeUpdate(storeIdx, dto);
         return ResponseEntity.ok(BaseResponse.success("성공"));
+    }
+
+    // [가맹점] 로그인한 가맹점주의 월별 매출 정산 내역 조회
+    @GetMapping("/income")
+    public ResponseEntity<BaseResponse<StoreIncomeDto.MonthlyIncomeRes>> getMonthlyIncome(@AuthenticationPrincipal AuthUserDetails userDetails) {
+        if (userDetails == null) {
+            throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+
+        StoreIncomeDto.MonthlyIncomeRes result = storeIncomeService.getMonthlyIncome(userDetails.getIdx());
+
+        return ResponseEntity.ok(BaseResponse.success(result));
     }
 }

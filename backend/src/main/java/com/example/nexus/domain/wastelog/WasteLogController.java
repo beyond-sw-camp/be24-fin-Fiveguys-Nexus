@@ -70,15 +70,22 @@ public class WasteLogController {
 
 
     @GetMapping("/compare")
-        public ResponseEntity<BaseResponse<String>> compareWasteLog() {
+        public ResponseEntity<BaseResponse<WasteLogDto.StatsRes>> compareWasteLog() {
         YearMonth lastMonth = YearMonth.from(LocalDateTime.now()).minusMonths(1);
         YearMonth thisMonth = YearMonth.from(LocalDateTime.now());
 
-        long lastMonthWasteQuantitySum = wasteLogService.getLastMonthWasteSum(lastMonth);
-        long thisMonthWasteQuantitySum = wasteLogService.getLastMonthWasteSum(thisMonth);
 
-        return ResponseEntity.ok(BaseResponse.success(lastMonthWasteQuantitySum/thisMonthWasteQuantitySum));
-        
+        // 지난 달과 현재 달의 폐기율을 비교하기 위함
+        long lastMonthWasteQuantitySum = wasteLogService.getInputMonthWasteSum(lastMonth);
+        long thisMonthWasteQuantitySum = wasteLogService.getInputMonthWasteSum(thisMonth);
+
+        WasteLogDto.StatsRes resDto = WasteLogDto.StatsRes.builder()
+                .wasteSum(thisMonthWasteQuantitySum)
+                .wasteGradient((float) (thisMonthWasteQuantitySum/lastMonthWasteQuantitySum))
+                .build();
+
+        return ResponseEntity.ok(BaseResponse.success(resDto));
+
     }
 
 }

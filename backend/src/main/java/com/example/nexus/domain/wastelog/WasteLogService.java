@@ -108,7 +108,7 @@ public class WasteLogService {
         return InventoryStatus.NORMAL;
     }
 
-    public Long getLastMonthWasteSum(YearMonth inputYearMonth) {
+    public Long getInputMonthWasteSum(YearMonth inputYearMonth) {
 
         LocalDateTime startDateTime = inputYearMonth.atDay(1).atStartOfDay();
 
@@ -120,4 +120,5 @@ public class WasteLogService {
         }
         return wasteSum;
     }
+    
 }

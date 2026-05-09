@@ -1,8 +1,11 @@
 import api from '@/plugins/axiosinterceptor'
 
 // 제품 목록 조회
-export const getProductList = (page = 0, size = 10) =>
-  api.get('/product/list', { params: { page, size } })
+export const getProductList = (page = 0, size = 10, categoryName = null) => {
+  const params = { page, size }
+  if (categoryName) params.categoryName = categoryName
+  return api.get('/product/list', { params })
+}
 
 // 신규 제품 등록
 export const addNewProduct = (dto) =>

@@ -76,4 +76,25 @@ public class PosStoreInventoryDto {
                     .build();
         }
     }
+
+
+    @Getter
+    @Builder
+    public static class OverDueDateProductRes {
+        private Long posStoreInventoryIdx;
+        private Integer posCount;
+        private LocalDateTime manufacturedDate;
+        private Long productIdx;
+        private Long storeIdx;
+
+        public static PosStoreInventoryDto.OverDueDateProductRes from (PosStoreInventory entity) {
+            return OverDueDateProductRes.builder()
+                    .posStoreInventoryIdx(entity.getIdx())
+                    .posCount(entity.getCount())
+                    .manufacturedDate(entity.getManufacturedDate())
+                    .productIdx(entity.getProduct().getIdx())
+                    .storeIdx(entity.getStore().getIdx())
+                    .build();
+        }
+    }
 }

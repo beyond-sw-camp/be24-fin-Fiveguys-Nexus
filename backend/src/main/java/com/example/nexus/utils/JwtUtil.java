@@ -19,7 +19,7 @@ public class JwtUtil {
                 .claim("idx", idx)
                 .claim("email", email)
                 .claim("role", role)
-                .issuedAt(new Date()).expiration(new Date(System.currentTimeMillis()+ 300000)).signWith(encodedKey).compact();
+                .issuedAt(new Date()).expiration(new Date(System.currentTimeMillis()+ 86400000)).signWith(encodedKey).compact();
 
         return jwt;
     }

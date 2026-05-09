@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -15,7 +16,6 @@ public class OrdersDto {
     @Getter
     @NoArgsConstructor
     public static class OrdersReq {
-        private Long storeIdx;
         private List<OrdersItemDto.OrdersItemReq> ordersItemList;
     }
 
@@ -43,8 +43,9 @@ public class OrdersDto {
                     .reason(entity.getReason())
                     .createdAt(entity.getCreatedAt())
                     .storeName(entity.getStore().getStoreName())
-                    .ordersItemList(entity.getOrdersItemList().stream()
-                            .map(OrdersItemDto.OrdersItemRes::from).toList())
+                    .ordersItemList(entity.getOrdersItemList() != null
+                            ? entity.getOrdersItemList().stream().map(OrdersItemDto.OrdersItemRes::from).toList()
+                            : Collections.emptyList())
                     .deliveryIdx(entity.getDelivery() != null ? entity.getDelivery().getIdx() : null)
                     .build();
         }
@@ -59,9 +60,10 @@ public class OrdersDto {
                     .reason(entity.getReason())
                     .createdAt(entity.getCreatedAt())
                     .storeName(entity.getStore().getStoreName())
-                    .ordersItemList(entity.getOrdersItemList().stream()
-                            .map(item -> OrdersItemDto.OrdersItemRes.from(item, stockMap.get(item.getProduct().getIdx())))
-                            .toList())
+                    .ordersItemList(entity.getOrdersItemList() != null ? entity.getOrdersItemList().stream()
+                                    .map(item -> OrdersItemDto.OrdersItemRes.from(item, stockMap.get(item.getProduct().getIdx())))
+                                    .toList()
+                            : Collections.emptyList())
                     .deliveryIdx(entity.getDelivery() != null ? entity.getDelivery().getIdx() : null)
                     .build();
         }

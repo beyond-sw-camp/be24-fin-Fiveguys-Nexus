@@ -1,3 +1,44 @@
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { getDelayDeliveryList } from '@/api/dashboard'
+
+const router = useRouter()
+const deliveries = ref([])
+const scrollContainer = ref(null)
+let page = 0
+let hasNext = true
+const loading = ref(false)
+
+const fetchData = async () => {
+  if (loading.value || !hasNext) return
+  loading.value = true
+  try {
+    const { data } = await getDelayDeliveryList(page, 10)
+    const result = data.result
+    deliveries.value.push(...result.items)
+    hasNext = result.hasNext
+    page++
+  } catch (e) {
+    console.error('지연 배송 조회 실패', e)
+  } finally {
+    loading.value = false
+  }
+}
+
+const onScroll = () => {
+  const el = scrollContainer.value
+  if (!el) return
+  if (el.scrollTop + el.clientHeight >= el.scrollHeight - 10) {
+    fetchData()
+  }
+}
+
+onMounted(() => {
+  fetchData()
+})
+</script>
+
 <template>
   <div class="bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col max-h-[320px]">
     <div class="px-5 pt-5 pb-4 border-b border-gray-100">
@@ -26,44 +67,3 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { getDelayDeliveryList } from '@/api/dashboard'
-
-const router = useRouter()
-const deliveries = ref([])
-const scrollContainer = ref(null)
-let page = 0
-let hasNext = true
-let loading = false
-
-const fetchData = async () => {
-  if (loading || !hasNext) return
-  loading = true
-  try {
-    const { data } = await getDelayDeliveryList(page, 10)
-    const result = data.result
-    deliveries.value.push(...result.items)
-    hasNext = result.hasNext
-    page++
-  } catch (e) {
-    console.error('지연 배송 조회 실패', e)
-  } finally {
-    loading = false
-  }
-}
-
-const onScroll = () => {
-  const el = scrollContainer.value
-  if (!el) return
-  if (el.scrollTop + el.clientHeight >= el.scrollHeight - 10) {
-    fetchData()
-  }
-}
-
-onMounted(() => {
-  fetchData()
-})
-</script>

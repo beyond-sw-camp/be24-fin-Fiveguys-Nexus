@@ -18,6 +18,32 @@
       @open-detail="openDetail"
     />
 
+    <div v-if="totalPages > 1" class="flex justify-center items-center gap-2 pt-2">
+      <button
+        class="p-2 rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+        :disabled="currentPage === 0"
+        @click="fetchInventory(currentPage - 1)"
+      >
+        <ChevronLeft class="w-4 h-4" />
+      </button>
+      <button
+        v-for="page in totalPages"
+        :key="page"
+        class="w-8 h-8 rounded text-sm font-semibold cursor-pointer"
+        :class="currentPage === page - 1 ? 'bg-[#F37321] text-white' : 'text-gray-500 hover:bg-gray-50'"
+        @click="fetchInventory(page - 1)"
+      >
+        {{ page }}
+      </button>
+      <button
+        class="p-2 rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+        :disabled="currentPage === totalPages - 1"
+        @click="fetchInventory(currentPage + 1)"
+      >
+        <ChevronRight class="w-4 h-4" />
+      </button>
+    </div>
+
     <InventoryDetailModal
       :item="detailItem"
       :detail-title-id="detailTitleId"
@@ -26,21 +52,41 @@
       :is-expiring-soon="isExpiringSoon"
       :get-subtitle="getSubtitle"
       :editable="true"
+      :waste-enabled="true"
       @apply-adjustments="applyLotAdjustments"
+      @apply-waste="applyWasteAdjustments"
       @close="closeDetail"
     />
+    <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import { changePosInventoryCount, getPosInventoryList } from '@/api/pos'
+import { createPosWasteLog } from '@/api/wastelog'
 import InventoryDetailModal from '@/components/inventory/InventoryDetailModal.vue'
 import StoreInventoryTable from '@/components/inventory/StoreInventoryTable.vue'
+import Toast from '@/components/common/Toast.vue'
+import { useToast } from '@/composables/useToast'
+
+const { toast, showToast } = useToast()
 
 const detailTitleId = 'store-inv-detail-title'
 const detailItem = ref(null)
 const inventory = ref([])
+const currentPage = ref(0)
+const totalPages = ref(0)
+const PAGE_SIZE = 10
+const API_BATCH_SIZE = 5
+
+async function runBatchedRequests(items, requestFn, batchSize = API_BATCH_SIZE) {
+  for (let i = 0; i < items.length; i += batchSize) {
+    const chunk = items.slice(i, i + batchSize)
+    await Promise.all(chunk.map(requestFn))
+  }
+}
 
 function formatDate(value) {
   if (!value) return null
@@ -99,13 +145,18 @@ function aggregateInventoryRows(list) {
   )
 }
 
-async function fetchInventory() {
+async function fetchInventory(page = 0) {
   try {
-    const { data } = await getPosInventoryList()
-    const list = Array.isArray(data) ? data : []
+    const { data } = await getPosInventoryList(page, PAGE_SIZE)
+    const pageResult = data?.result
+    const list = Array.isArray(pageResult?.content) ? pageResult.content : []
+    currentPage.value = Number(pageResult?.number ?? 0)
+    totalPages.value = Number(pageResult?.totalPages ?? 0)
     inventory.value = aggregateInventoryRows(list)
   } catch (error) {
     console.error('Failed to fetch POS inventory:', error)
+    currentPage.value = 0
+    totalPages.value = 0
     inventory.value = []
   }
 }
@@ -143,15 +194,38 @@ async function applyLotAdjustments(changes) {
   if (!Array.isArray(changes) || changes.length === 0) return
 
   try {
-    await Promise.all(
-      changes.map((row) => changePosInventoryCount(row.id, row.adjustTo)),
-    )
-    await fetchInventory()
+    await runBatchedRequests(changes, (row) => changePosInventoryCount(row.id, row.adjustTo))
+    await fetchInventory(currentPage.value)
     closeDetail()
-    alert('lot 재고 보정이 완료되었습니다.')
+    showToast('lot 재고 보정이 완료되었습니다.')
   } catch (error) {
     console.error('Failed to update POS inventory:', error)
-    alert('lot 재고 보정에 실패했습니다.')
+    showToast('lot 재고 보정에 실패했습니다.', 'error')
+  }
+}
+
+async function applyWasteAdjustments(changes) {
+  if (!detailItem.value) return
+  if (!Array.isArray(changes) || changes.length === 0) return
+
+  const input = window.prompt('폐기 사유를 입력해 주세요.', '유통기한 임박')
+  if (input === null) return
+  const wasteReason = input.trim() || '기타'
+
+  try {
+    await runBatchedRequests(changes, (row) =>
+      createPosWasteLog({
+        posStoreInventoryIdx: row.id,
+        quantity: Number(row.wasteQty),
+        wasteReason,
+      }),
+    )
+    await fetchInventory(currentPage.value)
+    closeDetail()
+    showToast('폐기 처리가 완료되었습니다.')
+  } catch (error) {
+    console.error('Failed to create waste log:', error)
+    showToast('폐기 처리에 실패했습니다.', 'error')
   }
 }
 
@@ -180,6 +254,6 @@ function getStatusClass(item) {
 }
 
 onMounted(() => {
-  fetchInventory()
+  fetchInventory(0)
 })
 </script>

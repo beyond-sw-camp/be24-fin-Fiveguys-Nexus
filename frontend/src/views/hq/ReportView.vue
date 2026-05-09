@@ -148,12 +148,17 @@
         </div>
       </div>
     </div>
+    <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { FileText, Download, Newspaper, Lightbulb, ExternalLink, X } from 'lucide-vue-next'
+import Toast from '@/components/common/Toast.vue'
+import { useToast } from '@/composables/useToast'
+
+const { toast, showToast } = useToast()
 
 const tabs = [
   { label: '보고서', value: 'report' },
@@ -228,6 +233,6 @@ function firstLine(content) {
 }
 
 function handleDownload(report) {
-  alert(`${report.report_title} 다운로드 준비 중입니다.`)
+  showToast(`${report.report_title} 다운로드 준비 중입니다.`)
 }
 </script>

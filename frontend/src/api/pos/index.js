@@ -1,6 +1,7 @@
 import api from '@/plugins/axiosinterceptor'
 
-export const getPosInventoryList = () => api.get('/pos/inventory/list')
+export const getPosInventoryList = (page = 0, size = 10) =>
+  api.get('/pos/inventory/list', { params: { page, size } })
 
 export const changePosInventoryCount = (posStoreInventoryIdx, count) =>
   api.patch(`/pos/inventory/${posStoreInventoryIdx}`, { count })

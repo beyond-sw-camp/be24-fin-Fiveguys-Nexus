@@ -64,7 +64,6 @@
             ? 'bg-blue-500 text-white border-blue-500 shadow-sm'
             : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'">
           {{ f.label }}
-          <span class="ml-1 text-xs font-bold opacity-80">({{ countByStatus(f.value) }})</span>
         </button>
       </div>
     </div>
@@ -171,6 +170,40 @@
       <p class="text-sm text-gray-400 font-medium">조건에 맞는 배송 내역이 없습니다.</p>
     </div>
 
+    <!-- 페이지네이션 -->
+    <div v-if="totalPages > 1" class="flex justify-center items-center gap-2 mt-6">
+      <button
+        @click="fetchDeliveries(currentPage - 1)"
+        :disabled="currentPage === 0"
+        class="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path d="M15 19l-7-7 7-7" stroke-width="2"/>
+        </svg>
+      </button>
+
+      <div class="flex gap-1">
+        <button
+          v-for="p in totalPages"
+          :key="p"
+          @click="fetchDeliveries(p - 1)"
+          class="w-9 h-9 text-sm font-semibold rounded-lg transition-colors cursor-pointer"
+          :class="currentPage === p - 1
+        ? 'bg-blue-500 text-white'
+        : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'">
+          {{ p }}
+        </button>
+      </div>
+
+      <button
+        @click="fetchDeliveries(currentPage + 1)"
+        :disabled="currentPage === totalPages - 1"
+        class="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path d="M9 5l7 7-7 7" stroke-width="2"/>
+        </svg>
+      </button>
+    </div>
+
     <!-- 지연 사유 조회 모달 (가맹점은 읽기 전용) -->
     <div
       v-if="isModalOpen"
@@ -239,6 +272,12 @@ const isModalOpen      = ref(false)
 const selectedDelivery = ref(null)
 
 let searchDebounceTimer = null
+
+// 기존 상태 변수들 아래에 추가
+const currentPage  = ref(0)
+const totalPages   = ref(0)
+const totalCount   = ref(0)
+const pageSize     = 10
 
 // DeliveryStatus enum -> 레이블 매핑
 const STATUS_LABEL_MAP = {
@@ -342,14 +381,13 @@ function mapDelivery(dto) {
 }
 
 // API 호출
-async function fetchDeliveries() {
+async function fetchDeliveries(page = 0) {
   isLoading.value  = true
   fetchError.value = false
 
   try {
-    const params = {}
+    const params = { page, size: pageSize }
 
-    // 발주번호 검색: 숫자만 허용 (Long 타입)
     const parsed = parseInt(searchQuery.value.trim(), 10)
     if (!isNaN(parsed) && searchQuery.value.trim() !== '') {
       params.orderIdx = parsed
@@ -361,7 +399,10 @@ async function fetchDeliveries() {
     if (selectedDay.value)    params.day    = Number(selectedDay.value)
 
     const { data } = await getMyStoreDeliveries(params)
-    deliveries.value = (data || []).map(mapDelivery)
+    deliveries.value = (data?.result?.deliveryList || []).map(mapDelivery)
+    currentPage.value = data?.result?.currentPage ?? 0
+    totalPages.value  = data?.result?.totalPage   ?? 0
+    totalCount.value  = data?.result?.totalCount  ?? 0
   } catch (err) {
     console.error('[StoreDeliveryView] 배송 현황 조회 실패:', err)
     fetchError.value = true
@@ -373,19 +414,13 @@ async function fetchDeliveries() {
 // 검색어 디바운스 (400ms)
 function onSearchInput() {
   clearTimeout(searchDebounceTimer)
-  searchDebounceTimer = setTimeout(fetchDeliveries, 400)
+  searchDebounceTimer = setTimeout(() => fetchDeliveries(0), 400)
 }
 
 // 상태 필터 클릭
 function onStatusFilter(value) {
   currentFilter.value = value
-  fetchDeliveries()
-}
-
-// 상태별 카운트 (현재 로드된 목록 기준)
-function countByStatus(value) {
-  if (!value) return deliveries.value.length
-  return deliveries.value.filter(d => d.statusEnum === value).length
+  fetchDeliveries(0)
 }
 
 // 상태별 배지 스타일
@@ -416,13 +451,3 @@ onMounted(() => {
   fetchDeliveries()
 })
 </script>
-
-<style scoped>
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-</style>

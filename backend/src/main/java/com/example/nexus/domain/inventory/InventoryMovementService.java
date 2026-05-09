@@ -15,8 +15,9 @@ import com.example.nexus.domain.store.StoreInventoryRepository;
 import com.example.nexus.domain.store.StoreRepository;
 import com.example.nexus.domain.store.model.Store;
 import com.example.nexus.domain.store.model.StoreInventory;
+import com.example.nexus.common.exception.BaseException;
+import com.example.nexus.common.model.BaseResponseStatus;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,9 +39,11 @@ public class InventoryMovementService {
     @Transactional
     public InventoryMovementDto.MovementRes inbound(InventoryMovementDto.InboundReq req) {
 
-        Product product = productRepository.findById(req.getProductIdx()).orElseThrow();
+        Product product = productRepository.findById(req.getProductIdx())
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_PRODUCT));
 
-        HeadInventory headInventory = headInventoryRepository.findByProductIdx(product.getIdx()).orElseThrow();
+        HeadInventory headInventory = headInventoryRepository.findByProductIdxForUpdate(product.getIdx())
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.HEAD_INVENTORY_NOT_FOUND));
 
         headInventory.setCount(headInventory.getCount() + req.getQuantity());
 
@@ -59,11 +62,18 @@ public class InventoryMovementService {
     @Transactional
     public InventoryMovementDto.MovementRes outbound(InventoryMovementDto.OutboundReq req) {
 
-        Product product = productRepository.findById(req.getProductIdx()).orElseThrow();
+        Product product = productRepository.findById(req.getProductIdx())
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_PRODUCT));
 
-        Store store = storeRepository.findById(req.getStoreIdx()).orElseThrow();
+        Store store = storeRepository.findById(req.getStoreIdx())
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
 
-        HeadInventory headInventory = headInventoryRepository.findByProductIdx(product.getIdx()).orElseThrow();
+        HeadInventory headInventory = headInventoryRepository.findByProductIdxForUpdate(product.getIdx())
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.HEAD_INVENTORY_NOT_FOUND));
+
+        if (headInventory.getCount() < req.getQuantity()) {
+            throw new BaseException(BaseResponseStatus.STORE_INVENTORY_INSUFFICIENT);
+        }
 
         headInventory.setCount(headInventory.getCount() - req.getQuantity());
         headInventoryRepository.save(headInventory);
@@ -115,7 +125,7 @@ public class InventoryMovementService {
     @Transactional(readOnly = true)
     public List<InventoryMovementDto.MovementListRes> findAllMovements() {
 
-        List<InventoryMovement> inventoryMovementList = inventoryMovementRepository.findAll();
+        List<InventoryMovement> inventoryMovementList = inventoryMovementRepository.findAllWithProduct();
 
         return inventoryMovementList.stream().map(InventoryMovementDto.MovementListRes::from).toList();
     }

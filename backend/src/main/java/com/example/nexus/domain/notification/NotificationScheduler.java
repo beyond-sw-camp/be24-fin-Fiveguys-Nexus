@@ -31,12 +31,12 @@ public class NotificationScheduler {
     /**
      * 유통기한 임박 알림
      * 매일 오전 7시에 실행
-     * 제조일 + dangerDays 기준으로 유통기한 7일 이내 제품 감지
+     * 제조일 + dangerDays 기준으로 유통기한 3일 이내 제품 감지
      */
     @Scheduled(cron = "0 0 7 * * *")
     public void checkExpiryNotification() {
         // 유통기한 만료까지 며칠 이내일 때 알림을 보낼지 설정
-        int alertDays = 7;
+        int alertDays = 3;
         LocalDateTime now = LocalDateTime.now();
 
         // 재고 수량이 1 이상인 제품만 조회 (재고 없으면 의미 없으므로)
@@ -52,7 +52,7 @@ public class NotificationScheduler {
             // 만료일까지 남은 일수 계산
             long daysUntilExpiry = java.time.Duration.between(now, expiryDate).toDays();
 
-            // 만료일이 7일 이내이고, 아직 만료되지 않은 경우에만 알림
+            // 만료일이 3일 이내이고, 아직 만료되지 않은 경우에만 알림
             if (daysUntilExpiry <= alertDays && daysUntilExpiry >= 0) {
                 String productName = inventory.getProduct().getProductName();
                 String title = "유통기한 임박 - " + productName;
@@ -95,48 +95,48 @@ public class NotificationScheduler {
      * 배송 상태 자동 전환
      * 10분마다 실행
      * START + 1시간 경과 → DELIVERYING
-     * START + 1일 경과 → DELIVERED + 점주 배송 완료 알림 (NOTIFY_015)
+     * DELIVERYING + 1일 경과 → DELIVERED + 점주 배송 완료 알림
      */
     @Scheduled(cron = "0 */10 * * * *")
     @Transactional
     public void updateDeliveryStatus() {
         LocalDateTime now = LocalDateTime.now();
 
-        // START + 1일 경과 → DELIVERED (먼저 체크하여 1시간/1일 모두 경과한 건은 바로 완료 처리)
+        // START + 1시간 경과 → DELIVERYING
+        List<Delivery> toDelivering = deliveryRepository.findByDeliveryStatusAndDepartureDateBefore(
+                DeliveryStatus.START, now.minusHours(1));
+
+        for (Delivery delivery : toDelivering) {
+            delivery.setDeliveryStatus(DeliveryStatus.DELIVERYING);
+        }
+
+        // DELIVERYING + 1일 경과 → DELIVERED + 점주 배송 완료 알림
         List<Delivery> toDeliver = deliveryRepository.findByDeliveryStatusAndDepartureDateBefore(
-                DeliveryStatus.START, now.minusDays(1));
+                DeliveryStatus.DELIVERYING, now.minusDays(1));
+
         for (Delivery delivery : toDeliver) {
             delivery.setDeliveryStatus(DeliveryStatus.DELIVERED);
             delivery.setDeliveredDate(now);
 
-            // 점주 배송 완료 알림 (NOTIFY_015)
             storeNotificationService.create(
                     NotificationType.DELIVERED,
                     "배송 완료 안내",
                     "주문하신 상품의 배송이 완료되었습니다.",
                     delivery.getOrders().getStore());
         }
-
-        // START + 1시간 경과 → DELIVERYING
-        List<Delivery> toDelivering = deliveryRepository.findByDeliveryStatusAndDepartureDateBefore(
-                DeliveryStatus.START, now.minusHours(1));
-        for (Delivery delivery : toDelivering) {
-            delivery.setDeliveryStatus(DeliveryStatus.DELIVERYING);
-        }
     }
 
     /**
      * 배송 지연 자동 감지
      * 매일 오전 8시에 실행
-     * 예상도착일 초과 + 미완료 배송 → 점주/운영자 알림 (NOTIFY_016)
+     * 예상도착일 초과 + 미완료 배송 → 점주/운영자 알림
      */
     @Scheduled(cron = "0 0 8 * * *")
     @Transactional
     public void checkDeliveryDelay() {
         LocalDateTime now = LocalDateTime.now();
 
-        List<Delivery> overdueDeliveries = deliveryRepository.findOverdueDeliveries(
-                now, List.of(DeliveryStatus.DELIVERED, DeliveryStatus.DELAY));
+        List<Delivery> overdueDeliveries = deliveryRepository.findOverdueDeliveries(now, List.of(DeliveryStatus.DELIVERED, DeliveryStatus.DELAY));
 
         for (Delivery delivery : overdueDeliveries) {
             String storeName = delivery.getOrders().getStore().getStoreName();
@@ -153,6 +153,9 @@ public class NotificationScheduler {
                     "배송 지연 안내",
                     "예상 도착일(" + delivery.getEstimatedArrivalAt().toLocalDate() + ")이 초과되었습니다. 본사에서 확인 중입니다.",
                     delivery.getOrders().getStore());
+
+            // 지연 처리 완료 → 다음 스케줄러 실행 시 중복 알림 방지
+            delivery.setDeliveryStatus(DeliveryStatus.DELAY);
         }
     }
 

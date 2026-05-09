@@ -143,27 +143,27 @@ INSERT INTO menu_category (menu_category_name, is_deleted) VALUES
 -- ============================================================
 INSERT INTO menu (menu_name, price, img_path, is_deleted, menu_category_idx) VALUES
 -- 커피 (idx: 1)
-('아메리카노', 1500, '/uploads/menu/americano.jpg', false, 1),
-('카페라떼', 2500, '/uploads/menu/cafelatte.jpg', false, 1),
-('바닐라라떼', 3000, '/uploads/menu/vanillalatte.jpg', false, 1),
-('카라멜마끼아또', 3500, '/uploads/menu/caramelmacchiato.jpg', false, 1),
-('카푸치노', 2500, '/uploads/menu/cappuccino.jpg', false, 1),
+('아메리카노', 1500, 'theVenti_logo.png ', false, 1),
+('카페라떼', 2500, 'theVenti_logo.png ', false, 1),
+('바닐라라떼', 3000, 'theVenti_logo.png ', false, 1),
+('카라멜마끼아또', 3500, 'theVenti_logo.png ', false, 1),
+('카푸치노', 2500, 'theVenti_logo.png ', false, 1),
 
 -- 베버리지 (idx: 2)
-('녹차라떼', 3000, '/uploads/menu/greentealatte.jpg', false, 2),
-('초코라떼', 3000, '/uploads/menu/chocolatte.jpg', false, 2),
+('녹차라떼', 3000, 'theVenti_logo.png ', false, 2),
+('초코라떼', 3000, 'theVenti_logo.png ', false, 2),
 
 -- 아이스블렌디드 (idx: 3)
-('딸기스무디', 3500, '/uploads/menu/strawberrysmoothie.jpg', false, 3),
-('망고스무디', 3500, '/uploads/menu/mangosmoothie.jpg', false, 3),
+('딸기스무디', 3500, 'theVenti_logo.png ', false, 3),
+('망고스무디', 3500, 'theVenti_logo.png ', false, 3),
 
 -- 티 & 에이드 (idx: 4)
-('복숭아아이스티', 2500, '/uploads/menu/peachicedtea.jpg', false, 4),
-('레몬에이드', 2500, '/uploads/menu/lemonade.jpg', false, 4),
-('자몽에이드', 3000, '/uploads/menu/grapefruitade.jpg', false, 4),
-('얼그레이티', 2000, '/uploads/menu/earlgrey.jpg', false, 4),
-('캐모마일티', 2000, '/uploads/menu/chamomile.jpg', false, 4),
-('히비스커스티', 2000, '/uploads/menu/hibiscus.jpg', false, 4);
+('복숭아아이스티', 2500, 'theVenti_logo.png ', false, 4),
+('레몬에이드', 2500, 'theVenti_logo.png ', false, 4),
+('자몽에이드', 3000, 'theVenti_logo.png ', false, 4),
+('얼그레이티', 2000, 'theVenti_logo.png ', false, 4),
+('캐모마일티', 2000, 'theVenti_logo.png ', false, 4),
+('히비스커스티', 2000, 'theVenti_logo.png ', false, 4);
 
 
 -- ============================================================
@@ -1100,33 +1100,33 @@ INSERT INTO head_notification (type, title, content, is_read, created_at) VALUES
 -- ============================================================
 -- 20. StoreNotification (가맹점 알림)
 -- ============================================================
-INSERT INTO store_notification (store_idx, type, is_read, created_at) VALUES
+INSERT INTO store_notification (store_idx, type, title, is_read, created_at) VALUES
 -- 강남역점
-(1, 'DELIVERED', true, '2026-04-11 09:35:00'),
-(1, 'DELIVERED', true, '2026-04-18 11:25:00'),
-(1, 'DELIVERED', true, '2026-04-25 09:50:00'),
-(1, 'APPROVE', true, '2026-04-10 10:00:00'),
+(1, 'DELIVERED', '배송 완료', true, '2026-04-11 09:35:00'),
+(1, 'DELIVERED', '배송 완료', true, '2026-04-18 11:25:00'),
+(1, 'DELIVERED', '배송 완료', true, '2026-04-25 09:50:00'),
+(1, 'APPROVE', '승인 완료', true, '2026-04-10 10:00:00'),
 
 -- 홍대입구점
-(2, 'CRITICAL', true, '2026-04-28 07:00:00'),
-(2, 'APPROVE', true, '2026-04-15 08:00:00'),
-(2, 'DELIVERED', true, '2026-04-16 10:20:00'),
-(2, 'LOW', false, '2026-04-29 07:00:00'),
-(2, 'CRITICAL', false, '2026-04-29 07:00:00'),
+(2, 'CRITICAL', '위험 알림(중요)', true, '2026-04-28 07:00:00'),
+(2, 'APPROVE', '승인 완료', true, '2026-04-15 08:00:00'),
+(2, 'DELIVERED', '배송 완료', true, '2026-04-16 10:20:00'),
+(2, 'LOW', '재고 부족(저)', false, '2026-04-29 07:00:00'),
+(2, 'CRITICAL', '위험 알림(중요)', false, '2026-04-29 07:00:00'),
 
 -- 신촌점
-(3, 'APPROVE', true, '2026-04-20 15:00:00'),
+(3, 'APPROVE', '승인 완료', true, '2026-04-20 15:00:00'),
 
 -- 건대입구점
-(4, 'CRITICAL', true, '2026-04-22 07:05:00'),
-(4, 'APPROVE', true, '2026-04-22 07:30:00'),
-(4, 'DELAY', true, '2026-04-24 11:00:00'),
-(4, 'DELIVERED', true, '2026-04-25 15:05:00'),
-(4, 'CRITICAL', false, '2026-04-29 07:00:00'),
+(4, 'CRITICAL', '위험 알림(중요)', true, '2026-04-22 07:05:00'),
+(4, 'APPROVE', '승인 완료', true, '2026-04-22 07:30:00'),
+(4, 'DELAY', '배송 지연', true, '2026-04-24 11:00:00'),
+(4, 'DELIVERED', '배송 완료', true, '2026-04-25 15:05:00'),
+(4, 'CRITICAL', '위험 알림(중요)', false, '2026-04-29 07:00:00'),
 
 -- 잠실점
-(5, 'APPROVE', true, '2026-04-18 17:00:00'),
-(5, 'REJECT', true, '2026-04-25 10:00:00');
+(5, 'APPROVE', '승인 완료', true, '2026-04-18 17:00:00'),
+(5, 'REJECT', '반려', true, '2026-04-25 10:00:00');
 
 -- ============================================================
 -- 21. Report (리포트)

@@ -72,7 +72,7 @@ public class StoreNotificationService {
     @Transactional
     public void markAsRead(Long notificationIdx) {
         StoreNotification notification = storeNotificationRepository.findById(notificationIdx)
-                .orElseThrow(() -> new IllegalArgumentException("알림을 찾을 수 없습니다."));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
         notification.markAsRead();
     }
 

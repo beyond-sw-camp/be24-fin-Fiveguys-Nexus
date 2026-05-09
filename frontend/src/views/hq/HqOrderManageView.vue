@@ -1,26 +1,42 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Settings, CheckCheck } from 'lucide-vue-next'
 import ordersApi from '@/api/orders'
-import HqAutoOrderTable from '@/components/orders/HqAutoOrderTable.vue'
-import HqConfirmedOrderTable from '@/components/orders/HqConfirmedOrderTable.vue'
-import HqOrderHistoryTable from '@/components/orders/HqOrderHistoryTable.vue'
-import HqAbnormalOrderTable from '@/components/orders/HqAbnormalOrderTable.vue'
-import HqOrderDetailModal from '@/components/orders/HqOrderDetailModal.vue'
-import HqDangerSettingsModal from '@/components/orders/HqDangerSettingsModal.vue'
+import Toast from '@/components/common/Toast.vue'
+import ConfirmModal from '@/components/common/ConfirmModal.vue'
+import { useToast } from '@/composables/useToast'
+
+const { toast, showToast } = useToast()
+
+const confirmState = ref({ open: false, type: 'info', title: '', confirmText: '확인', action: null })
+function openConfirm({ type, title, confirmText, action }) {
+  confirmState.value = { open: true, type, title, confirmText, action }
+}
+function closeConfirm() {
+  confirmState.value = { open: false, type: 'info', title: '', confirmText: '확인', action: null }
+}
+async function handleConfirm() {
+  const action = confirmState.value.action
+  closeConfirm()
+  if (action) await action()
+}
+import HqAutoOrderTable from '@/components/orders/hq/HqAutoOrderTable.vue'
+import HqConfirmedOrderTable from '@/components/orders/hq/HqConfirmedOrderTable.vue'
+import HqOrderHistoryTable from '@/components/orders/hq/HqOrderHistoryTable.vue'
+import HqAbnormalOrderTable from '@/components/orders/hq/HqAbnormalOrderTable.vue'
+import HqOrderDetailModal from '@/components/orders/hq/HqOrderDetailModal.vue'
+import HqDangerSettingsModal from '@/components/orders/hq/HqDangerSettingsModal.vue'
 
 const route = useRoute()
 const router = useRouter()
 
-const abnormalCount = computed(() => abnormalOrders.value.filter(o => o.status !== 'APPROVE' && o.status !== 'REJECT').length)
-
-const tabs = computed(() => [
+const tabs = [
   { id: 'auto',      label: '자동 발주 제안' },
   { id: 'confirmed', label: '확정 발주' },
   { id: 'history',   label: '발주 이력' },
-  { id: 'abnormal',  label: '이상 발주', badge: abnormalCount.value || null },
-])
+  { id: 'abnormal',  label: '이상 발주' },
+]
 const activeTab = ref('auto')
 
 const autoOrders = ref([])
@@ -155,20 +171,26 @@ function onConfirmedPageChange(page) {
   fetchConfirmedOrders(confirmedSearchParams.value, page)
 }
 
-async function approveAllConfirmed() {
+function approveAllConfirmed() {
   if (confirmedOrders.value.length === 0) {
-    alert('승인할 확정 발주가 없습니다.')
+    showToast('승인할 확정 발주가 없습니다.', 'error')
     return
   }
-  if (!confirm(`확정 발주 ${confirmedOrders.value.length}건을 전체 승인하시겠습니까?`)) return
-  try {
-    await ordersApi.approveAllConfirmed()
-    alert('전체 승인이 완료되었습니다.')
-    await fetchConfirmedOrders()
-  } catch (e) {
-    console.error('전체 승인 실패', e)
-    alert('전체 승인에 실패했습니다.')
-  }
+  openConfirm({
+    type: 'warning',
+    title: `확정 발주 ${confirmedOrders.value.length}건을 전체 승인하시겠습니까?`,
+    confirmText: '전체 승인',
+    action: async () => {
+      try {
+        await ordersApi.approveAllConfirmed()
+        showToast('전체 승인이 완료되었습니다.')
+        await fetchConfirmedOrders()
+      } catch (e) {
+        console.error('전체 승인 실패', e)
+        showToast('전체 승인에 실패했습니다.', 'error')
+      }
+    },
+  })
 }
 
 // Tab routing
@@ -181,19 +203,20 @@ function applyOrderRouteQuery() {
 
 onMounted(() => {
   applyOrderRouteQuery()
-  fetchAutoOrders()
-  fetchConfirmedOrders()
-  fetchOrderHistory()
-  fetchAbnormalOrders()
+  fetchTabData(activeTab.value)
 })
+
+function fetchTabData(id) {
+  if (id === 'auto') fetchAutoOrders()
+  if (id === 'confirmed') fetchConfirmedOrders()
+  if (id === 'history') fetchOrderHistory()
+  if (id === 'abnormal') fetchAbnormalOrders()
+}
 
 function setOrderViewTab(id) {
   activeTab.value = id
   router.replace({ path: '/order', query: { tab: id } })
-  if (id === 'confirmed') fetchConfirmedOrders()
-  if (id === 'auto') fetchAutoOrders()
-  if (id === 'history') fetchOrderHistory()
-  if (id === 'abnormal') fetchAbnormalOrders()
+  fetchTabData(id)
 }
 
 // Detail modal
@@ -247,27 +270,39 @@ async function saveDangerSettings({ threshold, months }) {
 }
 
 // Abnormal order actions
-async function approveAbnormal(o) {
-  if (!confirm(`${o.store} 발주를 승인하시겠습니까?`)) return
-  try {
-    await ordersApi.approveDangerOrder(o.id)
-    alert(`${o.store} 발주 승인 처리되었습니다.`)
-    await fetchAbnormalOrders()
-  } catch (e) {
-    console.error('이상 발주 승인 실패', e)
-    alert('승인 처리에 실패했습니다.')
-  }
+function approveAbnormal(o) {
+  openConfirm({
+    type: 'info',
+    title: `${o.store} 발주를 승인하시겠습니까?`,
+    confirmText: '승인',
+    action: async () => {
+      try {
+        await ordersApi.approveDangerOrder(o.id)
+        showToast(`${o.store} 발주 승인 처리되었습니다.`)
+        await fetchAbnormalOrders()
+      } catch (e) {
+        console.error('이상 발주 승인 실패', e)
+        showToast('승인 처리에 실패했습니다.', 'error')
+      }
+    },
+  })
 }
-async function rejectAbnormal(o) {
-  if (!confirm(`${o.store} 발주를 반려하시겠습니까?`)) return
-  try {
-    await ordersApi.rejectDangerOrder(o.id)
-    alert(`${o.store} 발주 반려 처리되었습니다.`)
-    await fetchAbnormalOrders()
-  } catch (e) {
-    console.error('이상 발주 반려 실패', e)
-    alert('반려 처리에 실패했습니다.')
-  }
+function rejectAbnormal(o) {
+  openConfirm({
+    type: 'danger',
+    title: `${o.store} 발주를 반려하시겠습니까?`,
+    confirmText: '반려',
+    action: async () => {
+      try {
+        await ordersApi.rejectDangerOrder(o.id)
+        showToast(`${o.store} 발주 반려 처리되었습니다.`)
+        await fetchAbnormalOrders()
+      } catch (e) {
+        console.error('이상 발주 반려 실패', e)
+        showToast('반려 처리에 실패했습니다.', 'error')
+      }
+    },
+  })
 }
 
 </script>
@@ -294,11 +329,6 @@ async function rejectAbnormal(o) {
           ? 'border-[#F37321] text-[#F37321]'
           : 'border-transparent text-gray-500 hover:text-gray-700'">
         {{ tab.label }}
-        <span v-if="tab.badge"
-          class="ml-1.5 text-xs font-bold px-1.5 py-0.5 rounded"
-          :class="activeTab === tab.id ? 'bg-orange-100 text-[#F37321]' : 'bg-gray-100 text-gray-500'">
-          {{ tab.badge }}
-        </span>
       </button>
     </div>
 
@@ -328,5 +358,13 @@ async function rejectAbnormal(o) {
     <!-- Modals -->
     <HqOrderDetailModal :order="selectedOrder" @close="selectedOrder = null" />
     <HqDangerSettingsModal :visible="showSettings" :init-threshold="dangerSettings.ratio" :init-months="dangerSettings.period" @close="showSettings = false" @save="saveDangerSettings" />
+    <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
+    <ConfirmModal
+      :open="confirmState.open"
+      :title="confirmState.title"
+      :confirm-text="confirmState.confirmText"
+      :type="confirmState.type"
+      @close="closeConfirm"
+      @confirm="handleConfirm" />
   </div>
 </template>

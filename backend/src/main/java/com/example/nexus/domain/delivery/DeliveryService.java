@@ -7,6 +7,10 @@ import com.example.nexus.domain.delivery.model.DeliveryDto;
 import com.example.nexus.domain.notification.HeadNotificationService;
 import com.example.nexus.domain.notification.StoreNotificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,7 +28,7 @@ public class DeliveryService {
     private final HeadNotificationService headNotificationService;
     private final StoreNotificationService storeNotificationService;
 
-    // 발주 승인 시 배송 생성 (READY 상태)
+    // 점주 발주 확정 시 배송 생성 (READY 상태)
     @Transactional
     public void createDelivery(Orders orders) {
         Delivery delivery = Delivery.builder()
@@ -36,48 +40,45 @@ public class DeliveryService {
         deliveryRepository.save(delivery);
     }
 
-    // 배송 승인: READY → START + 점주 배송 시작 알림 (NOTIFY_014)
+    // 본사 발주 승인 시 배송 시작 (READY → START) + 점주 알림
     @Transactional
-    public boolean approveDelivery(Long deliveryIdx) {
-        Delivery delivery = deliveryRepository.findByIdx(deliveryIdx);
+    public void startDeliveryByOrders(Orders orders) {
+        Delivery delivery = deliveryRepository.findByOrders(orders);
         if (delivery == null || delivery.getDeliveryStatus() != DeliveryStatus.READY) {
-            return false;
+            return;
         }
-
         delivery.setDeliveryStatus(DeliveryStatus.START);
 
-        String storeName = delivery.getOrders().getStore().getStoreName();
         storeNotificationService.create(
                 NotificationType.DELIVERY_START,
                 "배송 시작 안내",
                 "주문하신 상품의 배송이 시작되었습니다. 예상 도착일: "
                         + delivery.getEstimatedArrivalAt().toLocalDate(),
-                delivery.getOrders().getStore());
-
-        return true;
+                orders.getStore());
     }
 
-    public List<DeliveryDto> getDeliveriesByHead(
-            String storeName, DeliveryStatus status, Integer year, Integer month, Integer day) {
-        return deliveryRepository.findAllByFilters(storeName, status, year, month, day)
-                .stream()
-                .map(DeliveryDto::from)
-                .collect(Collectors.toList());
+    public DeliveryDto.DeliveryPageRes getDeliveriesByHead(
+            String storeName, DeliveryStatus status, Integer year, Integer month, Integer day, int page, int size) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("departureDate").descending());
+        Page<Delivery> deliveryPage = deliveryRepository.findAllByHeadFilters(storeName, status, year, month, day, pageable);
+
+        return DeliveryDto.DeliveryPageRes.from(deliveryPage);
     }
 
     // 가맹점 배송 현황 조회
-    public List<DeliveryDto> getDeliveriesForStore(
-            Long storeIdx, Long orderIdx, DeliveryStatus status, Integer year, Integer month, Integer day) {
-        return deliveryRepository.findAllByStoreFilters(storeIdx, orderIdx, status, year, month, day)
-                .stream()
-                .map(delivery -> DeliveryDto.from(delivery))
-                .collect(Collectors.toList());
+    public DeliveryDto.DeliveryPageRes getDeliveriesForStore(
+            Long storeIdx, Long orderIdx, DeliveryStatus status, Integer year, Integer month, Integer day, int page, int size) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("departureDate").descending());
+        Page<Delivery> deliveryPage = deliveryRepository.findAllByStoreFilters(storeIdx, orderIdx, status, year, month, day, pageable);
+
+        return DeliveryDto.DeliveryPageRes.from(deliveryPage);
     }
 
     // 본사 배송 지연 사유 입력 로직 (throw/Optional 제거 및 boolean 흐름 제어 적용)
     @Transactional
     public boolean updateDelayReason(Long deliveryIdx, String delayReason) {
-        // Optional을 사용하지 않고 직접 Entity를 조회하여 null 체크
         Delivery delivery = deliveryRepository.findByIdx(deliveryIdx);
 
         if (delivery == null) {

@@ -8,6 +8,8 @@ import com.example.nexus.common.model.BaseResponseStatus;
 import com.example.nexus.domain.inventory.InventoryMovementService;
 import com.example.nexus.domain.inventory.model.InventoryMovementDto;
 import com.example.nexus.domain.delivery.DeliveryService;
+import com.example.nexus.domain.head.HeadIncomeRepository;
+import com.example.nexus.domain.head.model.HeadIncome;
 import com.example.nexus.domain.notification.HeadNotificationService;
 import com.example.nexus.domain.notification.StoreNotificationService;
 import com.example.nexus.domain.orders.model.*;
@@ -27,6 +29,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -44,6 +48,7 @@ public class OrdersService {
     private final HeadNotificationService headNotificationService;
     private final StoreNotificationService storeNotificationService;
     private final DeliveryService deliveryService;
+    private final HeadIncomeRepository headIncomeRepository;
 
     // 자동 발주 제안 검색 조회 (AUTO + WAITING 상태 대상)
     // 매장명 키워드 검색 + 페이징 처리
@@ -96,7 +101,9 @@ public class OrdersService {
     // 기간, 키워드 조건으로 필터링 + 페이징 처리
     // 각 발주에 대해 같은 매장의 최근 N개월 평균 수량 계산
     public Page<DangerDto.DangerListRes> findDangerOrders(LocalDate startDate, LocalDate endDate, String keyword, Pageable pageable) {
-        Specification<Orders> spec = OrdersSpecification.isDangerTrue();
+        Specification<Orders> spec = OrdersSpecification.isDangerTrue()
+                .and(OrdersSpecification.statusIn(List.of(
+                        OrdersStatus.CONFIRMED, OrdersStatus.APPROVE, OrdersStatus.REJECT)));
 
         if (startDate != null) {
             spec = spec.and(OrdersSpecification.createdAfter(startDate));
@@ -150,7 +157,8 @@ public class OrdersService {
         List<Orders> dangerOrders = ordersRepository.findAllByIsDangerTrue();
 
         for (Orders orders : dangerOrders) {
-            int totalQty = orders.getOrdersItemList().stream().mapToInt(OrdersItem::getCount).sum();
+            List<OrdersItem> items = orders.getOrdersItemList() != null ? orders.getOrdersItemList() : Collections.emptyList();
+            int totalQty = items.stream().mapToInt(OrdersItem::getCount).sum();
 
             LocalDateTime since = orders.getCreatedAt().minusMonths(req.getPeriod());
 
@@ -177,7 +185,8 @@ public class OrdersService {
 
         applyOutboundForOrder(orders, "발주 승인(이상) ordersIdx=");
         orders.approve();
-        deliveryService.createDelivery(orders);
+        createHeadIncome(orders);
+        deliveryService.startDeliveryByOrders(orders);
     }
 
     // 본사 - 이상 발주 개별 반려
@@ -201,8 +210,20 @@ public class OrdersService {
         for (Orders orders : confirmedOrders) {
             applyOutboundForOrder(orders, "발주 일괄승인 ordersIdx=");
             orders.approve();
-            deliveryService.createDelivery(orders);
+            createHeadIncome(orders);
+            deliveryService.startDeliveryByOrders(orders);
         }
+    }
+
+    // 발주 승인 시 매출채권(HeadIncome) 생성
+    private void createHeadIncome(Orders orders) {
+        HeadIncome headIncome = new HeadIncome();
+        headIncome.setPrice(orders.getPrice());
+        headIncome.setStatus(false);
+        headIncome.setSettlementIdx(null);
+        headIncome.setStore(orders.getStore());
+        headIncome.setOrders(orders);
+        headIncomeRepository.save(headIncome);
     }
 
     // 발주 승인 시 품목별 출고 처리 (재고 차감)
@@ -253,14 +274,14 @@ public class OrdersService {
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
 
         // 3. Product 조회 및 총 가격 계산
-        long totalprice = 0;
+        long totalPrice = 0;
         List<OrdersItem> itemList = new ArrayList<>();
 
         for (OrdersItemDto.OrdersItemReq itemReq : req.getOrdersItemList()) {
             Product product = productRepository.findById(itemReq.getProductIdx())
                     .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
 
-            totalprice += (long) product.getUnitPrice() * itemReq.getCount();
+            totalPrice += (long) product.getUnitPrice() * itemReq.getCount();
 
             itemList.add(OrdersItem.builder()
                     .count(itemReq.getCount())
@@ -289,7 +310,7 @@ public class OrdersService {
 
         // 5. Orders 저장
         Orders orders = ordersRepository.save(Orders.builder()
-                .price(totalprice)
+                .price(totalPrice)
                 .ordersType(OrdersType.MANUAL)
                 .ordersStatus(OrdersStatus.CONFIRMED)
                 .isDanger(isDanger)
@@ -305,6 +326,9 @@ public class OrdersService {
                     .orders(orders)
                     .build());
         }
+
+        // 7. 배송 생성 (READY 상태)
+        deliveryService.createDelivery(orders);
     }
 
     // 점주 - 제안 발주서 목록 조회 (WAITING 상태, 현재 재고 포함)
@@ -313,10 +337,17 @@ public class OrdersService {
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
 
         List<StoreInventory> inventoryList = storeInventoryRepository.findByStoreIdx(store.getIdx());
-        Map<Long, Integer> stockMap = inventoryList.stream()
-                .collect(Collectors.toMap(inv -> inv.getProduct().getIdx(), StoreInventory::getCount, Integer::sum));
+        Map<Long, Integer> stockMap = new HashMap<>();
+        for (StoreInventory inv : inventoryList) {
+            Long productIdx = inv.getProduct().getIdx();
+            if (stockMap.containsKey(productIdx)) {
+                stockMap.put(productIdx, stockMap.get(productIdx) + inv.getCount());
+            } else {
+                stockMap.put(productIdx, inv.getCount());
+            }
+        }
 
-        return ordersRepository.findAllByStore_IdxAndOrdersStatus(store.getIdx(), OrdersStatus.WAITING).stream()
+        return ordersRepository.findAllByStore_IdxAndOrdersStatusAndOrdersTypeOrderByCreatedAtDesc(store.getIdx(), OrdersStatus.WAITING, OrdersType.AUTO).stream()
                 .map(order -> OrdersDto.OrdersRes.fromWithStock(order, stockMap))
                 .toList();
     }
@@ -339,7 +370,8 @@ public class OrdersService {
         }
 
         // 이상 발주 재판정: 점주가 아이템을 수정했을 수 있으므로 확정 시점에 재평가
-        int totalQty = orders.getOrdersItemList().stream().mapToInt(OrdersItem::getCount).sum();
+        List<OrdersItem> items = orders.getOrdersItemList() != null ? orders.getOrdersItemList() : Collections.emptyList();
+        int totalQty = items.stream().mapToInt(OrdersItem::getCount).sum();
         boolean isDanger = evaluateDanger(store.getIdx(), totalQty, orders.getCreatedAt(), orders.getIdx());
         orders.markDanger(isDanger);
 
@@ -359,6 +391,7 @@ public class OrdersService {
         }
 
         orders.confirm();
+        deliveryService.createDelivery(orders);
     }
 
     // 점주 - 제안 발주서에 품목 추가 (가격 자동 반영)

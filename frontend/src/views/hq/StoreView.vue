@@ -1,106 +1,28 @@
 <script setup>
-import { ref, reactive, onMounted, computed, nextTick } from 'vue'
-import { Plus, Search, FileText, ChevronDown } from 'lucide-vue-next'
-import { getStoreList , getStoreDetailList, getPresignedUrl, postNewRegister, putStoreUpdate} from '@/api/store/index.js'
+import {ref, reactive, onMounted, computed, nextTick, watch} from 'vue'
+import {Plus, Search, FileText, ChevronRight, ChevronLeft} from 'lucide-vue-next'
+import { getStoreList , getStoreDetailList, getPresignedUrl, postNewRegister, putStoreUpdate, getStoreTotal} from '@/api/store/index.js'
 import axios from 'axios'
+import Toast from '@/components/common/Toast.vue'
+import { useToast } from '@/composables/useToast'
 
-
+const { toast, showToast } = useToast()
 const searchQuery = ref('')
 const filterStatus = ref('전체')
-const activeDropdown = ref(null)
-
 const statusOptions = ['전체', '입점', '폐점']
-
-// --- 가맹점 목록 리스트 ---
-const storesList = reactive([])
+const storesList = ref([])
+const storeTotalCount = ref()
 const pagination = reactive({
   totalPage: 0,
   totalCount: 0,
   currentPage: 0,
   currentSize: 10
 })
-
-const storeListRes = async (page = 0)=>{
-  const searchReq = {
-    keyword: searchQuery.value, // ref로 선언된 검색어
-    status: filterStatus.value === '입점' ? 'ACTIVE' : filterStatus.value === '폐점' ? 'CLOSED' : null
-  }
-
-  const res = await getStoreList(searchReq, page, pagination.currentSize)
-  storesList.splice(0, storesList.length, ...res.data.result.storeList)
-
-
-  pagination.totalPage = res.data.result.totalPage
-  pagination.totalCount = res.data.result.totalCount
-  pagination.currentPage = res.data.result.currentPage
-}
-
-const changePage = (page) => {
-  // 0보다 작거나 마지막 페이지(totalPage - 1)보다 크면 무시[cite: 1]
-  if (page < 0 || page >= pagination.totalPage) return
-  storeListRes(page)
-}
-
-const filteredStores = computed(() => {
-  let list = [...storesList];
-
-  list = list.filter(s => {
-    if (filterStatus.value === '폐점') {
-      return s.status === '폐점'; // '폐점' 필터일 때는 폐점인 것만 반환
-    } else if (filterStatus.value === '입점') {
-      return s.status === '입점'; // '입점' 필터일 때는 폐점이 아닌 것(운영중)만 반환
-    }
-    return true; // '전체'일 때는 모두 반환
-  })
-
-// 2. 검색어 필터링 (storeName, ownerName, address 기준)
-  const q = searchQuery.value.trim().toLowerCase()
-  if (q) {
-    list = list.filter(s =>
-      (s.storeName?.toLowerCase().includes(q)) ||
-      (s.ownerName?.toLowerCase().includes(q)) ||
-      (s.address?.toLowerCase().includes(q))
-    )
-  }
-
-  // 3. 정렬 (입점 중인 매장 우선)
-  return list.sort((a, b) => {
-    // a가 폐점이고 b가 입점이면, a를 뒤로 보냄 (1)
-    if (a.status === "폐점" && b.status === "입점") return 1
-    // a가 입점이고 b가 폐점이면, a를 앞으로 보냄 (-1)
-    if (a.status === "입점" && b.status === "폐점") return -1
-    // 상태가 같으면 순서를 유지함
-    return 0
-  })
-})
-
-const formatBusinessNumber = (e) => {
-  // 1. 숫자 이외의 문자(한글, 영문 등)를 모두 제거
-  let val = e.target.value.replace(/[^0-9]/g, '');
-
-  // 2. 최대 10자리까지만 남기기
-  if (val.length > 10) val = val.substring(0, 10);
-
-  // 3. 포맷팅 로직 (000-00-00000)
-  let formatted = '';
-  if (val.length <= 3) {
-    formatted = val;
-  } else if (val.length <= 5) {
-    formatted = `${val.slice(0, 3)}-${val.slice(3)}`;
-  } else {
-    formatted = `${val.slice(0, 3)}-${val.slice(3, 5)}-${val.slice(5, 10)}`;
-  }
-
-  // [중요] input 태그의 실제 값과 Vue 상태를 강제로 일치시킴
-  e.target.value = formatted;
-  form.business = formatted;
-};
-
 const showModal = ref(false)
 const showDetailModal = ref(false)
 const editTarget = ref(null)
 const detailTarget = ref(null)
-
+const selectedFile = ref(null);
 // 초기화 하는 함수
 const getInitialForm = () => ({
   storeName: '',
@@ -119,17 +41,60 @@ const getInitialForm = () => ({
 
 const form = reactive(getInitialForm())
 
+// 리스트 조회
+const storeListRes = async (page = 0)=>{
+  const searchReq = {
+    keyword: searchQuery.value,
+    status: filterStatus.value === '입점' ? 'ACTIVE' : filterStatus.value === '폐점' ? 'CLOSED' : null
+  }
 
-// 상태 토글
-function toggleDropdown(type) {
-  activeDropdown.value = activeDropdown.value === type ? null : type
+  // 토탈 수 조회
+  const totalRes = await getStoreTotal()
+  storeTotalCount.value = totalRes.data.result
+  console.log(storeTotalCount.value)
+  // 가맹점 리스트 조회
+  const res = await getStoreList(searchReq, page, pagination.currentSize)
+  storesList.value.splice(0, storesList.value.length, ...res.data.result.storeList)
+
+  pagination.totalPage = res.data.result.totalPage
+  pagination.totalCount = res.data.result.totalCount
+  pagination.currentPage = res.data.result.currentPage
+
 }
 
-// 토글 필터링 조건
-function selectFilter(type, value) {
-  if (type === 'status') filterStatus.value = value
-  activeDropdown.value = null
+// 페이지 변경
+const changePage = (page) => {
+  // 0보다 작거나 마지막 페이지(totalPage - 1)보다 크면 무시[cite: 1]
+  if (page < 0 || page >= pagination.totalPage) return
+  storeListRes(page)
 }
+
+// searchQuery가 변할 때마다 자동으로 getMenuRes 실행
+watch(searchQuery, () => {
+  storeListRes(0)
+})
+
+// 사업자 번호 포맷팅
+const formatBusinessNumber = (e) => {
+  // 1. 숫자 이외의 문자(한글, 영문 등)를 모두 제거
+  let val = e.target.value.replace(/[^0-9]/g, '');
+
+  // 2. 최대 10자리까지만 남기기
+  if (val.length > 10) val = val.substring(0, 10);
+
+  // 3. 포맷팅 로직 (000-00-00000)
+  let formatted;
+  if (val.length <= 3) {
+    formatted = val;
+  } else if (val.length <= 5) {
+    formatted = `${val.slice(0, 3)}-${val.slice(3)}`;
+  } else {
+    formatted = `${val.slice(0, 3)}-${val.slice(3, 5)}-${val.slice(5, 10)}`;
+  }
+  // [중요] input 태그의 실제 값과 Vue 상태를 강제로 일치시킴
+  e.target.value = formatted;
+  form.business = formatted;
+};
 
 // 가맹점 목록 클릭시 상세 모달창
 async function openDetail(idx) {
@@ -141,40 +106,40 @@ async function openDetail(idx) {
 
 // 수정 등록 팝업 창 열기
 async function openModal(idx =! null) {
-
   if (idx) {
     // [수정 모드]
     const res = await getStoreDetailList(idx);
     const detailData = res.data.result;
     Object.assign(form, getInitialForm());
-    // v-model로 연결된 form에 DB에서 가져온 값을 세팅 (화면에 바로 보임)
     Object.assign(form, detailData);
     if (detailData.filePath) {
       // S3 경로나 파일 경로에서 마지막 '/' 뒤의 이름만 가져옵니다.
       form.fileName = detailData.filePath.split('/').pop();
     }
-
-    editTarget.value = detailData; // 나중에 수정 API 보낼 때 쓸 idx가 담긴 원본
+    editTarget.value = detailData;
   } else {
-    // [등록 모드] idx가 없으면 입력 칸을 싹 비움
+    // [등록 모드]
     Object.assign(form, getInitialForm());
     editTarget.value = null;
   }
   showModal.value = true;
 }
 
-const selectedFile = ref(null);
-// 파일 선택 감지
+// 선택 파일 감지
 async function handleFileChange(e) {
   const file = e.target.files[0]
-  if (file) {
-    selectedFile.value = file; // 선택한 파일 보관
-    form.fileName = file.name; // 화면 표시용
+  if (!file) return;
+  const allowedTypes = ['application/pdf'];
+  if (!allowedTypes.includes(file.type)) {
+    showToast('사업자 등록증은 PDF 형식의 파일만 업로드할 수 있습니다.', 'error');
+    e.target.value = ''; // input 태그 초기화
+    return;
   }
+  selectedFile.value = file;
+  form.fileName = file.name;
 }
 
-
-// [추가] S3 업로드 로직만 담당하는 공통 함수
+// S3 업로드 로직만 담당하는 공통 함수
 async function uploadFileToS3() {
   // 선택된 파일이 없으면 업로드 과정을 건너뛰고 null 반환
   if (!selectedFile.value) return null;
@@ -190,19 +155,16 @@ async function uploadFileToS3() {
     });
 
     return s3Path; // 업로드된 S3 파일 경로(DB 저장용) 반환
-  } catch (error) {
-    console.error("S3 업로드 실패:", error);
-    throw new Error("파일 업로드 중 오류가 발생했습니다.");
+  } catch {
+    showToast("파일 업로드 중 오류가 발생했습니다. 다시 시도해주세요.", 'error')
   }
 }
 
+// 등록 및 저장
 async function saveStore() {
   try {
-    // [핵심 추가] 파일을 선택했다면 등록/수정 전에 S3에 먼저 올립니다.
-    let finalFilePath = form.filePath; // 기본은 기존 경로 유지
-
+    let finalFilePath = form.filePath;
     if (selectedFile.value) {
-      // 새 파일이 선택되었다면 S3에 업로드하고 새 경로를 받아옴
       const newS3Path = await uploadFileToS3();
       if (newS3Path) {
         finalFilePath = newS3Path;
@@ -217,22 +179,19 @@ async function saveStore() {
         postcode: form.postcode,
         address: form.address,
         addressDetail: form.addressDetail,
-        closedAt: (form.closedAt === "운영 중" || !form.closedAt) ? null : form.closedAt + "T00:00:00", // 날짜 형식 주의
-        filePath: finalFilePath // 새 경로 또는 기존 경로[cite: 14]
+        closedAt: (form.closedAt === "운영 중" || !form.closedAt) ? null : form.closedAt + "T00:00:00",
+        filePath: finalFilePath
       };
 
-      // [핵심] 백엔드 수정 API 호출 (StoreController_11.java의 @PutMapping 연동)
       const res = await putStoreUpdate(editTarget.value.idx, updateData);
-
       if (res.data.code === 2000) {
-        alert("가맹점 정보가 수정되었습니다.");
-        await storeListRes(pagination.currentPage); // 현재 페이지 목록 새로고침[cite: 14]
+        showToast('가맹점 정보가 수정되었습니다.');
+        await storeListRes(pagination.currentPage);
         showModal.value = false;
       }
     }
     // --- 등록 로직 ---
     else {
-      // form 내용을 복사하여 전송용 DTO 생성
       const storeRegDto = {
         storeName: form.storeName,
         ownerEmail: form.ownerEmail,
@@ -244,27 +203,23 @@ async function saveStore() {
       };
 
       const res = await postNewRegister(storeRegDto);
-
       if (res.data.code === 2000) {
-        alert("가맹점이 등록되었습니다.");
-        storesList.length = 0;
+        showToast('가맹점이 등록되었습니다.');
+        storesList.value.length = 0;
         await storeListRes();
       }
     }
 
-    showModal.value = false; // 성공 시에만 모달 닫기
-    selectedFile.value = null; // 파일 변수 초기화
+    showModal.value = false;
+    selectedFile.value = null;
 
   } catch (error) {
-    // 백엔드에서 보낸 상세 에러 메시지 추출
     const serverMessage = error.response?.data?.message || error.message;
-    const serverCode = error.response?.data?.code || "Unknown Code";
-
-    console.error("서버 에러 상세:", error.response?.data);
-    alert(`등록 실패 (${serverCode}): ${serverMessage}`);
+    showToast(`등록 실패 : ${serverMessage}`, 'error');
   }
 }
-// <script setup> 내부에 추가
+
+// 모두 입력시 버튼 활성화
 const isFormValid = computed(() => {
   // 필수 항목들이 비어있는지 확인
   const fields = [
@@ -281,11 +236,10 @@ const isFormValid = computed(() => {
     form.business.length === 12;
 });
 
-
 // S3 미리보기 (뷰어)
 function viewPdf() {
   const filePath = detailTarget.value?.filePath;
-  if (!filePath) return alert('파일이 없습니다.');
+  if (!filePath) return showToast('파일이 없습니다.', 'error');
 
   const s3BaseUrl = 'https://nexus-store-archive.s3.ap-northeast-2.amazonaws.com/';
   window.open(s3BaseUrl + filePath, '_blank'); // 새 탭에서 열기
@@ -294,7 +248,7 @@ function viewPdf() {
 // S3 다운로드
 async function downloadPdf() {
   const filePath = detailTarget.value?.filePath;
-  if (!filePath) return alert('파일이 없습니다.');
+  if (!filePath) return showToast('파일이 없습니다.', 'error');
 
   const s3BaseUrl = 'https://nexus-store-archive.s3.ap-northeast-2.amazonaws.com/';
   const fileUrl = s3BaseUrl + filePath;
@@ -324,7 +278,7 @@ async function downloadPdf() {
   } catch (error) {
     console.error('다운로드 중 오류 발생:', error);
     // 만약 CORS 에러가 난다면, 가장 단순한 방법인 window.open을 백업으로 사용합니다.
-    alert('브라우저 보안 정책으로 인해 직접 다운로드가 제한되었습니다. 새 탭에서 파일을 엽니다.');
+    showToast('브라우저 보안 정책으로 인해 직접 다운로드가 제한되었습니다. 새 탭에서 파일을 엽니다.', 'error');
     window.open(fileUrl, '_blank');
   }
 }
@@ -354,19 +308,24 @@ const sample6_execDaumPostcode = () => {
   }).open();
 }
 
+// 버튼 클릭
 const visiblePages = computed(() => {
   const range = 10; // 한 번에 보여줄 페이지 개수
   const currentGroup = Math.floor(pagination.currentPage / range);
-
   const start = currentGroup * range;
   const end = Math.min(start + range, pagination.totalPage);
-
   const pages = [];
   for (let i = start; i < end; i++) {
     pages.push(i);
   }
   return pages;
 });
+
+// 상태 선택 함수 (버튼 전용)
+const selectStatus = (status) => {
+  filterStatus.value = status;
+  storeListRes(0);
+};
 
 onMounted(() => {
   storeListRes()
@@ -381,8 +340,7 @@ onMounted(() => {
       <div>
         <h1 class="text-xl font-bold text-gray-900 tracking-tight">입점 가맹점 관리</h1>
       </div>
-      <button @click="openModal(null)"
-              class="bg-[#F37321] text-white px-4 py-2 text-sm font-semibold rounded-lg hover:bg-[#e0661d] transition-colors flex items-center gap-2 shadow-sm cursor-pointer">
+      <button @click="openModal(null)" class="bg-[#F37321] text-white px-4 py-2 text-sm font-semibold rounded-lg hover:bg-[#e0661d] transition-colors flex items-center gap-2 shadow-sm cursor-pointer">
         <Plus class="w-4 h-4" /> 신규 가맹점 등록
       </button>
     </div>
@@ -391,59 +349,30 @@ onMounted(() => {
     <div class="grid grid-cols-3 gap-4">
       <div class="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
         <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">전체 입점 가맹점</p>
-        <p class="text-3xl font-black text-gray-900 mt-2">{{ storesList.length }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
+        <p class="text-3xl font-black text-gray-900 mt-2">{{ storeTotalCount?.totalCount }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
       </div>
       <div class="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
         <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">입점</p>
-        <p class="text-3xl font-black text-green-600 mt-2">{{storesList.filter(s => s.status === '입점').length }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
+        <p class="text-3xl font-black text-green-600 mt-2">{{ storeTotalCount?.activeCount }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
       </div>
       <div class="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
         <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">폐점 가맹점</p>
-        <p class="text-3xl font-black text-red-500 mt-2">{{ storesList.filter(s => s.status === '폐점').length }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
+        <p class="text-3xl font-black text-red-500 mt-2">{{ storeTotalCount?.closedCount }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
       </div>
     </div>
-
-    <!-- Filters & Search -->
     <div class="flex items-center justify-between gap-4">
       <div class="flex items-center gap-2 flex-1 max-w-md">
         <div class="relative">
           <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="가맹점명 검색"
-            @keyup.enter="handleSearch"
-            class="pl-10 pr-4 py-2 rounded-lg border border-gray-200 text-sm w-52
-             bg-white shadow-sm
-             focus:border-[#F37321] focus:ring-1 focus:ring-[#F37321]
-             outline-none transition-colors"
-          />
+          <input v-model="searchQuery" type="text" placeholder="가맹점명 검색" @keyup.enter="storeListRes(0)"
+                 class="pl-10 pr-4 py-2 rounded-lg border border-gray-200 text-sm w-52 bg-white shadow-sm focus:border-[#F37321] focus:ring-1 focus:ring-[#F37321] outline-none transition-colors"/>
         </div>
-        <button @click="handleSearch"
-                class="px-4 py-2 bg-white border border-gray-300 text-gray-600 text-sm font-bold rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-colors shadow-sm whitespace-nowrap cursor-pointer">
-          검색
+        <button v-for="s in statusOptions" :key="s" @click="selectStatus(s)" class="px-3 py-1.5 text-sm font-semibold border rounded-lg transition-colors shadow-sm cursor-pointer"
+          :class="filterStatus === s ? 'bg-[#F37321] text-white border-[#F37321]' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'">
+          {{ s }}
         </button>
       </div>
-
-      <div class="flex items-center gap-3">
-        <div class="relative">
-          <button @click="toggleDropdown('status')"
-                  class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:border-gray-300 transition-all shadow-sm min-w-[120px] justify-between cursor-pointer">
-            <span>상태: {{ filterStatus }}</span>
-            <ChevronDown class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-180': activeDropdown === 'status' }" />
-          </button>
-          <div v-if="activeDropdown === 'status'" class="absolute right-0 mt-1 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-20 py-1 animate-in fade-in zoom-in-95 duration-100">
-            <button v-for="s in statusOptions" :key="s" @click="selectFilter('status', s)"
-                    class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors cursor-pointer"
-                    :class="filterStatus === s ? 'text-[#F37321] font-bold' : 'text-gray-600'">
-              {{ s }}
-            </button>
-          </div>
-        </div>
-      </div>
-      <div v-if="activeDropdown" class="fixed inset-0 z-10" @click="activeDropdown = null"></div>
     </div>
-
     <!-- Table Section -->
     <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
       <table class="w-full text-sm text-left">
@@ -460,9 +389,7 @@ onMounted(() => {
         </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
-        <tr v-for="store in filteredStores" :key="store.idx"
-            @click="openDetail(store.idx)"
-            class="hover:bg-gray-50/50 transition-colors cursor-pointer group"
+        <tr v-for="store in storesList" :key="store.idx" @click="openDetail(store.idx)" class="hover:bg-gray-50/50 transition-colors cursor-pointer group"
             :class="{ 'bg-gray-50/40 opacity-70': store.status === '폐점' }">
           <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ store.idx }}</td>
           <td class="px-5 py-3.5 font-bold text-gray-900 group-hover:text-[#F37321] transition-colors">
@@ -476,22 +403,16 @@ onMounted(() => {
           <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ store.business }}</td>
           <td class="px-5 py-3.5 text-center">
               <span class="text-[11px] font-bold px-2 py-0.5 rounded-lg"
-                    :class="store.status === '입점'
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-red-50 text-red-600'">
+                    :class="store.status === '입점' ? 'bg-green-100 text-green-700' : 'bg-red-50 text-red-600'">
                 {{ store.status }}
               </span>
           </td>
           <td class="px-5 py-3.5">
             <div class="flex justify-center">
-              <button
-                @click.stop="openModal(store.idx)"
-                :disabled="store.status === '폐점'"
-                class="px-3 py-1.5 text-xs font-semibold rounded transition-colors shadow-sm"
+              <button @click.stop="openModal(store.idx)" :disabled="store.status === '폐점'" class="px-3 py-1.5 text-xs font-semibold rounded transition-colors shadow-sm"
                 :class="store.status === '입점'
                 ? 'text-[#F37321] border border-[#F37321] hover:bg-orange-50 cursor-pointer'
-                : 'text-gray-400 border border-gray-200 bg-gray-50 cursor-not-allowed'"
-              >
+                : 'text-gray-400 border border-gray-200 bg-gray-50 cursor-not-allowed'">
                 수정
               </button>
             </div>
@@ -500,7 +421,6 @@ onMounted(() => {
         </tbody>
       </table>
     </div>
-
     <!-- 입점 가맹점 상세 정보 모달 -->
     <div v-if="showDetailModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
       <div class="absolute inset-0 bg-black/40" @click="showDetailModal = false"></div>
@@ -509,7 +429,6 @@ onMounted(() => {
           <h3 class="font-bold text-gray-900">입점 가맹점 상세 정보</h3>
           <button @click="showDetailModal = false" class="text-gray-400 hover:text-gray-600 cursor-pointer">✕</button>
         </div>
-
         <div class="p-6 space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-1.5">
@@ -525,7 +444,6 @@ onMounted(() => {
               </div>
             </div>
           </div>
-
           <div class="grid grid-cols-2 gap-5">
             <div class="space-y-1.5">
               <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">담당자명</label>
@@ -540,18 +458,15 @@ onMounted(() => {
               </div>
             </div>
           </div>
-
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">가맹점 위치</label>
             <div class="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm text-gray-600">
               {{ detailTarget?.totalAddress }}
             </div>
           </div>
-
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">사업자번호</label>
           </div>
-
           <div class="grid grid-cols-2 gap-5 p-4 bg-gray-50 rounded-lg border border-gray-100">
             <div class="space-y-1.5">
               <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
@@ -564,38 +479,27 @@ onMounted(() => {
                 <div class="w-1 h-1 rounded-full" :class="detailTarget?.closedAt === '운영 중' ? 'bg-gray-300' : 'bg-red-400'"></div>
                 폐업일
               </label>
-
               <div class="text-sm font-bold"
                    :class="detailTarget?.closedAt === '운영 중' ? 'text-gray-300' : 'text-gray-900'">
                 {{ detailTarget?.closedAt }}
               </div>
             </div>
           </div>
-
           <div class="space-y-3 pt-2">
             <div v-if="detailTarget.closedAt && detailTarget.closedAt !== '운영 중'"
                  class="flex flex-col items-center p-3 bg-red-50 rounded-lg border border-red-100">
               <span class="text-xs text-red-600 font-bold">* 폐업 처리된 가맹점입니다. 증빙 용도로만 사용하세요.</span>
               <span class="text-[11px] text-red-400 mt-0.5">폐업일: {{ detailTarget.closedAt }}</span>
             </div>
-
-
-            <button
-              @click="viewPdf"
-              type="button"
-              class="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-white border border-gray-200 text-gray-700 text-sm font-bold hover:bg-gray-50 transition-colors shadow-sm cursor-pointer">
+            <button @click="viewPdf" type="button" class="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-white border border-gray-200 text-gray-700 text-sm font-bold hover:bg-gray-50 transition-colors shadow-sm cursor-pointer">
               <Search class="w-4 h-4 text-gray-400" />
               사업자 PDF 미리보기
             </button>
-
-            <button @click="downloadPdf"
-                    type="button"
-                    :class="[
+            <button @click="downloadPdf" type="button" :class="[
             'w-full flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-bold transition-colors shadow-sm cursor-pointer',
             detailTarget.closedAt && detailTarget.closedAt !== '운영 중'
               ? 'bg-white border border-gray-200 text-gray-700 text-sm font-bold hover:bg-gray-50' // 폐업 시: 미리보기와 유사한 연회색 톤
-              : 'bg-[#F37321] text-white hover:bg-[#e0661d]' // 운영 중: 기존 주황색
-          ]">
+              : 'bg-[#F37321] text-white hover:bg-[#e0661d]' ]">
               <FileText :class="['w-4 h-4', detailTarget.closedAt && detailTarget.closedAt !== '운영 중' ? 'text-gray-400' : 'text-white']" />
               사업자 PDF 다운로드
             </button>
@@ -607,7 +511,6 @@ onMounted(() => {
         </div>
       </div>
     </div>
-
     <!-- 신규 가맹점 등록 / 수정 모달 -->
     <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div class="absolute inset-0 bg-black/40" @click="showModal = false"></div>
@@ -616,65 +519,34 @@ onMounted(() => {
           <h3 class="font-bold text-gray-900 text-lg">{{ editTarget ? '입점 가맹점 정보 수정' : '신규 가맹점 등록' }}</h3>
           <button @click="showModal = false" class="text-gray-400 hover:text-gray-600 font-bold text-xl cursor-pointer">✕</button>
         </div>
-
         <form @submit.prevent="saveStore" class="p-8 space-y-5">
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">가맹점명</label>
             <input v-model="form.storeName" required type="text" placeholder="예: 한우 오마카세"
                    class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
           </div>
-
           <div class="grid gap-5" :class="editTarget ? 'grid-cols-2' : 'grid-cols-1'">
-
             <div v-if="editTarget" class="space-y-1.5">
               <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">담당자명</label>
               <input v-model="form.ownerName" required type="text" placeholder="성함 입력"
                      class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
             </div>
-
             <div class="space-y-1.5">
               <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">이메일</label>
               <input v-model="form.ownerEmail" type="email" placeholder="example@email.com"
                      class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
             </div>
           </div>
-
           <div class="space-y-3">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">위치 (주소)</label>
-
             <div class="flex gap-2">
-              <input
-                v-model="form.postcode"
-                type="text"
-                id="sample6_postcode"
-                placeholder="우편번호"
-                readonly
-                class="w-32 px-4 py-2 rounded-lg border border-gray-200 text-sm outline-none bg-gray-50"
-              />
-              <button
-                type="button"
-                @click="sample6_execDaumPostcode"
-                class="px-4 py-2 bg-gray-800 text-white text-sm rounded-lg hover:bg-gray-700 transition-colors cursor-pointer"
-              >
+              <input v-model="form.postcode" type="text" id="sample6_postcode" placeholder="우편번호" readonly class="w-32 px-4 py-2 rounded-lg border border-gray-200 text-sm outline-none bg-gray-50"/>
+              <button type="button" @click="sample6_execDaumPostcode" class="px-4 py-2 bg-gray-800 text-white text-sm rounded-lg hover:bg-gray-700 transition-colors cursor-pointer">
                 주소 검색
               </button>
             </div>
-
-            <input
-              v-model="form.address"
-              type="text"
-              placeholder="도로명/지번 주소"
-              readonly
-              class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all"
-            />
-
-            <input
-              v-model="form.addressDetail"
-              type="text"
-              id="sample6_detailAddress"
-              placeholder="상세 주소를 입력해주세요"
-              class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all"
-            />
+            <input v-model="form.address" type="text" placeholder="도로명/지번 주소" readonly class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all"/>
+            <input v-model="form.addressDetail" type="text" id="sample6_detailAddress" placeholder="상세 주소를 입력해주세요" class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all"/>
           </div>
           <!-- 수정 모달에서만 표시 -->
           <div v-if="editTarget" class="grid grid-cols-2 gap-5">
@@ -689,19 +561,10 @@ onMounted(() => {
                      class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
             </div>
           </div>
-
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">사업자번호</label>
-            <input
-              :value="form.business"
-              @input="formatBusinessNumber"
-              type="text"
-              placeholder="숫자만 입력하세요"
-              maxlength="12"
-              class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all"
-            />
+            <input :value="form.business" @input="formatBusinessNumber" type="text" placeholder="숫자만 입력하세요" maxlength="12" class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all"/>
           </div>
-
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">사업자 PDF</label>
             <label class="cursor-pointer block">
@@ -712,57 +575,40 @@ onMounted(() => {
               <input type="file" class="hidden" @change="handleFileChange" accept=".pdf" />
             </label>
           </div>
-
           <div class="flex gap-3 pt-4">
             <button type="button" @click="showModal = false"
                     class="flex-1 py-3 rounded-lg border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-50 transition-colors cursor-pointer">취소</button>
-            <button
-              type="submit"
-              :disabled="!isFormValid"
-              :class="[!isFormValid ? 'bg-gray-300 cursor-not-allowed' : 'bg-[#F37321] hover:bg-[#e0661d] cursor-pointer']"
-              class="flex-1 py-3 rounded-lg text-white text-sm font-bold transition-colors shadow-sm"
-            >
+            <button type="submit" :disabled="!isFormValid" :class="[!isFormValid ? 'bg-gray-300 cursor-not-allowed' : 'bg-[#F37321] hover:bg-[#e0661d] cursor-pointer']" class="flex-1 py-3 rounded-lg text-white text-sm font-bold transition-colors shadow-sm">
               저장
             </button>
           </div>
         </form>
       </div>
     </div>
-    <!-- Pagination UI -->
-    <div class="flex items-center justify-center gap-3 mt-8 pb-10">
-      <!-- 이전 페이지 버튼 (작게) -->
+    <div v-if="pagination.totalPage > 1" class="flex justify-center items-center gap-2 pt-2">
       <button
-        @click="changePage(pagination.currentPage - 1)"
+        class="p-2 rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
         :disabled="pagination.currentPage === 0"
-        class="w-7 h-7 flex items-center justify-center rounded border border-gray-200 bg-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors cursor-pointer"
-      >
-        <span class="text-[10px] text-gray-500">◀</span>
+        @click="changePage(pagination.currentPage - 1)">
+        <ChevronLeft class="w-4 h-4" />
       </button>
 
-      <!-- 페이지 번호 -->
-      <div class="flex items-center gap-1">
-        <button
-          v-for="pageIdx in visiblePages"
-          :key="pageIdx"
-          @click="changePage(pageIdx)"
-          class="min-w-[28px] h-7 px-2 flex items-center justify-center rounded text-xs font-bold transition-all cursor-pointer"
-          :class="pagination.currentPage === pageIdx
-        ? 'text-[#F37321] border-b-2 border-[#F37321] rounded-none'
-        : 'text-gray-400 hover:text-gray-600'"
-        >
-          {{ pageIdx + 1 }}
-        </button>
-      </div>
+      <button v-for="pageIdx in visiblePages" :key="pageIdx"
+              class="w-8 h-8 rounded text-sm font-semibold cursor-pointer transition-colors"
+              :class="pagination.currentPage === pageIdx
+          ? 'bg-[#F37321] text-white'
+          : 'text-gray-500 hover:bg-gray-50'"
+              @click="changePage(pageIdx)">
+        {{ pageIdx + 1 }}
+      </button>
 
-      <!-- 다음 페이지 버튼 (작게) -->
       <button
-        @click="changePage(pagination.currentPage + 1)"
+        class="p-2 rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
         :disabled="pagination.currentPage >= pagination.totalPage - 1"
-        class="w-7 h-7 flex items-center justify-center rounded border border-gray-200 bg-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors cursor-pointer"
-      >
-        <span class="text-[10px] text-gray-500">▶</span>
+        @click="changePage(pagination.currentPage + 1)">
+        <ChevronRight class="w-4 h-4" />
       </button>
     </div>
+    <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
   </div>
 </template>
-

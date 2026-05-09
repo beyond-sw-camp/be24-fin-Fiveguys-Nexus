@@ -2,6 +2,8 @@ package com.example.nexus.domain.report;
 
 
 import com.example.nexus.common.model.BaseResponse;
+import com.example.nexus.domain.report.model.ReportDto;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,11 +19,9 @@ public class ReportController {
 
     // 사용자 메세지 통신
     @PostMapping("/generate")
-    public ResponseEntity<BaseResponse> requestReport(@RequestBody ChatRequest request) {
+    public ResponseEntity<BaseResponse> requestReport(@Valid @RequestBody ReportDto.ChatRequest request) {
         String result = reportService.handleChatbotRequest(request.message());
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 
-    // 사용자 메세지 응답 DTO
-    record ChatRequest(String message) {}
 }

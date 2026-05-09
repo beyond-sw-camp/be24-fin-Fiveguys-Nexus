@@ -1,6 +1,11 @@
 package com.example.nexus.domain.report;
 
+
+import com.example.nexus.common.model.BaseResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -9,4 +14,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ReportController {
     private final ReportService reportService;
+
+    // 사용자 메세지 통신
+    @PostMapping("/generate")
+    public ResponseEntity<BaseResponse> requestReport(@RequestBody ChatRequest request) {
+        String result = reportService.handleChatbotRequest(request.message());
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
+
+    // 사용자 메세지 응답 DTO
+    record ChatRequest(String message) {}
 }

@@ -1,4 +1,4 @@
 import api from '@/plugins/axiosinterceptor.js'
 
-export const postReportGenerate = (ChatRequest)=>
-  api.post('/report/generate', ChatRequest)
+export const postReportGenerate = (chatRequest) =>
+  api.post('/report/generate', chatRequest)

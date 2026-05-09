@@ -43,6 +43,9 @@ public class PosStoreInventory {
     @Column(name = "manufactured_date", nullable = false)
     private LocalDateTime manufacturedDate;
 
+    @Column(name = "warned", nullable = false)
+    private boolean warned;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_idx", nullable = false)
     private Store store;

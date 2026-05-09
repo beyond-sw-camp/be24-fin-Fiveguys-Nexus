@@ -46,6 +46,9 @@ public class StoreInventory {
     @Column(name = "avg_stock", nullable = false)
     private Integer avgStock;
 
+    @Column(name = "warned", nullable = false)
+    private boolean warned;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_idx", nullable = false)
     private Store store;

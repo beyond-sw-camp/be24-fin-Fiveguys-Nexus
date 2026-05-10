@@ -2,7 +2,9 @@
 import { ref, nextTick } from 'vue'
 import { Bot, X, Send } from 'lucide-vue-next'
 import { postReportGenerate } from '@/api/report/index.js'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const isOpen = ref(false)
 const isLoading = ref(false)
 const input = ref('')
@@ -26,6 +28,14 @@ const messages = ref([
 
 let nextId = 2
 
+// 스크롤 하단 이동 함수
+async function scrollToBottom() {
+  await nextTick()
+  if (messageContainer.value) {
+    messageContainer.value.scrollTop = messageContainer.value.scrollHeight
+  }
+}
+
 // 메세지 보내기
 async function sendMessage() {
   const text = input.value.trim()
@@ -39,16 +49,33 @@ async function sendMessage() {
   await scrollToBottom()
 
   try {
-    const chatRequest  = {
-      message: text
-    }
-    const res = await postReportGenerate(chatRequest )
+    const chatRequest  = { message: text }
+    const res = await postReportGenerate(chatRequest)
 
     messages.value.push({
       id: nextId++,
       role: 'ai',
-      text: res.data.result // 서버에서 내려준 응답 메시지 출력
+      text: res.data.result
     })
+
+    if (res.data.result.includes("보고서 생성이 완료되었습니다")) {
+      // 사용자에게 의사를 물어봅니다.
+      const goToReportPage = confirm(
+        "📊 보고서 생성이 완료되었습니다!\n보고서 목록 페이지로 이동하여 확인하시겠습니까?"
+      )
+
+      if (goToReportPage) {
+        // 현재 경로 확인
+        if (window.location.pathname === '/report') {
+          // 이미 보고서 페이지라면 새로고침해서 리스트 갱신
+          location.reload()
+        } else {
+          // 다른 페이지라면 보고서 페이지로 이동
+          router.push({ name: 'report' });
+        }
+      }
+    }
+
   } catch (error) {
     messages.value.push({
       id: nextId++,
@@ -61,12 +88,6 @@ async function sendMessage() {
   }
 }
 
-async function scrollToBottom() {
-  await nextTick()
-  if (messageContainer.value) {
-    messageContainer.value.scrollTop = messageContainer.value.scrollHeight
-  }
-}
 </script>
 
 <template>

@@ -5,8 +5,6 @@ import com.example.nexus.domain.pos.PosOrdersItemRepository;
 import com.example.nexus.domain.pos.PosPayRepository;
 import com.example.nexus.domain.report.model.Report;
 import com.example.nexus.domain.report.model.ReportDto;
-
-import com.example.nexus.domain.store.model.Store;
 import com.example.nexus.domain.user.UserRepository;
 import com.example.nexus.domain.user.model.User;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
@@ -145,7 +143,7 @@ public class ReportService {
 
             // 6. DB 저장
             Report report = Report.builder()
-                    .title("(" + LocalDate.now() + ")" + title)
+                    .title(title)
                     .filePath(s3Key)
                     .user(loginUser) // 연관관계 매핑
                     .build();
@@ -166,16 +164,16 @@ public class ReportService {
 
     //   2. AI에게 질문 던지기
     public String handleChatbotRequest(String userMessage) {
-        // 1. 최신 데이터 집계 가져오기
+        // 최신 데이터 집계 가져오기
         ReportDto.ReportDataSummaryDto summary = getRecentSummary();
 
-        // 2. AI에게 '보고서용'인지 '일반대화용'인지 꼬리표를 붙이라고 시킴 (수정 부분)
-        String instruction = "당신은 Nexus AI입니다. 다음 규칙을 엄격히 지키세요.\n" +
-                "1. 보고서 요청 시: '[REPORT][TITLE: 핵심주제 요약] 내용' 형식으로 답변하세요.\n" +
-                "   (예: [REPORT][TITLE: 5월 매출 및 인기상품 분석] ...)\n" +
-                "2. 일상 대화 시: '[CHAT] 내용' 형식으로 답변하세요.\n\n";
+        // AI에게 '보고서용'인지 '일반대화용'인지 꼬리표를 붙이라고 시킴
+        String instruction = "당신은 Nexus AI입니다. 사용자의 질문 의도를 분석하여 답변 앞에 반드시 다음 중 하나의 태그를 붙이세요.\n\n" +
+                "1. [REPORT] : '보고서를 만들어줘', 'PDF로 추출해줘', '정식 분석 리포트 써줘'와 같이 '문서 파일 생성'이 목적인 경우.\n" +
+                "2. [CHAT] : '인기 제품 뭐야?', '매출 얼마야?', '안녕?'과 같이 단순 정보를 묻거나 일상적인 대화를 원하는 경우.\n\n" +
+                "참고: [CHAT]일 때는 채팅창에서 바로 읽기 좋게 짧고 친절하게 대답하고, [REPORT]일 때만 마크다운 형식의 상세 보고서를 작성하세요.\n\n";
 
-        // 2. 데이터가 없을 경우를 대비한 방어 로직 (환각 방지)
+        // 데이터가 없을 경우를 대비한 방어 로직 (환각 방지)
         String topProductsText = summary.topProducts().isEmpty()
                 ? "현재 판매 데이터가 없습니다."
                 : String.join(", ", summary.topProducts());
@@ -187,7 +185,7 @@ public class ReportService {
                 topProductsText
         );
 
-        // 3. 데이터와 사용자 질문을 합쳐서 AI에게 전송
+        // 데이터와 사용자 질문을 합쳐서 AI에게 전송
         String finalPrompt = instruction + dataContext + "사용자의 질문: " + userMessage;
 
         return chatClient.prompt()

@@ -43,9 +43,12 @@ public class StoreService {
     @Value("${spring.cloud.aws.s3.store-bucket}")
     private String storeBucket;
 
+    @Transactional
     public PageResponse<StoreInventoryDto.ListRes> listByStoreIdxPaged(Long storeIdx, int page, int size) {
         storeRepository.findById(storeIdx)
                 .orElseThrow(() -> new BaseException(STORE_NOT_FOUND));
+
+        storeInventoryRepository.bulkUpdateExpiryStatus();
 
         Page<Long> productPage = storeInventoryRepository.findPagedProductIdsByStoreIdx(storeIdx, PageRequest.of(page, size));
         List<Long> productIds = productPage.getContent();

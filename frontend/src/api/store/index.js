@@ -34,3 +34,6 @@ export const putStoreUpdate = (storeIdx,updateData) =>
 
 export const getSettlement = (year, month, page = 0, size = 10) =>
   api.get('/store/income/settlement', { params: { year, month, page, size }})
+
+export const getOrderSettlement = (year, month, page = 0, size = 10) =>
+  api.get('/store/order/settlement', { params: { year, month, page, size }})

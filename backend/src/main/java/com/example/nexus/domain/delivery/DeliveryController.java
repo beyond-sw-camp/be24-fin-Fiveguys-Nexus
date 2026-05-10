@@ -12,12 +12,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
-
 @RequestMapping("/delivery")
 @RestController
 @RequiredArgsConstructor
 public class DeliveryController {
+
     private final DeliveryService deliveryService;
 
     // 본사 배송 관리 페이지 전체 배송현황 리스트 조회
@@ -33,11 +32,19 @@ public class DeliveryController {
             @RequestParam(defaultValue = "10") int size) {
 
         return ResponseEntity.ok(BaseResponse.success(
-                deliveryService.getDeliveriesByHead(storeName, status, year, month, day, page, size)
+                deliveryService.getDeliveriesByHead(
+                        storeName,
+                        status,
+                        year,
+                        month,
+                        day,
+                        page,
+                        size
+                )
         ));
     }
 
-    // 본인 가맹점 배송 현황 조회 (발주 번호 및 날짜/상태 필터 추가)
+    // 본인 가맹점 배송 현황 조회
     @GetMapping("/store")
     public ResponseEntity<BaseResponse<DeliveryDto.DeliveryPageRes>> getMyStoreDeliveries(
             @AuthenticationPrincipal AuthUserDetails authUserDetails,
@@ -54,8 +61,18 @@ public class DeliveryController {
         }
 
         Long storeIdx = authUserDetails.getIdx();
+
         return ResponseEntity.ok(BaseResponse.success(
-                deliveryService.getDeliveriesForStore(storeIdx, orderIdx, status, year, month, day, page, size)
+                deliveryService.getDeliveriesForStore(
+                        storeIdx,
+                        orderIdx,
+                        status,
+                        year,
+                        month,
+                        day,
+                        page,
+                        size
+                )
         ));
     }
 
@@ -69,13 +86,18 @@ public class DeliveryController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
         }
 
-        boolean isSuccess = deliveryService.updateDelayReason(request.getDeliveryIdx(), request.getDelayReason());
+        boolean isSuccess = deliveryService.updateDelayReason(
+                request.getDeliveryIdx(),
+                request.getDelayReason()
+        );
 
         if (isSuccess) {
-            return ResponseEntity.ok(BaseResponse.success("배송 지연 사유가 성공적으로 등록되었습니다."));
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(BaseResponse.success("존재하지 않는 배송 정보이거나 권한이 없습니다."));
+            return ResponseEntity.ok(
+                    BaseResponse.success("배송 지연 사유가 성공적으로 등록되었습니다.")
+            );
         }
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(BaseResponse.success("존재하지 않는 배송 정보이거나 권한이 없습니다."));
     }
 }

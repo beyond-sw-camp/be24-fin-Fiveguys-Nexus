@@ -1,6 +1,6 @@
 <script setup>
-import { reactive, ref, watch, onMounted } from 'vue'
-import { FileText, Download } from 'lucide-vue-next'
+import { reactive, ref, watch, onMounted, computed } from 'vue'
+import { FileText, Download, ChevronRight, ChevronLeft } from 'lucide-vue-next'
 import Toast from '@/components/common/Toast.vue'
 import { useToast } from '@/composables/useToast'
 import { useNews } from '@/composables/useNews'
@@ -42,6 +42,7 @@ async function fetchHqNews() {
   }
 }
 
+// 보고서 조회
 async function fetchReports(page = 0){
   isReportLoading.value = true;
 
@@ -56,7 +57,6 @@ async function fetchReports(page = 0){
     pagination.currentPage = res.data.result.currentPage
 
   } catch (error) {
-    console.error('[ReportView] 보고서 조회 실패:', error);
     showToast(`${error} '[ReportView] 보고서 조회 실패:'`)
   } finally {
     isReportLoading.value = false;
@@ -77,6 +77,26 @@ watch(activeTab, (val) => {
   if (val === 'news' && newsSummaries.value.length === 0) fetchHqNews()
   if (val === 'report' && reports.value.length === 0) fetchReports(0);
 })
+
+// 페이지 변경
+const changePage = (page) => {
+  // 0보다 작거나 마지막 페이지(totalPage - 1)보다 크면 무시[cite: 1]
+  if (page < 0 || page >= pagination.totalPage) return
+  fetchReports(page)
+}
+
+// 버튼 클릭
+const visiblePages = computed(() => {
+  const range = 10; // 한 번에 보여줄 페이지 개수
+  const currentGroup = Math.floor(pagination.currentPage / range);
+  const start = currentGroup * range;
+  const end = Math.min(start + range, pagination.totalPage);
+  const pages = [];
+  for (let i = start; i < end; i++) {
+    pages.push(i);
+  }
+  return pages;
+});
 
 onMounted(() => {
   fetchReports(0);
@@ -183,6 +203,30 @@ onMounted(() => {
       @close="selectedNews = null"
     />
     <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
+  </div>
+  <div v-if="pagination.totalPage > 1" class="flex justify-center items-center gap-2 py-4 border-t border-gray-100">
+    <button
+      class="p-2 rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+      :disabled="pagination.currentPage === 0"
+      @click="changePage(pagination.currentPage - 1)">
+      <ChevronLeft class="w-4 h-4" />
+    </button>
+
+    <button v-for="pageIdx in visiblePages" :key="pageIdx"
+            class="w-8 h-8 rounded text-sm font-semibold cursor-pointer transition-colors"
+            :class="pagination.currentPage === pageIdx
+            ? 'bg-[#F37321] text-white'
+            : 'text-gray-500 hover:bg-gray-50'"
+            @click="changePage(pageIdx)">
+      {{ pageIdx + 1 }}
+    </button>
+
+    <button
+      class="p-2 rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+      :disabled="pagination.currentPage >= pagination.totalPage - 1"
+      @click="changePage(pagination.currentPage + 1)">
+      <ChevronRight class="w-4 h-4" />
+    </button>
   </div>
 </template>
 

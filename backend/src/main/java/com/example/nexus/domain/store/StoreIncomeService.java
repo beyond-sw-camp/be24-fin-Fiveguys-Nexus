@@ -51,7 +51,7 @@ public class StoreIncomeService {
         List<Long> payIdxList = payPage.getContent().stream().map(PosPay::getIdx).toList();
 
         // 주문 내역(Item)들을 한 번에 가져와서 메모리에서 그룹핑 (N+1 문제 방지)
-        Map<Long, List<PosOrdersItem>> orderItemMap = posOrdersItemRepository
+        Map<Long, List<PosOrdersItem>> orderItemMap = payIdxList.isEmpty() ? Map.of() : posOrdersItemRepository
                 .findByPosPay_IdxIn(payIdxList)
                 .stream()
                 .collect(Collectors.groupingBy(item -> item.getPosPay().getIdx()));

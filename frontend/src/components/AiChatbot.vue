@@ -2,7 +2,9 @@
 import { ref, nextTick } from 'vue'
 import { Bot, X, Send } from 'lucide-vue-next'
 import { postReportGenerate } from '@/api/report/index.js'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const isOpen = ref(false)
 const isLoading = ref(false)
 const input = ref('')
@@ -20,11 +22,27 @@ const messages = ref([
   {
     id: 1,
     role: 'ai',
-    text: '안녕하세요! Nexus AI 어시스턴트입니다. 보고서 생성을 요청해보세요. 예) "저번달 총 매출과 이번달 비교 보고서 만들어줘"',
+    text: `반갑습니다!
+    Nexus AI 어시스턴트입니다. 🤖
+
+    매장의 실시간 데이터를 바탕으로
+    똑똑한 분석을 도와드릴게요.
+
+    궁금한 점은 채팅으로 편하게 물어보시고, 상세 분석이 필요하면 "보고서 만들어줘"라고 요청해 보세요!
+
+    예) "이번 달 매출 요약 보고서 써줘"`,
   },
 ])
 
 let nextId = 2
+
+// 스크롤 하단 이동 함수
+async function scrollToBottom() {
+  await nextTick()
+  if (messageContainer.value) {
+    messageContainer.value.scrollTop = messageContainer.value.scrollHeight
+  }
+}
 
 // 메세지 보내기
 async function sendMessage() {
@@ -39,16 +57,34 @@ async function sendMessage() {
   await scrollToBottom()
 
   try {
-    const chatRequest  = {
-      message: text
-    }
-    const res = await postReportGenerate(chatRequest )
+    const chatRequest  = { message: text }
+    const res = await postReportGenerate(chatRequest)
 
     messages.value.push({
       id: nextId++,
       role: 'ai',
-      text: res.data.result // 서버에서 내려준 응답 메시지 출력
+      text: res.data.result
     })
+
+    if (res.data.result.includes("보고서 생성이 완료되었습니다")) {
+      // 사용자에게 의사를 물어봅니다.
+      const goToReportPage = confirm(
+        "보고서 생성이 완료되었습니다!\n보고서 목록 페이지로 이동하여 확인하시겠습니까?"
+      )
+
+      if (goToReportPage) {
+        // 현재 경로 확인
+        if (window.location.pathname === '/report') {
+          // 이미 보고서 페이지라면 새로고침해서 리스트 갱신
+          location.reload()
+        } else {
+          // 다른 페이지라면 보고서 페이지로 이동
+          router.push({ name: 'report' });
+        }
+      }
+
+    }
+
   } catch (error) {
     messages.value.push({
       id: nextId++,
@@ -61,12 +97,6 @@ async function sendMessage() {
   }
 }
 
-async function scrollToBottom() {
-  await nextTick()
-  if (messageContainer.value) {
-    messageContainer.value.scrollTop = messageContainer.value.scrollHeight
-  }
-}
 </script>
 
 <template>
@@ -110,7 +140,7 @@ async function scrollToBottom() {
               <div class="w-7 h-7 rounded-full bg-[#F37321] flex items-center justify-center shrink-0">
                 <Bot class="w-4 h-4 text-white" />
               </div>
-              <div class="max-w-[240px] px-3 py-2 rounded-2xl rounded-bl-sm bg-gray-100 text-sm text-gray-800 leading-relaxed">
+              <div class="max-w-[240px] px-3 py-2 rounded-2xl rounded-bl-sm bg-gray-100 text-sm text-gray-800 leading-relaxed whitespace-pre-line">
                 {{ msg.text }}
               </div>
             </div>
@@ -144,7 +174,7 @@ async function scrollToBottom() {
               v-model="input"
               @keydown.enter.exact.prevent="sendMessage"
               @input="autoResize"
-              placeholder="보고서 생성을 요청해보세요..."
+              placeholder="'보고서 만들어줘'라고 요청해 보세요!"
               rows="1"
               class="flex-1 resize-none text-sm px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:border-[#F37321] transition-colors leading-relaxed max-h-28 overflow-y-auto"
               :disabled="isLoading"

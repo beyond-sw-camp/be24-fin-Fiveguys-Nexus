@@ -1,3 +1,83 @@
+<script setup>
+import { reactive, ref, watch, onMounted } from 'vue'
+import { FileText, Download } from 'lucide-vue-next'
+import Toast from '@/components/common/Toast.vue'
+import { useToast } from '@/composables/useToast'
+import { useNews } from '@/composables/useNews'
+import { getHqNews } from '@/api/news'
+import NewsListItem from '@/components/news/NewsListItem.vue'
+import NewsDetailModal from '@/components/news/NewsDetailModal.vue'
+import { getReportList } from '@/api/report/index.js'
+
+const { toast, showToast } = useToast()
+const { selectedNews, detailContents, detailLoading, openDetail } = useNews()
+const reports = ref([])  // 보고서 리스트
+const newsSummaries = ref([])
+const tabs = [
+  { label: '보고서', value: 'report' },
+  { label: '뉴스 요약', value: 'news' },
+]
+const activeTab = ref('report')
+const newsLoading = ref(false)
+const isReportLoading = ref(false)
+// 보고서 페이징
+const pagination = reactive({
+  totalPage: 0,
+  totalCount: 0,
+  currentPage: 0,
+  currentSize: 10
+})
+
+//  뉴스 조회
+async function fetchHqNews() {
+  newsLoading.value = true
+  try {
+    const today = new Date().toISOString().slice(0, 10)
+    const { data } = await getHqNews(today)
+    newsSummaries.value = data.result ?? []
+  } catch (e) {
+    console.error('[ReportView] 뉴스 조회 실패:', e)
+  } finally {
+    newsLoading.value = false
+  }
+}
+
+async function fetchReports(page = 0){
+  isReportLoading.value = true;
+
+  try {
+    const res = await getReportList(page, pagination.currentSize);
+    console.log(res.data.result)
+    reports.value.splice(0, reports.value.length, ...res.data.result.reportList)
+    console.log(reports.value)
+
+    pagination.totalPage = res.data.result.totalPage
+    pagination.totalCount = res.data.result.totalCount
+    pagination.currentPage = res.data.result.currentPage
+
+  } catch (error) {
+    console.error('[ReportView] 보고서 조회 실패:', error);
+  } finally {
+    isReportLoading.value = false;
+  }
+}
+
+// 레포트 다운로드
+function handleDownload(report) {
+  showToast(`${report.report_title} 다운로드 준비 중입니다.`)
+}
+
+watch(activeTab, (val) => {
+  if (val === 'news' && newsSummaries.value.length === 0) fetchHqNews()
+  if (val === 'report' && reports.value.length === 0) fetchReports(0);
+})
+
+onMounted(() => {
+  fetchReports(0);
+})
+
+</script>
+
 <template>
   <div class="p-6">
     <!-- Header -->
@@ -26,42 +106,42 @@
     <div v-if="activeTab === 'report'" class="bg-white rounded-lg border border-gray-200 overflow-hidden">
       <table class="w-full text-sm">
         <thead>
-          <tr class="border-b border-gray-100 bg-gray-50/70">
-            <th class="text-left px-5 py-3 font-semibold text-gray-600 w-20">번호</th>
-            <th class="text-left px-5 py-3 font-semibold text-gray-600">보고서 제목</th>
-            <th class="text-left px-5 py-3 font-semibold text-gray-600 w-40">생성일시</th>
-            <th class="text-center px-5 py-3 font-semibold text-gray-600 w-28">다운로드</th>
-          </tr>
+        <tr class="border-b border-gray-100 bg-gray-50/70">
+          <th class="text-left px-5 py-3 font-semibold text-gray-600 w-20">번호</th>
+          <th class="text-left px-5 py-3 font-semibold text-gray-600">보고서 제목</th>
+          <th class="text-left px-5 py-3 font-semibold text-gray-600 w-40">생성일시</th>
+          <th class="text-center px-5 py-3 font-semibold text-gray-600 w-28">다운로드</th>
+        </tr>
         </thead>
         <tbody class="divide-y divide-gray-50">
-          <tr v-if="reports.length === 0">
-            <td colspan="4" class="px-5 py-16 text-center text-gray-400 text-sm">
-              생성된 보고서가 없습니다.
-            </td>
-          </tr>
-          <tr
-            v-for="report in reports"
-            :key="report.idx"
-            class="hover:bg-gray-50/50 transition-colors"
-          >
-            <td class="px-5 py-3.5 text-gray-400">{{ report.idx }}</td>
-            <td class="px-5 py-3.5">
-              <div class="flex items-center gap-2">
-                <FileText class="w-4 h-4 text-[#F37321] shrink-0" />
-                <span class="font-medium text-gray-800">{{ report.report_title }}</span>
-              </div>
-            </td>
-            <td class="px-5 py-3.5 text-gray-500">{{ report.created_at }}</td>
-            <td class="px-5 py-3.5 text-center">
-              <button
-                @click="handleDownload(report)"
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#F37321] border border-[#F37321] rounded hover:bg-orange-50 transition-colors cursor-pointer"
-              >
-                <Download class="w-3.5 h-3.5" />
-                PDF
-              </button>
-            </td>
-          </tr>
+        <tr v-if="reports.length === 0">
+          <td colspan="4" class="px-5 py-16 text-center text-gray-400 text-sm">
+            생성된 보고서가 없습니다.
+          </td>
+        </tr>
+        <tr
+          v-for="report in reports"
+          :key="report.idx"
+          class="hover:bg-gray-50/50 transition-colors"
+        >
+          <td class="px-5 py-3.5 text-gray-400">{{ report.idx }}</td>
+          <td class="px-5 py-3.5">
+            <div class="flex items-center gap-2">
+              <FileText class="w-4 h-4 text-[#F37321] shrink-0" />
+              <span class="font-medium text-gray-800">{{ report.reportTitle }}</span>
+            </div>
+          </td>
+          <td class="px-5 py-3.5 text-gray-500">{{ report.createdAt }}</td>
+          <td class="px-5 py-3.5 text-center">
+            <button
+              @click="handleDownload(report.reportFilePath)"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#F37321] border border-[#F37321] rounded hover:bg-orange-50 transition-colors cursor-pointer"
+            >
+              <Download class="w-3.5 h-3.5" />
+              PDF
+            </button>
+          </td>
+        </tr>
         </tbody>
       </table>
     </div>
@@ -100,80 +180,3 @@
   </div>
 </template>
 
-<script setup>
-import { ref, watch } from 'vue'
-import { FileText, Download } from 'lucide-vue-next'
-import Toast from '@/components/common/Toast.vue'
-import { useToast } from '@/composables/useToast'
-import { useNews } from '@/composables/useNews'
-import { getHqNews } from '@/api/news'
-import NewsListItem from '@/components/news/NewsListItem.vue'
-import NewsDetailModal from '@/components/news/NewsDetailModal.vue'
-
-const { toast, showToast } = useToast()
-const { selectedNews, detailContents, detailLoading, openDetail } = useNews()
-
-const tabs = [
-  { label: '보고서', value: 'report' },
-  { label: '뉴스 요약', value: 'news' },
-]
-
-const activeTab = ref('report')
-const newsLoading = ref(false)
-
-async function fetchHqNews() {
-  newsLoading.value = true
-  try {
-    const today = new Date().toISOString().slice(0, 10)
-    const { data } = await getHqNews(today)
-    newsSummaries.value = data.result ?? []
-  } catch (e) {
-    console.error('[ReportView] 뉴스 조회 실패:', e)
-  } finally {
-    newsLoading.value = false
-  }
-}
-
-watch(activeTab, (val) => {
-  if (val === 'news' && newsSummaries.value.length === 0) fetchHqNews()
-})
-
-const reports = ref([
-  {
-    idx: 5,
-    report_title: '2026년 4월 입점 매장별 매출 비교 보고서',
-    created_at: '2026-04-20 14:32',
-    file_path: '/reports/report_5.pdf',
-  },
-  {
-    idx: 4,
-    report_title: '3월 vs 4월 총 매출 비교 보고서',
-    created_at: '2026-04-18 09:15',
-    file_path: '/reports/report_4.pdf',
-  },
-  {
-    idx: 3,
-    report_title: '2026년 1분기 발주 품목 통계 보고서',
-    created_at: '2026-04-10 16:48',
-    file_path: '/reports/report_3.pdf',
-  },
-  {
-    idx: 2,
-    report_title: '일식 스시바 월별 정산 분석 보고서',
-    created_at: '2026-04-05 11:20',
-    file_path: '/reports/report_2.pdf',
-  },
-  {
-    idx: 1,
-    report_title: '2026년 3월 전체 입점 매장 재고 현황 보고서',
-    created_at: '2026-04-01 10:00',
-    file_path: '/reports/report_1.pdf',
-  },
-])
-
-const newsSummaries = ref([])
-
-function handleDownload(report) {
-  showToast(`${report.report_title} 다운로드 준비 중입니다.`)
-}
-</script>

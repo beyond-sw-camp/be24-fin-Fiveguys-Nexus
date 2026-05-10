@@ -32,7 +32,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static com.example.nexus.common.model.BaseResponseStatus.NOT_FOUND_USER;
 
@@ -136,30 +135,13 @@ public class ReportService {
             String template = reportTemplate.getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
             List<String> top5 = summary.topProducts();
 
-            String hourlyData = summary.hourlySales().stream()
-                    .map(obj -> obj[0] + "시(" + obj[1] + "건): " + String.format("%,d", obj[2]) + "원")
-                    .collect(Collectors.joining(", "));
-
-            String categoryData = summary.categorySales().stream()
-                    .map(obj -> obj[0] + ": " + String.format("%,d", obj[1]) + "원")
-                    .collect(Collectors.joining(", "));
-
             String finalInstruction = template
                     .replace("{{totalSales}}", String.format("%,d", summary.totalSales()))
                     .replace("{{product1}}", top5.size() > 0 ? top5.get(0) : "데이터 없음")
                     .replace("{{product2}}", top5.size() > 1 ? top5.get(1) : "데이터 없음")
                     .replace("{{product3}}", top5.size() > 2 ? top5.get(2) : "데이터 없음")
                     .replace("{{product4}}", top5.size() > 3 ? top5.get(3) : "데이터 없음")
-                    .replace("{{product5}}", top5.size() > 4 ? top5.get(4) : "데이터 없음")
-                    .replace("{{currentWeekSales}}", String.format("%,d", summary.currentWeekSales()))
-                    .replace("{{lastWeekSales}}", String.format("%,d", summary.lastWeekSales()))
-                    .replace("{{growthRate}}", String.format("%.1f", summary.growthRate()))
-                    .replace("{{currentTopMenus}}", String.join(", ", summary.topMenusCurrent()))
-                    .replace("{{lastTopMenus}}", String.join(", ", summary.topMenusLast()))
-                    .replace("{{hourlySalesData}}", hourlyData)
-                    .replace("{{categorySalesData}}", categoryData);
-
-
+                    .replace("{{product5}}", top5.size() > 4 ? top5.get(4) : "데이터 없음");
 
             String finalPrompt = finalInstruction + "\n\n사용자의 질문: " + userMessage;
 
@@ -174,42 +156,18 @@ public class ReportService {
     }
 
     // 4. DB 수치 집계 (최근 30일)
-    // ReportService.java 내 getRecentSummary 수정
     public ReportDto.ReportDataSummaryDto getRecentSummary() {
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime currentWeekStart = now.minusDays(7);
-        LocalDateTime lastWeekStart = now.minusDays(14);
-        LocalDateTime monthStart = now.minusDays(30);
+        LocalDateTime startDate  = now.minusDays(30);
 
-        // 1. 기초 데이터 (기존 유지)
-        Long totalSales = posPayRepository.sumSalesByDateBetween(monthStart, now);
-        List<String> topProducts = posOrdersItemRepository.findTopSellingMenus(monthStart, now, PageRequest.of(0, 5));
+        Long totalSales = posPayRepository.sumSalesByDateBetween(startDate, now);
+        if (totalSales == null) totalSales = 0L;
 
-        // 2. 주간 비교 데이터 (기존 유지)
-        Long currentSales = posPayRepository.sumSalesByDateBetween(currentWeekStart, now);
-        Long lastSales = posPayRepository.sumSalesByDateBetween(lastWeekStart, currentWeekStart);
-        currentSales = (currentSales == null) ? 0L : currentSales;
-        lastSales = (lastSales == null) ? 0L : lastSales;
-
-        double growthRate = (lastSales > 0) ? ((double)(currentSales - lastSales) / lastSales) * 100 : 0.0;
-
-        List<String> currentTop = posOrdersItemRepository.findTopSellingMenus(currentWeekStart, now, PageRequest.of(0, 5));
-        List<String> lastTop = posOrdersItemRepository.findTopSellingMenus(lastWeekStart, currentWeekStart, PageRequest.of(0, 5));
-
-        // 3. 🌟 지능화 분석을 위한 신규 데이터 추가
-        List<Object[]> hourlySales = posPayRepository.findHourlySales(currentWeekStart, now);
-        List<Object[]> categorySales = posOrdersItemRepository.findCategorySales(currentWeekStart, now);
+        List<String> topProducts = posOrdersItemRepository.findTopSellingMenus(startDate, now, PageRequest.of(0, 5));
 
         return ReportDto.ReportDataSummaryDto.builder()
-                .totalSales(totalSales != null ? totalSales : 0L)
+                .totalSales(totalSales)
                 .topProducts(topProducts)
-                .currentWeekSales(currentSales)
-                .lastWeekSales(lastSales)
-                .growthRate(growthRate)
-                .topMenusCurrent(currentTop)
-                .topMenusLast(lastTop)
-                .hourlySales(hourlySales)   // 추가
-                .categorySales(categorySales) // 추가
                 .build();
     }
 

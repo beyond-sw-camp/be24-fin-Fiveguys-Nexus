@@ -50,9 +50,10 @@ dependencies {
 	// --- S3 관련 ---
 	implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3:3.4.2'
 
-	// --- Spring AI (OpenAI) ---
+	// --- Spring AI (OpenAI + MCP Client) ---
 	implementation platform('org.springframework.ai:spring-ai-bom:1.0.0-M6')
 	implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter'
+	implementation 'org.springframework.ai:spring-ai-mcp-client-spring-boot-starter'
 
 	// --- 크롤링 ---
 	implementation 'org.jsoup:jsoup:1.18.1'

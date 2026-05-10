@@ -23,8 +23,11 @@ public class ReportController {
     public ResponseEntity<BaseResponse> requestReport(
             @AuthenticationPrincipal AuthUserDetails userDetails,
             @Valid @RequestBody ReportDto.ChatRequest request) {
-        Long userIdx = userDetails.getIdx();
+        if (userDetails == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+        }
 
+        Long userIdx = userDetails.getIdx();
         String result = reportService.createAndSaveReport(userIdx, request.message());
         return ResponseEntity.ok(BaseResponse.success(result));
     }

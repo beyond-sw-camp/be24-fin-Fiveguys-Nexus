@@ -102,8 +102,16 @@ public class ReportService {
             return aiResponse.replace("[CHAT]", "").trim();
         }
 
+        // [제목 추출 로직 추가]
+        String title = "AI 분석 보고서"; // 기본값
+        if (aiResponse.contains("[TITLE:")) {
+            int start = aiResponse.indexOf("[TITLE:") + 7;
+            int end = aiResponse.indexOf("]", start);
+            title = aiResponse.substring(start, end);
+        }
+
         // AI 분석 및 임시 PDF 생성 (기존 로직)
-        String aiMarkdown = aiResponse.replace("[REPORT]", "").trim();
+        String aiMarkdown = aiResponse.replaceAll("\\[REPORT\\]|\\[TITLE:.*?\\]", "").trim();
         String localFilePath = generatePdfFromAiResponse(aiMarkdown);
         File tempFile = new File(localFilePath);
 
@@ -137,14 +145,14 @@ public class ReportService {
 
             // 6. DB 저장
             Report report = Report.builder()
-                    .title("Nexus 매출 분석 보고서 (" + LocalDate.now() + ")")
+                    .title("(" + LocalDate.now() + ")" + title)
                     .filePath(s3Key)
                     .user(loginUser) // 연관관계 매핑
                     .build();
 
             reportRepository.save(report);
 
-            return "보고서 생성이 완료되었습니다! 목록 탭을 확인해 주세요.";
+            return title + "보고서 생성이 완료되었습니다! 보고서 목록에서 확인해주세요.";
 
         } catch (Exception e) {
             throw new RuntimeException("보고서 생성 실패: " + e.getMessage());
@@ -163,8 +171,9 @@ public class ReportService {
 
         // 2. AI에게 '보고서용'인지 '일반대화용'인지 꼬리표를 붙이라고 시킴 (수정 부분)
         String instruction = "당신은 Nexus AI입니다. 다음 규칙을 엄격히 지키세요.\n" +
-                "1. 매출/재고 등 '보고서 작성' 요청 시: 반드시 '[REPORT]'로 시작하고 보고서 내용을 작성.\n" +
-                "2. 인사/날씨 등 '일상 대화' 시: 반드시 '[CHAT]'으로 시작하고 정중히 거절 메시지 작성.\n\n";
+                "1. 보고서 요청 시: '[REPORT][TITLE: 핵심주제 요약] 내용' 형식으로 답변하세요.\n" +
+                "   (예: [REPORT][TITLE: 5월 매출 및 인기상품 분석] ...)\n" +
+                "2. 일상 대화 시: '[CHAT] 내용' 형식으로 답변하세요.\n\n";
 
         // 2. 데이터가 없을 경우를 대비한 방어 로직 (환각 방지)
         String topProductsText = summary.topProducts().isEmpty()

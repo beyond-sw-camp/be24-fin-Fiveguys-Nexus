@@ -43,7 +43,7 @@ spring:
         static: ${AWS_S3_STATIC}
   sql:
     init:
-      mode: always
+      mode: never
   mail:
     host: smtp.gmail.com
     port: 587

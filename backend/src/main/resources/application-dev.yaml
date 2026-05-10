@@ -19,6 +19,17 @@ spring:
         options:
           model: gpt-4o
           temperature: 0.3
+    mcp:
+      client:
+        stdio:
+          connections:
+            naver-news:
+              command: node
+              args:
+                - ${MCP_NEWS_SERVER_PATH}
+              env:
+                NAVER_CLIENT_ID: ${NAVER_CLIENT_ID:}
+                NAVER_CLIENT_SECRET: ${NAVER_CLIENT_SECRET:}
 
   cloud:
     aws:

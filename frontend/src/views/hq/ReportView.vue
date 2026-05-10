@@ -57,6 +57,7 @@ async function fetchReports(page = 0){
 
   } catch (error) {
     console.error('[ReportView] 보고서 조회 실패:', error);
+    showToast(`${error} '[ReportView] 보고서 조회 실패:'`)
   } finally {
     isReportLoading.value = false;
   }
@@ -64,7 +65,12 @@ async function fetchReports(page = 0){
 
 // 레포트 다운로드
 function handleDownload(report) {
-  showToast(`${report.report_title} 다운로드 준비 중입니다.`)
+  const filePath = report;
+  if (!filePath) return showToast('파일이 없습니다.', 'error');
+
+  const s3BaseUrl = 'https://nexus-reports-archive.s3.ap-northeast-2.amazonaws.com/';
+  window.open(s3BaseUrl + filePath, '_blank'); // 새 탭에서 열기
+  showToast(`${report.reportTitle} 미리보기 준비 중입니다.`)
 }
 
 watch(activeTab, (val) => {

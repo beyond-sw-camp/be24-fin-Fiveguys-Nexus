@@ -120,5 +120,5 @@ public class WasteLogService {
         }
         return wasteSum;
     }
-    
+
 }

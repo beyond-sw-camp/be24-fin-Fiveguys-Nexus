@@ -93,8 +93,17 @@ public class ReportService {
         User loginUser = userRepository.findById(userIdx)
                 .orElseThrow(() -> new BaseException(NOT_FOUND_USER));
 
+        // AI 답변 받기
+        String aiResponse = handleChatbotRequest(userMessage);
+
+        // 상황 A: 일상 대화 ([CHAT]) 이름표를 달고 왔을 때
+        if (aiResponse.contains("[CHAT]")) {
+            // 기존의 PDF 생성, S3 업로드 로직을 전부 건너뛰고 텍스트만 바로 반환!
+            return aiResponse.replace("[CHAT]", "").trim();
+        }
+
         // AI 분석 및 임시 PDF 생성 (기존 로직)
-        String aiMarkdown = handleChatbotRequest(userMessage);
+        String aiMarkdown = aiResponse.replace("[REPORT]", "").trim();
         String localFilePath = generatePdfFromAiResponse(aiMarkdown);
         File tempFile = new File(localFilePath);
 
@@ -135,7 +144,7 @@ public class ReportService {
 
             reportRepository.save(report);
 
-            return s3Key;
+            return "보고서 생성이 완료되었습니다! 목록 탭을 확인해 주세요.";
 
         } catch (Exception e) {
             throw new RuntimeException("보고서 생성 실패: " + e.getMessage());
@@ -152,6 +161,11 @@ public class ReportService {
         // 1. 최신 데이터 집계 가져오기
         ReportDto.ReportDataSummaryDto summary = getRecentSummary();
 
+        // 2. AI에게 '보고서용'인지 '일반대화용'인지 꼬리표를 붙이라고 시킴 (수정 부분)
+        String instruction = "당신은 Nexus AI입니다. 다음 규칙을 엄격히 지키세요.\n" +
+                "1. 매출/재고 등 '보고서 작성' 요청 시: 반드시 '[REPORT]'로 시작하고 보고서 내용을 작성.\n" +
+                "2. 인사/날씨 등 '일상 대화' 시: 반드시 '[CHAT]'으로 시작하고 정중히 거절 메시지 작성.\n\n";
+
         // 2. 데이터가 없을 경우를 대비한 방어 로직 (환각 방지)
         String topProductsText = summary.topProducts().isEmpty()
                 ? "현재 판매 데이터가 없습니다."
@@ -165,7 +179,7 @@ public class ReportService {
         );
 
         // 3. 데이터와 사용자 질문을 합쳐서 AI에게 전송
-        String finalPrompt = dataContext + "사용자의 질문: " + userMessage;
+        String finalPrompt = instruction + dataContext + "사용자의 질문: " + userMessage;
 
         return chatClient.prompt()
                 .user(finalPrompt)

@@ -5,6 +5,7 @@ import com.example.nexus.domain.store.model.StoreInventory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -53,4 +54,22 @@ public interface StoreInventoryRepository extends JpaRepository<StoreInventory, 
 
     // 유통기한 임박 알림용 - 재고 수량이 0보다 큰 가맹점 재고 조회
     List<StoreInventory> findAllByCountGreaterThan(int count);
+           
+    List<StoreInventory> findAllByManufacturedDateBetween(LocalDateTime startDateTime, LocalDateTime endDateTime);
+
+    // 유통기한 기준 status 일괄 갱신
+    @Modifying
+    @Query(value = """
+            UPDATE store_inventory si
+            JOIN product p ON si.product_idx = p.product_idx
+            SET si.status = CASE
+                WHEN DATEDIFF(NOW(), si.manufactured_date) >= CAST(p.danger_days AS UNSIGNED)
+                    THEN 'EXPIRED'
+                WHEN DATEDIFF(NOW(), si.manufactured_date) >= CAST(p.danger_days AS UNSIGNED) - 3
+                    THEN 'EXPIRING'
+                ELSE si.status
+            END
+            WHERE si.count > 0
+            """, nativeQuery = true)
+    void bulkUpdateExpiryStatus();
 }

@@ -37,7 +37,7 @@ public class StoreInventory {
     private Integer count;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+    @Column(name = "status", nullable = false, columnDefinition = "VARCHAR(20)")
     private InventoryStatus status = InventoryStatus.NORMAL;
 
     @Column(name = "manufactured_date", nullable = false)
@@ -45,6 +45,9 @@ public class StoreInventory {
 
     @Column(name = "avg_stock", nullable = false)
     private Integer avgStock;
+
+    @Column(name = "warned")
+    private boolean warned;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_idx", nullable = false)

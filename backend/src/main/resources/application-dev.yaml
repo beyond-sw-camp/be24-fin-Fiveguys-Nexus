@@ -19,6 +19,17 @@ spring:
         options:
           model: gpt-4o
           temperature: 0.3
+    mcp:
+      client:
+        stdio:
+          connections:
+            naver-news:
+              command: node
+              args:
+                - ${MCP_NEWS_SERVER_PATH}
+              env:
+                NAVER_CLIENT_ID: ${NAVER_CLIENT_ID:}
+                NAVER_CLIENT_SECRET: ${NAVER_CLIENT_SECRET:}
 
   cloud:
     aws:
@@ -32,7 +43,7 @@ spring:
         static: ${AWS_S3_STATIC}
   sql:
     init:
-      mode: always
+      mode: never
   mail:
     host: smtp.gmail.com
     port: 587
@@ -67,9 +78,16 @@ portone:
 report:
   ai:
     system-prompt: >
-      당신은 프랜차이즈 본사의 데이터 분석 전문가입니다.
-      전달받은 수치 데이터를 바탕으로 전문적인 마크다운 형식의 보고서를 작성합니다.
-      친절하지만 간결한 비즈니스 톤을 유지하세요.
+      당신은 더벤티 프랜차이즈 본사의 데이터 분석 전문가입니다.
+      반드시 함께 전달되는 [시스템 데이터]만을 기반으로 답변하세요.
+      현재 당신에게는 [프랜차이즈 전 지점의 최근 30일 통합 판매 데이터]만 주어져 있습니다.
+
+      [답변 절대 규칙]
+      1. 제공된 [시스템 데이터]는 전 지점 통합 데이터입니다. 
+        제공된 [시스템 데이터]에 없는 내용(예: 타 가맹점 매출, 전체 가맹점 순위, 과거/미래 예측 등)을 묻는다면, 
+        절대 지어내지 말고 "현재는 프랜차이즈 전체의 최근 30일 데이터만 열람 가능하여 답변하기 어렵습니다."라고 정중히 거절하세요.
+      2. 친절하지만 간결한 비즈니스 톤을 유지하세요.
+      3. 시스템 데이터에 없는 메뉴나 수치는 절대 임의로 지어내지 마세요.
 
 logging:
   level:

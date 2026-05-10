@@ -5,7 +5,6 @@ import com.example.nexus.domain.orders.model.Orders;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -26,7 +25,7 @@ public class Delivery {
     @Column(name = "delivery_status", nullable = false)
     private DeliveryStatus deliveryStatus;
 
-    @Column(name = "delay_reason", nullable = true)
+    @Column(name = "delay_reason")
     private String delayReason;
 
     @Column(name = "dep_date", nullable = false)

@@ -6,6 +6,7 @@ import com.example.nexus.domain.delivery.model.Delivery;
 import com.example.nexus.domain.delivery.model.DeliveryDto;
 import com.example.nexus.domain.notification.HeadNotificationService;
 import com.example.nexus.domain.notification.StoreNotificationService;
+import com.example.nexus.domain.orders.model.Orders;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,39 +15,42 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.nexus.domain.orders.model.Orders;
-
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class DeliveryService {
+
     private final DeliveryRepository deliveryRepository;
     private final HeadNotificationService headNotificationService;
     private final StoreNotificationService storeNotificationService;
 
-    // 점주 발주 확정 시 배송 생성 (READY 상태)
+    // 점주 발주 확정 시 배송 생성
     @Transactional
     public void createDelivery(Orders orders) {
+
         Delivery delivery = Delivery.builder()
                 .deliveryStatus(DeliveryStatus.READY)
                 .departureDate(LocalDateTime.now())
                 .estimatedArrivalAt(LocalDateTime.now().plusDays(1))
                 .orders(orders)
                 .build();
+
         deliveryRepository.save(delivery);
     }
 
-    // 본사 발주 승인 시 배송 시작 (READY → START) + 점주 알림
+    // 본사 발주 승인 시 배송 시작
     @Transactional
     public void startDeliveryByOrders(Orders orders) {
+
         Delivery delivery = deliveryRepository.findByOrders(orders);
-        if (delivery == null || delivery.getDeliveryStatus() != DeliveryStatus.READY) {
+
+        if (delivery == null ||
+                delivery.getDeliveryStatus() != DeliveryStatus.READY) {
             return;
         }
+
         delivery.setDeliveryStatus(DeliveryStatus.START);
 
         storeNotificationService.create(
@@ -54,54 +58,105 @@ public class DeliveryService {
                 "배송 시작 안내",
                 "주문하신 상품의 배송이 시작되었습니다. 예상 도착일: "
                         + delivery.getEstimatedArrivalAt().toLocalDate(),
-                orders.getStore());
+                orders.getStore()
+        );
     }
 
+    // 본사 배송 조회
     public DeliveryDto.DeliveryPageRes getDeliveriesByHead(
-            String storeName, DeliveryStatus status, Integer year, Integer month, Integer day, int page, int size) {
+            String storeName,
+            DeliveryStatus status,
+            Integer year,
+            Integer month,
+            Integer day,
+            int page,
+            int size
+    ) {
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by("departureDate").descending());
-        Page<Delivery> deliveryPage = deliveryRepository.findAllByHeadFilters(storeName, status, year, month, day, pageable);
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by("departureDate").descending()
+        );
+
+        Page<Delivery> deliveryPage =
+                deliveryRepository.findAllByHeadFilters(
+                        storeName,
+                        status,
+                        year,
+                        month,
+                        day,
+                        pageable
+                );
 
         return DeliveryDto.DeliveryPageRes.from(deliveryPage);
     }
 
-    // 가맹점 배송 현황 조회
+    // 가맹점 배송 조회
     public DeliveryDto.DeliveryPageRes getDeliveriesForStore(
-            Long storeIdx, Long orderIdx, DeliveryStatus status, Integer year, Integer month, Integer day, int page, int size) {
+            Long storeIdx,
+            Long orderIdx,
+            DeliveryStatus status,
+            Integer year,
+            Integer month,
+            Integer day,
+            int page,
+            int size
+    ) {
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by("departureDate").descending());
-        Page<Delivery> deliveryPage = deliveryRepository.findAllByStoreFilters(storeIdx, orderIdx, status, year, month, day, pageable);
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by("departureDate").descending()
+        );
+
+        Page<Delivery> deliveryPage =
+                deliveryRepository.findAllByStoreFilters(
+                        storeIdx,
+                        orderIdx,
+                        status,
+                        year,
+                        month,
+                        day,
+                        pageable
+                );
 
         return DeliveryDto.DeliveryPageRes.from(deliveryPage);
     }
 
-    // 본사 배송 지연 사유 입력 로직 (throw/Optional 제거 및 boolean 흐름 제어 적용)
+    // 배송 지연 사유 등록
     @Transactional
-    public boolean updateDelayReason(Long deliveryIdx, String delayReason) {
+    public boolean updateDelayReason(
+            Long deliveryIdx,
+            String delayReason
+    ) {
+
         Delivery delivery = deliveryRepository.findByIdx(deliveryIdx);
 
         if (delivery == null) {
             return false;
         }
 
-        // 상태를 지연으로 변경
         delivery.setDelayReason(delayReason);
         delivery.setDeliveryStatus(DeliveryStatus.DELAY);
 
-        // 배송 지연 알림 발송 (본사)
-        String delayStoreName = delivery.getOrders().getStore().getStoreName();
+        String delayStoreName =
+                delivery.getOrders().getStore().getStoreName();
+
+        // 본사 알림
         headNotificationService.create(
                 NotificationType.DELIVERY_DELAY,
                 "배송 지연 - " + delayStoreName,
-                delayStoreName + " 배송이 지연되었습니다. 사유: " + delayReason);
+                delayStoreName + " 배송이 지연되었습니다. 사유: " + delayReason
+        );
 
-        // 배송 지연 알림 발송 (가맹점, NOTIFY_016)
+        // 가맹점 알림
         storeNotificationService.create(
                 NotificationType.DELIVERY_DELAY,
                 "배송 지연 안내",
                 "배송이 지연되었습니다. 사유: " + delayReason,
-                delivery.getOrders().getStore());
+                delivery.getOrders().getStore()
+        );
 
         return true;
     }

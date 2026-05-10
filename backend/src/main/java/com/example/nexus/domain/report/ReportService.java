@@ -84,6 +84,66 @@ public class ReportService {
                 .build();
     }
 
+    // 1, 회원 메세지와 우저 정보를 받아와 S3와 DB에 저장
+    @Transactional
+    public String createAndSaveReport(String userMessage, Long userIdx) {
+        // 회원 존재 여부 확인
+        User loginUser = userRepository.findById(userIdx)
+                .orElseThrow(() -> new BaseException(NOT_FOUND_USER));
+
+        // AI 분석 및 임시 PDF 생성 (기존 로직)
+        String aiMarkdown = handleChatbotRequest(userMessage);
+        String localFilePath = generatePdfFromAiResponse(aiMarkdown);
+        File tempFile = new File(localFilePath);
+
+        // S3 업로드 경로(Key) 생성
+        String s3Key = "reports/" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"))
+                + "/" + UUID.randomUUID() + ".pdf";
+
+        try {
+            // S3로 파일 업로드
+            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                    .bucket(reportBucket)
+                    .key(s3Key)
+                    .contentType("application/pdf")
+                    .build();
+
+            s3Client.putObject(putObjectRequest, RequestBody.fromFile(tempFile));
+
+            // 트랜잭션 동기화 매니저에 롤백 시 작업을 예약함
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCompletion(int status) {
+                    // 트랜잭션이 STATUS_ROLLED_BACK(롤백) 상태로 끝났다면 S3 파일 삭제
+                    if (status == TransactionSynchronization.STATUS_ROLLED_BACK) {
+                        s3Client.deleteObject(DeleteObjectRequest.builder()
+                                .bucket(reportBucket)
+                                .key(s3Key)
+                                .build());
+                    }
+                }
+            });
+
+            // 6. DB 저장
+            Report report = Report.builder()
+                    .title("Nexus 매출 분석 보고서 (" + LocalDate.now() + ")")
+                    .filePath(s3Key)
+                    .user(loginUser) // 연관관계 매핑
+                    .build();
+
+            reportRepository.save(report);
+
+            return s3Key;
+
+        } catch (Exception e) {
+            throw new RuntimeException("보고서 생성 실패: " + e.getMessage());
+        } finally {
+            // 서버에 남은 임시 PDF 삭제
+            if (tempFile.exists()) {
+                tempFile.delete();
+            }
+        }
+    }
 
     //   2. AI에게 질문 던지기
     public String handleChatbotRequest(String userMessage) {

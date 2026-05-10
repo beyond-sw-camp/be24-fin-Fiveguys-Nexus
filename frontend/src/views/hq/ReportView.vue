@@ -48,16 +48,14 @@ async function fetchReports(page = 0){
 
   try {
     const res = await getReportList(page, pagination.currentSize);
-    console.log(res.data.result)
     reports.value.splice(0, reports.value.length, ...res.data.result.reportList)
-    console.log(reports.value)
 
     pagination.totalPage = res.data.result.totalPage
     pagination.totalCount = res.data.result.totalCount
     pagination.currentPage = res.data.result.currentPage
 
   } catch (error) {
-    showToast(`${error} '[ReportView] 보고서 조회 실패:'`)
+    showToast(`[ReportView] 보고서 조회 실패: ${error.message || error}`)
   } finally {
     isReportLoading.value = false;
   }

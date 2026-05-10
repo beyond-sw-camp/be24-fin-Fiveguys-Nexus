@@ -1,5 +1,6 @@
 package com.example.nexus.domain.pos;
 
+import com.example.nexus.common.enums.InventoryStatus;
 import com.example.nexus.common.exception.BaseException;
 import com.example.nexus.common.model.PageResponse;
 import com.example.nexus.common.model.BaseResponseStatus;
@@ -94,7 +95,9 @@ public class PosService {
         }
 
         posInventory.setCount(count);
+        posInventory.setStatus(resolveStatus(count, posInventory.getProduct().getMinStock()));
         hqInventory.setCount(count);
+        hqInventory.setStatus(resolveStatus(count, hqInventory.getProduct().getMinStock()));
 
         PosStoreInventory posSaved = posStoreInventoryRepository.save(posInventory);
         StoreInventory hqSaved = storeInventoryRepository.save(hqInventory);
@@ -337,7 +340,15 @@ public class PosService {
             }
             int take = Math.min(onHand, remaining);
             lot.setCount(onHand - take);
+            lot.setStatus(resolveStatus(lot.getCount(), lot.getProduct().getMinStock()));
             remaining -= take;
         }
+    }
+
+    private InventoryStatus resolveStatus(int count, int minStock) {
+        if (count <= 0) return InventoryStatus.CRITICAL;
+        if (count <= minStock / 2) return InventoryStatus.CRITICAL;
+        if (count <= minStock) return InventoryStatus.LOW;
+        return InventoryStatus.NORMAL;
     }
 }

@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.nexus.common.enums.InventoryStatus;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -46,6 +47,7 @@ public class InventoryMovementService {
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.HEAD_INVENTORY_NOT_FOUND));
 
         headInventory.setCount(headInventory.getCount() + req.getQuantity());
+        headInventory.setStatus(resolveStatus(headInventory.getCount(), product.getMinStock()));
 
         headInventoryRepository.save(headInventory);
 
@@ -76,6 +78,7 @@ public class InventoryMovementService {
         }
 
         headInventory.setCount(headInventory.getCount() - req.getQuantity());
+        headInventory.setStatus(resolveStatus(headInventory.getCount(), product.getMinStock()));
         headInventoryRepository.save(headInventory);
 
         // 재고 부족 알림: 차감 후 최소 기준 이하이면 알림 발송 (당일 동일 제품 중복 방지)
@@ -128,5 +131,12 @@ public class InventoryMovementService {
         List<InventoryMovement> inventoryMovementList = inventoryMovementRepository.findAllWithProduct();
 
         return inventoryMovementList.stream().map(InventoryMovementDto.MovementListRes::from).toList();
+    }
+
+    private InventoryStatus resolveStatus(int count, int minStock) {
+        if (count <= 0) return InventoryStatus.CRITICAL;
+        if (count <= minStock / 2) return InventoryStatus.CRITICAL;
+        if (count <= minStock) return InventoryStatus.LOW;
+        return InventoryStatus.NORMAL;
     }
 }

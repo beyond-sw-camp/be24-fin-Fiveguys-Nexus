@@ -68,27 +68,39 @@
 
     <!-- 뉴스 요약 탭 -->
     <div v-if="activeTab === 'news'" class="flex flex-col gap-3">
-      <p class="text-xs text-gray-400">매일 오전 9시 AI가 푸드코트 업계 관련 뉴스를 수집·요약합니다.</p>
+      <p class="text-xs text-gray-400">매일 오전 8시 AI가 더벤티 브랜드 및 업계 관련 뉴스를 수집·요약합니다.</p>
 
-      <div v-if="newsSummaries.length === 0" class="bg-white rounded-lg border border-gray-200 px-5 py-16 text-center text-gray-400 text-sm">
+      <div v-if="newsLoading" class="bg-white rounded-lg border border-gray-200 px-5 py-16 text-center text-gray-400 text-sm">
+        불러오는 중...
+      </div>
+
+      <div v-else-if="newsSummaries.length === 0" class="bg-white rounded-lg border border-gray-200 px-5 py-16 text-center text-gray-400 text-sm">
         수집된 뉴스가 없습니다.
       </div>
 
-      <!-- 뉴스 목록 (간략 표시) -->
+      <!-- 뉴스 목록 -->
       <button
         v-for="news in newsSummaries"
         :key="news.idx"
-        @click="selectedNews = news"
+        @click="openDetail(news)"
         class="w-full bg-white rounded-lg border border-gray-200 p-4 flex items-start justify-between gap-4 hover:border-[#F37321] hover:bg-orange-50/20 transition-colors text-left cursor-pointer"
       >
         <div class="flex items-start gap-3 min-w-0">
           <Newspaper class="w-4 h-4 text-[#F37321] shrink-0 mt-0.5" />
           <div class="min-w-0">
-            <p class="font-semibold text-gray-900 text-sm">{{ news.summary_title }}</p>
-            <p class="text-xs text-gray-500 mt-1 line-clamp-1">{{ firstLine(news.summary_content) }}</p>
+            <div class="flex items-center gap-2 mb-1">
+              <span
+                class="text-[11px] font-semibold px-2 py-0.5 rounded-full border"
+                :class="categoryStyle(news.category).class"
+              >
+                {{ categoryStyle(news.category).label }}
+              </span>
+            </div>
+            <p class="font-semibold text-gray-900 text-sm">{{ news.summaryTitle }}</p>
+            <p class="text-xs text-gray-500 mt-1 line-clamp-1">{{ news.summaryContentsPreview }}</p>
           </div>
         </div>
-        <span class="text-xs text-gray-400 shrink-0">{{ news.summary_date }}</span>
+        <span class="text-xs text-gray-400 shrink-0">{{ formatDate(news.summaryDate) }}</span>
       </button>
     </div>
 
@@ -101,7 +113,7 @@
         <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
           <div class="flex items-center gap-2">
             <Newspaper class="w-4 h-4 text-[#F37321]" />
-            <span class="font-bold text-gray-900 text-sm">{{ selectedNews.summary_title }}</span>
+            <span class="font-bold text-gray-900 text-sm">{{ selectedNews.summaryTitle }}</span>
           </div>
           <button @click="selectedNews = null" class="text-gray-400 hover:text-gray-700 transition-colors cursor-pointer">
             <X class="w-5 h-5" />
@@ -110,40 +122,35 @@
 
         <!-- 모달 내용 -->
         <div class="overflow-y-auto px-6 py-5 flex flex-col gap-4">
-          <!-- 날짜 -->
-          <p class="text-xs text-gray-400">{{ selectedNews.summary_date }}</p>
+          <div class="flex items-center gap-2">
+            <span
+              class="text-[11px] font-semibold px-2 py-0.5 rounded-full border"
+              :class="categoryStyle(selectedNews.category).class"
+            >
+              {{ categoryStyle(selectedNews.category).label }}
+            </span>
+            <span class="text-xs text-gray-400">{{ formatDate(selectedNews.summaryDate) }}</span>
+          </div>
 
           <!-- 요약 내용 -->
           <div class="bg-gray-50 rounded-lg px-4 py-3">
             <p class="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">요약</p>
-            <p class="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{{ selectedNews.summary_content }}</p>
-          </div>
-
-          <!-- 운영 조언 -->
-          <div class="flex gap-2 bg-orange-50 border border-orange-100 rounded-lg px-4 py-3">
-            <Lightbulb class="w-4 h-4 text-[#F37321] shrink-0 mt-0.5" />
-            <div>
-              <p class="text-xs font-semibold text-[#F37321] mb-1">운영 조언</p>
-              <p class="text-sm text-gray-700 leading-relaxed">{{ selectedNews.advice }}</p>
-            </div>
+            <p v-if="detailLoading" class="text-sm text-gray-400">불러오는 중...</p>
+            <p v-else class="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{{ detailContents }}</p>
           </div>
 
           <!-- 원문 링크 -->
-          <div v-if="selectedNews.urls?.length">
+          <div v-if="selectedNews.url && selectedNews.url !== '-'">
             <p class="text-xs font-semibold text-gray-500 mb-2">원문 링크</p>
-            <div class="flex flex-wrap gap-2">
-              <a
-                v-for="(url, i) in selectedNews.urls"
-                :key="i"
-                :href="url"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="inline-flex items-center gap-1 text-xs text-blue-500 hover:underline"
-              >
-                <ExternalLink class="w-3 h-3" />
-                원문 {{ i + 1 }}
-              </a>
-            </div>
+            <a
+              :href="selectedNews.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-1 text-xs text-blue-500 hover:underline"
+            >
+              <ExternalLink class="w-3 h-3" />
+              원문 보기
+            </a>
           </div>
         </div>
       </div>
@@ -153,10 +160,11 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { FileText, Download, Newspaper, Lightbulb, ExternalLink, X } from 'lucide-vue-next'
+import { ref, watch } from 'vue'
+import { FileText, Download, Newspaper, ExternalLink, X } from 'lucide-vue-next'
 import Toast from '@/components/common/Toast.vue'
 import { useToast } from '@/composables/useToast'
+import { getHqNews, getNewsDetail } from '@/api/news'
 
 const { toast, showToast } = useToast()
 
@@ -167,6 +175,56 @@ const tabs = [
 
 const activeTab = ref('report')
 const selectedNews = ref(null)
+const detailContents = ref('')
+const detailLoading = ref(false)
+const newsLoading = ref(false)
+
+const categoryMap = {
+  LOCAL_EVENT: { label: '지역 행사', class: 'text-purple-600 bg-purple-50 border-purple-200' },
+  TRAFFIC:     { label: '교통',     class: 'text-blue-600 bg-blue-50 border-blue-200' },
+  WEATHER:     { label: '날씨',     class: 'text-sky-600 bg-sky-50 border-sky-200' },
+  RISK:        { label: '위험',     class: 'text-red-600 bg-red-50 border-red-200' },
+}
+
+function categoryStyle(category) {
+  return categoryMap[category] ?? { label: category, class: 'text-gray-600 bg-gray-50 border-gray-200' }
+}
+
+function formatDate(dateTime) {
+  if (!dateTime) return ''
+  return dateTime.slice(0, 10)
+}
+
+async function openDetail(news) {
+  selectedNews.value = news
+  detailContents.value = ''
+  detailLoading.value = true
+  try {
+    const { data } = await getNewsDetail(news.idx)
+    detailContents.value = data.result?.summaryContents ?? ''
+  } catch {
+    detailContents.value = news.summaryContentsPreview ?? ''
+  } finally {
+    detailLoading.value = false
+  }
+}
+
+async function fetchHqNews() {
+  newsLoading.value = true
+  try {
+    const today = new Date().toISOString().slice(0, 10)
+    const { data } = await getHqNews(today)
+    newsSummaries.value = data.result ?? []
+  } catch (e) {
+    console.error('[ReportView] 뉴스 조회 실패:', e)
+  } finally {
+    newsLoading.value = false
+  }
+}
+
+watch(activeTab, (val) => {
+  if (val === 'news' && newsSummaries.value.length === 0) fetchHqNews()
+})
 
 const reports = ref([
   {
@@ -201,36 +259,7 @@ const reports = ref([
   },
 ])
 
-const newsSummaries = ref([
-  {
-    idx: 3,
-    summary_title: '2026-04-21 푸드코트 업계 주요 이슈 요약',
-    summary_date: '2026-04-21 09:00',
-    summary_content: '1. 국내 한우 도매가격이 전주 대비 5% 상승하며 공급 부족 우려가 커지고 있습니다. 봄철 수요 증가와 사육 두수 감소가 주요 원인으로 분석됩니다.\n2. 공정거래위원회가 백화점 푸드코트 입점 매장의 수수료 실태 점검에 착수했습니다.\n3. 올리브오일 주요 산지인 지중해 지역의 작황 부진으로 수입 올리브오일 가격 인상 가능성이 제기되고 있습니다.',
-    advice: '한우 도매가 상승 추세에 따라 단기 재고 확보를 검토하시고, 올리브오일 가격 동향을 모니터링하여 구매 시점을 조율하는 것을 권장합니다.',
-    urls: ['https://example.com/news/1', 'https://example.com/news/2', 'https://example.com/news/3'],
-  },
-  {
-    idx: 2,
-    summary_title: '2026-04-20 푸드코트 업계 주요 이슈 요약',
-    summary_date: '2026-04-20 09:00',
-    summary_content: '1. 연어·참치 등 고급 수산물 도매가격이 환율 상승 영향으로 전월 대비 7% 올랐습니다.\n2. 식품의약품안전처가 신선 식자재 냉장 유통 기준을 강화하는 개정안을 예고했습니다. 냉장 보관 온도 기준이 기존 5℃에서 4℃로 조정될 예정입니다.\n3. 백화점 푸드코트 방문객 수가 전년 동월 대비 12% 증가하며 매출 호조세를 보이고 있습니다.',
-    advice: '신선 식자재 냉장 보관 온도 기준 강화에 대비해 냉장고 온도 설정을 사전에 점검하시고, 수산물 가격 동향을 모니터링하여 발주 계획을 조율하시기 바랍니다.',
-    urls: ['https://example.com/news/4', 'https://example.com/news/5'],
-  },
-  {
-    idx: 1,
-    summary_title: '2026-04-19 푸드코트 업계 주요 이슈 요약',
-    summary_date: '2026-04-19 09:00',
-    summary_content: '1. 황금연휴 기간 백화점 푸드코트 방문객이 평일 대비 평균 180% 증가할 것으로 전망됩니다.\n2. 버터·생크림 등 유제품 제조업체들이 원가 상승을 이유로 공급가 인상을 예고했습니다.\n3. 봄철 식재료 수급 불안정으로 일부 채소류 가격이 급등하고 있어 대체 식재료 확보가 권장됩니다.',
-    advice: '연휴 수요 급증에 대비해 한우·신선 식자재·유제품 재고를 충분히 확보하시고, 채소류 가격 급등에 대비한 대체 식재료 공급망을 점검하시기 바랍니다.',
-    urls: ['https://example.com/news/6', 'https://example.com/news/7', 'https://example.com/news/8'],
-  },
-])
-
-function firstLine(content) {
-  return content?.split('\n')[0] ?? ''
-}
+const newsSummaries = ref([])
 
 function handleDownload(report) {
   showToast(`${report.report_title} 다운로드 준비 중입니다.`)

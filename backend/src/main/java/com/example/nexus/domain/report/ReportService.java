@@ -86,7 +86,7 @@ public class ReportService {
 
     // 1, 회원 메세지와 우저 정보를 받아와 S3와 DB에 저장
     @Transactional
-    public String createAndSaveReport(String userMessage, Long userIdx) {
+    public String createAndSaveReport(Long userIdx, String userMessage) {
         // 회원 존재 여부 확인
         User loginUser = userRepository.findById(userIdx)
                 .orElseThrow(() -> new BaseException(NOT_FOUND_USER));

@@ -22,7 +22,15 @@ const messages = ref([
   {
     id: 1,
     role: 'ai',
-    text: '안녕하세요! Nexus AI 어시스턴트입니다. 보고서 생성을 요청해보세요. 예) "저번달 총 매출과 이번달 비교 보고서 만들어줘"',
+    text: `반갑습니다!
+    Nexus AI 어시스턴트입니다. 🤖
+
+    매장의 실시간 데이터를 바탕으로
+    똑똑한 분석을 도와드릴게요.
+
+    궁금한 점은 채팅으로 편하게 물어보시고, 상세 분석이 필요하면 "보고서 만들어줘"라고 요청해 보세요!
+
+    예) "이번 달 매출 요약 보고서 써줘"`,
   },
 ])
 
@@ -61,7 +69,7 @@ async function sendMessage() {
     if (res.data.result.includes("보고서 생성이 완료되었습니다")) {
       // 사용자에게 의사를 물어봅니다.
       const goToReportPage = confirm(
-        "📊 보고서 생성이 완료되었습니다!\n보고서 목록 페이지로 이동하여 확인하시겠습니까?"
+        "보고서 생성이 완료되었습니다!\n보고서 목록 페이지로 이동하여 확인하시겠습니까?"
       )
 
       if (goToReportPage) {
@@ -74,6 +82,7 @@ async function sendMessage() {
           router.push({ name: 'report' });
         }
       }
+
     }
 
   } catch (error) {
@@ -131,7 +140,7 @@ async function sendMessage() {
               <div class="w-7 h-7 rounded-full bg-[#F37321] flex items-center justify-center shrink-0">
                 <Bot class="w-4 h-4 text-white" />
               </div>
-              <div class="max-w-[240px] px-3 py-2 rounded-2xl rounded-bl-sm bg-gray-100 text-sm text-gray-800 leading-relaxed">
+              <div class="max-w-[240px] px-3 py-2 rounded-2xl rounded-bl-sm bg-gray-100 text-sm text-gray-800 leading-relaxed whitespace-pre-line">
                 {{ msg.text }}
               </div>
             </div>
@@ -165,7 +174,7 @@ async function sendMessage() {
               v-model="input"
               @keydown.enter.exact.prevent="sendMessage"
               @input="autoResize"
-              placeholder="보고서 생성을 요청해보세요..."
+              placeholder="'보고서 만들어줘'라고 요청해 보세요!"
               rows="1"
               class="flex-1 resize-none text-sm px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:border-[#F37321] transition-colors leading-relaxed max-h-28 overflow-y-auto"
               :disabled="isLoading"

@@ -101,14 +101,22 @@ public class StoreController {
         return ResponseEntity.ok(BaseResponse.success("성공"));
     }
 
-    // [가맹점] 로그인한 가맹점주의 월별 매출 정산 내역 조회
-    @GetMapping("/income")
-    public ResponseEntity<BaseResponse<StoreIncomeDto.MonthlyIncomeRes>> getMonthlyIncome(@AuthenticationPrincipal AuthUserDetails userDetails) {
+    // 가맹점별 매출 정산 조회
+    @GetMapping("/income/settlement")
+    public ResponseEntity<BaseResponse<StoreIncomeDto.TotalSettlementRes>> getSettlement(
+            @AuthenticationPrincipal AuthUserDetails userDetails,
+            @RequestParam int year,
+            @RequestParam int month,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
         if (userDetails == null) {
             throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
         }
 
-        StoreIncomeDto.MonthlyIncomeRes result = storeIncomeService.getMonthlyIncome(userDetails.getIdx());
+        StoreIncomeDto.TotalSettlementRes result = storeIncomeService.getSettlementData(
+                userDetails.getIdx(), year, month, page, size
+        );
 
         return ResponseEntity.ok(BaseResponse.success(result));
     }

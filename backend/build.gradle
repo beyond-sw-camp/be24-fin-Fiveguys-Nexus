@@ -63,6 +63,12 @@ dependencies {
 
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 
+	// --- 보고서 ---
+	// 마크다운(Markdown)을 HTML로 바꿔주는 도구
+	implementation 'org.commonmark:commonmark:0.21.0'
+	// HTML을 PDF 파일로 구워주는 도구
+	implementation 'com.openhtmltopdf:openhtmltopdf-pdfbox:1.0.10'
+
 }
 
 tasks.named('test') {

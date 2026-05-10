@@ -9,6 +9,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -36,4 +37,20 @@ public interface HeadInventoryRepository extends JpaRepository<HeadInventory, Lo
 
     // 알림용: 재고가 있는 전체 목록 조회
     List<HeadInventory> findAllByCountGreaterThan(int count);
+
+    // 유통기한 기준 status 일괄 갱신
+    @Modifying
+    @Query(value = """
+            UPDATE head_inventory hi
+            JOIN product p ON hi.product_idx = p.product_idx
+            SET hi.status = CASE
+                WHEN DATEDIFF(NOW(), hi.manufactured_date) >= CAST(p.danger_days AS UNSIGNED)
+                    THEN 'EXPIRED'
+                WHEN DATEDIFF(NOW(), hi.manufactured_date) >= CAST(p.danger_days AS UNSIGNED) - 3
+                    THEN 'EXPIRING'
+                ELSE hi.status
+            END
+            WHERE hi.count > 0
+            """, nativeQuery = true)
+    void bulkUpdateExpiryStatus();
 }

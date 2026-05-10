@@ -30,3 +30,7 @@ export const postNewRegister = (storeRegDto)=>
 
 export const putStoreUpdate = (storeIdx,updateData) =>
   api.put(`/store/update/${storeIdx}`,updateData)
+
+
+export const getSettlement = (year, month, page = 0, size = 10) =>
+  api.get('/store/income/settlement', { params: { year, month, page, size }})

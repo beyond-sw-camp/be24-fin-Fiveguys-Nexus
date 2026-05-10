@@ -6,6 +6,7 @@ import com.example.nexus.domain.pos.PosPayRepository;
 import com.example.nexus.domain.report.model.Report;
 import com.example.nexus.domain.report.model.ReportDto;
 
+import com.example.nexus.domain.store.model.Store;
 import com.example.nexus.domain.user.UserRepository;
 import com.example.nexus.domain.user.model.User;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
@@ -16,6 +17,7 @@ import org.springframework.core.io.ClassPathResource;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -200,7 +202,7 @@ public class ReportService {
             String fullHtml = "<html><head><style>" +
                     "body { font-family: 'NanumGothic', sans-serif; line-height: 1.6; padding: 20px; }" +
                     "</style></head><body>" +
-                    "<h2>📊 Nexus 매장 분석 보고서</h2><hr/>" +
+                    "<h2>Nexus 매장 분석 보고서</h2><hr/>" +
                     htmlContent +
                     "</body></html>";
 
@@ -241,5 +243,20 @@ public class ReportService {
         Node document = parser.parse(markdown);
         HtmlRenderer renderer = HtmlRenderer.builder().build();
         return renderer.render(document);
+    }
+
+
+    // 보고서 조회
+    @Transactional(readOnly = true)
+    public ReportDto.ReportPageRes reportList(Long userIdx, int page, int size) {
+        // 사용자 존재 및 삭제 여부 확인 (보안 검증)
+        User user = userRepository.findById(userIdx)
+                .filter(u -> !u.isDeleted()) // 삭제되지 않은 사용자인지 확인
+                .orElseThrow(() -> new BaseException(NOT_FOUND_USER));
+
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<Report> result = reportRepository.findByUserOrderByCreatedAtDesc(user, pageRequest);
+
+        return ReportDto.ReportPageRes.from(result);
     }
 }

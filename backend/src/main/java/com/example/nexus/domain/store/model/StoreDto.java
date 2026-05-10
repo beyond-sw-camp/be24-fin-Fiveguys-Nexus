@@ -39,7 +39,6 @@ public class StoreDto {
     }
 
     // 가맹점 조회 페이징 처리
-    // 메뉴 페이징 조회
     @Getter
     @Builder
     public static class StorePageRes{

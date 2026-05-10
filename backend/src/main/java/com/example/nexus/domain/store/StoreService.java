@@ -305,7 +305,7 @@ public class StoreService {
         LocalDateTime startDateTime = inputYearMonth.atDay(1).atStartOfDay();
 
         LocalDateTime endDateTime = inputYearMonth.atEndOfMonth().atTime(LocalTime.MAX);
-        List<StoreInventory> logs = storeInventoryRepository.findAllByWasteDateBetween(startDateTime, endDateTime);
+        List<StoreInventory> logs = storeInventoryRepository.findAllByManufacturedDateBetween(startDateTime, endDateTime);
 
         int success = 0;
         int fail = 0;

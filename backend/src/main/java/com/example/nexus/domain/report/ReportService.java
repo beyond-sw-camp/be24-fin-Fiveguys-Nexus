@@ -15,6 +15,7 @@ import org.springframework.core.io.ClassPathResource;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -51,6 +52,9 @@ public class ReportService {
     private final ChatClient chatClient;
     private final S3Client s3Client;
 
+    @Value("classpath:aiReport/prompts/report-template.md")
+    private Resource reportTemplate;
+
     @Value("${spring.cloud.aws.s3.report-bucket}")
     private String reportBucket;
 
@@ -71,17 +75,15 @@ public class ReportService {
                          PosOrdersItemRepository posOrdersItemRepository,
                          UserRepository userRepository,
                          ChatClient.Builder chatClientBuilder,
-                         S3Client s3Client,
-                         @Value("${report.ai.system-prompt}") String systemPrompt) {
+                         S3Client s3Client
+                         ) {
         this.reportRepository = reportRepository;
         this.posPayRepository = posPayRepository;
         this.posOrdersItemRepository = posOrdersItemRepository;
         this.userRepository = userRepository;
 
         this.s3Client = s3Client;
-        this.chatClient = chatClientBuilder
-                .defaultSystem(systemPrompt)
-                .build();
+        this.chatClient = chatClientBuilder.build();
     }
 
     // 1, 회원 메세지와 우저 정보를 받아와 S3와 DB에 저장
@@ -167,31 +169,32 @@ public class ReportService {
         // 최신 데이터 집계 가져오기
         ReportDto.ReportDataSummaryDto summary = getRecentSummary();
 
-        // AI에게 '보고서용'인지 '일반대화용'인지 꼬리표를 붙이라고 시킴
-        String instruction = "당신은 Nexus AI입니다. 사용자의 질문 의도를 분석하여 답변 앞에 반드시 다음 중 하나의 태그를 붙이세요.\n\n" +
-                "1. [REPORT] : '보고서를 만들어줘', 'PDF로 추출해줘', '정식 분석 리포트 써줘'와 같이 '문서 파일 생성'이 목적인 경우.\n" +
-                "2. [CHAT] : '인기 제품 뭐야?', '매출 얼마야?', '안녕?'과 같이 단순 정보를 묻거나 일상적인 대화를 원하는 경우.\n\n" +
-                "참고: [CHAT]일 때는 채팅창에서 바로 읽기 좋게 짧고 친절하게 대답하고, [REPORT]일 때만 마크다운 형식의 상세 보고서를 작성하세요.\n\n";
+        try {
+            // 🌟 1. 외부 마크다운 파일(report-template.md) 읽어오기
+            String template = reportTemplate.getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
 
-        // 데이터가 없을 경우를 대비한 방어 로직 (환각 방지)
-        String topProductsText = summary.topProducts().isEmpty()
-                ? "현재 판매 데이터가 없습니다."
-                : String.join(", ", summary.topProducts());
+            // 🌟 2. 템플릿의 변수들({{...}})을 실제 데이터로 치환
+            List<String> top5 = summary.topProducts();
+            String finalInstruction = template
+                    .replace("{{totalSales}}", String.format("%,d", summary.totalSales()))
+                    .replace("{{product1}}", top5.size() > 0 ? top5.get(0) : "데이터 없음")
+                    .replace("{{product2}}", top5.size() > 1 ? top5.get(1) : "데이터 없음")
+                    .replace("{{product3}}", top5.size() > 2 ? top5.get(2) : "데이터 없음")
+                    .replace("{{product4}}", top5.size() > 3 ? top5.get(3) : "데이터 없음")
+                    .replace("{{product5}}", top5.size() > 4 ? top5.get(4) : "데이터 없음");
 
+            // 4. AI에게 보낼 최종 프롬프트 구성
+            String finalPrompt = finalInstruction + "\n\n사용자의 질문: " + userMessage;
 
-        String dataContext = String.format(
-                "[시스템 데이터]\n- 최근 30일 기준 총 매출: %d원\n- 인기 상품 TOP 3: %s\n\n",
-                summary.totalSales(),
-                topProductsText
-        );
+            // 5. 프롬프트 전송 및 답변 반환
+            return chatClient.prompt()
+                    .user(finalPrompt)
+                    .call()
+                    .content();
 
-        // 데이터와 사용자 질문을 합쳐서 AI에게 전송
-        String finalPrompt = instruction + dataContext + "사용자의 질문: " + userMessage;
-
-        return chatClient.prompt()
-                .user(finalPrompt)
-                .call()
-                .content();
+        } catch (java.io.IOException e) {
+            throw new RuntimeException("보고서 템플릿 파일을 읽는 중 오류가 발생했습니다.", e);
+        }
     }
 
     // 3. DB에서 데이터 가지고 오기
@@ -220,14 +223,23 @@ public class ReportService {
         try {
             String htmlContent = convertMarkdownToHtml(aiMarkdown);
 
+            // 🌟 마법의 CSS (폰트 크기 축소, 여백 정렬, 테이블/인용구 디자인)
             String fullHtml = "<html><head><style>" +
-                    "body { font-family: 'NanumGothic', sans-serif; line-height: 1.6; padding: 20px; }" +
+                    "body { font-family: 'NanumGothic', sans-serif; font-size: 12px; line-height: 1.6; padding: 30px; color: #333; }" +
+                    "h1 { font-size: 18px; color: #F37321; border-bottom: 2px solid #F37321; padding-bottom: 8px; margin-bottom: 20px; }" +
+                    "h2 { font-size: 14px; color: #222; margin-top: 25px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }" +
+                    "h3 { font-size: 13px; color: #444; margin-top: 15px; margin-bottom: 5px; }" +
+                    "p, li { font-size: 12px; color: #555; }" +
+                    "blockquote { background: #f9f9f9; border-left: 4px solid #F37321; margin: 10px 0; padding: 12px 15px; color: #666; font-weight: bold; }" +
+                    "table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; }" +
+                    "th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 11px; }" +
+                    "th { background-color: #F37321; color: white; font-weight: bold; }" +
+                    "ul { margin-top: 5px; padding-left: 20px; }" +
                     "</style></head><body>" +
-                    "<h2>Nexus 매장 분석 보고서</h2><hr/>" +
+                    // 기존에 강제로 넣던 <h2> 제목과 <hr/>은 마크다운과 겹치므로 삭제했습니다!
                     htmlContent +
                     "</body></html>";
 
-            // 임시 폴더에 파일 저장
             String directoryPath = "uploads/temp_reports/";
             Path path = Paths.get(directoryPath);
             if (!Files.exists(path)) {
@@ -237,16 +249,13 @@ public class ReportService {
             String fileName = "temp_report_" + UUID.randomUUID().toString() + ".pdf";
             String fullFilePath = directoryPath + fileName;
 
+            File fontFile = new ClassPathResource("aiReport/fonts/NanumGothic.ttf").getFile();
 
-            File fontFile = new ClassPathResource("fonts/NanumGothic.ttf").getFile();
-
-            // 파일 읽기
             try (OutputStream os = new FileOutputStream(fullFilePath)) {
                 PdfRendererBuilder builder = new PdfRendererBuilder();
                 builder.useFastMode();
-                builder.withHtmlContent(fullHtml, null);  // 파일 주입
-                builder.useFont(fontFile, "NanumGothic"); // 폰트 적용
-
+                builder.withHtmlContent(fullHtml, null);
+                builder.useFont(fontFile, "NanumGothic");
                 builder.toStream(os);
                 builder.run();
             }

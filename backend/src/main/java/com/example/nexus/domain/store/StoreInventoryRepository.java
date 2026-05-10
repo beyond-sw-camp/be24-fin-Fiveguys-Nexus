@@ -53,4 +53,6 @@ public interface StoreInventoryRepository extends JpaRepository<StoreInventory, 
 
     // 유통기한 임박 알림용 - 재고 수량이 0보다 큰 가맹점 재고 조회
     List<StoreInventory> findAllByCountGreaterThan(int count);
+
+    List<StoreInventory> findAllByWasteDateBetween(LocalDateTime startDateTime, LocalDateTime endDateTime);
 }

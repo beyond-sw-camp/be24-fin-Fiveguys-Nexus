@@ -8,6 +8,7 @@ import com.example.nexus.domain.store.model.StoreInventory;
 import com.example.nexus.domain.store.model.StoreInventoryDto;
 import com.example.nexus.domain.user.UserRepository;
 import com.example.nexus.domain.user.model.User;
+import com.example.nexus.domain.wastelog.model.WasteLog;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,6 +23,8 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.YearMonth;
 import java.util.*;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
@@ -292,6 +295,30 @@ public class StoreService {
             resList.add(StoreInventoryDto.ListRes.from(storeInventory));
         }
         return resList;
+    }
+
+    public Float countUseWarnedProductBeforeDueDate(YearMonth inputYearMonth) {
+
+        LocalDateTime startDateTime = inputYearMonth.atDay(1).atStartOfDay();
+
+        LocalDateTime endDateTime = inputYearMonth.atEndOfMonth().atTime(LocalTime.MAX);
+        List<StoreInventory> logs = storeInventoryRepository.findAllByWasteDateBetween(startDateTime, endDateTime);
+
+        int success = 0;
+        int fail = 0;
+
+        LocalDateTime now = LocalDateTime.now();
+
+        for (StoreInventory log : logs) {
+            if (log.isWarned() && log.getCount() != 0) {
+                fail++;
+            } else {
+                success++;
+            }
+        }
+
+
+        return (float) (success / (success + fail));
     }
 
 }

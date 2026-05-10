@@ -217,11 +217,12 @@ public class ReportService {
 
             File fontFile = new ClassPathResource("fonts/NanumGothic.ttf").getFile();
 
+            // 파일 읽기
             try (OutputStream os = new FileOutputStream(fullFilePath)) {
                 PdfRendererBuilder builder = new PdfRendererBuilder();
                 builder.useFastMode();
-                builder.withHtmlContent(fullHtml, null);
-                builder.useFont(fontFile, "NanumGothic");
+                builder.withHtmlContent(fullHtml, null);  // 파일 주입
+                builder.useFont(fontFile, "NanumGothic"); // 폰트 적용
 
                 builder.toStream(os);
                 builder.run();

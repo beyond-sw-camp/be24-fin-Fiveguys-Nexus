@@ -76,7 +76,7 @@ public class ReportService {
                          UserRepository userRepository,
                          ChatClient.Builder chatClientBuilder,
                          S3Client s3Client
-                         ) {
+    ) {
         this.reportRepository = reportRepository;
         this.posPayRepository = posPayRepository;
         this.posOrdersItemRepository = posOrdersItemRepository;
@@ -107,7 +107,9 @@ public class ReportService {
         if (aiResponse.contains("[TITLE:")) {
             int start = aiResponse.indexOf("[TITLE:") + 7;
             int end = aiResponse.indexOf("]", start);
-            title = aiResponse.substring(start, end);
+            if (end != -1) {
+                title = aiResponse.substring(start, end);
+            }
         }
 
         // AI 분석 및 임시 PDF 생성 (기존 로직)
@@ -155,7 +157,7 @@ public class ReportService {
             return title + "보고서 생성이 완료되었습니다! 보고서 목록에서 확인해주세요.";
 
         } catch (Exception e) {
-            throw new RuntimeException("보고서 생성 실패: " + e.getMessage());
+            throw new RuntimeException("보고서 생성 실패: " + e.getMessage(), e);
         } finally {
             // 서버에 남은 임시 PDF 삭제
             if (tempFile.exists()) {

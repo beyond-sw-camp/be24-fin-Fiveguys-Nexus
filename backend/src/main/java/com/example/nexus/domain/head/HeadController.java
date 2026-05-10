@@ -51,4 +51,38 @@ public class HeadController {
         List<HeadIncomeDto.ListRes> result = headIncomeService.getIncomeList(storeName, status, startDate, endDate);
         return ResponseEntity.ok(BaseResponse.success(result));
     }
+
+    // 본사 정산 관리 - 상단 요약 카드 조회
+    @GetMapping("/settlement/summary")
+    public ResponseEntity<BaseResponse<HeadIncomeDto.HeadSettlementSummaryRes>> getSettlementSummary(
+            @AuthenticationPrincipal AuthUserDetails userDetails,
+            @RequestParam int year,
+            @RequestParam int month) {
+        if (userDetails == null) {
+            throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+
+        HeadIncomeDto.HeadSettlementSummaryRes result = headIncomeService.getSettlementSummary(year, month);
+
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
+
+    // 본사 정산 관리 - 가맹점별 정산 리스트 페이징 조회
+    @GetMapping("/settlement/list")
+    public ResponseEntity<BaseResponse<PageResponse<HeadIncomeDto.StoreSettlementRes>>> getStoreSettlementList(
+            @AuthenticationPrincipal AuthUserDetails userDetails,
+            @RequestParam(required = false, defaultValue = "") String storeName,
+            @RequestParam int year,
+            @RequestParam int month,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        if (userDetails == null) {
+            throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+
+        PageResponse<HeadIncomeDto.StoreSettlementRes> result =
+                headIncomeService.getStoreSettlementList(storeName, year, month, page, size);
+
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
 }

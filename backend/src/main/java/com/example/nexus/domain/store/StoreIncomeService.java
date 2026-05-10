@@ -61,7 +61,7 @@ public class StoreIncomeService {
                     List<PosOrdersItem> items = orderItemMap.getOrDefault(pay.getIdx(), List.of());
                     String menuNames = items.stream()
                             .map(item -> item.getMenu().getMenuName())
-                            .collect(Collectors.joining(" + "));
+                            .collect(Collectors.joining(" , "));
 
                     return StoreIncomeDto.PayHistoryRes.builder()
                             .posPayIdx(pay.getIdx())

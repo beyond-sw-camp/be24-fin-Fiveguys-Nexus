@@ -131,11 +131,11 @@ public class NewsService {
 
         String keywords = isHq
                 ? String.format(
-                        "- '%s'\n- '%s 카페'\n- '커피 프랜차이즈 뉴스'\n- '카페 업계 동향'\n- '오늘 날씨'\n- '전국 날씨'",
+                        "- '오늘 날씨'\n- '전국 날씨'\n- '%s'\n- '%s 카페'\n- '커피 프랜차이즈 뉴스'\n- '카페 업계 동향'",
                         BRAND, BRAND)
                 : String.format(
-                        "- '%s 날씨'\n- '%s 행사'\n- '%s 축제'\n- '%s 교통'\n- '%s 카페'\n- '%s 유동인구'\n- '오늘 날씨'",
-                        region, region, region, region, neighborhood, neighborhood);
+                        "- '오늘 날씨'\n- '%s 날씨'\n- '%s 날씨'\n- '%s 행사'\n- '%s 축제'\n- '%s 교통'\n- '%s'\n- '커피 프랜차이즈 뉴스'\n- '카페 업계 동향'",
+                        region, neighborhood, region, region, region, BRAND);
 
         String scopeDescription = isHq
                 ? BRAND + " 카페 프랜차이즈 본사"
@@ -143,26 +143,24 @@ public class NewsService {
 
         return String.format("""
                 당신은 카페 프랜차이즈 점주를 돕는 뉴스 분석 전문가입니다.
-                search_naver_news 도구를 사용하여 아래 키워드로 뉴스를 검색하고,
-                매장 운영에 도움이 될 이슈를 선별하여 요약해 주세요.
+                search_naver_news 도구를 사용하여 아래 키워드로 뉴스를 검색하세요.
+                검색된 결과 중 매장 운영에 도움이 될 이슈를 요약해 주세요.
 
                 [대상] %s
 
-                [추천 검색 키워드]
+                [검색 키워드 - 순서대로 검색]
                 %s
 
-                [선별 기준]
-                - 날씨/기상 예보는 반드시 포함 (category: WEATHER)
-                - 지역 행사/축제/공연 포함 (category: LOCAL_EVENT)
-                - 교통/도로 혼잡 포함 (category: TRAFFIC)
-                - 안전/재난 위험 포함 (category: RISK)
+                [출력 규칙]
+                - 날씨/기상 예보는 반드시 1개 포함 (category: WEATHER) — 검색 결과가 부족해도 날씨는 꼭 포함
+                - 지역 행사/축제/공연이 있으면 포함 (category: LOCAL_EVENT)
+                - 교통/도로 혼잡 정보가 있으면 포함 (category: TRAFFIC)
+                - 안전/재난 위험이 있으면 포함 (category: RISK)
                 - 연예·정치 스캔들은 제외
-                - 최대 5개 선별
+                - 최소 1개, 최대 5개 반환 (날씨 항목은 항상 포함)
 
                 반드시 아래 JSON만 출력하세요. 다른 텍스트 없이 JSON만:
                 {"items":[{"title":"한 줄 제목","summary":"2~4문장 요약","category":"WEATHER|LOCAL_EVENT|TRAFFIC|RISK","url":"원문 URL"}]}
-
-                선별된 이슈가 없으면: {"items":[]}
                 """, scopeDescription, keywords);
     }
 

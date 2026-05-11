@@ -10,7 +10,7 @@
         </div>
         <!-- Blue/Green 배포 테스트용 (검증 후 제거) -->
         <div class="text-center py-4">
-          <span class="text-7xl font-black text-green-500 tracking-widest drop-shadow-lg">GREEN</span>
+          <span class="text-7xl font-black text-blue-500 tracking-widest drop-shadow-lg">BLUE</span>
         </div>
 
         <div>

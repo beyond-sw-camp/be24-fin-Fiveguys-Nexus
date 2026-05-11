@@ -8,11 +8,6 @@
           <div class="w-9 h-9 bg-[#F37321] flex items-center justify-center text-white font-black text-base">H</div>
           <span class="text-2xl font-bold tracking-tight text-gray-900">HANWHA <span class="font-light">Nexus</span></span>
         </div>
-        <!-- Blue/Green 배포 테스트용 (검증 후 제거) -->
-        <div class="text-center py-4">
-          <span class="text-7xl font-black text-blue-500 tracking-widest drop-shadow-lg">BLUE</span>
-        </div>
-
         <div>
           <h1 class="text-4xl font-black text-gray-900 leading-tight tracking-tight">
             유통 관리<br/>통합 플랫폼

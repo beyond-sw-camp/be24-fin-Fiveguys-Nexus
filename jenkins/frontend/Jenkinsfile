@@ -90,9 +90,10 @@ spec:
                             returnStdout: true
                         ).trim()
 
-                        // 3) 비활성 슬롯에 새 이미지 배포
+                        // 3) 비활성 슬롯에 새 이미지 설정 후 scale up
                         def newSlot = (currentSlot == 'blue') ? 'green' : 'blue'
                         sh "kubectl set image deployment/nexus-frontend-${newSlot} nexus-frontend=${IMAGE_REPO}:${BUILD_NUMBER}"
+                        sh "kubectl scale deployment/nexus-frontend-${newSlot} --replicas=1"
 
                         // 4) 새 pod가 Ready 상태가 될 때까지 대기
                         sh "kubectl rollout status deployment/nexus-frontend-${newSlot} --timeout=120s"
@@ -100,7 +101,10 @@ spec:
                         // 5) Service selector를 새 슬롯으로 전환 → 트래픽 즉시 이동
                         sh "kubectl patch svc nexus-frontend-service -p '{\"spec\":{\"selector\":{\"slot\":\"${newSlot}\"}}}'"
 
-                        echo "Switched traffic to ${newSlot} slot"
+                        // 6) 이전 슬롯 scale down
+                        sh "kubectl scale deployment/nexus-frontend-${currentSlot} --replicas=0"
+
+                        echo "Switched traffic to ${newSlot} slot, scaled down ${currentSlot}"
                     }
                 }
             }

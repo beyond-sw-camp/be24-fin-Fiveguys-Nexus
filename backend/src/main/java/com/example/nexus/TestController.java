@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController("deployTestController")
 public class TestController {
 
-    @GetMapping("/deploy-test")
+    @GetMapping("/api/deploy-test")
     public String test() {
         return "blue";
     }

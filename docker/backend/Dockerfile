@@ -4,10 +4,10 @@ RUN apk add --no-cache nodejs npm
 
 WORKDIR /app
 
-COPY mcp/naver-news /app/mcp
+COPY mcp/naver-news-search /app/mcp
 RUN cd /app/mcp && npm install --omit=dev
 
-COPY build/libs/*.jar app.jar
+COPY backend/build/libs/*.jar app.jar
 
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]

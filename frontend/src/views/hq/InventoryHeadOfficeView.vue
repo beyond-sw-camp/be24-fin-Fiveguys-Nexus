@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
-import { History } from 'lucide-vue-next'
+import { ChevronLeft, ChevronRight, History } from 'lucide-vue-next'
 import api from '@/api/headinventory'
 import InventoryStatusFilters from '@/components/inventory/InventoryStatusFilters.vue'
 import InventoryHeadTable from '@/components/inventory/InventoryHeadTable.vue'
@@ -20,6 +20,9 @@ const statusFilters = [
 ]
 
 const items = ref([])
+const currentPage = ref(0)
+const totalPages = ref(0)
+const PAGE_SIZE = 10
 const { totalStock, fifoLots, isExpiringSoon, hasExpiringSoonLot } = useInventoryCommon()
 
 const filteredItems = computed(() => {
@@ -57,13 +60,18 @@ function formatDate(value) {
   return date.toISOString().slice(0, 10)
 }
 
-async function fetchInventoryList() {
+async function fetchInventoryList(page = 0) {
   try {
-    const response = await api.getHeadInventoryList()
-    const inventoryList = response?.data
+    const response = await api.getHeadInventoryList(page, PAGE_SIZE)
+    const pageResult = response?.data?.result
+    const inventoryList = pageResult?.content
+    currentPage.value = Number(pageResult?.number ?? 0)
+    totalPages.value = Number(pageResult?.totalPages ?? 0)
     items.value = Array.isArray(inventoryList) ? inventoryList.map(toItem) : []
   } catch (error) {
     console.error('Failed to fetch inventory list:', error)
+    currentPage.value = 0
+    totalPages.value = 0
     items.value = []
   }
 }
@@ -125,6 +133,32 @@ onMounted(() => {
       :get-status-class="getStatusClass"
       @open-detail="openDetail"
     />
+
+    <div v-if="totalPages > 1" class="flex justify-center items-center gap-2 pt-2">
+      <button
+        class="p-2 rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+        :disabled="currentPage === 0"
+        @click="fetchInventoryList(currentPage - 1)"
+      >
+        <ChevronLeft class="w-4 h-4" />
+      </button>
+      <button
+        v-for="page in totalPages"
+        :key="page"
+        class="w-8 h-8 rounded text-sm font-semibold cursor-pointer"
+        :class="currentPage === page - 1 ? 'bg-[#F37321] text-white' : 'text-gray-500 hover:bg-gray-50'"
+        @click="fetchInventoryList(page - 1)"
+      >
+        {{ page }}
+      </button>
+      <button
+        class="p-2 rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+        :disabled="currentPage === totalPages - 1"
+        @click="fetchInventoryList(currentPage + 1)"
+      >
+        <ChevronRight class="w-4 h-4" />
+      </button>
+    </div>
 
     <InventoryDetailModal
       :item="detailItem"

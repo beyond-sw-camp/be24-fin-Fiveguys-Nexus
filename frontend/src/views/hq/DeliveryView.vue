@@ -4,7 +4,6 @@
       <h1 class="text-xl font-bold text-gray-900 tracking-tight">배송 관리</h1>
     </div>
 
-    <!-- 검색 & 날짜 필터 -->
     <div class="flex flex-wrap gap-3 items-center mt-2">
       <div class="relative w-full sm:w-80">
         <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -25,7 +24,7 @@
         <div class="relative w-32">
           <select
             v-model="selectedYear"
-            @change="fetchDeliveries"
+            @change="onFilterChange"
             class="bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-[#F37321] focus:border-[#F37321] outline-none block w-full p-2.5 cursor-pointer shadow-sm">
             <option value="">연도 전체</option>
             <option v-for="y in yearOptions" :key="y" :value="y">{{ y }}년</option>
@@ -34,7 +33,7 @@
         <div class="relative w-28">
           <select
             v-model="selectedMonth"
-            @change="fetchDeliveries"
+            @change="onFilterChange"
             class="bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-[#F37321] focus:border-[#F37321] outline-none block w-full p-2.5 cursor-pointer shadow-sm">
             <option value="">월 전체</option>
             <option v-for="m in 12" :key="m" :value="m">{{ m }}월</option>
@@ -43,7 +42,7 @@
         <div class="relative w-28">
           <select
             v-model="selectedDay"
-            @change="fetchDeliveries"
+            @change="onFilterChange"
             class="bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-[#F37321] focus:border-[#F37321] outline-none block w-full p-2.5 cursor-pointer shadow-sm">
             <option value="">일 전체</option>
             <option v-for="d in 31" :key="d" :value="d">{{ d }}일</option>
@@ -52,7 +51,6 @@
       </div>
     </div>
 
-    <!-- 상태 필터 버튼 -->
     <div class="flex gap-2 flex-wrap">
       <button
         v-for="f in statusFilters"
@@ -63,11 +61,9 @@
           ? 'bg-[#F37321] text-white border-[#F37321]'
           : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'">
         {{ f.label }}
-        <span class="ml-1 text-xs font-bold opacity-80">({{ countByStatus(f.value) }})</span>
       </button>
     </div>
 
-    <!-- 로딩 -->
     <div v-if="isLoading" class="bg-white border border-gray-200 py-16 text-center rounded-xl shadow-sm">
       <div class="flex flex-col items-center gap-3">
         <svg class="w-6 h-6 text-[#F37321] animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -78,7 +74,6 @@
       </div>
     </div>
 
-    <!-- 에러 -->
     <div v-else-if="fetchError" class="bg-red-50 border border-red-200 py-12 text-center rounded-xl">
       <p class="text-red-500 text-sm font-medium">데이터를 불러오는 데 실패했습니다.</p>
       <button
@@ -88,7 +83,6 @@
       </button>
     </div>
 
-    <!-- 배송 카드 목록 -->
     <div v-else-if="deliveries.length > 0" class="space-y-3">
       <div
         v-for="d in deliveries"
@@ -101,7 +95,6 @@
             : 'border-gray-200'
         ]">
 
-        <!-- 카드 헤더 -->
         <div
           class="px-5 py-3 border-b flex justify-between items-center"
           :class="d.statusEnum === 'DELAY' ? 'bg-red-50/60 border-red-200' : 'bg-gray-50/60 border-gray-100'">
@@ -116,7 +109,6 @@
           </span>
         </div>
 
-        <!-- 타임라인 -->
         <div class="px-5 py-4 flex items-start overflow-x-auto hide-scrollbar">
           <div v-for="(step, idx) in d.timeline" :key="idx" class="flex items-center">
             <div class="flex flex-col items-center">
@@ -125,7 +117,7 @@
                 :class="step.done
                   ? 'bg-[#F37321]'
                   : step.current
-                    ? 'bg-blue-500 ring-2 ring-blue-100'
+                    ? 'bg-red-700 ring-2 ring-red-700'
                     : 'bg-gray-200'">
               </div>
               <p
@@ -134,7 +126,7 @@
                 :class="step.done
                   ? 'text-gray-800'
                   : step.current
-                    ? 'text-blue-600'
+                    ? 'text-red-700'
                     : 'text-gray-400'">
                 {{ step.label }}
               </p>
@@ -148,7 +140,6 @@
           </div>
         </div>
 
-        <!-- 지연 사유 영역 -->
         <div v-if="d.statusEnum === 'DELAY'" class="px-5 pb-4 pt-1">
           <div
             v-if="d.delayReason"
@@ -167,16 +158,42 @@
             지연 사유를 입력해 주세요.
           </div>
         </div>
-
       </div>
     </div>
 
-    <!-- 빈 결과 -->
     <div v-else class="bg-white border border-gray-200 py-16 text-center rounded-xl shadow-sm">
       <p class="text-gray-400 text-sm">해당 조건에 일치하는 배송 건이 없습니다.</p>
     </div>
 
-    <!-- 지연 사유 입력 모달 -->
+    <div v-if="totalPages > 1" class="flex justify-center items-center gap-2 mt-6">
+      <button
+        @click="goToPage(currentPage - 1)"
+        :disabled="currentPage === 0"
+        class="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-width="2"/></svg>
+      </button>
+
+      <div class="flex gap-1">
+        <button
+          v-for="p in totalPages"
+          :key="p"
+          @click="goToPage(p - 1)"
+          class="w-9 h-9 text-sm font-semibold rounded-lg transition-colors"
+          :class="currentPage === p - 1
+            ? 'bg-[#F37321] text-white'
+            : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'">
+          {{ p }}
+        </button>
+      </div>
+
+      <button
+        @click="goToPage(currentPage + 1)"
+        :disabled="currentPage === totalPages - 1"
+        class="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-width="2"/></svg>
+      </button>
+    </div>
+
     <div
       v-if="isModalOpen"
       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
@@ -210,42 +227,33 @@
             <textarea
               v-model="delayReasonText"
               class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:border-red-400 focus:ring-4 focus:ring-red-100 min-h-[120px] resize-none transition-all"
-              placeholder="배송 지연 사유를 상세히 입력해 주세요&#10;(예: 기상 악화로 인한 배송 지연, 교통 체증 등)"
+              placeholder="배송 지연 사유를 상세히 입력해 주세요"
             ></textarea>
           </div>
         </div>
 
         <div class="px-6 py-4 bg-gray-50 flex justify-end gap-2 border-t border-gray-100">
-          <button
-            @click="closeModal"
-            :disabled="isSaving"
-            class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-semibold transition-colors cursor-pointer disabled:opacity-50">
-            취소
-          </button>
+          <button @click="closeModal" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-semibold cursor-pointer">취소</button>
           <button
             @click="saveDelayReason"
             :disabled="isSaving || !delayReasonText.trim()"
-            class="px-5 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm font-semibold transition-colors shadow-sm cursor-pointer disabled:opacity-50 flex items-center gap-2">
-            <svg
-              v-if="isSaving"
-              class="w-4 h-4 animate-spin"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-            </svg>
+            class="px-5 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm font-semibold transition-colors shadow-sm cursor-pointer disabled:opacity-50">
             {{ isSaving ? '저장 중...' : '사유 저장' }}
           </button>
         </div>
       </div>
     </div>
+    <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { getAllDeliveries, updateDelayReason } from '@/api/delivery'
+import Toast from '@/components/common/Toast.vue'
+import { useToast } from '@/composables/useToast'
+
+const { toast, showToast } = useToast()
 
 // 상태
 const deliveries   = ref([])
@@ -257,6 +265,11 @@ const selectedYear  = ref('')
 const selectedMonth = ref('')
 const selectedDay   = ref('')
 
+// 페이징 상태 (추가)
+const currentPage = ref(0)
+const totalPages = ref(0)
+const pageSize = ref(10)
+
 const isModalOpen      = ref(false)
 const selectedDelivery = ref(null)
 const delayReasonText  = ref('')
@@ -264,7 +277,6 @@ const isSaving         = ref(false)
 
 let searchDebounceTimer = null
 
-// DeliveryStatus enum 매핑, 백엔드 DeliveryStatus.name() 기준
 const STATUS_LABEL_MAP = {
   READY:       '출고대기',
   START:       '출고중',
@@ -273,7 +285,6 @@ const STATUS_LABEL_MAP = {
   DELAY:       '지연',
 }
 
-// 상태 필터 버튼 목록
 const statusFilters = [
   { value: '',           label: '전체'    },
   { value: 'READY',      label: '출고 대기' },
@@ -283,60 +294,32 @@ const statusFilters = [
   { value: 'DELAY',      label: '지연'     },
 ]
 
-// 연도 옵션 (현재 연도 기준 최근 3년)
 const yearOptions = computed(() => {
   const cur = new Date().getFullYear()
   return [cur, cur - 1, cur - 2]
 })
 
-// LocalDateTime 문자열 포맷, 백엔드 응답: "2026-04-13T08:30:00" -> "2026-04-13 08:30"
 function formatDatetime(val) {
   if (!val) return null
   return String(val).replace('T', ' ').substring(0, 16)
 }
 
-// DeliveryDto -> 프론트엔드 포맷 매핑
+// DTO 맵핑 로직 (기존과 동일)
 function mapDelivery(dto) {
   const statusEnum  = dto.deliveryStatus
   const statusLabel = STATUS_LABEL_MAP[statusEnum] || statusEnum
+  const departureFormatted = formatDatetime(dto.departureDate)
+  const estimatedFormatted = formatDatetime(dto.estimatedArrivalAt)
+  const deliveredFormatted = formatDatetime(dto.deliveredDate)
 
-  const departureFormatted      = formatDatetime(dto.departureDate)
-  const estimatedFormatted      = formatDatetime(dto.estimatedArrivalAt)
-  const deliveredFormatted      = formatDatetime(dto.deliveredDate)
-
-  // 타임라인 스텝별 완료/현재 여부
-  // 순서: READY -> START -> DELIVERYING -> DELIVERED
-  // DELAY는 DELIVERYING 단계에서 발생한 것으로 처리
   const ORDER = ['READY', 'START', 'DELIVERYING', 'DELIVERED']
-  const currentIdx = statusEnum === 'DELAY'
-    ? 2  // DELIVERYING 위치에서 지연
-    : ORDER.indexOf(statusEnum)
+  const currentIdx = statusEnum === 'DELAY' ? 2 : ORDER.indexOf(statusEnum)
 
   const timeline = [
-    {
-      label:   '출고 대기',
-      time:    departureFormatted ? `${departureFormatted} 이전` : '-',
-      done:    currentIdx > 0,
-      current: currentIdx === 0,
-    },
-    {
-      label:   '출고 완료',
-      time:    departureFormatted || '-',
-      done:    currentIdx > 1,
-      current: currentIdx === 1,
-    },
-    {
-      label:   statusEnum === 'DELAY' ? '배송 지연' : '배송 중',
-      time:    statusEnum === 'DELAY' ? '지연 발생' : (estimatedFormatted ? `도착 예정 ${estimatedFormatted}` : '-'),
-      done:    currentIdx > 2,
-      current: currentIdx === 2,
-    },
-    {
-      label:   '입고 완료',
-      time:    deliveredFormatted || (estimatedFormatted ? `예정 ${estimatedFormatted}` : '예정'),
-      done:    statusEnum === 'DELIVERED',
-      current: false,
-    },
+    { label: '출고 대기', time: departureFormatted ? `${departureFormatted} 이전` : '-', done: currentIdx > 0, current: currentIdx === 0 },
+    { label: '출고 완료', time: departureFormatted || '-', done: currentIdx > 1, current: currentIdx === 1 },
+    { label: statusEnum === 'DELAY' ? '배송 지연' : '배송 중', time: statusEnum === 'DELAY' ? '지연 발생' : (estimatedFormatted ? `도착 예정 ${estimatedFormatted}` : '-'), done: currentIdx > 2, current: currentIdx === 2 },
+    { label: '입고 완료', time: deliveredFormatted || (estimatedFormatted ? `예정 ${estimatedFormatted}` : '예정'), done: statusEnum === 'DELIVERED', current: false },
   ]
 
   return {
@@ -350,21 +333,28 @@ function mapDelivery(dto) {
   }
 }
 
-// API 호출
+// API 호출 (페이징 반영)
 async function fetchDeliveries() {
   isLoading.value  = true
   fetchError.value = false
 
   try {
-    const params = {}
+    const params = {
+      page: currentPage.value,
+      size: pageSize.value
+    }
     if (searchQuery.value.trim()) params.storeName = searchQuery.value.trim()
     if (filterStatus.value)       params.status    = filterStatus.value
     if (selectedYear.value)       params.year      = Number(selectedYear.value)
     if (selectedMonth.value)      params.month     = Number(selectedMonth.value)
     if (selectedDay.value)        params.day       = Number(selectedDay.value)
 
-    const { data } = await getAllDeliveries(params)
-    deliveries.value = (data || []).map(mapDelivery)
+    const res = await getAllDeliveries(params)
+    // 백엔드 응답 구조: res.data.result (DeliveryPageRes)
+    const result = res.data.result
+
+    deliveries.value = (result.deliveryList || []).map(mapDelivery)
+    totalPages.value = result.totalPage
   } catch (err) {
     console.error('[DeliveryView] 배송 목록 조회 실패:', err)
     fetchError.value = true
@@ -373,25 +363,32 @@ async function fetchDeliveries() {
   }
 }
 
-// 검색어 디바운스
+// 검색 및 필터 변경 시 첫 페이지로 리셋
 function onSearchInput() {
   clearTimeout(searchDebounceTimer)
-  searchDebounceTimer = setTimeout(fetchDeliveries, 400)
+  searchDebounceTimer = setTimeout(() => {
+    currentPage.value = 0
+    fetchDeliveries()
+  }, 400)
 }
 
-// 상태 필터 클릭
-function onStatusFilter(value) {
-  filterStatus.value = value
+function onFilterChange() {
+  currentPage.value = 0
   fetchDeliveries()
 }
 
-// 상태별 카운트 (현재 로드된 목록 기준)
-function countByStatus(value) {
-  if (!value) return deliveries.value.length
-  return deliveries.value.filter(d => d.statusEnum === value).length
+function onStatusFilter(value) {
+  filterStatus.value = value
+  currentPage.value = 0
+  fetchDeliveries()
 }
 
-// 상태별 배지 스타일
+// 페이지 이동 함수
+function goToPage(page) {
+  currentPage.value = page
+  fetchDeliveries()
+}
+
 function statusClass(statusEnum) {
   const map = {
     READY:       'bg-gray-100 text-gray-600 border border-gray-200',
@@ -403,7 +400,6 @@ function statusClass(statusEnum) {
   return map[statusEnum] || 'bg-gray-100 text-gray-500 border border-gray-200'
 }
 
-// 모달 제어
 function openModal(delivery) {
   selectedDelivery.value = delivery
   delayReasonText.value  = delivery.delayReason || ''
@@ -416,45 +412,34 @@ function closeModal() {
   delayReasonText.value  = ''
 }
 
+// 지연 사유 저장 (API 명세에 맞춰 dto 객체로 전달)
 async function saveDelayReason() {
   if (!selectedDelivery.value || !delayReasonText.value.trim()) return
 
   isSaving.value = true
   try {
-    await updateDelayReason(
-      selectedDelivery.value.deliveryIdx,
-      delayReasonText.value.trim()
-    )
+    // 컨트롤러가 @RequestBody DeliveryDto.DelayReasonRequest를 받으므로 객체로 전달
+    await updateDelayReason({
+      deliveryIdx: selectedDelivery.value.deliveryIdx,
+      delayReason: delayReasonText.value.trim()
+    })
 
-    // 로컬 상태 즉시 반영 (재조회 없이 UX 개선)
-    const target = deliveries.value.find(
-      d => d.deliveryIdx === selectedDelivery.value.deliveryIdx
-    )
-    if (target) {
-      target.delayReason = delayReasonText.value.trim()
-    }
+    showToast('지연 사유가 저장되었습니다.', 'success')
+
+    // 로컬 상태 즉시 반영
+    const target = deliveries.value.find(d => d.deliveryIdx === selectedDelivery.value.deliveryIdx)
+    if (target) target.delayReason = delayReasonText.value.trim()
 
     closeModal()
   } catch (err) {
     console.error('[DeliveryView] 지연 사유 저장 실패:', err)
-    alert('지연 사유 저장에 실패했습니다. 다시 시도해 주세요.')
+    showToast('지연 사유 저장에 실패했습니다.', 'error')
   } finally {
     isSaving.value = false
   }
 }
 
-// 초기 로드
 onMounted(() => {
   fetchDeliveries()
 })
 </script>
-
-<style scoped>
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-</style>

@@ -10,4 +10,4 @@ export const readCategoryList = () =>
 
 // 삭제
 export const deleteCategory = (idx) =>
-  api.delete(`/category/delete/${idx}`)
+  api.delete(`/category/delete`, { data: { idx: idx }})

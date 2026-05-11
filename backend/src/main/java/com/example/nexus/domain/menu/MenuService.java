@@ -59,18 +59,6 @@ public class MenuService {
         return null;
     }
 
-    @Transactional(readOnly = true)
-    public List<MenuDto.MenuCategoryRes> menucategory() {
-        List<MenuCategory> res = menuCategoryRepository.findAll();
-        List<MenuDto.MenuCategoryRes> result = new ArrayList<>();
-
-        for (MenuCategory data: res){
-            result.add(MenuDto.MenuCategoryRes.from(data));
-        }
-        return result;
-    }
-
-
     public Map<String, String> getPresignedUrl(String fileName) {
         // 1. 경로 및 고유 파일명 생성 (기존 로직 유지)
         String path = createPath(fileName);
@@ -104,6 +92,7 @@ public class MenuService {
         String newFilePath = dto.getImgPath();
 
         try {
+            // 메뉴명 존재 확인
             if (menuRepository.existsByMenuName(dto.getMenuName())) {
                 throw new BaseException(DUPLICATE_MENU_NAME);
             }
@@ -127,9 +116,8 @@ public class MenuService {
             menuRepository.save(menu);
 
         } catch (Exception e) {
-            // 4. 예외 발생 시 S3 롤백 삭제
             // 등록 중 에러가 나면 DB는 롤백되지만, 이미 업로드된 파일은 좀비가 되므로 삭제 처리
-            if (newFilePath != null && !newFilePath.isEmpty()) {
+            if (newFilePath != null && !newFilePath.isEmpty() && !"theVenti_logo.png".equals(newFilePath)) {
                 try {
                     deleteS3Object(newFilePath);
                 } catch (Exception ignored) {
@@ -137,7 +125,7 @@ public class MenuService {
                 }
             }
 
-            // 5. 예외 다시 던지기
+            // 예외 다시 던지기
             if (e instanceof BaseException) throw (BaseException) e;
             throw new RuntimeException(e);
         }
@@ -148,6 +136,7 @@ public class MenuService {
     public void menuUpdate(Long menuIdx, MenuDto.MenuRegReq dto) {
         String newFilePath = dto.getImgPath();
         String oldFilePath = "";
+        String defaultImage = "theVenti_logo.png";
 
         try{
             Menu menu = menuRepository.findByIdxAndIsDeletedFalse(menuIdx)
@@ -164,15 +153,16 @@ public class MenuService {
                 throw new BaseException(DUPLICATE_MENU_NAME);
             }
 
-
             // 제품 조회
             List<Long> productIds = Optional.ofNullable(dto.getMenuItemList()).orElseGet(Collections::emptyList).stream()
                     .map(MenuDto.MenuItemReq::getProductIdx).toList();
             List<Product> products = productRepository.findAllById(productIds);
 
-            // 4. [S3 관리 로직] 커밋 직전에 등록
             // 새 파일이 들어왔고, 기존 파일과 다를 경우에만 동기화 등록
-            if (newFilePath != null && !newFilePath.equals(oldFilePath) && oldFilePath != null && !oldFilePath.isBlank()) {
+            if (newFilePath != null && !newFilePath.equals(oldFilePath)
+                    && oldFilePath != null && !oldFilePath.isBlank()
+                    && !oldFilePath.equals(defaultImage)) { // 기존 파일이 기본 로고가 아닐 때만 삭제 등록
+
                 String finalOldFile = oldFilePath;
                 TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                     @Override
@@ -182,7 +172,6 @@ public class MenuService {
                 });
             }
 
-            // 메뉴 업데이트
             menu.update(dto.getMenuName(), dto.getPrice(), dto.getImgPath(), category);
 
             // 해당 메뉴에 재료 리스트(MenuItem) 비우기
@@ -193,19 +182,22 @@ public class MenuService {
 
             for (MenuDto.MenuItemReq itemReq : Optional.ofNullable(dto.getMenuItemList()).orElseGet(Collections::emptyList)) {
                 Product product = productMap.get(itemReq.getProductIdx());
+
+                // 상품 찾아보기
                 if (product == null) throw new BaseException(NOT_FOUND_PRODUCT);
 
-                // 기존에 잘 만들어둔 toEntity를 그대로 활용합니다!
                 MenuItem newItem = itemReq.toEntity(menu, product);
                 menu.getMenuItemList().add(newItem);
             }
 
         }catch (Exception e) {
-            if (newFilePath != null && !newFilePath.isEmpty() && !newFilePath.equals(oldFilePath)) {
+            if (newFilePath != null && !newFilePath.isEmpty()
+                    && !newFilePath.equals(oldFilePath)
+                    && !newFilePath.equals(defaultImage)) { // 새 파일이 기본 로고가 아닐 때만 롤백 삭제
+
                 try {
                     deleteS3Object(newFilePath);
                 } catch (Exception ignored) {
-                    // 롤백 중 S3 삭제 실패는 무시하여 원래 예외를 보존합니다.
                 }
             }
 
@@ -235,5 +227,48 @@ public class MenuService {
                 .orElseThrow(() -> new BaseException(NOT_FOUND_MENU));
 
         menu.deleteTrue();
+    }
+
+    @Transactional(readOnly = true)
+    public List<MenuDto.MenuCategoryRes> menucategory() {
+        List<MenuCategory> res = menuCategoryRepository.findAllByIsDeletedFalse();
+        List<MenuDto.MenuCategoryRes> result = new ArrayList<>();
+
+        for (MenuCategory data: res){
+            result.add(MenuDto.MenuCategoryRes.from(data));
+        }
+        return result;
+    }
+
+    @Transactional
+    public void menucategoryReg(MenuDto.MenuCategoryRegReq dto) {
+        Optional<MenuCategory> existing = menuCategoryRepository.findByMenuCategoryName(dto.getMenuCategoryName());
+
+        if (existing.isPresent()) {
+            MenuCategory category = existing.get();
+            // 존재 여부 확인
+            if (!category.isDeleted()) {
+                throw new BaseException(DUPLICATE_CATEGORY_NAME);
+            }
+            category.recategory();
+        } else {
+            menuCategoryRepository.save(MenuCategory.builder()
+                    .menuCategoryName(dto.getMenuCategoryName())
+                    .build());
+        }
+    }
+
+    @Transactional
+    public void menuCategoryDelete(Long categoryIdx) {
+        // 카테고리 존재 여부
+        MenuCategory category = menuCategoryRepository.findById(categoryIdx)
+                .orElseThrow(() -> new BaseException(NOT_FOUND_CATEGORY));
+
+        // 메뉴에서 현재 카테고리 사용 여부 확인
+        if (menuRepository.existsByMenuCategoryIdxAndIsDeletedFalse(categoryIdx)) {
+            throw new BaseException(CATEGORY_IN_USE);
+        }
+
+        category.deleteTrue();
     }
 }

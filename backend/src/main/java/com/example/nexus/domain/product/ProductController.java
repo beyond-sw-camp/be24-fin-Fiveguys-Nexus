@@ -5,6 +5,9 @@ import com.example.nexus.domain.product.model.ProductDto;
 import com.example.nexus.domain.user.model.AuthUserDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -28,9 +31,14 @@ public class ProductController {
 
     // 제품 목록으로 조회
     @GetMapping("/list")
-    public ResponseEntity<BaseResponse<List<ProductDto.ListRes>>> readProductList () {
-        List<ProductDto.ListRes> list = productService.findAllProduct();
-        return ResponseEntity.ok(BaseResponse.success(list));
+    public ResponseEntity<BaseResponse<ProductDto.ProductPageRes>> readProductList(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String categoryName) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        ProductDto.ProductPageRes result = productService.findAllProduct(pageable, categoryName);
+        return ResponseEntity.ok(BaseResponse.success(result));
     }
 
     // 기존 제품 수정
@@ -69,17 +77,19 @@ public class ProductController {
 
     // 가맹점 별 제품 조회
     @GetMapping("/store")
-    public ResponseEntity<BaseResponse<List<ProductDto.ListRes>>> getMyStoreProducts(
-            @AuthenticationPrincipal AuthUserDetails authUserDetails
+    public ResponseEntity<BaseResponse<Page<ProductDto.ListRes>>> getMyStoreProducts(
+            @AuthenticationPrincipal AuthUserDetails authUserDetails,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     ) {
         if (authUserDetails == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
         }
-
+        Pageable pageable = PageRequest.of(page, size);
         Long storeIdx = authUserDetails.getIdx();
 
-        List<ProductDto.ListRes> list = productService.findProductsByStore(storeIdx);
-        return ResponseEntity.ok(BaseResponse.success(list));
+        Page<ProductDto.ListRes> result = productService.findProductsByStore(storeIdx, pageable);
+        return ResponseEntity.ok(BaseResponse.success(result));
     }
 
     // 가맹점 별 제품 검색

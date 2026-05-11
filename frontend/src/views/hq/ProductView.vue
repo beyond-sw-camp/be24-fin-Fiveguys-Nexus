@@ -24,14 +24,14 @@
                    focus:border-[#F37321] focus:ring-1 focus:ring-[#F37321] outline-none transition-colors" />
         </div>
         <div class="flex gap-1.5 flex-wrap">
-          <button @click="selectedCategory = '전체'"
+          <button @click="changeCategory('전체')"
                   class="px-3 py-1.5 text-sm font-semibold border rounded-lg transition-colors shadow-sm cursor-pointer"
                   :class="selectedCategory === '전체'
               ? 'bg-[#F37321] text-white border-[#F37321]'
               : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'">
             전체
           </button>
-          <button v-for="cat in categories" :key="cat.idx" @click="selectedCategory = cat.categoryName"
+          <button v-for="cat in categories" :key="cat.idx" @click="changeCategory(cat.categoryName)"
                   class="px-3 py-1.5 text-sm font-semibold border rounded-lg transition-colors shadow-sm cursor-pointer"
                   :class="selectedCategory === cat.categoryName
               ? 'bg-[#F37321] text-white border-[#F37321]'
@@ -42,7 +42,7 @@
       </div>
 
       <!-- 제품 테이블 -->
-      <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+      <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
         <table class="w-full text-sm text-left">
           <thead>
           <tr class="border-b border-gray-200 bg-gray-50">
@@ -84,6 +84,33 @@
           </tr>
           </tbody>
         </table>
+
+        <!-- 페이징 -->
+        <div class="px-5 py-4 bg-white border-t border-gray-100 relative flex items-center justify-center">
+          <p class="absolute left-5 text-xs text-gray-500">
+            총 <span class="font-bold text-[#F37321]">{{ pageInfo.totalCount }}</span>개
+          </p>
+          <div class="flex gap-1">
+            <button @click="goToPage(pageInfo.currentPage - 1)"
+                    :disabled="pageInfo.currentPage === 0"
+                    class="p-2 rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors">
+              <ChevronLeft class="w-4 h-4" />
+            </button>
+            <button v-for="pNum in pageNumbers" :key="pNum"
+                    @click="goToPage(pNum - 1)"
+                    class="min-w-[32px] h-8 text-xs font-bold rounded border transition-colors cursor-pointer"
+                    :class="pageInfo.currentPage === (pNum - 1)
+                      ? 'bg-[#F37321] text-white border-[#F37321]'
+                      : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'">
+              {{ pNum }}
+            </button>
+            <button @click="goToPage(pageInfo.currentPage + 1)"
+                    :disabled="pageInfo.currentPage + 1 >= pageInfo.totalPage"
+                    class="p-2 rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors">
+              <ChevronRight class="w-4 h-4" />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -192,22 +219,30 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { Trash2, Search, Tag, Plus } from 'lucide-vue-next'
+import { Trash2, Search, Tag, Plus, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import { createCategory, readCategoryList, deleteCategory } from '@/api/category'
 import { getProductList, addNewProduct, updateProduct, deleteProduct, searchProduct } from '@/api/product'
 
 // --- 상태 관리 ---
 const categories = ref([])
-const products = ref([]) // 서버에서 받아올 제품 리스트
 const selectedCategory = ref('전체')
 const searchQuery = ref('')
 const newCategoryInput = ref('')
 const showCategoryModal = ref(false)
 const showModal = ref(false)
 
-// 제품 등록/수정용 폼 상태 (RegReq DTO 규격)
+// 페이징 정보 통합 관리
+const pageInfo = ref({
+  productList: [],
+  totalPage: 1,
+  totalCount: 0,
+  currentPage: 0,
+  currentSize: 10
+})
+
+// 제품 등록/수정용 폼 상태
 const form = ref({
-  idx: null, // 수정 시에만 존재
+  idx: null,
   productName: '',
   categoryIdx: null,
   productUnit: '',
@@ -217,20 +252,29 @@ const form = ref({
   dangerDays: ''
 })
 
-// --- 데이터 로딩 (Read) ---
+// --- 데이터 로딩 ---
 const fetchCategories = async () => {
   try {
-    const response = await readCategoryList()
-    categories.value = response.data
+    const res = await readCategoryList()
+    categories.value = res.data.result || []
   } catch (error) {
     console.error('카테고리 조회 실패:', error)
   }
 }
 
-const fetchProducts = async () => {
+// 응답 구조 .productList로 수정
+const fetchProducts = async (page = 0) => {
   try {
-    const response = await getProductList()
-    products.value = response.data
+    const categoryName = selectedCategory.value === '전체' ? null : selectedCategory.value
+
+    const res = await getProductList(page, 10, categoryName)
+
+    if (res.data.success) {
+      pageInfo.value = {
+        ...res.data.result,
+        currentSize: 10
+      }
+    }
   } catch (error) {
     console.error('제품 목록 조회 실패:', error)
   }
@@ -238,28 +282,59 @@ const fetchProducts = async () => {
 
 onMounted(() => {
   fetchCategories()
-  fetchProducts()
+  fetchProducts(0)
 })
 
-// --- 검색 기능 (Search API 연동) ---
-const handleSearch = async () => {
-  if (!searchQuery.value.trim()) {
-    await fetchProducts()
-    return
-  }
-  try {
-    const response = await searchProduct(searchQuery.value)
-    products.value = response.data
-  } catch (error) {
-    console.error('제품 검색 실패:', error)
-  }
+// --- 페이징 ---
+const pageNumbers = computed(() => {
+  const total = Math.max(1, pageInfo.value.totalPage)
+  return Array.from({ length: total }, (_, i) => i + 1)
+})
+
+// 조건 제거로 3페이지 이상 클릭 가능하도록 수정
+const goToPage = (page) => {
+  if (page < 0) return
+  fetchProducts(page)
 }
 
-// --- 카테고리 필터링 (클라이언트 사이드) ---
+// --- 검색 ---
+let searchDebounceTimer = null
+const handleSearch = async () => {
+  clearTimeout(searchDebounceTimer)
+  searchDebounceTimer = setTimeout(async () => {
+    selectedCategory.value = '전체'
+    if (!searchQuery.value.trim()) {
+      await fetchProducts(0)
+      return
+    }
+    try {
+      const res = await searchProduct(searchQuery.value)
+      if (res.data.success) {
+        const result = res.data.result || []
+        pageInfo.value = {
+          productList: result,
+          totalPage: 1,
+          totalCount: result.length,
+          currentPage: 0,
+          currentSize: 10
+        }
+      }
+    } catch (error) {
+      console.error('제품 검색 실패:', error)
+    }
+  }, 300)
+}
+
+
+const changeCategory = async (catName) => {
+  selectedCategory.value = catName
+  searchQuery.value = ''
+  await fetchProducts(0)
+}
+
+// 필터링 (화면 렌더링용)
 const filteredProducts = computed(() => {
-  return products.value.filter(p => {
-    return selectedCategory.value === '전체' || p.categoryName === selectedCategory.value
-  })
+  return pageInfo.value.productList || []
 })
 
 // --- 제품 관리 (C.U.D) ---
@@ -278,8 +353,6 @@ function openAddModal() {
 }
 
 function openEditModal(product) {
-  // ListRes 데이터를 RegReq 규격으로 매핑
-  // 카테고리 이름 대신 현재 등록된 카테고리 중 이름이 같은 것의 idx를 찾음
   const cat = categories.value.find(c => c.categoryName === product.categoryName)
   form.value = {
     idx: product.idx,
@@ -297,37 +370,34 @@ function openEditModal(product) {
 async function handleSaveProduct() {
   try {
     const dto = { ...form.value }
-    delete dto.idx // 등록/수정 요청 바디에서는 idx 제외 (경로 변수로 처리되거나 자동생성)
-
     if (form.value.idx) {
-      // 수정 (PUT)
-      await updateProduct(form.value.idx, dto)
-      alert('제품 정보가 수정되었습니다.')
+      await updateProduct(dto)
+      alert('제품이 수정되었습니다.')
     } else {
-      // 신규 등록 (POST)
       await addNewProduct(dto)
       alert('새 제품이 등록되었습니다.')
     }
     showModal.value = false
-    await fetchProducts() // 목록 새로고침
+    await fetchProducts(pageInfo.value.currentPage)
   } catch (error) {
     console.error('제품 저장 실패:', error)
     alert('저장 중 오류가 발생했습니다.')
   }
 }
 
+// deleteProduct({ idx }) 형태로 수정
 async function handleDeleteProduct(idx) {
   if (!confirm('이 제품을 삭제하시겠습니까?')) return
   try {
-    await deleteProduct(idx)
-    await fetchProducts()
+    await deleteProduct({ idx })
+    await fetchProducts(pageInfo.value.currentPage)
   } catch (error) {
     console.error('삭제 실패:', error)
     alert('삭제 중 오류가 발생했습니다.')
   }
 }
 
-// --- 카테고리 액션 (기존 코드 유지) ---
+// --- 카테고리 액션 ---
 async function addCategoryAction() {
   const name = newCategoryInput.value.trim()
   if (!name) return

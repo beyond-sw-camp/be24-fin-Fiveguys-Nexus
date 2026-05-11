@@ -1,10 +1,8 @@
 package com.example.nexus.domain.report.model;
 
+import com.example.nexus.domain.user.model.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -29,4 +27,18 @@ public class Report {
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_idx")
+    private User user;
+
+
+
+    @Builder
+    public Report(String title, String filePath, User user) {
+        this.reportTitle = title;
+        this.reportFilePath = filePath;
+        this.user = user;
+        this.createdAt = LocalDateTime.now(); // 생성 시간은 객체가 만들어질 때 자동으로 세팅!
+    }
 }

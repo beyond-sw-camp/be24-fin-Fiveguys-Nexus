@@ -8,6 +8,8 @@ import com.example.nexus.common.model.BaseResponseStatus;
 import com.example.nexus.domain.inventory.InventoryMovementService;
 import com.example.nexus.domain.inventory.model.InventoryMovementDto;
 import com.example.nexus.domain.delivery.DeliveryService;
+import com.example.nexus.domain.head.HeadIncomeRepository;
+import com.example.nexus.domain.head.model.HeadIncome;
 import com.example.nexus.domain.notification.HeadNotificationService;
 import com.example.nexus.domain.notification.StoreNotificationService;
 import com.example.nexus.domain.orders.model.*;
@@ -27,6 +29,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +48,7 @@ public class OrdersService {
     private final HeadNotificationService headNotificationService;
     private final StoreNotificationService storeNotificationService;
     private final DeliveryService deliveryService;
+    private final HeadIncomeRepository headIncomeRepository;
 
     // 자동 발주 제안 검색 조회 (AUTO + WAITING 상태 대상)
     // 매장명 키워드 검색 + 페이징 처리
@@ -97,7 +101,9 @@ public class OrdersService {
     // 기간, 키워드 조건으로 필터링 + 페이징 처리
     // 각 발주에 대해 같은 매장의 최근 N개월 평균 수량 계산
     public Page<DangerDto.DangerListRes> findDangerOrders(LocalDate startDate, LocalDate endDate, String keyword, Pageable pageable) {
-        Specification<Orders> spec = OrdersSpecification.isDangerTrue();
+        Specification<Orders> spec = OrdersSpecification.isDangerTrue()
+                .and(OrdersSpecification.statusIn(List.of(
+                        OrdersStatus.CONFIRMED, OrdersStatus.APPROVE, OrdersStatus.REJECT)));
 
         if (startDate != null) {
             spec = spec.and(OrdersSpecification.createdAfter(startDate));
@@ -151,7 +157,8 @@ public class OrdersService {
         List<Orders> dangerOrders = ordersRepository.findAllByIsDangerTrue();
 
         for (Orders orders : dangerOrders) {
-            int totalQty = orders.getOrdersItemList().stream().mapToInt(OrdersItem::getCount).sum();
+            List<OrdersItem> items = orders.getOrdersItemList() != null ? orders.getOrdersItemList() : Collections.emptyList();
+            int totalQty = items.stream().mapToInt(OrdersItem::getCount).sum();
 
             LocalDateTime since = orders.getCreatedAt().minusMonths(req.getPeriod());
 
@@ -178,6 +185,7 @@ public class OrdersService {
 
         applyOutboundForOrder(orders, "발주 승인(이상) ordersIdx=");
         orders.approve();
+        createHeadIncome(orders);
         deliveryService.startDeliveryByOrders(orders);
     }
 
@@ -202,8 +210,20 @@ public class OrdersService {
         for (Orders orders : confirmedOrders) {
             applyOutboundForOrder(orders, "발주 일괄승인 ordersIdx=");
             orders.approve();
+            createHeadIncome(orders);
             deliveryService.startDeliveryByOrders(orders);
         }
+    }
+
+    // 발주 승인 시 매출채권(HeadIncome) 생성
+    private void createHeadIncome(Orders orders) {
+        HeadIncome headIncome = new HeadIncome();
+        headIncome.setPrice(orders.getPrice());
+        headIncome.setStatus(false);
+        headIncome.setSettlementIdx(null);
+        headIncome.setStore(orders.getStore());
+        headIncome.setOrders(orders);
+        headIncomeRepository.save(headIncome);
     }
 
     // 발주 승인 시 품목별 출고 처리 (재고 차감)
@@ -350,7 +370,8 @@ public class OrdersService {
         }
 
         // 이상 발주 재판정: 점주가 아이템을 수정했을 수 있으므로 확정 시점에 재평가
-        int totalQty = orders.getOrdersItemList().stream().mapToInt(OrdersItem::getCount).sum();
+        List<OrdersItem> items = orders.getOrdersItemList() != null ? orders.getOrdersItemList() : Collections.emptyList();
+        int totalQty = items.stream().mapToInt(OrdersItem::getCount).sum();
         boolean isDanger = evaluateDanger(store.getIdx(), totalQty, orders.getCreatedAt(), orders.getIdx());
         orders.markDanger(isDanger);
 

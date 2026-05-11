@@ -42,10 +42,12 @@ public class DashboardDto {
         private String status;
 
         public static DeliveryItem from(Delivery entity) {
+            var orders = entity.getOrders();
             return DeliveryItem.builder()
                     .deliveryIdx(entity.getIdx())
-                    .ordersIdx(entity.getOrders().getIdx())
-                    .storeName(entity.getOrders().getStore().getStoreName())
+                    .ordersIdx(orders != null ? orders.getIdx() : null)
+                    .storeName(orders != null && orders.getStore() != null
+                            ? orders.getStore().getStoreName() : null)
                     .status(entity.getDeliveryStatus().name())
                     .build();
         }

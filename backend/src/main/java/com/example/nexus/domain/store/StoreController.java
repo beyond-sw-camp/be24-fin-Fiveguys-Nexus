@@ -1,33 +1,50 @@
 package com.example.nexus.domain.store;
 
 import com.example.nexus.common.model.BaseResponse;
+import com.example.nexus.common.model.PageResponse;
 import com.example.nexus.domain.store.model.StoreDto;
+import com.example.nexus.domain.store.model.StoreIncomeDto;
 import com.example.nexus.domain.store.model.StoreInventoryDto;
+import com.example.nexus.domain.user.model.AuthUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
+
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @RequestMapping("/store")
 @RestController
 @RequiredArgsConstructor
 public class StoreController {
     private final StoreService storeService;
+    private final StoreIncomeService storeIncomeService;
+
 
     // [본사] 선택한 가맹점 store_idx로 재고 조회
     @GetMapping("/inventory/list/{storeIdx}")
-    public ResponseEntity<List<StoreInventoryDto.ListRes>> listByStoreIdx(@PathVariable Long storeIdx) {
+    public ResponseEntity<BaseResponse<PageResponse<StoreInventoryDto.ListRes>>> listByStoreIdx(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long storeIdx, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        if (userDetails == null) {
+            throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
+        }
 
-        List<StoreInventoryDto.ListRes> result = storeService.listByStoreIdx(storeIdx);
+        PageResponse<StoreInventoryDto.ListRes> result = storeService.listByStoreIdxPaged(storeIdx, page, size);
 
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(BaseResponse.success(result));
     }
 
     // [본사] keyword로 가맹점 검색
     @GetMapping("/search")
-    public ResponseEntity searchStore(@RequestParam(value = "keyword", required = false, defaultValue = "") String keyword) {
+    public ResponseEntity searchStore(@AuthenticationPrincipal UserDetails userDetails, @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword) {
+        if (userDetails == null) {
+            throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+
         StoreDto.StoreSearchReq reqDto = new StoreDto.StoreSearchReq(keyword);
 
         List<StoreDto.StoreSearchRes> result = storeService.searchByStoreName(reqDto);
@@ -43,6 +60,12 @@ public class StoreController {
             @RequestParam(defaultValue = "10") int size
     ){
         StoreDto.StorePageRes result = storeService.storeList(searchReq, page,size);
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
+
+    @GetMapping("/totalCount/list")
+    public ResponseEntity storeTotalList(){
+        StoreDto.StoreTotalRes result = storeService.storeTotalList();
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 
@@ -76,5 +99,25 @@ public class StoreController {
     public ResponseEntity storeUpdate(@PathVariable(name = "storeIdx") Long storeIdx, @RequestBody StoreDto.StoreUpdateReq dto){
         storeService.storeUpdate(storeIdx, dto);
         return ResponseEntity.ok(BaseResponse.success("성공"));
+    }
+
+    // 가맹점별 매출 정산 조회
+    @GetMapping("/income/settlement")
+    public ResponseEntity<BaseResponse<StoreIncomeDto.TotalSettlementRes>> getSettlement(
+            @AuthenticationPrincipal AuthUserDetails userDetails,
+            @RequestParam int year,
+            @RequestParam int month,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        if (userDetails == null) {
+            throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+
+        StoreIncomeDto.TotalSettlementRes result = storeIncomeService.getSettlementData(
+                userDetails.getIdx(), year, month, page, size
+        );
+
+        return ResponseEntity.ok(BaseResponse.success(result));
     }
 }

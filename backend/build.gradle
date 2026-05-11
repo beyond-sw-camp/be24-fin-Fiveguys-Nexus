@@ -50,9 +50,10 @@ dependencies {
 	// --- S3 관련 ---
 	implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3:3.4.2'
 
-	// --- Spring AI (OpenAI) ---
+	// --- Spring AI (OpenAI + MCP Client) ---
 	implementation platform('org.springframework.ai:spring-ai-bom:1.0.0-M6')
 	implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter'
+	implementation 'org.springframework.ai:spring-ai-mcp-client-spring-boot-starter'
 
 	// --- 크롤링 ---
 	implementation 'org.jsoup:jsoup:1.18.1'
@@ -61,6 +62,12 @@ dependencies {
 	implementation 'io.portone:server-sdk:0.23.0'
 
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+	// --- 보고서 ---
+	// 마크다운(Markdown)을 HTML로 바꿔주는 도구
+	implementation 'org.commonmark:commonmark:0.21.0'
+	// HTML을 PDF 파일로 구워주는 도구
+	implementation 'com.openhtmltopdf:openhtmltopdf-pdfbox:1.0.10'
 
 }
 

@@ -1,22 +1,17 @@
 package com.example.nexus.domain.settlement;
 
 import com.example.nexus.domain.head.HeadIncomeRepository;
-import com.example.nexus.domain.head.HeadIncomeService;
 import com.example.nexus.domain.head.model.HeadIncome;
 import com.example.nexus.domain.settlement.model.Settlement;
 import com.example.nexus.domain.settlement.model.SettlementDto;
 import com.example.nexus.domain.user.model.AuthUserDetails;
-import com.nimbusds.jose.shaded.gson.GsonBuilder;
-import com.nimbusds.jose.shaded.gson.ToNumberPolicy;
-import io.portone.sdk.server.payment.PaidPayment;
-import io.portone.sdk.server.payment.Payment;
-import io.portone.sdk.server.payment.PaymentClient;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -26,48 +21,54 @@ import java.util.concurrent.CompletableFuture;
 public class SettlementService {
 
     private final SettlementRepository settlementRepository;
-    private final PaymentClient pg;
     private final HeadIncomeRepository headIncomeRepository;
-    private final HeadIncomeService headIncomeService;
 
     @Transactional
-    public void verify(AuthUserDetails authUserDetails, SettlementDto.VerifyReq dto, YearMonth lastMonth) {
-        CompletableFuture<Payment> completableFuture = pg.getPayment(dto.getPaymentIdx());
-        Payment payment = completableFuture.join();
+    public void verify(AuthUserDetails authUserDetails, SettlementDto.VerifyReq dto, Long settlementIdx) {
+        // 테스트용: PortOne SDK 호출 생략하고 바로 정산 처리
+        // dto 에서 0이 들어옴
+        Settlement settlement = settlementRepository.findById(settlementIdx)
+                .orElseThrow(() -> new IllegalArgumentException("정산 정보를 찾을 수 없습니다."));
 
-        if (payment instanceof PaidPayment paidPayment) {
-            Map<String, Object> customData = new GsonBuilder()
-                    .setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE)
-                    .create().fromJson(paidPayment.getCustomData(), Map.class);
+        // 정산 금액 검증 (실제로는 PortOne 결제 금액과 비교)
+//        long totalPrice = headIncomeRepository.findBySettlementIdx(dto.getSettlementIdx())
+//                .stream()
+//                .mapToLong(HeadIncome::getPrice)
+//                .sum();
 
-            Long ordersIdx = Long.parseLong(customData.get("headIncomeIdx").toString());
-            Settlement settlement = settlementRepository.findById(ordersIdx).orElseThrow();
+        List<HeadIncome> headIncomePriceList = new ArrayList<>();
+        headIncomePriceList = headIncomeRepository.findBySettlementIdx(settlementIdx);
 
-            int totalPrice = 0;
-            List<HeadIncome> headIncomeList = headIncomeRepository.findBySettlementIdx(settlement.getIdx());
+        long totalPrice = 0;
 
-            for(HeadIncome headIncome : headIncomeList) {
-                totalPrice += headIncome.getPrice();
-            }
+        for (HeadIncome headIncome : headIncomePriceList) {
+            totalPrice += headIncome.getPrice();
+        }
 
 
-            if (paidPayment.getAmount().getTotal() == totalPrice) {
-                settlement.setPaid(true);
-                settlement.setPgPaymentId(dto.getPaymentIdx());
-                settlementRepository.save(settlement);
-            }
+        // 테스트용: 결제 금액이 정산 금액과 일치한다고 가정
 
+            settlement.setPaid(true);
+            settlement.setPgPaymentId(dto.getPaymentId());
+
+            // 관련 head_income도 status=true로 업데이트 (paid 상태로 표시)
+            List<HeadIncome> headIncomeList = headIncomeRepository.findBySettlementIdx(settlementIdx);
+            for (HeadIncome headIncome : headIncomeList) {
+                headIncome.setStatus(true);
+                headIncomeRepository.save(headIncome);
 
         }
+
+            
+
     }
 
-
+    @Transactional
     public Long pay(Long storeIdx, SettlementDto.PayReq dto) {
         YearMonth currentMonth = YearMonth.now();
-
         YearMonth lastMonth = currentMonth.minusMonths(1);
-
         String settlementYm = lastMonth.format(DateTimeFormatter.ofPattern("yyyy-MM"));
+
         Settlement settlement = Settlement.builder()
                 .paid(false)
                 .price(dto.getPaymentPrice())
@@ -80,10 +81,21 @@ public class SettlementService {
 
         for (Long idx : dto.getHeadIncomeidxList()) {
             HeadIncome headIncome = headIncomeRepository.findById(idx).orElse(null);
-            headIncome.setSettlementIdx(settlement.getIdx());
+            if (headIncome != null) {
+                headIncome.setSettlementIdx(settlement.getIdx());
+                headIncomeRepository.save(headIncome);
+            }
         }
 
         return settlement.getIdx();
     }
 
+    public Long findSettlementIdx(Long storeIdx, YearMonth lastMonth) {
+        Settlement settlement = settlementRepository.findByStoreIdxAndSettlementYm(storeIdx, lastMonth.toString()).orElse(null);
+        if (settlement != null) {
+            return settlement.getIdx();
+        } else {
+            return null;
+        }
+    }
 }

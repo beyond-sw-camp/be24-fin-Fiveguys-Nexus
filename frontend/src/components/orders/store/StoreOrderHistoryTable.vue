@@ -1,14 +1,25 @@
 <script setup>
+import { computed } from 'vue'
 import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import { ORDER_STATUS_LABEL, ORDER_TYPE_LABEL, storeStatusClass } from '../orderUtils'
 
-defineProps({
+const props = defineProps({
   orders: { type: Array, required: true },
   currentPage: { type: Number, default: 0 },
   totalPages: { type: Number, default: 0 },
 })
 
 const emit = defineEmits(['open-detail', 'cancel', 'page-change'])
+
+const visiblePages = computed(() => {
+  const range = 10
+  const group = Math.floor(props.currentPage / range)
+  const start = group * range
+  const end = Math.min(start + range, props.totalPages)
+  const pages = []
+  for (let i = start; i < end; i++) pages.push(i)
+  return pages
+})
 </script>
 
 <template>
@@ -72,13 +83,13 @@ const emit = defineEmits(['open-detail', 'cancel', 'page-change'])
       @click="emit('page-change', currentPage - 1)">
       <ChevronLeft class="w-4 h-4" />
     </button>
-    <button v-for="page in totalPages" :key="page"
+    <button v-for="page in visiblePages" :key="page"
       class="w-8 h-8 rounded text-sm font-semibold cursor-pointer"
-      :class="currentPage === page - 1
+      :class="currentPage === page
         ? 'bg-[#F37321] text-white'
         : 'text-gray-500 hover:bg-gray-50'"
-      @click="emit('page-change', page - 1)">
-      {{ page }}
+      @click="emit('page-change', page)">
+      {{ page + 1 }}
     </button>
     <button
       class="p-2 rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"

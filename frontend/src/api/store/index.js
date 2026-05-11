@@ -10,13 +10,17 @@ export const getStoreList = (searchReq, page, size) => {
     }
   });
 }
+
+export const getStoreTotal = () =>
+  api.get('/store/totalCount/list')
+
 export const getStoreDetailList = (storeIdx) => api.get(`/store/detail/list/${storeIdx}`)
 
 export const searchStoreList = (keyword = '') =>
   api.get('/store/search', { params: { keyword } })
 
-export const getStoreInventoryByStore = (storeIdx) =>
-  api.get(`/store/inventory/list/${storeIdx}`)
+export const getStoreInventoryByStore = (storeIdx, page = 0, size = 10) =>
+  api.get(`/store/inventory/list/${storeIdx}`, { params: { page, size } })
 
 export const getPresignedUrl = (fileName) =>
   api.get(`/store/presignedUrl/${fileName}`)
@@ -26,3 +30,10 @@ export const postNewRegister = (storeRegDto)=>
 
 export const putStoreUpdate = (storeIdx,updateData) =>
   api.put(`/store/update/${storeIdx}`,updateData)
+
+
+export const getSettlement = (year, month, page = 0, size = 10) =>
+  api.get('/store/income/settlement', { params: { year, month, page, size }})
+
+export const getOrderSettlement = (year, month, page = 0, size = 10) =>
+  api.get('/store/order/settlement', { params: { year, month, page, size }})

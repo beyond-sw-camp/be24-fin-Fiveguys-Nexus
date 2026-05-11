@@ -13,14 +13,19 @@ import java.util.List;
 import java.util.Optional;
 
 public interface StoreRepository extends JpaRepository<Store,Long> {
+    // 사용자 식별자(userIdx)로 가맹점 정보 조회
     Optional<Store> findByUserIdx(Long userIdx);
 
+    // 대소문자 구분 없이 가맹점명에 키워드가 포함된 목록 조회
     List<Store> findByStoreNameContainingIgnoreCase(String keyword);
 
+    // 유저 객체와 매칭되는 데이터 조회 (반환 타입 확인 필요)
     Long user(User user);
 
+    // 가맹점명으로 가맹점 정보 조회
     Optional<Store> findByStoreName(String storeName);
 
+    // 사업자 번호로 가맹점 정보 조회
     Optional<Store> findByBusiness(String business);
 
     // 전체 조회 시 이름 또는 주소 검색
@@ -29,19 +34,19 @@ public interface StoreRepository extends JpaRepository<Store,Long> {
             "ORDER BY s.isDeleted ASC, s.createdAt DESC")
     Page<Store> findByKeywordAll(@Param("keyword")String keyword, Pageable pageable);
 
-    // 특정 상태(isDeleted)이면서 이름 또는 주소 검색
+    // 특정 상태(isDeleted)에 따라서 이름 또는 주소 검색
     @Query("SELECT s FROM Store s WHERE s.isDeleted = :isDeleted AND " +
             "(s.storeName LIKE %:keyword% OR s.address LIKE %:keyword%) " +
             "ORDER BY s.createdAt DESC")
     Page<Store> findByStatusAndKeyword(@Param("isDeleted")boolean isDeleted, @Param("keyword") String keyword, Pageable pageable);
 
-    // ALL
+    // 정렬 조건이 포함된 가맹점 전체 목록 페이징 조회 (상태순 -> 최신 등록순)
     @Query("SELECT s FROM Store s ORDER BY s.isDeleted ASC, s.createdAt DESC")
     Page<Store> findAllCustom(Pageable pageable);
 
-    // 검색 없이 '입점'만 조회할 때: 최신 등록순 정렬[cite: 7]
+    // 검색 없이 '입점'만 조회할 때: 최신 등록순 정렬
     Page<Store> findByIsDeletedFalseOrderByCreatedAtDesc(Pageable pageable); // 입점(false)
-    // 검색 없이 '폐점'만 조회할 때: 최신 폐업일순 또는 등록순 정렬[cite: 7]
+    // 검색 없이 '폐점'만 조회할 때: 최신 폐업일순 또는 등록순 정렬
     Page<Store> findByIsDeletedTrueOrderByClosedAtDesc(Pageable pageable);
 
     // 본사 대시보드용 - 전체 매장 수 KPI 카드
@@ -52,4 +57,7 @@ public interface StoreRepository extends JpaRepository<Store,Long> {
 
     // 본사 대시보드용 - 이전 기간 매장 수 (증감률 계산)
     long countByIsDeletedFalseAndCreatedAtBefore(LocalDateTime until);
+
+    // 가맹점 폐점수 조회
+    long countByIsDeletedTrue();
 }

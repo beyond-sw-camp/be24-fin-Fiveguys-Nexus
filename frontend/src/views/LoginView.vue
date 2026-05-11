@@ -58,7 +58,7 @@
 
           <div class="space-y-1.5">
             <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">비밀번호</label>
-            <input v-model="form.password" type="text" placeholder="••••••••"
+            <input v-model="form.password" type="password" placeholder="••••••••"
               class="w-full px-3 py-2.5 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none transition-all"
               :class="{ 'border-red-400': error }" />
           </div>

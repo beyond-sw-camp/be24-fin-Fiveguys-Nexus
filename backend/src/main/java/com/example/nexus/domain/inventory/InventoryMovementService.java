@@ -15,10 +15,13 @@ import com.example.nexus.domain.store.StoreInventoryRepository;
 import com.example.nexus.domain.store.StoreRepository;
 import com.example.nexus.domain.store.model.Store;
 import com.example.nexus.domain.store.model.StoreInventory;
+import com.example.nexus.common.exception.BaseException;
+import com.example.nexus.common.model.BaseResponseStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.nexus.common.enums.InventoryStatus;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -37,11 +40,14 @@ public class InventoryMovementService {
     @Transactional
     public InventoryMovementDto.MovementRes inbound(InventoryMovementDto.InboundReq req) {
 
-        Product product = productRepository.findById(req.getProductIdx()).orElseThrow();
+        Product product = productRepository.findById(req.getProductIdx())
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_PRODUCT));
 
-        HeadInventory headInventory = headInventoryRepository.findByProductIdx(product.getIdx()).orElseThrow();
+        HeadInventory headInventory = headInventoryRepository.findByProductIdxForUpdate(product.getIdx())
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.HEAD_INVENTORY_NOT_FOUND));
 
         headInventory.setCount(headInventory.getCount() + req.getQuantity());
+        headInventory.setStatus(resolveStatus(headInventory.getCount(), product.getMinStock()));
 
         headInventoryRepository.save(headInventory);
 
@@ -58,13 +64,21 @@ public class InventoryMovementService {
     @Transactional
     public InventoryMovementDto.MovementRes outbound(InventoryMovementDto.OutboundReq req) {
 
-        Product product = productRepository.findById(req.getProductIdx()).orElseThrow();
+        Product product = productRepository.findById(req.getProductIdx())
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_PRODUCT));
 
-        Store store = storeRepository.findById(req.getStoreIdx()).orElseThrow();
+        Store store = storeRepository.findById(req.getStoreIdx())
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
 
-        HeadInventory headInventory = headInventoryRepository.findByProductIdx(product.getIdx()).orElseThrow();
+        HeadInventory headInventory = headInventoryRepository.findByProductIdxForUpdate(product.getIdx())
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.HEAD_INVENTORY_NOT_FOUND));
+
+        if (headInventory.getCount() < req.getQuantity()) {
+            throw new BaseException(BaseResponseStatus.STORE_INVENTORY_INSUFFICIENT);
+        }
 
         headInventory.setCount(headInventory.getCount() - req.getQuantity());
+        headInventory.setStatus(resolveStatus(headInventory.getCount(), product.getMinStock()));
         headInventoryRepository.save(headInventory);
 
         // 재고 부족 알림: 차감 후 최소 기준 이하이면 알림 발송 (당일 동일 제품 중복 방지)
@@ -94,6 +108,7 @@ public class InventoryMovementService {
                 InventoryStatus.NORMAL,
                 headInventory.getManufacturedDate(),
                 req.getQuantity(),
+                false,
                 store,
                 product
         );
@@ -117,5 +132,12 @@ public class InventoryMovementService {
         List<InventoryMovement> inventoryMovementList = inventoryMovementRepository.findAllWithProduct();
 
         return inventoryMovementList.stream().map(InventoryMovementDto.MovementListRes::from).toList();
+    }
+
+    private InventoryStatus resolveStatus(int count, int minStock) {
+        if (count <= 0) return InventoryStatus.CRITICAL;
+        if (count <= minStock / 2) return InventoryStatus.CRITICAL;
+        if (count <= minStock) return InventoryStatus.LOW;
+        return InventoryStatus.NORMAL;
     }
 }

@@ -35,8 +35,9 @@ public class HeadInventory {
     @Setter
     private Integer count;
 
+    @Setter
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+    @Column(name = "status", nullable = false, columnDefinition = "VARCHAR(20)")
     private InventoryStatus status = InventoryStatus.NORMAL;
 
     @Column(name = "manufactured_date", nullable = false)

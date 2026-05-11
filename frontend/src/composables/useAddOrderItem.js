@@ -2,7 +2,7 @@ import { ref } from 'vue'
 import ordersApi from '@/api/orders'
 import { getProductList } from '@/api/product'
 
-export function useAddOrderItem(fetchPendingOrders) {
+export function useAddOrderItem(fetchPendingOrders, showToast) {
   const addItemForm = ref(null)
   const productList = ref([])
 
@@ -10,8 +10,8 @@ export function useAddOrderItem(fetchPendingOrders) {
     addItemForm.value = { ordersIdx: order.idx, productIdx: null, productName: '', keyword: '', showDropdown: false, count: 1 }
     if (productList.value.length === 0) {
       try {
-        const res = await getProductList()
-        productList.value = res.data || []
+        const res = await getProductList(0, 1000)
+        productList.value = res.data.result.productList ?? []
       } catch (e) {
         console.error('상품 목록 조회 실패', e)
       }
@@ -38,8 +38,8 @@ export function useAddOrderItem(fetchPendingOrders) {
 
   async function submitAddItem(order) {
     const form = addItemForm.value
-    if (!form.productIdx) { alert('품목을 선택해주세요.'); return }
-    if (!form.count || form.count < 1) { alert('수량을 입력해주세요.'); return }
+    if (!form.productIdx) { showToast('품목을 선택해주세요.', 'error'); return }
+    if (!form.count || form.count < 1) { showToast('수량을 입력해주세요.', 'error'); return }
     try {
       await ordersApi.addStoreOrderItem(order.idx, {
         productIdx: form.productIdx,
@@ -49,7 +49,7 @@ export function useAddOrderItem(fetchPendingOrders) {
       fetchPendingOrders()
     } catch (e) {
       console.error('품목 추가 실패', e)
-      alert('품목 추가에 실패했습니다.')
+      showToast('품목 추가에 실패했습니다.', 'error')
     }
   }
 

@@ -23,18 +23,6 @@ const router = createRouter({
       meta: { role: 'ADMIN' },
     },
     {
-      path: '/statistics',
-      name: 'statistics',
-      component: () => import('@/views/hq/StatisticsView.vue'),
-      meta: { role: 'ADMIN' },
-    },
-    {
-      path: '/statistics/sales',
-      name: 'statisticsSales',
-      component: () => import('@/views/hq/SalesStatisticsView.vue'),
-      meta: { role: 'ADMIN' },
-    },
-    {
       path: '/statistics/esg',
       name: 'statisticsEsg',
       component: () => import('@/views/hq/EsgDashboardView.vue'),
@@ -149,6 +137,12 @@ const router = createRouter({
       path: '/store-settlement',
       name: 'storeSettlement',
       component: () => import('@/views/store/StoreSettlementView.vue'),
+      meta: { role: 'STORE_OWNER' },
+    },
+    {
+      path: '/store-payment-test',
+      name: 'storePaymentTest',
+      component: () => import('@/views/store/PaymentTestView.vue'),
       meta: { role: 'STORE_OWNER' },
     },
 

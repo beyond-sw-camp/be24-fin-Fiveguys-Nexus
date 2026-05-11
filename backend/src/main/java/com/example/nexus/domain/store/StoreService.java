@@ -1,12 +1,14 @@
 package com.example.nexus.domain.store;
 
 import com.example.nexus.common.exception.BaseException;
+import com.example.nexus.common.model.PageResponse;
 import com.example.nexus.domain.store.model.Store;
 import com.example.nexus.domain.store.model.StoreDto;
 import com.example.nexus.domain.store.model.StoreInventory;
 import com.example.nexus.domain.store.model.StoreInventoryDto;
 import com.example.nexus.domain.user.UserRepository;
 import com.example.nexus.domain.user.model.User;
+import com.example.nexus.domain.wastelog.model.WasteLog;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +23,8 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.YearMonth;
 import java.util.*;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
@@ -42,10 +46,38 @@ public class StoreService {
     @Value("${spring.cloud.aws.s3.store-bucket}")
     private String storeBucket;
 
+    @Transactional
+    public PageResponse<StoreInventoryDto.ListRes> listByStoreIdxPaged(Long storeIdx, int page, int size) {
+        storeRepository.findById(storeIdx)
+                .orElseThrow(() -> new BaseException(STORE_NOT_FOUND));
 
-    public List<StoreInventoryDto.ListRes> listByStoreIdx(Long storeIdx) {
-        List<StoreInventory> inventoryList = storeInventoryRepository.findByStoreIdx(storeIdx);
-        return inventoryList.stream().map(StoreInventoryDto.ListRes::from).toList();
+        storeInventoryRepository.bulkUpdateExpiryStatus();
+
+        Page<Long> productPage = storeInventoryRepository.findPagedProductIdsByStoreIdx(storeIdx, PageRequest.of(page, size));
+        List<Long> productIds = productPage.getContent();
+
+        List<StoreInventory> lots = storeInventoryRepository.findByStoreIdxAndProductIds(storeIdx, productIds);
+
+        Map<Long, Integer> productOrder = new HashMap<>();
+
+        for (int i = 0; i < productIds.size(); i++) {
+            productOrder.put(productIds.get(i), i);
+        }
+
+        List<StoreInventoryDto.ListRes> content = lots.stream()
+                .map(StoreInventoryDto.ListRes::from)
+                .sorted(Comparator
+                        .comparingInt((StoreInventoryDto.ListRes dto) -> productOrder.getOrDefault(dto.getProductIdx(), Integer.MAX_VALUE))
+                        .thenComparing(StoreInventoryDto.ListRes::getManufacturedDate))
+                .toList();
+
+        return PageResponse.<StoreInventoryDto.ListRes>builder()
+                .content(content)
+                .number(productPage.getNumber())
+                .size(productPage.getSize())
+                .totalPages(productPage.getTotalPages())
+                .totalElements(productPage.getTotalElements())
+                .build();
     }
 
     @Transactional(readOnly = true)
@@ -73,10 +105,22 @@ public class StoreService {
         return StoreDto.StorePageRes.from(result);
     }
 
+    // 리스트 total 리스트
+    @Transactional(readOnly = true)
+    public StoreDto.StoreTotalRes storeTotalList() {
+        Long activeCount = storeRepository.countByIsDeletedFalse();
+        Long closedCount = storeRepository.countByIsDeletedTrue();
+
+        return StoreDto.StoreTotalRes.builder()
+                .totalCount(activeCount+closedCount)
+                .activeCount(activeCount)
+                .closedCount(closedCount)
+                .build();
+    }
+
     public List<StoreDto.StoreSearchRes> searchByStoreName(StoreDto.StoreSearchReq reqDto) {
-        String keyword = reqDto.getKeyword();
-        String searchKeyword = keyword.trim();
-        List<Store> res = storeRepository.findByStoreNameContainingIgnoreCase(searchKeyword);
+        String keyword = reqDto.getKeyword() != null ? reqDto.getKeyword().trim() : "";
+        List<Store> res = storeRepository.findByStoreNameContainingIgnoreCase(keyword);
 
         return res.stream().map(StoreDto.StoreSearchRes::from).toList();
     }
@@ -245,4 +289,39 @@ public class StoreService {
     public Long findStoreIdx(Long userIdx) {
         return storeRepository.findByUserIdx(userIdx).orElse(null).getIdx();
     }
+
+    // 모든 재고 조회
+    public List<StoreInventoryDto.ListRes> findAllStoreInventory() {
+        List<StoreInventory> storeInventoryList = storeInventoryRepository.findAll();
+        List<StoreInventoryDto.ListRes> resList = new ArrayList<>();
+        for (StoreInventory storeInventory : storeInventoryList) {
+            resList.add(StoreInventoryDto.ListRes.from(storeInventory));
+        }
+        return resList;
+    }
+
+    public Float countUseWarnedProductBeforeDueDate(YearMonth inputYearMonth) {
+
+        LocalDateTime startDateTime = inputYearMonth.atDay(1).atStartOfDay();
+
+        LocalDateTime endDateTime = inputYearMonth.atEndOfMonth().atTime(LocalTime.MAX);
+        List<StoreInventory> logs = storeInventoryRepository.findAllByManufacturedDateBetween(startDateTime, endDateTime);
+
+        int success = 0;
+        int fail = 0;
+
+        LocalDateTime now = LocalDateTime.now();
+
+        for (StoreInventory log : logs) {
+            if (log.isWarned() && log.getCount() != 0) {
+                fail++;
+            } else {
+                success++;
+            }
+        }
+
+
+        return (float) (success / (success + fail));
+    }
+
 }

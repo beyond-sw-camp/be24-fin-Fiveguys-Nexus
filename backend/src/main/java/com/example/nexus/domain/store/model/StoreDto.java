@@ -39,7 +39,6 @@ public class StoreDto {
     }
 
     // 가맹점 조회 페이징 처리
-    // 메뉴 페이징 조회
     @Getter
     @Builder
     public static class StorePageRes{
@@ -58,6 +57,15 @@ public class StoreDto {
                     .currentSize(entity.getPageable().getPageSize())
                     .build();
         }
+    }
+
+    // 가맹점 수 조회
+    @Getter
+    @Builder
+    public static class StoreTotalRes{
+        private Long totalCount;   // 총 가맹점 수
+        private Long activeCount;  // 입점
+        private Long closedCount;  // 폐점
     }
 
     @Builder

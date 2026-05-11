@@ -3,6 +3,7 @@ package com.example.nexus.domain.delivery;
 import com.example.nexus.common.enums.DeliveryStatus;
 import com.example.nexus.domain.delivery.model.Delivery;
 import com.example.nexus.domain.orders.model.Orders;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,7 +21,10 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
     Delivery findByOrders(Orders orders);
 
     // 알림 스케줄러용 - 특정 상태 + 출발일이 기준 시간 이전인 배송 조회
-    List<Delivery> findByDeliveryStatusAndDepartureDateBefore(DeliveryStatus status, LocalDateTime before);
+    List<Delivery> findByDeliveryStatusAndDepartureDateBefore(
+            DeliveryStatus status,
+            LocalDateTime before
+    );
 
     // 알림 스케줄러용 - 예상도착일 초과 + 미완료 배송 조회
     @Query("SELECT d FROM Delivery d JOIN FETCH d.orders o JOIN FETCH o.store s " +
@@ -28,7 +32,8 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
             "AND d.deliveryStatus NOT IN (:excludeStatuses)")
     List<Delivery> findOverdueDeliveries(
             @Param("now") LocalDateTime now,
-            @Param("excludeStatuses") List<DeliveryStatus> excludeStatuses);
+            @Param("excludeStatuses") List<DeliveryStatus> excludeStatuses
+    );
 
     // 본사 배송 관리 - 필터 조회
     @Query("SELECT d FROM Delivery d " +
@@ -39,16 +44,23 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
             "AND (:year IS NULL OR FUNCTION('YEAR', d.departureDate) = :year) " +
             "AND (:month IS NULL OR FUNCTION('MONTH', d.departureDate) = :month) " +
             "AND (:day IS NULL OR FUNCTION('DAY', d.departureDate) = :day)")
-    List<Delivery> findAllByFilters(
+    Page<Delivery> findAllByHeadFilters(
             @Param("storeName") String storeName,
             @Param("status") DeliveryStatus status,
             @Param("year") Integer year,
             @Param("month") Integer month,
-            @Param("day") Integer day);
+            @Param("day") Integer day,
+            Pageable pageable
+    );
 
     // 가맹점 배송 현황 - 전체 조회
-    @Query("SELECT d FROM Delivery d JOIN FETCH d.orders o JOIN FETCH o.store s WHERE s.idx = :storeIdx")
-    List<Delivery> findAllByOrdersStoreIdx(@Param("storeIdx") Long storeIdx);
+    @Query("SELECT d FROM Delivery d " +
+            "JOIN FETCH d.orders o " +
+            "JOIN FETCH o.store s " +
+            "WHERE s.idx = :storeIdx")
+    List<Delivery> findAllByOrdersStoreIdx(
+            @Param("storeIdx") Long storeIdx
+    );
 
     // 가맹점 배송 현황 - 필터 및 발주번호 검색 조회
     @Query("SELECT d FROM Delivery d " +
@@ -60,27 +72,37 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
             "AND (:year IS NULL OR FUNCTION('YEAR', d.departureDate) = :year) " +
             "AND (:month IS NULL OR FUNCTION('MONTH', d.departureDate) = :month) " +
             "AND (:day IS NULL OR FUNCTION('DAY', d.departureDate) = :day)")
-    List<Delivery> findAllByStoreFilters(
+    Page<Delivery> findAllByStoreFilters(
             @Param("storeIdx") Long storeIdx,
             @Param("orderIdx") Long orderIdx,
             @Param("status") DeliveryStatus status,
             @Param("year") Integer year,
             @Param("month") Integer month,
-            @Param("day") Integer day);
+            @Param("day") Integer day,
+            Pageable pageable
+    );
 
-    // 본사 대시보드 - 진행중 배송 건수 KPI (여러 상태 합산)
+    // 본사 대시보드 - 진행중 배송 건수 KPI
     long countByDeliveryStatusIn(List<DeliveryStatus> statuses);
 
     // 본사 대시보드 - 특정 상태 배송 건수 KPI
     long countByDeliveryStatus(DeliveryStatus status);
 
-    // 본사 대시보드 - 배송 비율 계산 (최근 한달 상태별 건수)
-    long countByDeliveryStatusAndDepartureDateAfter(DeliveryStatus status, LocalDateTime since);
+    // 본사 대시보드 - 배송 비율 계산
+    long countByDeliveryStatusAndDepartureDateAfter(
+            DeliveryStatus status,
+            LocalDateTime since
+    );
 
     // 본사 대시보드 - 지연 배송 목록 무한스크롤 페이징
-    Slice<Delivery> findByDeliveryStatus(DeliveryStatus status, Pageable pageable);
+    Slice<Delivery> findByDeliveryStatus(
+            DeliveryStatus status,
+            Pageable pageable
+    );
 
-    // 점주 대시보드 - 나의 배송 현황 목록 (배송완료 제외, 최신순)
-    List<Delivery> findByOrders_Store_IdxAndDeliveryStatusNotOrderByDepartureDateDesc(Long storeIdx, DeliveryStatus excludeStatus);
+    // 점주 대시보드 - 배송완료 제외 최신순
+    List<Delivery> findByOrders_Store_IdxAndDeliveryStatusNotOrderByDepartureDateDesc(
+            Long storeIdx,
+            DeliveryStatus excludeStatus
+    );
 }
-

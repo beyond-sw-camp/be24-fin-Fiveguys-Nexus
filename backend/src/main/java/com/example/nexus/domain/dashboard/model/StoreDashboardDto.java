@@ -89,7 +89,7 @@ public class StoreDashboardDto {
                     .deliveryIdx(entity.getIdx())
                     .ordersIdx(entity.getOrders().getIdx())
                     .status(entity.getDeliveryStatus().name())
-                    .estimatedArrival(entity.getEstimatedArrivalAt().toLocalDate().toString())
+                    .estimatedArrival(entity.getEstimatedArrivalAt() != null ? entity.getEstimatedArrivalAt().toLocalDate().toString() : null)
                     .build();
         }
     }

@@ -3,6 +3,24 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Settings, CheckCheck } from 'lucide-vue-next'
 import ordersApi from '@/api/orders'
+import Toast from '@/components/common/Toast.vue'
+import ConfirmModal from '@/components/common/ConfirmModal.vue'
+import { useToast } from '@/composables/useToast'
+
+const { toast, showToast } = useToast()
+
+const confirmState = ref({ open: false, type: 'info', title: '', confirmText: '확인', action: null })
+function openConfirm({ type, title, confirmText, action }) {
+  confirmState.value = { open: true, type, title, confirmText, action }
+}
+function closeConfirm() {
+  confirmState.value = { open: false, type: 'info', title: '', confirmText: '확인', action: null }
+}
+async function handleConfirm() {
+  const action = confirmState.value.action
+  closeConfirm()
+  if (action) await action()
+}
 import HqAutoOrderTable from '@/components/orders/hq/HqAutoOrderTable.vue'
 import HqConfirmedOrderTable from '@/components/orders/hq/HqConfirmedOrderTable.vue'
 import HqOrderHistoryTable from '@/components/orders/hq/HqOrderHistoryTable.vue'
@@ -153,20 +171,26 @@ function onConfirmedPageChange(page) {
   fetchConfirmedOrders(confirmedSearchParams.value, page)
 }
 
-async function approveAllConfirmed() {
+function approveAllConfirmed() {
   if (confirmedOrders.value.length === 0) {
-    alert('승인할 확정 발주가 없습니다.')
+    showToast('승인할 확정 발주가 없습니다.', 'error')
     return
   }
-  if (!confirm(`확정 발주 ${confirmedOrders.value.length}건을 전체 승인하시겠습니까?`)) return
-  try {
-    await ordersApi.approveAllConfirmed()
-    alert('전체 승인이 완료되었습니다.')
-    await fetchConfirmedOrders()
-  } catch (e) {
-    console.error('전체 승인 실패', e)
-    alert('전체 승인에 실패했습니다.')
-  }
+  openConfirm({
+    type: 'warning',
+    title: `확정 발주 ${confirmedOrders.value.length}건을 전체 승인하시겠습니까?`,
+    confirmText: '전체 승인',
+    action: async () => {
+      try {
+        await ordersApi.approveAllConfirmed()
+        showToast('전체 승인이 완료되었습니다.')
+        await fetchConfirmedOrders()
+      } catch (e) {
+        console.error('전체 승인 실패', e)
+        showToast('전체 승인에 실패했습니다.', 'error')
+      }
+    },
+  })
 }
 
 // Tab routing
@@ -246,27 +270,39 @@ async function saveDangerSettings({ threshold, months }) {
 }
 
 // Abnormal order actions
-async function approveAbnormal(o) {
-  if (!confirm(`${o.store} 발주를 승인하시겠습니까?`)) return
-  try {
-    await ordersApi.approveDangerOrder(o.id)
-    alert(`${o.store} 발주 승인 처리되었습니다.`)
-    await fetchAbnormalOrders()
-  } catch (e) {
-    console.error('이상 발주 승인 실패', e)
-    alert('승인 처리에 실패했습니다.')
-  }
+function approveAbnormal(o) {
+  openConfirm({
+    type: 'info',
+    title: `${o.store} 발주를 승인하시겠습니까?`,
+    confirmText: '승인',
+    action: async () => {
+      try {
+        await ordersApi.approveDangerOrder(o.id)
+        showToast(`${o.store} 발주 승인 처리되었습니다.`)
+        await fetchAbnormalOrders()
+      } catch (e) {
+        console.error('이상 발주 승인 실패', e)
+        showToast('승인 처리에 실패했습니다.', 'error')
+      }
+    },
+  })
 }
-async function rejectAbnormal(o) {
-  if (!confirm(`${o.store} 발주를 반려하시겠습니까?`)) return
-  try {
-    await ordersApi.rejectDangerOrder(o.id)
-    alert(`${o.store} 발주 반려 처리되었습니다.`)
-    await fetchAbnormalOrders()
-  } catch (e) {
-    console.error('이상 발주 반려 실패', e)
-    alert('반려 처리에 실패했습니다.')
-  }
+function rejectAbnormal(o) {
+  openConfirm({
+    type: 'danger',
+    title: `${o.store} 발주를 반려하시겠습니까?`,
+    confirmText: '반려',
+    action: async () => {
+      try {
+        await ordersApi.rejectDangerOrder(o.id)
+        showToast(`${o.store} 발주 반려 처리되었습니다.`)
+        await fetchAbnormalOrders()
+      } catch (e) {
+        console.error('이상 발주 반려 실패', e)
+        showToast('반려 처리에 실패했습니다.', 'error')
+      }
+    },
+  })
 }
 
 </script>
@@ -322,5 +358,13 @@ async function rejectAbnormal(o) {
     <!-- Modals -->
     <HqOrderDetailModal :order="selectedOrder" @close="selectedOrder = null" />
     <HqDangerSettingsModal :visible="showSettings" :init-threshold="dangerSettings.ratio" :init-months="dangerSettings.period" @close="showSettings = false" @save="saveDangerSettings" />
+    <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
+    <ConfirmModal
+      :open="confirmState.open"
+      :title="confirmState.title"
+      :confirm-text="confirmState.confirmText"
+      :type="confirmState.type"
+      @close="closeConfirm"
+      @confirm="handleConfirm" />
   </div>
 </template>

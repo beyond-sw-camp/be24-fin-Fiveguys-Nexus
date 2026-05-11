@@ -19,6 +19,17 @@ spring:
         options:
           model: gpt-4o
           temperature: 0.3
+    mcp:
+      client:
+        stdio:
+          connections:
+            naver-news:
+              command: node
+              args:
+                - ${MCP_NEWS_SERVER_PATH}
+              env:
+                NAVER_CLIENT_ID: ${NAVER_CLIENT_ID:}
+                NAVER_CLIENT_SECRET: ${NAVER_CLIENT_SECRET:}
 
   cloud:
     aws:
@@ -28,6 +39,7 @@ spring:
       s3:
         store-bucket: ${AWS_S3_STORE_BUCKET}
         menu-bucket: ${AWS_S3_MENU_BUCKET}
+        report-bucket: ${AWS_S3_REPORT_BUCKET}
       region:
         static: ${AWS_S3_STATIC}
   sql:
@@ -61,6 +73,7 @@ management:
 
 portone:
   portone_secret: ${PORTONE_SECRET}
+
 
 logging:
   level:

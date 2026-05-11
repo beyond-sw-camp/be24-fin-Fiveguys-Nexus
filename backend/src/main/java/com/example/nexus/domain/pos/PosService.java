@@ -1,6 +1,8 @@
 package com.example.nexus.domain.pos;
 
+import com.example.nexus.common.enums.InventoryStatus;
 import com.example.nexus.common.exception.BaseException;
+import com.example.nexus.common.model.PageResponse;
 import com.example.nexus.common.model.BaseResponseStatus;
 import com.example.nexus.domain.menu.MenuItemRepository;
 import com.example.nexus.domain.menu.MenuRepository;
@@ -17,14 +19,15 @@ import com.example.nexus.domain.store.StoreRepository;
 import com.example.nexus.domain.store.model.Store;
 import com.example.nexus.domain.store.model.StoreInventory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -45,29 +48,56 @@ public class PosService {
     private final PosPayRepository posPayRepository;
     private final PosOrdersItemRepository posOrdersItemRepository;
 
-    public List<PosStoreInventoryDto.ListRes> listByUserIdx(Long idx) {
-        Store store = storeRepository.findByUserIdx(idx).orElseThrow();
+    public PageResponse<PosStoreInventoryDto.ListRes> listByUserIdxPaged(Long idx, int page, int size) {
+        Store store = storeRepository.findByUserIdx(idx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
 
-        Long storeIdx = store.getIdx();
+        Page<Long> productPage =
+                posStoreInventoryRepository.findPagedProductIdsByStoreIdx(store.getIdx(), PageRequest.of(page, size));
 
-        List<PosStoreInventory> inventoryList =
-                posStoreInventoryRepository.findByStoreIdxWithStoreAndProduct(storeIdx);
+        List<Long> productIds = productPage.getContent();
 
-        return inventoryList.stream().map(PosStoreInventoryDto.ListRes::from).toList();
+        List<PosStoreInventory> lots = posStoreInventoryRepository.findByStoreIdxAndProductIds(store.getIdx(), productIds);
+
+        Map<Long, Integer> productOrder = new HashMap<>();
+
+        for (int i = 0; i < productIds.size(); i++) {
+            productOrder.put(productIds.get(i), i);
+        }
+
+        List<PosStoreInventoryDto.ListRes> content = lots.stream()
+                .map(PosStoreInventoryDto.ListRes::from)
+                .sorted(Comparator
+                        .comparingInt((PosStoreInventoryDto.ListRes dto) -> productOrder.getOrDefault(dto.getProductIdx(), Integer.MAX_VALUE))
+                        .thenComparing(PosStoreInventoryDto.ListRes::getManufacturedDate))
+                .toList();
+
+        return PageResponse.<PosStoreInventoryDto.ListRes>builder()
+                .content(content)
+                .number(productPage.getNumber())
+                .size(productPage.getSize())
+                .totalPages(productPage.getTotalPages())
+                .totalElements(productPage.getTotalElements())
+                .build();
     }
 
     public PosStoreInventoryDto.SyncCountRes changeCount(Long userIdx, Long posStoreInventoryIdx, Integer count) {
-        Store myStore = storeRepository.findByUserIdx(userIdx).orElseThrow();
+        Store myStore = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
 
-        PosStoreInventory posInventory = posStoreInventoryRepository.findById(posStoreInventoryIdx).orElseThrow();
-        StoreInventory hqInventory = storeInventoryRepository.findById(posStoreInventoryIdx).orElseThrow();
+        PosStoreInventory posInventory = posStoreInventoryRepository.findById(posStoreInventoryIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.POS_INVENTORY_NOT_FOUND));
+        StoreInventory hqInventory = storeInventoryRepository.findById(posStoreInventoryIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_INVENTORY_NOT_FOUND));
 
         if (!posInventory.getStore().getIdx().equals(myStore.getIdx())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인 매장 POS 재고만 수정할 수 있습니다.");
+            throw new BaseException(BaseResponseStatus.STORE_INVENTORY_NOT_AUTHORIZED);
         }
 
         posInventory.setCount(count);
+        posInventory.setStatus(resolveStatus(count, posInventory.getProduct().getMinStock()));
         hqInventory.setCount(count);
+        hqInventory.setStatus(resolveStatus(count, hqInventory.getProduct().getMinStock()));
 
         PosStoreInventory posSaved = posStoreInventoryRepository.save(posInventory);
         StoreInventory hqSaved = storeInventoryRepository.save(hqInventory);
@@ -77,7 +107,8 @@ public class PosService {
 
     @Transactional(readOnly = true)
     public List<PosPayDto.TodayPayRes> listTodayPayHistory(Long userIdx) {
-        Store store = storeRepository.findByUserIdx(userIdx).orElseThrow();
+        Store store = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
 
         LocalDateTime from = LocalDate.now().atStartOfDay();
         LocalDateTime to = from.plusDays(1);
@@ -113,7 +144,8 @@ public class PosService {
 
     @Transactional
     public PosCloseDto.CloseRes deductOnClose(Long userIdx) {
-        Store store = storeRepository.findByUserIdx(userIdx).orElseThrow();
+        Store store = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
 
         LocalDateTime from = LocalDate.now().atStartOfDay();
         LocalDateTime to = from.plusDays(1);
@@ -141,7 +173,8 @@ public class PosService {
 
         List<MenuOrderLine> lines = new ArrayList<>();
         for (Map.Entry<Long, Integer> e : menuQty.entrySet()) {
-            Menu menu = menuRepository.findById(e.getKey()).orElseThrow();
+            Menu menu = menuRepository.findById(e.getKey())
+                    .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_MENU));
             lines.add(new MenuOrderLine(menu, e.getValue()));
         }
 
@@ -172,15 +205,17 @@ public class PosService {
 
     @Transactional
     public PosPayDto.PayRes pay(Long userIdx, PosPayDto.PayReq req) {
-        Store store = storeRepository.findByUserIdx(userIdx).orElseThrow();
+        Store store = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
 
         List<MenuOrderLine> lines = new ArrayList<>();
 
         for (PosPayDto.PayLineReq line : req.getItems()) {
-            Menu menu = menuRepository.findById(line.getMenuIdx()).orElseThrow();
+            Menu menu = menuRepository.findById(line.getMenuIdx())
+                    .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_MENU));
 
             if (menu.isDeleted()) {
-                throw new BaseException(BaseResponseStatus.NOT_FOUND_DATA);
+                throw new BaseException(BaseResponseStatus.NOT_FOUND_MENU);
             }
             lines.add(new MenuOrderLine(menu, line.getQuantity()));
         }
@@ -256,7 +291,7 @@ public class PosService {
             return;
         }
         List<PosStoreInventory> lots = posStoreInventoryRepository
-                .findByStore_IdxAndProduct_IdxOrderByManufacturedDateAsc(store.getIdx(), productIdx);
+                .findByStoreAndProductForUpdate(store.getIdx(), productIdx);
         int availableTotal = lots.stream().mapToInt(PosStoreInventory::getCount).sum();
         if (availableTotal < amount) {
             Map<String, Object> detail = new LinkedHashMap<>();
@@ -305,7 +340,15 @@ public class PosService {
             }
             int take = Math.min(onHand, remaining);
             lot.setCount(onHand - take);
+            lot.setStatus(resolveStatus(lot.getCount(), lot.getProduct().getMinStock()));
             remaining -= take;
         }
+    }
+
+    private InventoryStatus resolveStatus(int count, int minStock) {
+        if (count <= 0) return InventoryStatus.CRITICAL;
+        if (count <= minStock / 2) return InventoryStatus.CRITICAL;
+        if (count <= minStock) return InventoryStatus.LOW;
+        return InventoryStatus.NORMAL;
     }
 }

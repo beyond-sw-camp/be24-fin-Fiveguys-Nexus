@@ -1,18 +1,24 @@
 package com.example.nexus.domain.head;
 
 import com.example.nexus.common.model.BaseResponse;
+import com.example.nexus.common.model.PageResponse;
 import com.example.nexus.domain.head.model.HeadIncomeDto;
 import com.example.nexus.domain.head.model.HeadInventoryDto;
+import com.example.nexus.domain.user.model.AuthUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.List;
+
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @RequestMapping("/head")
 @RestController
@@ -23,9 +29,14 @@ public class HeadController {
 
     // 본사 재고 조회
     @GetMapping("/inventory/list")
-    public ResponseEntity<List<HeadInventoryDto.ListRes>> list(){
-        List<HeadInventoryDto.ListRes> result = headService.list();
-        return ResponseEntity.ok(result);
+    public ResponseEntity<BaseResponse<PageResponse<HeadInventoryDto.ListRes>>> list(@AuthenticationPrincipal AuthUserDetails userDetails, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
+        if (userDetails == null) {
+            throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+
+        PageResponse<HeadInventoryDto.ListRes> result = headService.listPaged(page, size);
+
+        return ResponseEntity.ok(BaseResponse.success(result));
     }
 
     // 본사 정산 내역 조회
@@ -38,6 +49,40 @@ public class HeadController {
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         List<HeadIncomeDto.ListRes> result = headIncomeService.getIncomeList(storeName, status, startDate, endDate);
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
+
+    // 본사 정산 관리 - 상단 요약 카드 조회
+    @GetMapping("/settlement/summary")
+    public ResponseEntity<BaseResponse<HeadIncomeDto.HeadSettlementSummaryRes>> getSettlementSummary(
+            @AuthenticationPrincipal AuthUserDetails userDetails,
+            @RequestParam int year,
+            @RequestParam int month) {
+        if (userDetails == null) {
+            throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+
+        HeadIncomeDto.HeadSettlementSummaryRes result = headIncomeService.getSettlementSummary(year, month);
+
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
+
+    // 본사 정산 관리 - 가맹점별 정산 리스트 페이징 조회
+    @GetMapping("/settlement/list")
+    public ResponseEntity<BaseResponse<PageResponse<HeadIncomeDto.StoreSettlementRes>>> getStoreSettlementList(
+            @AuthenticationPrincipal AuthUserDetails userDetails,
+            @RequestParam(required = false, defaultValue = "") String storeName,
+            @RequestParam int year,
+            @RequestParam int month,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        if (userDetails == null) {
+            throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+
+        PageResponse<HeadIncomeDto.StoreSettlementRes> result =
+                headIncomeService.getStoreSettlementList(storeName, year, month, page, size);
+
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 }

@@ -6,7 +6,7 @@ import {
   Calculator, Box, ClipboardList,
   PackageSearch, Truck,
   Warehouse, Receipt, Tablet,
-  ChevronDown, Bell, FileText, Newspaper, BarChart3, UserPlus,
+  ChevronDown, Bell, FileText, Newspaper, BarChart3, UserPlus, CreditCard,
 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
 import nexusLogo from '@/assets/nexus-logo.png'
@@ -40,14 +40,7 @@ const adminMenus = [
   { path: '/delivery',   name: '배송 관리', icon: Truck },
   { path: '/settlement', name: '정산 관리', icon: Calculator },
   { path: '/admin-account', name: '계정 관리', icon: UserPlus },
-  {
-    path: '/statistics', name: '통계', icon: BarChart3,
-    children: [
-      { path: '/statistics', name: '발주 통계' },
-      { path: '/statistics/sales', name: '판매/매출 분석' },
-      { path: '/statistics/esg', name: 'ESG 대시보드' },
-    ],
-  },
+  { path: '/statistics/esg', name: 'ESG 대시보드', icon: BarChart3 },
   { path: '/report', name: '보고서', icon: FileText },
   { path: '/notification', name: '알림', icon: Bell },
 ]
@@ -68,6 +61,7 @@ const storeMenus = [
   { path: '/store-inventory', name: '매장 재고',  icon: Warehouse },
   { path: '/store-delivery',  name: '배송 현황',  icon: Truck },
   { path: '/store-settlement',name: '정산 내역',  icon: Receipt },
+  { path: '/store-payment-test', name: '결제 테스트', icon: CreditCard },
   { path: '/store-news',       name: '지역 뉴스', icon: Newspaper },
   { path: '/store-notification', name: '알림', icon: Bell },
 ]

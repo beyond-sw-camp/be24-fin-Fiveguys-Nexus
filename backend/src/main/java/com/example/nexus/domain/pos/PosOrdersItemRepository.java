@@ -21,4 +21,13 @@ public interface PosOrdersItemRepository extends JpaRepository<PosOrdersItem, Lo
             "GROUP BY m.menuName " +
             "ORDER BY SUM(poi.quantity) DESC")
     List<String> findTopSellingMenus(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate, Pageable pageable);
+
+    // 2. 카테고리별 매출 비중 (수익성 분석용)
+    // 반환값: [카테고리명, 판매량합계]
+    @Query("SELECT m.menuCategory, SUM(poi.quantity) " +
+            "FROM PosOrdersItem poi JOIN poi.menu m JOIN poi.posPay p " +
+            "WHERE p.paidAt BETWEEN :start AND :end " +
+            "GROUP BY m.menuCategory")
+    List<Object[]> findCategorySales(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
 }

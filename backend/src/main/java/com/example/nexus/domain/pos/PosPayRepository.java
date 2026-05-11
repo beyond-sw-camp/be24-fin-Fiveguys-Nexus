@@ -22,7 +22,16 @@ public interface PosPayRepository extends JpaRepository<PosPay, Long> {
     @Query("SELECT CAST(p.paidAt AS LocalDate), COALESCE(SUM(p.payAmount), 0) FROM PosPay p WHERE p.store.idx = :storeIdx AND p.paidAt >= :from AND p.paidAt < :to GROUP BY CAST(p.paidAt AS LocalDate) ORDER BY CAST(p.paidAt AS LocalDate)")
     List<Object[]> findDailySalesByStoreAndPeriod(@Param("storeIdx") Long storeIdx, @Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 
-    // AI 보고서: 특정 기간 총 매출 합계
-    @Query("SELECT COALESCE(SUM(p.payAmount), 0) FROM PosPay p WHERE p.paidAt BETWEEN :startDate AND :endDate")
-    Long sumSalesByDateBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+    // AI 보고서: 특정 기간 총 매출 (주간 매출 계산용)
+    @Query("SELECT SUM(p.payAmount) FROM PosPay p WHERE p.paidAt BETWEEN :start AND :end")
+    Long sumSalesByDateBetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    // AI 보고서: 시간대별 매출 및 건수 (피크타임 분석용)
+    // 반환값: [시간(0~23), 결제건수, 매출합계]
+    @Query("SELECT HOUR(p.paidAt) as hour, COUNT(p) as count, SUM(p.payAmount) as total " +
+            "FROM PosPay p " +
+            "WHERE p.paidAt BETWEEN :start AND :end " +
+            "GROUP BY HOUR(p.paidAt) " +
+            "ORDER BY hour")
+    List<Object[]> findHourlySales(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 }

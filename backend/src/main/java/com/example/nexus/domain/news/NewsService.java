@@ -127,6 +127,7 @@ public class NewsService {
     private String buildPrompt(Store storeOrNull) {
         boolean isHq = storeOrNull == null;
         String region = isHq ? null : extractRegion(storeOrNull.getAddress());
+        String neighborhood = isHq ? null : extractNeighborhood(storeOrNull.getAddress());
 
         String keywords = isHq
                 ? String.format(
@@ -134,7 +135,7 @@ public class NewsService {
                         BRAND, BRAND)
                 : String.format(
                         "- '%s 날씨'\n- '%s 행사'\n- '%s 축제'\n- '%s 교통'\n- '%s 카페'\n- '%s 유동인구'\n- '오늘 날씨'",
-                        region, region, region, region, region, region);
+                        region, region, region, region, neighborhood, neighborhood);
 
         String scopeDescription = isHq
                 ? BRAND + " 카페 프랜차이즈 본사"
@@ -230,7 +231,23 @@ public class NewsService {
     private static String extractRegion(String address) {
         if (!StringUtils.hasText(address)) return "";
         String[] parts = address.trim().split("\\s+");
+        // 경기도/충청남도 등 도(道) 지역: 도 prefix 제거 후 시+구 반환
+        if (parts.length >= 3 && parts[0].endsWith("도")) {
+            return parts[1] + " " + parts[2];
+        }
         return parts.length >= 2 ? parts[0] + " " + parts[1] : parts[0];
+    }
+
+    private static String extractNeighborhood(String address) {
+        if (!StringUtils.hasText(address)) return "";
+        String[] parts = address.trim().split("\\s+");
+        for (String part : parts) {
+            if (part.endsWith("동") || part.endsWith("읍") || part.endsWith("면")
+                    || part.endsWith("로") || part.endsWith("길")) {
+                return part;
+            }
+        }
+        return extractRegion(address);
     }
 
     private NewsDto.SummaryListItem toListItem(News news) {

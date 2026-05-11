@@ -3,10 +3,10 @@ package com.example.nexus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController
+@RestController("deployTestController")
 public class TestController {
 
-    @GetMapping("/test")
+    @GetMapping("/deploy-test")
     public String test() {
         return "green";
     }

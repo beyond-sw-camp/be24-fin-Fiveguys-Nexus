@@ -21,15 +21,8 @@ spring:
     mcp:
       client:
         enabled: false
-#        stdio:
-#          connections:
-#            naver-news:
-#              command: node
-#              args:
-#                - /app/mcp/server.mjs
-#              env:
-#                NAVER_CLIENT_ID: ${NAVER_CLIENT_ID:}
-#                NAVER_CLIENT_SECRET: ${NAVER_CLIENT_SECRET:}
+        stdio:
+          connections: {}
 
   cloud:
     aws:

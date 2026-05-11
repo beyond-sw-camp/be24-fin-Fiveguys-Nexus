@@ -13,3 +13,13 @@ k8s/db-service.yaml
 frontend/.env.development
 
 docs/
+
+# 배포
+personal/*
+personal
+frontend/personal/
+backend/src/main/resources/application-aws.yaml
+backend/deploy.sh
+backend/init-db.sh
+frontend/deploy.sh
+frontend/bash

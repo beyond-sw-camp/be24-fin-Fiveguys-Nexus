@@ -86,10 +86,16 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  function logout() {
-    user.value = null
-    localStorage.removeItem('nexus_user')
+  async function logout() {
+  try {
+    await api.post('/logout'); 
+  } catch (error) {
+    console.error('Logout failed:', error);
+  } finally {
+    user.value = null;
+    localStorage.removeItem('nexus_user');
+    window.location.href = '/'; 
   }
-
+}
   return { user, isLoggedIn, isAdmin, isStoreOwner, login, logout }
 })

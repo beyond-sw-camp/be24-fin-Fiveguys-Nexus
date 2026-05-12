@@ -118,11 +118,23 @@ public class OrdersService {
         int period = dangerRepository.findById(1L)
                 .map(Danger::getPeriod).orElse(3);
 
-        return ordersRepository.findAll(spec, pageable).map(orders -> {
-            LocalDateTime since = orders.getCreatedAt().minusMonths(period);
-            Integer avgQty = ordersRepository.findAvgQtyByStoreAndPeriod(
-                    orders.getStore().getIdx(), since, orders.getIdx());
-            return DangerDto.DangerListRes.from(orders, avgQty);
+        Page<Orders> page = ordersRepository.findAll(spec, pageable);
+        List<Long> orderIds = page.getContent().stream().map(Orders::getIdx).toList();
+
+        Map<Long, int[]> dangerStatsMap = new HashMap<>();
+        if (!orderIds.isEmpty()) {
+            List<Object[]> rows = ordersRepository.findAvgQtyBatch(orderIds, period);
+            for (Object[] row : rows) {
+                Long ordersIdx = ((Number) row[0]).longValue();
+                int avgQty = ((Number) row[1]).intValue();
+                int totalQty = ((Number) row[2]).intValue();
+                dangerStatsMap.put(ordersIdx, new int[]{avgQty, totalQty});
+            }
+        }
+
+        return page.map(orders -> {
+            int[] stats = dangerStatsMap.getOrDefault(orders.getIdx(), new int[]{0, 0});
+            return DangerDto.DangerListRes.from(orders, stats[0], stats[1]);
         });
     }
 

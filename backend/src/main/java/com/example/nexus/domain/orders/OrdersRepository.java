@@ -55,11 +55,27 @@ public interface OrdersRepository extends JpaRepository<Orders, Long>, JpaSpecif
     // 본사 발주 관리 - 이상 발주 목록 조회 (위험 플래그 기준)
     List<Orders> findAllByIsDangerTrue();
 
-    // 본사 발주 관리 - 이상 발주 판별을 위한 매장별 평균 발주 수량 계산
+    // 본사 발주 관리 - 이상 발주 판별을 위한 매장별 평균 발주 수량 계산 (단건)
     @Query("SELECT COALESCE(SUM(i.count), 0) / GREATEST(COUNT(DISTINCT o.idx), 1) " +
             "FROM Orders o JOIN o.ordersItemList i " +
             "WHERE o.store.idx = :storeIdx AND o.createdAt >= :since AND (:excludeIdx IS NULL OR o.idx <> :excludeIdx)")
     Integer findAvgQtyByStoreAndPeriod(@Param("storeIdx") Long storeIdx, @Param("since") LocalDateTime since, @Param("excludeIdx") Long excludeIdx);
+
+    // 본사 발주 관리 - 이상 발주 목록 조회 시 매장별 평균 수량 + 주문 총수량 일괄 계산 (N+1 방지)
+    // 반환: [orders_idx, avgQty, totalQty]
+    @Query(value = "SELECT o1.orders_idx, " +
+            "COALESCE(SUM(oi_hist.count), 0) / GREATEST(COUNT(DISTINCT o2.orders_idx), 1), " +
+            "COALESCE(cur.total_qty, 0) " +
+            "FROM orders o1 " +
+            "LEFT JOIN orders o2 ON o2.store_idx = o1.store_idx " +
+            "  AND o2.created_at >= DATE_SUB(o1.created_at, INTERVAL :period MONTH) " +
+            "  AND o2.orders_idx != o1.orders_idx " +
+            "LEFT JOIN orders_item oi_hist ON oi_hist.orders_idx = o2.orders_idx " +
+            "LEFT JOIN (SELECT orders_idx, SUM(count) AS total_qty FROM orders_item GROUP BY orders_idx) cur " +
+            "  ON cur.orders_idx = o1.orders_idx " +
+            "WHERE o1.orders_idx IN :orderIds " +
+            "GROUP BY o1.orders_idx, cur.total_qty", nativeQuery = true)
+    List<Object[]> findAvgQtyBatch(@Param("orderIds") List<Long> orderIds, @Param("period") int period);
 
     // 점주 대시보드 - 미확정 제안 발주서 개수 KPI
     long countByStore_IdxAndOrdersStatusAndOrdersType(Long storeIdx, OrdersStatus ordersStatus, OrdersType ordersType);

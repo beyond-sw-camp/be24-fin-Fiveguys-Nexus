@@ -310,10 +310,8 @@ public class StoreService {
         int success = 0;
         int fail = 0;
 
-        LocalDateTime now = LocalDateTime.now();
-
         for (StoreInventory log : logs) {
-            if (log.isWarned() && log.getCount() != 0) {
+            if (log.getCount() != 0) {
                 fail++;
             } else {
                 success++;

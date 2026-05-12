@@ -74,8 +74,8 @@ public interface OrdersRepository extends JpaRepository<Orders, Long>, JpaSpecif
     // 본사 발주 관리 - 이상 발주 목록 조회 시 매장별 평균 수량 + 주문 총수량 일괄 계산 (N+1 방지)
     // 반환: [orders_idx, avgQty, totalQty]
     @Query(value = "SELECT o1.orders_idx, " +
-            "COALESCE(SUM(oi_hist.count), 0) / GREATEST(COUNT(DISTINCT o2.orders_idx), 1), " +
-            "COALESCE(cur.total_qty, 0) " +
+            "CAST(COALESCE(SUM(oi_hist.count), 0) / GREATEST(COUNT(DISTINCT o2.orders_idx), 1) AS SIGNED), " +
+            "CAST(COALESCE(cur.total_qty, 0) AS SIGNED) " +
             "FROM orders o1 " +
             "LEFT JOIN orders o2 ON o2.store_idx = o1.store_idx " +
             "  AND o2.created_at >= DATE_SUB(o1.created_at, INTERVAL :period MONTH) " +

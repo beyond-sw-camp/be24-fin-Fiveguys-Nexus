@@ -208,7 +208,14 @@ public class OrdersService {
         List<Orders> confirmedOrders = ordersRepository.findAllByOrdersStatus(OrdersStatus.CONFIRMED);
 
         for (Orders orders : confirmedOrders) {
-            applyOutboundForOrder(orders, "발주 일괄승인 ordersIdx=");
+            try {
+                applyOutboundForOrder(orders, "발주 일괄승인 ordersIdx=");
+            } catch (BaseException e) {
+                if (e.getStatus() == BaseResponseStatus.STORE_INVENTORY_INSUFFICIENT) {
+                    throw new BaseException(BaseResponseStatus.ORDERS_APPROVE_INSUFFICIENT_STOCK);
+                }
+                throw e;
+            }
             orders.approve();
             createHeadIncome(orders);
             deliveryService.startDeliveryByOrders(orders);

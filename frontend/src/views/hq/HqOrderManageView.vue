@@ -189,7 +189,12 @@ function approveAllConfirmed() {
         await fetchConfirmedOrders()
       } catch (e) {
         console.error('전체 승인 실패', e)
-        showToast('전체 승인에 실패했습니다.', 'error')
+        const code = e.response?.data?.code
+        if (code === 4201) {
+          showToast('본사 재고가 부족하여 발주를 승인할 수 없습니다.', 'error')
+        } else {
+          showToast('전체 승인에 실패했습니다.', 'error')
+        }
       }
     },
   })

@@ -66,6 +66,9 @@ public enum BaseResponseStatus {
     PAYMENT_BILLING_REQUIRED(false, 4105, "최소 1개의 결제 수단이 필요합니다."),
     PAYMENT_DEFAULT_BILLING_REQUIRED(false, 4106, "기본 결제 수단이 존재하지 않습니다."),
 
+    // 4200번대 ~ 발주 관련
+    ORDERS_APPROVE_INSUFFICIENT_STOCK(false, 4201, "본사 재고가 부족하여 발주를 승인할 수 없습니다."),
+
     // 5000번대 실패
     FAIL(false, 5000, "요청 실패");
 

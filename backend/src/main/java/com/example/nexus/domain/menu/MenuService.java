@@ -40,7 +40,6 @@ public class MenuService {
     @Value("${spring.cloud.aws.s3.menu-bucket}")
     private String menuBucket;
 
-    // 🌟 운영 서버에서는 true, 개발 컴퓨터(yml)에서는 false로 관리하세요!
     @Value("${spring.cloud.aws.s3.enabled:true}")
     private boolean isS3Enabled;
 
@@ -75,7 +74,7 @@ public class MenuService {
         // 🌟 1. 파일 크기 검사 (예: 5MB 제한)
         long maxSize = 5 * 1024 * 1024;
         if (fileSize > maxSize) {
-            throw new BaseException(EXCEED_MENU_FILE_SIZE);
+            throw new BaseException(EXCEED_IMG_FILE_SIZE);
         }
 
         // 2. 환경별 스위치 검사 (개발 편의성)
@@ -238,7 +237,7 @@ public class MenuService {
 
         // 🌟 3. 스위치가 꺼져있으면 삭제 로직 건너뛰기
         if (!isS3Enabled) {
-            System.out.println("🚧 [연습 모드] S3 파일 삭제를 건너뜁니다. (Key: " + key + ")");
+            System.out.println("[연습 모드] S3 파일 삭제를 건너뜁니다. (Key: " + key + ")");
             return;
         }
 

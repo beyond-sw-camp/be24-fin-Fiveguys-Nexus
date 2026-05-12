@@ -60,12 +60,13 @@ const visiblePages = computed(() => {
               {{ ORDER_STATUS_LABEL[h.ordersStatus] }}
             </span>
           </td>
-          <td class="px-5 py-3.5 h-[52px]">
+          <td class="px-5 py-3.5 h-[52px] align-middle">
             <button v-if="h.ordersStatus === 'CONFIRMED'"
               @click.stop="emit('cancel', h)"
               class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-red-200 text-red-500 bg-red-50 hover:bg-red-500 hover:text-white hover:cursor-pointer transition-colors">
               취소
             </button>
+            <span v-else class="text-xs text-gray-400 block text-center">—</span>
           </td>
         </tr>
         <tr v-if="orders.length === 0">

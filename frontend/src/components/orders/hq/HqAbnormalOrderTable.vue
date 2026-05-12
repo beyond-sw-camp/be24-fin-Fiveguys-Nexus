@@ -77,12 +77,12 @@ function resetFilters() {
           <tr class="border-b border-gray-200 bg-gray-50">
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주번호</th>
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">입점 매장</th>
-            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주수량</th>
-            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">평균수량</th>
-            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">초과율</th>
+            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">발주수량</th>
+            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">평균수량</th>
+            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">초과율</th>
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">총 금액</th>
-            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주일시</th>
-            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">상태</th>
+            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">발주일시</th>
+            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">상태</th>
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">처리</th>
           </tr>
         </thead>
@@ -93,16 +93,16 @@ function resetFilters() {
           >
             <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ o.id }}</td>
             <td class="px-5 py-3.5 font-semibold text-gray-900">{{ o.store }}</td>
-            <td class="px-5 py-3.5 font-bold text-red-600">{{ (o.qty ?? 0).toLocaleString() }}</td>
-            <td class="px-5 py-3.5 text-gray-500">{{ (o.avgQty ?? 0).toLocaleString() }}</td>
-            <td class="px-5 py-3.5">
+            <td class="px-5 py-3.5 font-bold text-red-600 text-center">{{ (o.qty ?? 0).toLocaleString() }}</td>
+            <td class="px-5 py-3.5 text-gray-500 text-center">{{ (o.avgQty ?? 0).toLocaleString() }}</td>
+            <td class="px-5 py-3.5 text-center">
               <span class="text-xs font-black px-2 py-0.5 rounded bg-red-50 text-red-600 border border-red-200">
                 +{{ o.ratio }}%
               </span>
             </td>
             <td class="px-5 py-3.5 font-semibold text-gray-700">{{ formatPrice(o.price) }}</td>
-            <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ o.date }}</td>
-            <td class="px-5 py-3.5">
+            <td class="px-5 py-3.5 text-xs text-gray-400 font-mono text-center">{{ o.date }}</td>
+            <td class="px-5 py-3.5 text-center">
               <span class="text-xs font-bold px-2 py-0.5 rounded"
                 :class="o.status === 'APPROVE' || o.status === 'REJECT'
                   ? 'bg-gray-100 text-gray-400 border border-gray-200'
@@ -110,7 +110,7 @@ function resetFilters() {
                 {{ o.status === 'APPROVE' || o.status === 'REJECT' ? '처리완료' : 'DANGER' }}
               </span>
             </td>
-            <td class="px-5 py-3.5">
+            <td class="px-5 py-3.5 h-[52px]">
               <div v-if="o.status !== 'APPROVE' && o.status !== 'REJECT'" class="flex justify-center gap-1.5">
                 <button @click.stop="$emit('approve', o)"
                   class="px-2.5 py-1 bg-[#F37321] text-white text-xs font-semibold hover:bg-[#e0661d] rounded cursor-pointer">승인</button>

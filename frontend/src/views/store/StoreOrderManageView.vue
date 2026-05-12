@@ -67,12 +67,9 @@ onMounted(() => {
   fetchPendingOrders()
 })
 
-const historyLoaded = ref(false)
-
 watch(activeTab, (tab) => {
-  if (tab === 'history' && !historyLoaded.value) {
+  if (tab === 'history') {
     fetchOrderHistory()
-    historyLoaded.value = true
   }
 })
 

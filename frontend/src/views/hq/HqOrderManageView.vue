@@ -142,6 +142,7 @@ function onAbnormalPageChange(page) {
 const confirmedOrders = ref([])
 const confirmedPage = ref(0)
 const confirmedTotalPages = ref(1)
+const confirmedTotalElements = ref(0)
 const confirmedSearchParams = ref({})
 
 async function fetchConfirmedOrders(params = confirmedSearchParams.value, page = confirmedPage.value) {
@@ -157,6 +158,7 @@ async function fetchConfirmedOrders(params = confirmedSearchParams.value, page =
     }))
     confirmedPage.value = data.number
     confirmedTotalPages.value = data.totalPages
+    confirmedTotalElements.value = data.totalElements
   } catch (e) {
     console.error('확정 발주 목록 조회 실패', e)
   }
@@ -172,13 +174,13 @@ function onConfirmedPageChange(page) {
 }
 
 function approveAllConfirmed() {
-  if (confirmedOrders.value.length === 0) {
+  if (confirmedTotalElements.value === 0) {
     showToast('승인할 확정 발주가 없습니다.', 'error')
     return
   }
   openConfirm({
     type: 'warning',
-    title: `확정 발주 ${confirmedOrders.value.length}건을 전체 승인하시겠습니까?`,
+    title: `확정 발주 ${confirmedTotalElements.value}건을 전체 승인하시겠습니까?`,
     confirmText: '전체 승인',
     action: async () => {
       try {
@@ -187,7 +189,12 @@ function approveAllConfirmed() {
         await fetchConfirmedOrders()
       } catch (e) {
         console.error('전체 승인 실패', e)
-        showToast('전체 승인에 실패했습니다.', 'error')
+        const code = e.response?.data?.code
+        if (code === 4201) {
+          showToast('본사 재고가 부족하여 발주를 승인할 수 없습니다.', 'error')
+        } else {
+          showToast('전체 승인에 실패했습니다.', 'error')
+        }
       }
     },
   })
@@ -213,9 +220,21 @@ function fetchTabData(id) {
   if (id === 'abnormal') fetchAbnormalOrders()
 }
 
+function resetSearchParams() {
+  autoSearchParams.value = {}
+  autoPage.value = 0
+  confirmedSearchParams.value = {}
+  confirmedPage.value = 0
+  historySearchParams.value = {}
+  historyPage.value = 0
+  abnormalSearchParams.value = {}
+  abnormalPage.value = 0
+}
+
 function setOrderViewTab(id) {
   activeTab.value = id
   router.replace({ path: '/order', query: { tab: id } })
+  resetSearchParams()
   fetchTabData(id)
 }
 

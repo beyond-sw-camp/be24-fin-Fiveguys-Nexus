@@ -88,27 +88,27 @@ function resetFilters() {
         <thead>
           <tr class="border-b border-gray-200 bg-gray-50">
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주번호</th>
-            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">유형</th>
+            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center pr-10">유형</th>
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">입점 매장</th>
-            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주일시</th>
+            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center pr-10">발주일시</th>
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">총 금액</th>
-            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">상태</th>
+            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">상태</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
           <tr v-for="h in orders" :key="h.id" class="hover:bg-gray-50/50 transition-colors cursor-pointer"
             @click="$emit('open-detail', h.id)">
             <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ h.id }}</td>
-            <td class="px-5 py-3.5">
+            <td class="px-5 py-3.5 text-center pr-10">
               <span class="text-xs font-bold px-2 py-0.5 rounded"
                 :class="h.type === '자동' ? 'bg-blue-50 text-blue-600 border border-blue-200' : 'bg-purple-50 text-purple-600 border border-purple-200'">
                 {{ h.type }}
               </span>
             </td>
             <td class="px-5 py-3.5 font-semibold text-gray-900">{{ h.store }}</td>
-            <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ h.date }}</td>
+            <td class="px-5 py-3.5 text-xs text-gray-400 font-mono text-center pr-10">{{ h.date }}</td>
             <td class="px-5 py-3.5 font-semibold text-gray-700">{{ formatPrice(h.price) }}</td>
-            <td class="px-5 py-3.5">
+            <td class="px-5 py-3.5 text-center">
               <span class="text-xs font-bold px-2 py-0.5 rounded" :class="statusClass(h.status)">{{ h.status }}</span>
             </td>
           </tr>

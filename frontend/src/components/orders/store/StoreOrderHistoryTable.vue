@@ -28,12 +28,12 @@ const visiblePages = computed(() => {
       <thead>
         <tr class="border-b border-gray-200 bg-gray-50">
           <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주번호</th>
-          <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">유형</th>
+          <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">유형</th>
           <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">품목</th>
           <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">총 금액</th>
-          <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주일시</th>
-          <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">상태</th>
-          <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">처리</th>
+          <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">발주일시</th>
+          <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">상태</th>
+          <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider w-[100px] text-center">처리</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-100">
@@ -41,7 +41,7 @@ const visiblePages = computed(() => {
           class="hover:bg-gray-50/50 transition-colors cursor-pointer"
           @click="emit('open-detail', h)">
           <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ h.idx }}</td>
-          <td class="px-5 py-3.5">
+          <td class="px-5 py-3.5 text-center">
             <span class="text-xs font-bold px-2 py-0.5 rounded"
               :class="h.ordersType === 'AUTO' ? 'bg-blue-50 text-blue-600 border border-blue-200' : 'bg-purple-50 text-purple-600 border border-purple-200'">
               {{ ORDER_TYPE_LABEL[h.ordersType] }}
@@ -54,18 +54,21 @@ const visiblePages = computed(() => {
           <td class="px-5 py-3.5 font-semibold text-gray-700">
             ₩ {{ h.price?.toLocaleString() }}
           </td>
-          <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ h.createdAt?.replace('T', ' ').slice(0, 16) }}</td>
-          <td class="px-5 py-3.5">
+          <td class="px-5 py-3.5 text-xs text-gray-400 font-mono text-center">{{ h.createdAt?.replace('T', ' ').slice(0, 16) }}</td>
+          <td class="px-5 py-3.5 text-center">
             <span class="text-xs font-bold px-2 py-0.5 rounded" :class="storeStatusClass(h.ordersStatus)">
               {{ ORDER_STATUS_LABEL[h.ordersStatus] }}
             </span>
           </td>
-          <td class="px-5 py-3.5 h-[52px]">
-            <button v-if="h.ordersStatus === 'CONFIRMED'"
-              @click.stop="emit('cancel', h)"
-              class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-red-200 text-red-500 bg-red-50 hover:bg-red-500 hover:text-white hover:cursor-pointer transition-colors">
-              취소
-            </button>
+          <td class="px-5 py-2 align-middle">
+            <div class="flex items-center justify-center h-[28px]">
+              <button v-if="h.ordersStatus === 'CONFIRMED'"
+                @click.stop="emit('cancel', h)"
+                class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-red-200 text-red-500 bg-red-50 hover:bg-red-500 hover:text-white hover:cursor-pointer transition-colors">
+                취소
+              </button>
+              <span v-else class="text-xs text-gray-400">—</span>
+            </div>
           </td>
         </tr>
         <tr v-if="orders.length === 0">

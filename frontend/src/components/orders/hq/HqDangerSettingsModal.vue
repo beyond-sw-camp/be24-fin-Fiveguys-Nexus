@@ -14,6 +14,7 @@ const months = ref(props.initMonths)
 
 watch(() => props.initThreshold, (v) => { threshold.value = v })
 watch(() => props.initMonths, (v) => { months.value = v })
+watch(threshold, (v) => { if (v < 100) threshold.value = 100 })
 </script>
 
 <template>

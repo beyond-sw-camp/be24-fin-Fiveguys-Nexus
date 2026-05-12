@@ -6,6 +6,7 @@ import com.example.nexus.domain.delivery.model.Delivery;
 import com.example.nexus.domain.store.model.Store;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -47,6 +48,7 @@ public class Orders {
     @JoinColumn(name = "store_idx", nullable = false)
     private Store store;
 
+    @BatchSize(size = 100)
     @OneToMany(mappedBy = "orders", fetch = FetchType.LAZY)
     private List<OrdersItem> ordersItemList;
 

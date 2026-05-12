@@ -116,6 +116,6 @@ public interface OrdersRepository extends JpaRepository<Orders, Long>, JpaSpecif
     Optional<Orders> findByIdWithDetails(@Param("idx") Long idx);
 
     // 점주 발주 관리 - 점주 이력 페이징 조회
-    @EntityGraph(attributePaths = {"store", "ordersItemList", "ordersItemList.product", "delivery"})
+    @EntityGraph(attributePaths = {"store", "delivery"})
     Page<Orders> findAllByStore_IdxAndOrdersStatusIn(Long storeIdx, List<OrdersStatus> ordersStatuses, Pageable pageable);
 }

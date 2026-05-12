@@ -64,6 +64,13 @@ public interface OrdersRepository extends JpaRepository<Orders, Long>, JpaSpecif
     // 본사 발주 관리 - 이상 발주 목록 조회 (위험 플래그 기준)
     List<Orders> findAllByIsDangerTrue();
 
+    // 본사 발주 관리 - 이상 발주 재평가 시 Store, OrdersItemList 한 번에 로딩 (N+1 방지)
+    @Query("SELECT DISTINCT o FROM Orders o " +
+            "JOIN FETCH o.store " +
+            "LEFT JOIN FETCH o.ordersItemList " +
+            "WHERE o.isDanger = true")
+    List<Orders> findAllDangerWithDetails();
+
     // 본사 발주 관리 - 이상 발주 판별을 위한 매장별 평균 발주 수량 계산 (단건)
     @Query("SELECT COALESCE(SUM(i.count), 0) / GREATEST(COUNT(DISTINCT o.idx), 1) " +
             "FROM Orders o JOIN o.ordersItemList i " +

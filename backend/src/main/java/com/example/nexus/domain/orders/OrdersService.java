@@ -166,22 +166,26 @@ public class OrdersService {
         dangerRepository.save(danger);
 
         // 기존 이상 발주 재평가: 새 기준 미달 시 isDanger 해제
-        List<Orders> dangerOrders = ordersRepository.findAllByIsDangerTrue();
+        List<Orders> dangerOrders = ordersRepository.findAllDangerWithDetails();
 
-        for (Orders orders : dangerOrders) {
-            List<OrdersItem> items = orders.getOrdersItemList() != null ? orders.getOrdersItemList() : Collections.emptyList();
-            int totalQty = items.stream().mapToInt(OrdersItem::getCount).sum();
-
-            LocalDateTime since = orders.getCreatedAt().minusMonths(req.getPeriod());
-
-            Integer avgQty = ordersRepository.findAvgQtyByStoreAndPeriod(orders.getStore().getIdx(), since, orders.getIdx());
-
-            int ratio = avgQty > 0 ? (totalQty - avgQty) * 100 / avgQty : 0;
-
-            if (ratio < req.getRatio()) {
-                orders.markDanger(false);
+        if (!dangerOrders.isEmpty()) {
+            List<Long> orderIds = dangerOrders.stream().map(Orders::getIdx).toList();
+            List<Object[]> rows = ordersRepository.findAvgQtyBatch(orderIds, req.getPeriod());
+            Map<Long, Integer> avgQtyMap = new HashMap<>();
+            for (Object[] row : rows) {
+                avgQtyMap.put(((Number) row[0]).longValue(), ((Number) row[1]).intValue());
             }
 
+            for (Orders orders : dangerOrders) {
+                List<OrdersItem> items = orders.getOrdersItemList() != null ? orders.getOrdersItemList() : Collections.emptyList();
+                int totalQty = items.stream().mapToInt(OrdersItem::getCount).sum();
+                int avgQty = avgQtyMap.getOrDefault(orders.getIdx(), 0);
+                int ratio = avgQty > 0 ? (totalQty - avgQty) * 100 / avgQty : 0;
+
+                if (ratio < req.getRatio()) {
+                    orders.markDanger(false);
+                }
+            }
         }
     }
 

@@ -63,9 +63,9 @@ function resetSearch() {
           <tr class="border-b border-gray-200 bg-gray-50">
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주번호</th>
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">가맹점</th>
-            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주일시</th>
+            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center pr-10">발주일시</th>
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">총 금액</th>
-            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">상태</th>
+            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">상태</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
@@ -74,9 +74,9 @@ function resetSearch() {
             @click="$emit('open-detail', o.id)">
             <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ o.id }}</td>
             <td class="px-5 py-3.5 font-semibold text-gray-900">{{ o.store }}</td>
-            <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ o.date }}</td>
+            <td class="px-5 py-3.5 text-xs text-gray-400 font-mono text-center pr-10">{{ o.date }}</td>
             <td class="px-5 py-3.5 font-semibold text-gray-700">{{ formatPrice(o.price) }}</td>
-            <td class="px-5 py-3.5">
+            <td class="px-5 py-3.5 text-center">
               <span class="text-xs font-bold px-2 py-0.5 rounded" :class="statusClass(o.status)">{{ o.status }}</span>
             </td>
           </tr>

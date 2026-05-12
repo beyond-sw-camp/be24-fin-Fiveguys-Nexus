@@ -191,7 +191,7 @@ public class OrdersService {
     // 본사 - 이상 발주 개별 승인 (출고 처리 포함)
     @Transactional
     public void approve(Long ordersIdx) {
-        Orders orders = ordersRepository.findByIdWithDetails(ordersIdx)
+        Orders orders = ordersRepository.findByIdWithDetailsForUpdate(ordersIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
 
         if (orders.getOrdersStatus() != OrdersStatus.CONFIRMED) {
@@ -207,7 +207,7 @@ public class OrdersService {
     // 본사 - 이상 발주 개별 반려
     @Transactional
     public void reject(Long ordersIdx) {
-        Orders orders = ordersRepository.findById(ordersIdx)
+        Orders orders = ordersRepository.findByIdForUpdate(ordersIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
 
         if (orders.getOrdersStatus() != OrdersStatus.CONFIRMED) {
@@ -516,7 +516,7 @@ public class OrdersService {
         Store store = storeRepository.findByUserIdx(userIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
 
-        Orders orders = ordersRepository.findById(ordersIdx)
+        Orders orders = ordersRepository.findByIdForUpdate(ordersIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
 
         if (!orders.getStore().getIdx().equals(store.getIdx())) {

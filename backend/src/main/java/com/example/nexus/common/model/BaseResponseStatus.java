@@ -28,7 +28,7 @@ public enum BaseResponseStatus {
     STORE_ALREADY_CLOSED(false, 3106, "폐업 처리되어 수정할 수 없는 가맹점입니다."),
     DUPLICATE_EMAIL(false, 3107, "이미 다른 계정에서 사용중인 이메일입니다."),
     S3_DELETE_FAILED(false, 3108, "S3 삭제 실패했습니다."),
-    EXCEED_PDF_FILE_SIZE(false, 3207, "파일 크기는 10MB를 초과할 수 없습니다."),
+    EXCEED_PDF_FILE_SIZE(false, 3109, "파일 크기는 10MB를 초과할 수 없습니다."),
 
     // 3200번대 ~ 메뉴 클라이언트 오류
     NOT_FOUND_CATEGORY(false, 3201, "존재하지 않는 카테고리입니다."),

@@ -56,8 +56,7 @@ public class MenuService {
     public MenuDto.MenuItemListRes menuItemList(Long menuIdx) {
         Optional<Menu> res = menuRepository.findById(menuIdx);
 
-        menuRepository.findById(menuIdx)
-                .orElseThrow(() -> new BaseException(NOT_FOUND_MENU)); // null 방지
+        res.orElseThrow(() -> new BaseException(NOT_FOUND_MENU));
 
         if(res.isPresent()){
             Menu menu = res.get();

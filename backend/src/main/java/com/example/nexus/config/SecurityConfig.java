@@ -1,5 +1,6 @@
 package com.example.nexus.config;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,6 +32,17 @@ public class SecurityConfig {
                 (auth) -> auth
                         .requestMatchers("/**").permitAll()
         );
+
+        http.logout(logout -> logout
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/")
+                .addLogoutHandler((request, response, authentication) -> {
+                    HttpSession session = request.getSession();
+                    session.invalidate();
+                })
+                        .logoutSuccessHandler((request, response, authentication) ->
+                                response.sendRedirect("/www.nexusscm.kro.kr"))
+                .deleteCookies("JSESSIONID", "CTOKEN"));
 
         http.csrf(AbstractHttpConfigurer::disable);
         http.httpBasic(AbstractHttpConfigurer::disable);

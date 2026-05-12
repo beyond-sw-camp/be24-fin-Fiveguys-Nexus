@@ -3,6 +3,8 @@ package com.example.nexus.domain.orders;
 import com.example.nexus.common.enums.OrdersStatus;
 import com.example.nexus.common.enums.OrdersType;
 import com.example.nexus.domain.orders.model.Orders;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -15,6 +17,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface OrdersRepository extends JpaRepository<Orders, Long>, JpaSpecificationExecutor<Orders> {
+
+    // Specification 기반 목록 조회 시 Store를 한 번에 JOIN FETCH (N+1 방지)
+    @Override
+    @EntityGraph(attributePaths = {"store"})
+    Page<Orders> findAll(Specification<Orders> spec, Pageable pageable);
 
     // 정산용 - 매장별 전체 주문 목록 조회
     List<Orders> findAllByStoreIdx(Long storeIdx);

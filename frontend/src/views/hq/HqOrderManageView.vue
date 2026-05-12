@@ -220,9 +220,21 @@ function fetchTabData(id) {
   if (id === 'abnormal') fetchAbnormalOrders()
 }
 
+function resetSearchParams() {
+  autoSearchParams.value = {}
+  autoPage.value = 0
+  confirmedSearchParams.value = {}
+  confirmedPage.value = 0
+  historySearchParams.value = {}
+  historyPage.value = 0
+  abnormalSearchParams.value = {}
+  abnormalPage.value = 0
+}
+
 function setOrderViewTab(id) {
   activeTab.value = id
   router.replace({ path: '/order', query: { tab: id } })
+  resetSearchParams()
   fetchTabData(id)
 }
 

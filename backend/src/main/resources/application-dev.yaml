@@ -37,6 +37,7 @@ spring:
         access-key: ${AWS_ACCESS_KEY}
         secret-key: ${AWS_SECRET_KEY}
       s3:
+        enabled: true # false = S3 작동 X
         store-bucket: ${AWS_S3_STORE_BUCKET}
         menu-bucket: ${AWS_S3_MENU_BUCKET}
         report-bucket: ${AWS_S3_REPORT_BUCKET}

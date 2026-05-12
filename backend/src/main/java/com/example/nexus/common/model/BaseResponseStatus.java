@@ -36,6 +36,7 @@ public enum BaseResponseStatus {
     NOT_FOUND_MENU(false, 3204, "존재하지 않는 메뉴입니다."),
     DUPLICATE_CATEGORY_NAME(false, 3205, "이미 존재하는 카테고리입니다."),
     CATEGORY_IN_USE(false, 3206, "해당 카테고리를 사용하는 메뉴가 존재하여 삭제할 수 없습니다."),
+    EXCEED_MENU_FILE_SIZE(false, 3207, "파일 크기는 5MB를 초과할 수 없습니다."),
 
 
     // 4000번대 실패

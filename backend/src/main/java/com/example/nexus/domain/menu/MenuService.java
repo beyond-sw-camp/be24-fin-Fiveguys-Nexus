@@ -103,7 +103,7 @@ public class MenuService {
 
         return Map.of(
                 "url", url,
-                "fileName", path // 프론트에서 나중에 DB에 저장할 때 필요하니까 같이 보내주는 게 좋아요!
+                "fileName", path
         );
     }
     private String createPath(String fileName) {
@@ -116,8 +116,13 @@ public class MenuService {
 
         try {
             // 메뉴명 존재 확인
-            if (menuRepository.existsByMenuName(dto.getMenuName())) {
-                throw new BaseException(DUPLICATE_MENU_NAME);
+            Optional<Menu> existingMenu = menuRepository.findByMenuName(dto.getMenuName());
+            if (existingMenu.isPresent()) {
+                if (!existingMenu.get().isDeleted()) {
+                    throw new BaseException(DUPLICATE_MENU_NAME);
+                } else {
+                    throw new BaseException(DELETED_MENU_NAME);
+                }
             }
 
             // 카테고리 존재 여부 확인
@@ -172,8 +177,13 @@ public class MenuService {
             oldFilePath = menu.getImgPath();
 
             // 메뉴명 중복 확인
-            if (menuRepository.existsByMenuNameAndIdxNot(dto.getMenuName(), menuIdx)) {
-                throw new BaseException(DUPLICATE_MENU_NAME);
+            Optional<Menu> duplicateMenu = menuRepository.findByMenuNameAndIdxNot(dto.getMenuName(), menuIdx);
+            if (duplicateMenu.isPresent()) {
+                if (!duplicateMenu.get().isDeleted()) {
+                    throw new BaseException(DUPLICATE_MENU_NAME);
+                } else {
+                    throw new BaseException(DELETED_MENU_NAME);
+                }
             }
 
             // 제품 조회

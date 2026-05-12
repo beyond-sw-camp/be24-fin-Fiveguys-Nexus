@@ -59,7 +59,7 @@ public class MenuDto {
     @Builder
     public static class ItemList{
         private Long idx;
-        private String productName;
+        private Long productIdx;
         private Integer quantity;
         private String menuUnit;
 
@@ -67,7 +67,7 @@ public class MenuDto {
         public static ItemList from(MenuItem entity){
             return ItemList.builder()
                     .idx(entity.getIdx())
-                    .productName(entity.getProduct().getProductName())
+                    .productIdx(entity.getProduct().getIdx())
                     .quantity(entity.getQuantity())
                     .menuUnit(entity.getMenuUnit())
                     .build();
@@ -95,7 +95,7 @@ public class MenuDto {
                     .imgPath(entity.getImgPath())
                     .menuItemList(entity.getMenuItemList().stream()
                             .map(ItemList::from)
-                            .collect(Collectors.toList()))
+                            .toList())
                     .build();
         }
     }

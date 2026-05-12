@@ -380,7 +380,7 @@ public class OrdersService {
         Store store = storeRepository.findByUserIdx(userIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
 
-        Orders orders = ordersRepository.findById(ordersIdx)
+        Orders orders = ordersRepository.findByIdWithDetailsForUpdate(ordersIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
 
         if (!orders.getStore().getIdx().equals(store.getIdx())) {

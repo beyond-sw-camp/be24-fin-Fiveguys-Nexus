@@ -2,11 +2,15 @@ package com.example.nexus.domain.delivery;
 
 import com.example.nexus.common.enums.DeliveryStatus;
 import com.example.nexus.common.enums.NotificationType;
+import com.example.nexus.common.exception.BaseException;
+import com.example.nexus.common.model.BaseResponseStatus;
 import com.example.nexus.domain.delivery.model.Delivery;
 import com.example.nexus.domain.delivery.model.DeliveryDto;
 import com.example.nexus.domain.notification.HeadNotificationService;
 import com.example.nexus.domain.notification.StoreNotificationService;
 import com.example.nexus.domain.orders.model.Orders;
+import com.example.nexus.domain.store.StoreRepository;
+import com.example.nexus.domain.store.model.Store;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -25,6 +29,7 @@ public class DeliveryService {
     private final DeliveryRepository deliveryRepository;
     private final HeadNotificationService headNotificationService;
     private final StoreNotificationService storeNotificationService;
+    private final StoreRepository storeRepository;
 
     // 점주 발주 확정 시 배송 생성
     @Transactional
@@ -94,7 +99,7 @@ public class DeliveryService {
 
     // 가맹점 배송 조회
     public DeliveryDto.DeliveryPageRes getDeliveriesForStore(
-            Long storeIdx,
+            Long userIdx,
             Long orderIdx,
             DeliveryStatus status,
             Integer year,
@@ -104,6 +109,9 @@ public class DeliveryService {
             int size
     ) {
 
+        Store store = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
+
         Pageable pageable = PageRequest.of(
                 page,
                 size,
@@ -112,7 +120,7 @@ public class DeliveryService {
 
         Page<Delivery> deliveryPage =
                 deliveryRepository.findAllByStoreFilters(
-                        storeIdx,
+                        store.getIdx(),
                         orderIdx,
                         status,
                         year,

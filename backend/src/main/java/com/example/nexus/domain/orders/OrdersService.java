@@ -188,7 +188,7 @@ public class OrdersService {
     // 본사 - 이상 발주 개별 승인 (출고 처리 포함)
     @Transactional
     public void approve(Long ordersIdx) {
-        Orders orders = ordersRepository.findById(ordersIdx)
+        Orders orders = ordersRepository.findByIdWithDetails(ordersIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
 
         if (orders.getOrdersStatus() != OrdersStatus.CONFIRMED) {
@@ -217,7 +217,7 @@ public class OrdersService {
     // 본사 - 확정 발주 일괄 승인 (출고 처리 포함)
     @Transactional
     public void approveAllConfirmed() {
-        List<Orders> confirmedOrders = ordersRepository.findAllByOrdersStatus(OrdersStatus.CONFIRMED);
+        List<Orders> confirmedOrders = ordersRepository.findAllByOrdersStatusWithDetails(OrdersStatus.CONFIRMED);
 
         for (Orders orders : confirmedOrders) {
             try {
@@ -248,8 +248,8 @@ public class OrdersService {
     // 발주 승인 시 품목별 출고 처리 (재고 차감)
     private void applyOutboundForOrder(Orders orders, String memoPrefix) {
         Long storeIdx = orders.getStore().getIdx();
-        List<OrdersItem> items = ordersItemRepository.findByOrdersIdx(orders.getIdx());
-        if (items.isEmpty()) {
+        List<OrdersItem> items = orders.getOrdersItemList();
+        if (items == null || items.isEmpty()) {
             throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
         }
         String memo = memoPrefix + orders.getIdx();

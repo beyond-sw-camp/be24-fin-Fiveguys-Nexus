@@ -69,6 +69,8 @@ dependencies {
 	// HTML을 PDF 파일로 구워주는 도구
 	implementation 'com.openhtmltopdf:openhtmltopdf-pdfbox:1.0.10'
 
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+
 }
 
 tasks.named('test') {

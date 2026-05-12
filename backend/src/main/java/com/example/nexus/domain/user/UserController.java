@@ -5,6 +5,7 @@ import com.example.nexus.domain.user.model.AuthUserDetails;
 import com.example.nexus.domain.user.model.UserDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -18,6 +19,7 @@ public class UserController {
 
     public final UserService userService;
     private final AuthenticationManager authenticationManager;
+    private final JavaMailSender javaMailSender;
 
     @PostMapping("/signup")
     public ResponseEntity signup(@RequestBody UserDto.SignupReq dto) {
@@ -28,6 +30,9 @@ public class UserController {
     @PostMapping("/store/signup")
     public ResponseEntity storeSignup(@RequestBody UserDto.StoreSignupReq dto) {
         UserDto.StoreSignupRes storeSignupRes = userService.storeSignup(dto);
+
+        userService.sendTempPassword(storeSignupRes.getEmail(), storeSignupRes.getPassword());
+
         return ResponseEntity.ok("임시 비밀번호 : " + storeSignupRes.getPassword());
     }
 

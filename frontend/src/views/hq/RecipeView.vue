@@ -140,7 +140,7 @@ async function openEditMenuModal(menu) {
     menuForm.value = form;
     showMenuModal.value = true;
   } catch (error) {
-    showToast("메뉴 상세 정보를 불러오는 중 오류가 발생했습니다.", error);
+    showToast("메뉴 상세 정보를 불러오는 중 오류가 발생했습니다.", "error");
   }
 }
 

@@ -71,9 +71,7 @@ public class NewsService {
         }
 
         LocalDate today = LocalDate.now(KST);
-        ChatClient chatClient = chatClientBuilder
-                .defaultTools(toolCallbackProvider.get().getToolCallbacks())
-                .build();
+        ChatClient chatClient = chatClientBuilder.build();
 
         int hqCount = runForScope(today, null, chatClient);
         int storeCount = 0;
@@ -113,6 +111,7 @@ public class NewsService {
         try {
             aiResponse = chatClient.prompt()
                     .user(prompt)
+                    .tools(toolCallbackProvider.get().getToolCallbacks())
                     .call()
                     .content();
         } catch (Exception e) {

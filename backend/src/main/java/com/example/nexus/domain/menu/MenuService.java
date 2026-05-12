@@ -116,8 +116,13 @@ public class MenuService {
 
         try {
             // 메뉴명 존재 확인
-            if (menuRepository.existsByMenuName(dto.getMenuName())) {
-                throw new BaseException(DUPLICATE_MENU_NAME);
+            Optional<Menu> existingMenu = menuRepository.findByMenuName(dto.getMenuName());
+            if (existingMenu.isPresent()) {
+                if (!existingMenu.get().isDeleted()) {
+                    throw new BaseException(DUPLICATE_MENU_NAME); // 이미 사용 중인 이름
+                } else {
+                    throw new BaseException(DELETED_MENU_NAME); // 삭제된 이름 (에러 코드 추가 필요 - 아래 3번 참고)
+                }
             }
 
             // 카테고리 존재 여부 확인
@@ -172,8 +177,13 @@ public class MenuService {
             oldFilePath = menu.getImgPath();
 
             // 메뉴명 중복 확인
-            if (menuRepository.existsByMenuNameAndIdxNot(dto.getMenuName(), menuIdx)) {
-                throw new BaseException(DUPLICATE_MENU_NAME);
+            Optional<Menu> duplicateMenu = menuRepository.findByMenuNameAndIdxNot(dto.getMenuName(), menuIdx);
+            if (duplicateMenu.isPresent()) {
+                if (!duplicateMenu.get().isDeleted()) {
+                    throw new BaseException(DUPLICATE_MENU_NAME);
+                } else {
+                    throw new BaseException(DELETED_MENU_NAME); // 삭제된 이름
+                }
             }
 
             // 제품 조회

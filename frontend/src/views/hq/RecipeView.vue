@@ -1,6 +1,6 @@
 <script setup>
-import {ref, computed, onMounted, reactive, watch} from 'vue'
-import {Plus, Search, Image as ImageIcon, Tag, Trash2, ChevronRight, ChevronLeft} from 'lucide-vue-next'
+import {ref, computed, onMounted, reactive, watch, nextTick} from 'vue'
+import {Plus, Search, Image as ImageIcon, Tag, Trash2, ChevronRight, ChevronLeft, RefreshCw} from 'lucide-vue-next'
 import {getProductList, getCategoryList, getMenuList, getMenuItemList, getPresignedUrl, postNewRegister, putMenuUpdate, putMenuDelete, postMenuCategoryRegister, deleteCategory} from '@/api/menu/index.js'
 import axios from 'axios'
 import Toast from '@/components/common/Toast.vue'
@@ -40,7 +40,6 @@ const categories = ref([])
 //  메뉴 등록 / 수정 모달
 const showMenuModal = ref(false)
 const editTarget = ref(null)
-const formattedPriceInput = ref('')
 const getInFrom = () => ({
   menuName: '',
   price: null,
@@ -62,7 +61,7 @@ const menuForm = ref(getInFrom())
 // 제품 목록 조회
 const productListRes = async () => {
   const res  = await getProductList()
-  products.value = res.data.result
+  products.value = res.data.result.productList
 }
 
 // 메뉴 목록 조회
@@ -94,7 +93,6 @@ const selectCategory = (idx) => {
 function openNewMenuModal() {
   editTarget.value = null;
   selectedFile.value = null;
-  formattedPriceInput.value = '';
   const initial = getInFrom();
   initial.menuCategoryIdx = null;
   menuForm.value = initial;
@@ -104,53 +102,93 @@ function openNewMenuModal() {
 // 수정 모달창
 async function openEditMenuModal(menu) {
   try {
-    // 1. 상세 데이터 조회 (재료 목록 등)
+    // 0. 기초 데이터가 로드되지 않았다면 로드 시도 (매칭 실패 방지)
+    if (products.value.length === 0) await productListRes();
+    if (categories.value.length === 0) await categoryRes();
+
+    // 1. 상세 데이터 조회
     const res = await getMenuItemList(menu.idx);
-    console.log(res.data.result)
-    const detail = res.data.result; // 응답 데이터 (제공해주신 구조)
+    const detail = res.data.result;
 
     editTarget.value = menu;
 
-    // 2. getInFrom()의 표준 구조를 가져와서 데이터를 '재조립' 합니다.
+    // 2. 데이터 재조립
     const form = getInFrom();
     form.menuName = detail.menuName;
-    form.price = detail.price;
+    form.price = detail.price || 0; // null 방지
 
     form.imgPath = detail.imgPath ? detail.imgPath.trim() : "";
     form.imgName = detail.imgPath ? detail.imgPath.trim() : "";
 
+    // 3. 카테고리 매칭 (공백 제거 후 비교하여 정확도 향상)
+    const detailCategory = detail.menuCategory?.trim();
     form.menuCategoryIdx = categories.value.find(
-      c => c.menuCategoryName === detail.menuCategory
+      c => c.menuCategoryName?.trim() === detailCategory
     )?.categoryIdx ?? null;
 
+    // 4. 재료 매칭 (공백 제거 및 숫자형 변환)
     form.menuItemList = detail.menuItemList.map(i => {
-      const isStandardUnit = UNIT_OPTIONS.includes(i.menuUnit);
+      // UNIT_OPTIONS에 포함되어 있으면서 '기타'가 아닌 경우만 표준 단위로 간주
+      const isStandardUnit = UNIT_OPTIONS.includes(i.menuUnit) && i.menuUnit !== '기타';
+
+      const detailProductName = i.productName?.trim();
+      const product = products.value.find(p => p.productName?.trim() === detailProductName);
+
       return {
-        productIdx: products.value.find(p => p.productName === i.productName)?.idx ?? '',
-        quantity: i.quantity,
+        productIdx: product?.idx ?? '',
+        quantity: Number(i.quantity), // 확실하게 숫자로 변환
         menuUnit: isStandardUnit ? i.menuUnit : '기타',
         customUnit: isStandardUnit ? '' : i.menuUnit
       };
     });
 
     menuForm.value = form;
-    console.log(menuForm.value)
-
-    formattedPriceInput.value = (detail.price || 0).toLocaleString('ko-KR');
-
     showMenuModal.value = true;
   } catch (error) {
-    console.error("수정 데이터 로드 실패:", error);
     showToast("메뉴 상세 정보를 불러오는 중 오류가 발생했습니다.", 'error');
   }
 }
 
-// 숫자 이외의 문자(한글, 영문 등)를 모두 제거
+/// 🌟 1. 글자 감지 시 알람 띄우고 입력 차단
+const blockInvalidKeys = (e) => {
+  const allowedKeys = ['Backspace', 'Tab', 'ArrowLeft', 'ArrowRight', 'Delete', 'Enter'];
+
+  if (e.ctrlKey || e.metaKey) return;
+
+  // 한글 입력(IME)이 감지된 경우
+  if (e.keyCode === 229 || e.isComposing) {
+    showToast("숫자만 입력 가능합니다.", "error");
+    e.preventDefault();
+    return;
+  }
+
+  // 허용된 키나 숫자가 아닌 다른 키(영문, 특수문자 등)가 눌린 경우
+  if (!allowedKeys.includes(e.key) && !/^[0-9]$/.test(e.key)) {
+    showToast("숫자만 입력 가능합니다.", "error");
+    e.preventDefault();
+  }
+};
+
+// 🌟 2. 콤마를 찍어주고 가격을 저장하는 함수
 const onPriceInput = (e) => {
-  const rawValue = e.target.value.replace(/[^0-9]/g, '')
-  const numericValue = rawValue ? parseInt(rawValue, 10) : 0
-  menuForm.value.price = numericValue // 실제 데이터 저장
-  formattedPriceInput.value = numericValue ? numericValue.toLocaleString('ko-KR') : ''
+  const rawValue = e.target.value.replace(/[^0-9]/g, '');
+
+  if (!rawValue) {
+    menuForm.value.price = null;
+    e.target.value = '';
+    return;
+  }
+
+  let numericValue = parseInt(rawValue, 10);
+  const MAX_PRICE = 100000000;
+
+  if (numericValue > MAX_PRICE) {
+    numericValue = MAX_PRICE;
+    showToast("가격은 1억 원을 초과할 수 없습니다.", "error");
+  }
+
+  menuForm.value.price = numericValue;
+  e.target.value = numericValue.toLocaleString('ko-KR');
 };
 
 // 재료 버튼 클릭시 menuForm에 재료 추가
@@ -173,7 +211,15 @@ function handleImageChange(e) {
   const file = e.target.files[0]
   if (!file) return;
 
+  const maxSize = 5 * 1024 * 1024; // 5MB
   const allowedTypes = ['image/jpg', 'image/jpeg', 'image/png'];
+
+  if (file.size > maxSize) {
+    showToast('이미지 크기는 5MB를 초과할 수 없습니다.', 'error');
+    e.target.value = ''; // 선택된 파일 지우기
+    return;
+  }
+
   if (!allowedTypes.includes(file.type)) {
     showToast('JPG, PNG 형식의 이미지 파일만 업로드할 수 있습니다.', 'error');
     e.target.value = '';
@@ -190,7 +236,7 @@ async function uploadFileToS3() {
   if (!selectedFile.value) return null;
 
   try {
-    const presigned = await getPresignedUrl(selectedFile.value.name);
+    const presigned = await getPresignedUrl(selectedFile.value.name, selectedFile.value.size);
     const { url, fileName: s3Path } = presigned.data.result;
     await axios.put(url, selectedFile.value, {
       headers: { 'Content-Type': selectedFile.value.type }
@@ -257,7 +303,7 @@ async function saveMenu() {
       showToast(editTarget.value ? "메뉴가 수정되었습니다." : "신규 메뉴가 등록되었습니다.");
 
       if (!editTarget.value) menus.value.length = 0; // 등록일 때만 목록 초기화
-      await getMenuRes();
+      await getMenuRes(0);
 
       showMenuModal.value = false;
       selectedFile.value = null;
@@ -272,14 +318,12 @@ async function saveMenu() {
 // 카테고리 추가
 async function addCategoryAction() {
   const name = newCategoryInput.value.trim()
-  console.log(name)
   if (!name) return
   try {
     const categoryName = {
       menuCategoryName: name
     }
     const res = await postMenuCategoryRegister(categoryName)
-    console.log(res)
     if (res.data.code === 2000) {
       showToast("카테고리가 등록되었습니다.");
 
@@ -294,7 +338,7 @@ async function addCategoryAction() {
 
 // 카테고리 삭제
 async function deleteCategoryAction() {
-  const { idx, name } = confirmState.value
+  const idx = confirmState.value.idx
   closeConfirm()
   try {
     const res = await deleteCategory(idx)
@@ -328,7 +372,7 @@ async function confirmDelete() {
     const res = await putMenuDelete(deleteTarget.value.idx)
     if (res.data.code === 2000) {
       showToast("메뉴가 삭제되었습니다.");
-      await getMenuRes();
+      await getMenuRes(0);
     }
   }
   showDeleteConfirm.value = false
@@ -371,8 +415,17 @@ const changePage = (page) => {
   getMenuRes(page)
 }
 
+const resetFilters = () => {
+  searchQuery.value = ''
+  selectedCategoryIdx.value = null
+  getMenuRes(0)
+  productListRes()
+  categoryRes()
+}
+
+
 onMounted(() => {
-  getMenuRes()
+  getMenuRes(0)
   productListRes()
   categoryRes()
 })
@@ -380,14 +433,8 @@ onMounted(() => {
 
 <template>
   <div class="p-5 space-y-4">
-    <Toast :toast="toast" />
-    <ConfirmModal
-      :open="confirmState.open"
-      :title="`'${confirmState.name}' 카테고리를 삭제하시겠습니까?`"
-      confirm-text="삭제"
-      type="danger"
-      @close="closeConfirm"
-      @confirm="deleteCategoryAction" />
+    <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
+    <ConfirmModal :open="confirmState.open" :title="`'${confirmState.name}' 카테고리를 삭제하시겠습니까?`" confirm-text="삭제" type="danger" @close="closeConfirm" @confirm="deleteCategoryAction" />
     <div class="flex items-center justify-between">
       <div>
         <h1 class="text-xl font-bold text-gray-900 tracking-tight">메뉴 관리</h1>
@@ -462,7 +509,17 @@ onMounted(() => {
             </td>
           </tr>
           <tr v-if="menus.length === 0">
-            <td colspan="5" class="px-5 py-12 text-center text-gray-400 text-sm">메뉴가 없습니다.</td>
+            <td colspan="6" class="px-5 py-16 text-center">
+              <div class="flex flex-col items-center justify-center space-y-4">
+                <p class="text-gray-400 text-sm">해당하는 메뉴가 없습니다.</p>
+
+                <button @click="resetFilters"
+                        class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-[#F37321] border border-[#F37321] rounded-lg hover:bg-orange-50 transition-colors cursor-pointer">
+                  <RefreshCw class="w-4 h-4" />
+                  전체 메뉴 다시 불러오기
+                </button>
+              </div>
+            </td>
           </tr>
           </tbody>
         </table>
@@ -485,8 +542,10 @@ onMounted(() => {
             </div>
             <div class="space-y-1.5">
               <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">가격 (원)</label>
-              <input :value="formattedPriceInput" @input="onPriceInput" required type="text" placeholder="0"
-                     class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#F97316] focus:ring-4 focus:ring-[#F97316]/5 transition-all text-right" />
+              <input :value="menuForm.price !== null ? menuForm.price.toLocaleString('ko-KR') : ''"
+                @keydown="blockInvalidKeys" @input="onPriceInput" required type="text" placeholder="0"
+                class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#F97316] focus:ring-4 focus:ring-[#F97316]/5 transition-all text-right"
+              />
             </div>
           </div>
           <div class="space-y-1.5">
@@ -618,14 +677,7 @@ onMounted(() => {
         </div>
       </div>
     </div>
-    <ConfirmModal
-      :open="showDeleteConfirm"
-      title="메뉴를 삭제하시겠습니까?"
-      message="이 작업은 되돌릴 수 없습니다."
-      confirm-text="삭제"
-      type="danger"
-      @close="showDeleteConfirm = false"
-      @confirm="confirmDelete" />
+    <ConfirmModal :open="showDeleteConfirm" title="메뉴를 삭제하시겠습니까?" message="이 작업은 되돌릴 수 없습니다." confirm-text="삭제" type="danger" @close="showDeleteConfirm = false" @confirm="confirmDelete" />
     <div v-if="showCategoryModal" class="fixed inset-0 z-50 flex items-center justify-center">
       <div class="absolute inset-0 bg-black/40" @click="showCategoryModal = false"></div>
       <div class="relative bg-white rounded-lg w-full max-w-md border border-gray-200 shadow-xl">
@@ -665,7 +717,6 @@ onMounted(() => {
         @click="changePage(pagination.currentPage - 1)">
         <ChevronLeft class="w-4 h-4" />
       </button>
-
       <button v-for="pageIdx in visiblePages" :key="pageIdx"
               class="w-8 h-8 rounded text-sm font-semibold cursor-pointer transition-colors"
               :class="pagination.currentPage === pageIdx
@@ -674,7 +725,6 @@ onMounted(() => {
               @click="changePage(pageIdx)">
         {{ pageIdx + 1 }}
       </button>
-
       <button
         class="p-2 rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
         :disabled="pagination.currentPage >= pagination.totalPage - 1"

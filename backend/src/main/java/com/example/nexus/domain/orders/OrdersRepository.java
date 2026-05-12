@@ -50,9 +50,6 @@ public interface OrdersRepository extends JpaRepository<Orders, Long>, JpaSpecif
             "ORDER BY FUNCTION('DATE_FORMAT', o.createdAt, '%Y-%m')")
     List<Object[]> findDangerStatsByMonth(@Param("since") LocalDateTime since);
 
-    // 본사 발주 관리 - 본사 확정 발주 일괄 승인을 위한 대상 조회
-    List<Orders> findAllByOrdersStatus(OrdersStatus ordersStatus);
-
     // 본사 발주 관리 - 일괄 승인 시 Store, OrdersItemList, Product 한 번에 로딩 (N+1 방지)
     @Query("SELECT DISTINCT o FROM Orders o " +
             "JOIN FETCH o.store " +
@@ -60,9 +57,6 @@ public interface OrdersRepository extends JpaRepository<Orders, Long>, JpaSpecif
             "JOIN FETCH i.product " +
             "WHERE o.ordersStatus = :status")
     List<Orders> findAllByOrdersStatusWithDetails(@Param("status") OrdersStatus status);
-
-    // 본사 발주 관리 - 이상 발주 목록 조회 (위험 플래그 기준)
-    List<Orders> findAllByIsDangerTrue();
 
     // 본사 발주 관리 - 이상 발주 재평가 시 Store, OrdersItemList 한 번에 로딩 (N+1 방지)
     @Query("SELECT DISTINCT o FROM Orders o " +

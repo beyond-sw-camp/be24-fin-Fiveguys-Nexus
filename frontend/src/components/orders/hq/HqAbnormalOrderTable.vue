@@ -110,7 +110,7 @@ function resetFilters() {
                 {{ o.status === 'APPROVE' || o.status === 'REJECT' ? '처리완료' : 'DANGER' }}
               </span>
             </td>
-            <td class="px-5 py-3.5">
+            <td class="px-5 py-3.5 h-[52px]">
               <div v-if="o.status !== 'APPROVE' && o.status !== 'REJECT'" class="flex justify-center gap-1.5">
                 <button @click.stop="$emit('approve', o)"
                   class="px-2.5 py-1 bg-[#F37321] text-white text-xs font-semibold hover:bg-[#e0661d] rounded cursor-pointer">승인</button>

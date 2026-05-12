@@ -103,7 +103,7 @@ public class MenuService {
 
         return Map.of(
                 "url", url,
-                "fileName", path // 프론트에서 나중에 DB에 저장할 때 필요하니까 같이 보내주는 게 좋아요!
+                "fileName", path
         );
     }
     private String createPath(String fileName) {
@@ -119,9 +119,9 @@ public class MenuService {
             Optional<Menu> existingMenu = menuRepository.findByMenuName(dto.getMenuName());
             if (existingMenu.isPresent()) {
                 if (!existingMenu.get().isDeleted()) {
-                    throw new BaseException(DUPLICATE_MENU_NAME); // 이미 사용 중인 이름
+                    throw new BaseException(DUPLICATE_MENU_NAME);
                 } else {
-                    throw new BaseException(DELETED_MENU_NAME); // 삭제된 이름 (에러 코드 추가 필요 - 아래 3번 참고)
+                    throw new BaseException(DELETED_MENU_NAME);
                 }
             }
 
@@ -182,7 +182,7 @@ public class MenuService {
                 if (!duplicateMenu.get().isDeleted()) {
                     throw new BaseException(DUPLICATE_MENU_NAME);
                 } else {
-                    throw new BaseException(DELETED_MENU_NAME); // 삭제된 이름
+                    throw new BaseException(DELETED_MENU_NAME);
                 }
             }
 

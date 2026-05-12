@@ -5,8 +5,6 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
 
 public class DangerDto {
 
@@ -43,9 +41,7 @@ public class DangerDto {
         private Integer avgQty;
         private Integer ratio;
 
-        public static DangerListRes from(Orders entity, Integer avgQty) {
-            List<OrdersItem> items = entity.getOrdersItemList() != null ? entity.getOrdersItemList() : Collections.emptyList();
-            int totalQty = items.stream().mapToInt(OrdersItem::getCount).sum();
+        public static DangerListRes from(Orders entity, int avgQty, int totalQty) {
             int ratioValue = avgQty > 0 ? (totalQty - avgQty) * 100 / avgQty : 0;
 
             return DangerListRes.builder()

@@ -31,6 +31,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static com.example.nexus.common.model.BaseResponseStatus.NOT_FOUND_USER;
@@ -50,6 +51,10 @@ public class ReportService {
 
     @Value("${spring.cloud.aws.s3.report-bucket}")
     private String reportBucket;
+
+    @Value("${spring.cloud.aws.s3.enabled:true}")
+    private boolean isS3Enabled;
+
 
     // 0. 생성자 주입
     public ReportService(ReportRepository reportRepository,
@@ -111,9 +116,24 @@ public class ReportService {
         String s3Key = "reports/" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"))
                 + "/" + UUID.randomUUID() + ".pdf";
 
+        // 2. 환경별 스위치 검사 (개발 편의성)
+        if (!isS3Enabled) {
+            System.out.println("[DEV MODE] S3 업로드를 건너뛰고 가짜 경로로 DB에 저장합니다.");
+            // S3 업로드 없이 바로 DB 저장 로직으로 넘어감
+            reportRepository.save(Report.builder()
+                    .title(title)
+                    .filePath("dev-mode-dummy/" + s3Key) // 가짜 경로 저장
+                    .user(user)
+                    .build());
+            return title + " 보고서 생성이 완료되었습니다! (DEV MODE)";
+        }
+
         // 1. S3에 PDF 파일 먼저 업로드
         s3Client.putObject(PutObjectRequest.builder()
-                        .bucket(reportBucket).key(s3Key).contentType("application/pdf").build(),
+                        .bucket(reportBucket)
+                        .key(s3Key)
+                        .contentType("application/pdf")
+                        .build(),
                 RequestBody.fromFile(tempFile));
 
         // 2. DB 저장 시도 및 수동 롤백

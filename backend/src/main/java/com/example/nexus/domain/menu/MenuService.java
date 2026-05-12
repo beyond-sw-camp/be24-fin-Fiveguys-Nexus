@@ -40,6 +40,9 @@ public class MenuService {
     @Value("${spring.cloud.aws.s3.menu-bucket}")
     private String menuBucket;
 
+    @Value("${spring.cloud.aws.s3.enabled:true}")
+    private boolean isS3Enabled;
+
     @Transactional(readOnly = true)
     public MenuDto.MenuPageRes list(MenuDto.MenuSearchPagingReq searchReq, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
@@ -49,8 +52,11 @@ public class MenuService {
         return MenuDto.MenuPageRes.from(result);
     }
 
+    @Transactional(readOnly = true)
     public MenuDto.MenuItemListRes menuItemList(Long menuIdx) {
         Optional<Menu> res = menuRepository.findById(menuIdx);
+
+        res.orElseThrow(() -> new BaseException(NOT_FOUND_MENU));
 
         if(res.isPresent()){
             Menu menu = res.get();
@@ -59,14 +65,31 @@ public class MenuService {
         return null;
     }
 
-    public Map<String, String> getPresignedUrl(String fileName) {
+    public Map<String, String> getPresignedUrl(String fileName, long fileSize) {
         // 1. 경로 및 고유 파일명 생성 (기존 로직 유지)
         String path = createPath(fileName);
+
+
+        // 🌟 1. 파일 크기 검사 (예: 5MB 제한)
+        long maxSize = 5 * 1024 * 1024;
+        if (fileSize > maxSize) {
+            throw new BaseException(EXCEED_IMG_FILE_SIZE);
+        }
+
+        // 2. 환경별 스위치 검사 (개발 편의성)
+        if (!isS3Enabled) {
+            System.out.println("[DEV MODE] S3 통신을 건너뛰고 가짜 URL을 반환합니다.");
+            return Map.of(
+                    "url", "http://local-test-dummy.com/" + path,
+                    "fileName", path
+            );
+        }
 
         // 2. S3 업로드 요청 생성
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(menuBucket)
                 .key(path)
+                .contentLength(fileSize)
                 .build();
 
         // 3. Pre-signed 요청 설정 (유효시간 분)
@@ -210,6 +233,13 @@ public class MenuService {
         if (key == null || key.isBlank()) {
             return;
         }
+
+        // 🌟 3. 스위치가 꺼져있으면 삭제 로직 건너뛰기
+        if (!isS3Enabled) {
+            System.out.println("[연습 모드] S3 파일 삭제를 건너뜁니다. (Key: " + key + ")");
+            return;
+        }
+
         try {
             s3Client.deleteObject(DeleteObjectRequest.builder()
                     .bucket(menuBucket)

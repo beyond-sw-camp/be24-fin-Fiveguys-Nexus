@@ -1,5 +1,5 @@
 <script setup>
-import {ref, computed, onMounted, reactive, watch, nextTick} from 'vue'
+import {ref, computed, onMounted, reactive, watch} from 'vue'
 import {Plus, Search, Image as ImageIcon, Tag, Trash2, ChevronRight, ChevronLeft, RefreshCw} from 'lucide-vue-next'
 import {getProductList, getCategoryList, getMenuList, getMenuItemList, getPresignedUrl, postNewRegister, putMenuUpdate, putMenuDelete, postMenuCategoryRegister, deleteCategory} from '@/api/menu/index.js'
 import axios from 'axios'
@@ -102,9 +102,8 @@ function openNewMenuModal() {
 // 수정 모달창
 async function openEditMenuModal(menu) {
   try {
-    // 0. 기초 데이터가 로드되지 않았다면 로드 시도 (매칭 실패 방지)
-    if (products.value.length === 0) await productListRes();
-    if (categories.value.length === 0) await categoryRes();
+    await productListRes();
+    await categoryRes();
 
     // 1. 상세 데이터 조회
     const res = await getMenuItemList(menu.idx);
@@ -128,15 +127,11 @@ async function openEditMenuModal(menu) {
 
     // 4. 재료 매칭 (공백 제거 및 숫자형 변환)
     form.menuItemList = detail.menuItemList.map(i => {
-      // UNIT_OPTIONS에 포함되어 있으면서 '기타'가 아닌 경우만 표준 단위로 간주
       const isStandardUnit = UNIT_OPTIONS.includes(i.menuUnit) && i.menuUnit !== '기타';
 
-      const detailProductName = i.productName?.trim();
-      const product = products.value.find(p => p.productName?.trim() === detailProductName);
-
       return {
-        productIdx: product?.idx ?? '',
-        quantity: Number(i.quantity), // 확실하게 숫자로 변환
+        productIdx: i.productIdx || '',
+        quantity: Number(i.quantity),
         menuUnit: isStandardUnit ? i.menuUnit : '기타',
         customUnit: isStandardUnit ? '' : i.menuUnit
       };
@@ -145,11 +140,11 @@ async function openEditMenuModal(menu) {
     menuForm.value = form;
     showMenuModal.value = true;
   } catch (error) {
-    showToast("메뉴 상세 정보를 불러오는 중 오류가 발생했습니다.", 'error');
+    showToast("메뉴 상세 정보를 불러오는 중 오류가 발생했습니다.", error);
   }
 }
 
-/// 🌟 1. 글자 감지 시 알람 띄우고 입력 차단
+// 글자 감지 시 알람 띄우고 입력 차단
 const blockInvalidKeys = (e) => {
   const allowedKeys = ['Backspace', 'Tab', 'ArrowLeft', 'ArrowRight', 'Delete', 'Enter'];
 
@@ -169,7 +164,7 @@ const blockInvalidKeys = (e) => {
   }
 };
 
-// 🌟 2. 콤마를 찍어주고 가격을 저장하는 함수
+// 콤마를 찍어주고 가격을 저장하는 함수
 const onPriceInput = (e) => {
   const rawValue = e.target.value.replace(/[^0-9]/g, '');
 
@@ -423,7 +418,6 @@ const resetFilters = () => {
   categoryRes()
 }
 
-
 onMounted(() => {
   getMenuRes(0)
   productListRes()
@@ -512,9 +506,7 @@ onMounted(() => {
             <td colspan="6" class="px-5 py-16 text-center">
               <div class="flex flex-col items-center justify-center space-y-4">
                 <p class="text-gray-400 text-sm">해당하는 메뉴가 없습니다.</p>
-
-                <button @click="resetFilters"
-                        class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-[#F37321] border border-[#F37321] rounded-lg hover:bg-orange-50 transition-colors cursor-pointer">
+                <button @click="resetFilters" class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-[#F37321] border border-[#F37321] rounded-lg hover:bg-orange-50 transition-colors cursor-pointer">
                   <RefreshCw class="w-4 h-4" />
                   전체 메뉴 다시 불러오기
                 </button>
@@ -717,8 +709,7 @@ onMounted(() => {
         @click="changePage(pagination.currentPage - 1)">
         <ChevronLeft class="w-4 h-4" />
       </button>
-      <button v-for="pageIdx in visiblePages" :key="pageIdx"
-              class="w-8 h-8 rounded text-sm font-semibold cursor-pointer transition-colors"
+      <button v-for="pageIdx in visiblePages" :key="pageIdx" class="w-8 h-8 rounded text-sm font-semibold cursor-pointer transition-colors"
               :class="pagination.currentPage === pageIdx
           ? 'bg-[#F37321] text-white'
           : 'text-gray-500 hover:bg-gray-50'"

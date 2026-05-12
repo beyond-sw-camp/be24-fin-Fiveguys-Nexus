@@ -11,7 +11,8 @@ export const getMenuList = (searchReq, page, size) => {
   });
 }
 
-export const getProductList = () => api.get('/product/list')
+export const getProductList = (page = 0, size = 100) =>
+  api.get('/product/list', { params: { page, size } })
 
 export const getCategoryList = () => api.get('/menu/category/list')
 

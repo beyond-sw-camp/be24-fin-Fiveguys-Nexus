@@ -5,6 +5,8 @@ import com.example.nexus.domain.user.model.AuthUserDetails;
 import com.example.nexus.domain.user.model.User;
 import com.example.nexus.domain.user.model.UserDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -19,6 +21,16 @@ import java.util.Optional;
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JavaMailSender javaMailSender;
+
+    public void sendTempPassword(String toEmail, String tempPassword) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(toEmail);
+        message.setTo(toEmail);
+        message.setSubject("[Nexus] 임시 비밀번호 안내");
+        message.setText("임시 비밀번호는 [ " + tempPassword + " ] 입니다.");
+        javaMailSender.send(message);
+    }
 
     public void signup(UserDto.SignupReq dto) {
         User user = dto.toEntity();

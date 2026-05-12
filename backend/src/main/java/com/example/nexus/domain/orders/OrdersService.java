@@ -422,7 +422,7 @@ public class OrdersService {
         Store store = storeRepository.findByUserIdx(userIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
 
-        Orders orders = ordersRepository.findById(ordersIdx)
+        Orders orders = ordersRepository.findByIdForUpdate(ordersIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
 
         if (!orders.getStore().getIdx().equals(store.getIdx())) {
@@ -454,7 +454,8 @@ public class OrdersService {
             throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
         }
 
-        Orders orders = item.getOrders();
+        Orders orders = ordersRepository.findByIdForUpdate(item.getOrders().getIdx())
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
         long priceDiff = (long) item.getProduct().getUnitPrice() * (count - item.getCount());
         item.updateCount(count);
         orders.updatePrice(orders.getPrice() + priceDiff);
@@ -473,7 +474,8 @@ public class OrdersService {
             throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
         }
 
-        Orders orders = item.getOrders();
+        Orders orders = ordersRepository.findByIdForUpdate(item.getOrders().getIdx())
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
         orders.updatePrice(orders.getPrice() - (long) item.getProduct().getUnitPrice() * item.getCount());
         ordersItemRepository.delete(item);
     }

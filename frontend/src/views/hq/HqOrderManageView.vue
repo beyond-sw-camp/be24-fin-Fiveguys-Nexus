@@ -142,6 +142,7 @@ function onAbnormalPageChange(page) {
 const confirmedOrders = ref([])
 const confirmedPage = ref(0)
 const confirmedTotalPages = ref(1)
+const confirmedTotalElements = ref(0)
 const confirmedSearchParams = ref({})
 
 async function fetchConfirmedOrders(params = confirmedSearchParams.value, page = confirmedPage.value) {
@@ -157,6 +158,7 @@ async function fetchConfirmedOrders(params = confirmedSearchParams.value, page =
     }))
     confirmedPage.value = data.number
     confirmedTotalPages.value = data.totalPages
+    confirmedTotalElements.value = data.totalElements
   } catch (e) {
     console.error('확정 발주 목록 조회 실패', e)
   }
@@ -172,13 +174,13 @@ function onConfirmedPageChange(page) {
 }
 
 function approveAllConfirmed() {
-  if (confirmedOrders.value.length === 0) {
+  if (confirmedTotalElements.value === 0) {
     showToast('승인할 확정 발주가 없습니다.', 'error')
     return
   }
   openConfirm({
     type: 'warning',
-    title: `확정 발주 ${confirmedOrders.value.length}건을 전체 승인하시겠습니까?`,
+    title: `확정 발주 ${confirmedTotalElements.value}건을 전체 승인하시겠습니까?`,
     confirmText: '전체 승인',
     action: async () => {
       try {

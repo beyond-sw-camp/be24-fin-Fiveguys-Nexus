@@ -140,7 +140,7 @@ public class OrdersService {
 
     // 발주 상세 조회 (단건)
     public OrdersDto.OrdersRes findById(Long ordersIdx) {
-        Orders orders = ordersRepository.findById(ordersIdx).orElseThrow(
+        Orders orders = ordersRepository.findByIdWithDetails(ordersIdx).orElseThrow(
                 () -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
         return OrdersDto.OrdersRes.from(orders);
     }
@@ -366,7 +366,7 @@ public class OrdersService {
             }
         }
 
-        return ordersRepository.findAllByStore_IdxAndOrdersStatusAndOrdersTypeOrderByCreatedAtDesc(store.getIdx(), OrdersStatus.WAITING, OrdersType.AUTO).stream()
+        return ordersRepository.findPendingWithDetails(store.getIdx(), OrdersStatus.WAITING, OrdersType.AUTO).stream()
                 .map(order -> OrdersDto.OrdersRes.fromWithStock(order, stockMap))
                 .toList();
     }

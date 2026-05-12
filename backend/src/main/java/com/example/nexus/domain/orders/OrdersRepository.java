@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface OrdersRepository extends JpaRepository<Orders, Long>, JpaSpecificationExecutor<Orders> {
 
@@ -87,6 +88,25 @@ public interface OrdersRepository extends JpaRepository<Orders, Long>, JpaSpecif
     // 점주 제안 발주서 & 점주 대시보드  - 미확정 제안 발주서 목록
     List<Orders> findAllByStore_IdxAndOrdersStatusAndOrdersTypeOrderByCreatedAtDesc(Long storeIdx, OrdersStatus ordersStatus, OrdersType ordersType);
 
+    // 점주 제안 발주서 - Store, OrdersItemList, Product 한 번에 로딩 (N+1 방지)
+    @Query("SELECT DISTINCT o FROM Orders o " +
+            "JOIN FETCH o.store " +
+            "JOIN FETCH o.ordersItemList i " +
+            "JOIN FETCH i.product " +
+            "WHERE o.store.idx = :storeIdx AND o.ordersStatus = :status AND o.ordersType = :type " +
+            "ORDER BY o.createdAt DESC")
+    List<Orders> findPendingWithDetails(@Param("storeIdx") Long storeIdx, @Param("status") OrdersStatus status, @Param("type") OrdersType type);
+
+    // 발주 상세 조회 - Store, OrdersItemList, Product 한 번에 로딩 (N+1 방지)
+    @Query("SELECT DISTINCT o FROM Orders o " +
+            "JOIN FETCH o.store " +
+            "LEFT JOIN FETCH o.ordersItemList i " +
+            "LEFT JOIN FETCH i.product " +
+            "LEFT JOIN FETCH o.delivery " +
+            "WHERE o.idx = :idx")
+    Optional<Orders> findByIdWithDetails(@Param("idx") Long idx);
+
     // 점주 발주 관리 - 점주 이력 페이징 조회
+    @EntityGraph(attributePaths = {"store", "ordersItemList", "ordersItemList.product", "delivery"})
     Page<Orders> findAllByStore_IdxAndOrdersStatusIn(Long storeIdx, List<OrdersStatus> ordersStatuses, Pageable pageable);
 }

@@ -3,10 +3,12 @@ package com.example.nexus.domain.orders;
 import com.example.nexus.common.enums.OrdersStatus;
 import com.example.nexus.common.enums.OrdersType;
 import com.example.nexus.domain.orders.model.Orders;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -50,7 +52,23 @@ public interface OrdersRepository extends JpaRepository<Orders, Long>, JpaSpecif
             "ORDER BY FUNCTION('DATE_FORMAT', o.createdAt, '%Y-%m')")
     List<Object[]> findDangerStatsByMonth(@Param("since") LocalDateTime since);
 
-    // 본사 발주 관리 - 일괄 승인 시 Store, OrdersItemList, Product 한 번에 로딩 (N+1 방지)
+    // 동시성 제어 - 단건 비관적 잠금 (상태 변경 전용)
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT o FROM Orders o WHERE o.idx = :idx")
+    Optional<Orders> findByIdForUpdate(@Param("idx") Long idx);
+
+    // 동시성 제어 - 단건 비관적 잠금 + 연관 엔티티 로딩 (승인 시 출고 처리 필요)
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT DISTINCT o FROM Orders o " +
+            "JOIN FETCH o.store " +
+            "LEFT JOIN FETCH o.ordersItemList i " +
+            "LEFT JOIN FETCH i.product " +
+            "LEFT JOIN FETCH o.delivery " +
+            "WHERE o.idx = :idx")
+    Optional<Orders> findByIdWithDetailsForUpdate(@Param("idx") Long idx);
+
+    // 본사 발주 관리 - 일괄 승인 시 Store, OrdersItemList, Product 한 번에 로딩 + 비관적 잠금
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT DISTINCT o FROM Orders o " +
             "JOIN FETCH o.store " +
             "JOIN FETCH o.ordersItemList i " +

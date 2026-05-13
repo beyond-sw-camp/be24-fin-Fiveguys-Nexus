@@ -1,5 +1,5 @@
 <script setup>
-import {ref, computed, onMounted, reactive, watch} from 'vue'
+import {ref, computed, onMounted, reactive, watch, nextTick} from 'vue'
 import {Plus, Search, Image as ImageIcon, Tag, Trash2, ChevronRight, ChevronLeft, RefreshCw} from 'lucide-vue-next'
 import {getProductList, getCategoryList, getMenuList, getMenuItemList, getPresignedUrl, postNewRegister, putMenuUpdate, putMenuDelete, postMenuCategoryRegister, deleteCategory} from '@/api/menu/index.js'
 import axios from 'axios'
@@ -105,13 +105,13 @@ async function openEditMenuModal(menu) {
     await productListRes();
     await categoryRes();
 
-    // 1. 상세 데이터 조회
+    // 상세 데이터 조회
     const res = await getMenuItemList(menu.idx);
     const detail = res.data.result;
 
     editTarget.value = menu;
 
-    // 2. 데이터 재조립
+    // 데이터 재조립
     const form = getInFrom();
     form.menuName = detail.menuName;
     form.price = detail.price || 0; // null 방지
@@ -119,13 +119,13 @@ async function openEditMenuModal(menu) {
     form.imgPath = detail.imgPath ? detail.imgPath.trim() : "";
     form.imgName = detail.imgPath ? detail.imgPath.trim() : "";
 
-    // 3. 카테고리 매칭 (공백 제거 후 비교하여 정확도 향상)
+    // 카테고리 매칭 (공백 제거 후 비교하여 정확도 향상)
     const detailCategory = detail.menuCategory?.trim();
     form.menuCategoryIdx = categories.value.find(
       c => c.menuCategoryName?.trim() === detailCategory
     )?.categoryIdx ?? null;
 
-    // 4. 재료 매칭 (공백 제거 및 숫자형 변환)
+    // 재료 매칭 (공백 제거 및 숫자형 변환)
     form.menuItemList = detail.menuItemList.map(i => {
       const isStandardUnit = UNIT_OPTIONS.includes(i.menuUnit) && i.menuUnit !== '기타';
 
@@ -144,33 +144,32 @@ async function openEditMenuModal(menu) {
   }
 }
 
-// 글자 감지 시 알람 띄우고 입력 차단
-const blockInvalidKeys = (e) => {
-  const allowedKeys = ['Backspace', 'Tab', 'ArrowLeft', 'ArrowRight', 'Delete', 'Enter'];
-
-  if (e.ctrlKey || e.metaKey) return;
-
-  // 한글 입력(IME)이 감지된 경우
-  if (e.keyCode === 229 || e.isComposing) {
-    showToast("숫자만 입력 가능합니다.", "error");
-    e.preventDefault();
-    return;
-  }
-
-  // 허용된 키나 숫자가 아닌 다른 키(영문, 특수문자 등)가 눌린 경우
-  if (!allowedKeys.includes(e.key) && !/^[0-9]$/.test(e.key)) {
-    showToast("숫자만 입력 가능합니다.", "error");
-    e.preventDefault();
-  }
-};
 
 // 콤마를 찍어주고 가격을 저장하는 함수
 const onPriceInput = (e) => {
-  const rawValue = e.target.value.replace(/[^0-9]/g, '');
+  const inputValue = e.target.value;
+
+  // 한글/영문 감지 시 포커스 해제 (조합 파괴 트릭)
+  if (e.isComposing || /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣a-zA-Z]/.test(inputValue)) {
+    showToast("숫자만 입력 가능합니다.", "error");
+    e.target.blur();
+
+    setTimeout(() => {
+      // 기존 가격으로 안전하게 되돌리고 다시 포커스
+      e.target.value = menuForm.value.price !== null ? menuForm.value.price.toLocaleString('ko-KR') : '';
+      e.target.focus();
+    }, 10);
+    return;
+  }
+
+  // 정상적인 숫자 처리 로직
+  const rawValue = inputValue.replace(/[^0-9]/g, '');
 
   if (!rawValue) {
     menuForm.value.price = null;
-    e.target.value = '';
+    nextTick(() => {
+      e.target.value = '';
+    });
     return;
   }
 
@@ -182,8 +181,12 @@ const onPriceInput = (e) => {
     showToast("가격은 1억 원을 초과할 수 없습니다.", "error");
   }
 
+  // Vue 상태 업데이트 후 DOM 안전하게 업데이트
   menuForm.value.price = numericValue;
-  e.target.value = numericValue.toLocaleString('ko-KR');
+
+  nextTick(() => {
+    e.target.value = numericValue.toLocaleString('ko-KR');
+  });
 };
 
 // 재료 버튼 클릭시 menuForm에 재료 추가
@@ -250,10 +253,10 @@ const isFormValid = computed(() => {
     menuForm.value.menuCategoryIdx !== null &&
     menuForm.value.menuItemList.length > 0 &&
     menuForm.value.menuItemList.every(item => {
-      // 1. 제품과 수량은 기본적으로 필수
+      // 제품과 수량은 기본적으로 필수
       const baseValid = item.productIdx && item.quantity > 0;
 
-      // 2. 단위 검증 로직
+      // 단위 검증 로직
       let unitValid = false;
       if (item.menuUnit === '기타') {
         // '기타'일 때는 customUnit에 값이 채워져 있어야 함
@@ -427,12 +430,9 @@ onMounted(() => {
 
 <template>
   <div class="p-5 space-y-4">
-    <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
     <ConfirmModal :open="confirmState.open" :title="`'${confirmState.name}' 카테고리를 삭제하시겠습니까?`" confirm-text="삭제" type="danger" @close="closeConfirm" @confirm="deleteCategoryAction" />
     <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-xl font-bold text-gray-900 tracking-tight">메뉴 관리</h1>
-      </div>
+      <div><h1 class="text-xl font-bold text-gray-900 tracking-tight">메뉴 관리</h1></div>
       <div class="flex gap-2">
         <button @click="showCategoryModal = true"
                 class="px-4 py-2 rounded-lg border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 flex items-center gap-2 cursor-pointer transition-colors shadow-sm">
@@ -493,22 +493,17 @@ onMounted(() => {
             </td>
             <td class="px-5 py-3.5" @click.stop>
               <div class="flex justify-center gap-2">
-                <button @click="openEditMenuModal(menu)"
-                        class="px-3 py-1.5 text-xs font-semibold text-[#F37321] border border-[#F37321] rounded hover:bg-orange-50 transition-colors cursor-pointer">수정
-                </button>
-                <button @click="openDeleteConfirm(menu)"
-                        class="px-3 py-1.5 text-xs font-semibold text-red-500 border border-red-400 rounded hover:bg-red-50 transition-colors cursor-pointer">삭제
-                </button>
+                <button @click="openEditMenuModal(menu)" class="px-3 py-1.5 text-xs font-semibold text-[#F37321] border border-[#F37321] rounded hover:bg-orange-50 transition-colors cursor-pointer">수정</button>
+                <button @click="openDeleteConfirm(menu)" class="px-3 py-1.5 text-xs font-semibold text-red-500 border border-red-400 rounded hover:bg-red-50 transition-colors cursor-pointer">삭제</button>
               </div>
             </td>
           </tr>
           <tr v-if="menus.length === 0">
             <td colspan="6" class="px-5 py-16 text-center">
               <div class="flex flex-col items-center justify-center space-y-4">
-                <p class="text-gray-400 text-sm">해당하는 메뉴가 없습니다.</p>
+                <p class="text-gray-400 text-sm">등록된 메뉴가 없거나 검색 결과가 없습니다.</p>
                 <button @click="resetFilters" class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-[#F37321] border border-[#F37321] rounded-lg hover:bg-orange-50 transition-colors cursor-pointer">
-                  <RefreshCw class="w-4 h-4" />
-                  전체 메뉴 다시 불러오기
+                  <RefreshCw class="w-4 h-4" />전체 메뉴 다시 불러오기
                 </button>
               </div>
             </td>
@@ -518,7 +513,8 @@ onMounted(() => {
       </div>
     </div>
     <!--  신규 메뉴 등록 / 수정 모달  -->
-    <div v-if="showMenuModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <Teleport to="body">
+    <div v-if="showMenuModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-hidden">
       <div class="absolute inset-0 bg-black/40 " @click="showMenuModal = false"></div>
       <div class="relative bg-white rounded-xl w-full max-w-2xl border border-gray-200 shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
         <div class="px-7 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
@@ -529,14 +525,11 @@ onMounted(() => {
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-1.5">
               <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">메뉴명</label>
-              <input v-model="menuForm.menuName" required type="text" placeholder="예: 아메리카노"
-                     class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#F97316] focus:ring-4 focus:ring-[#F97316]/5 transition-all" />
+              <input v-model="menuForm.menuName" required type="text" placeholder="예: 아메리카노" class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#F97316] focus:ring-4 focus:ring-[#F97316]/5 transition-all" />
             </div>
             <div class="space-y-1.5">
               <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">가격 (원)</label>
-              <input :value="menuForm.price !== null ? menuForm.price.toLocaleString('ko-KR') : ''"
-                @keydown="blockInvalidKeys" @input="onPriceInput" required type="text" placeholder="0"
-                class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#F97316] focus:ring-4 focus:ring-[#F97316]/5 transition-all text-right"
+              <input :value="menuForm.price !== null ? menuForm.price.toLocaleString('ko-KR') : ''" @input="onPriceInput" required type="text" placeholder="0" class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#F97316] focus:ring-4 focus:ring-[#F97316]/5 transition-all text-right"
               />
             </div>
           </div>
@@ -614,8 +607,10 @@ onMounted(() => {
         </form>
       </div>
     </div>
+    </Teleport>
     <!-- 재료 목록 상세 모달  -->
-    <div v-if="showIngredientModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <Teleport to="body">
+    <div v-if="showIngredientModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-hidden">
       <div class="absolute inset-0 bg-black/40 " @click="showIngredientModal = false"></div>
       <div class="relative bg-white rounded-xl w-full max-w-lg border border-gray-200 shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
         <div class="px-7 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
@@ -632,8 +627,7 @@ onMounted(() => {
                    :src="'https://nexus-menu-assets.s3.ap-northeast-2.amazonaws.com/' + selectedMenu.imgPath"
                    :alt="'nexus ' + selectedMenu?.menuName" class="w-full h-full object-cover"
                    @error="(e) => e.target.src = 'https://nexus-menu-assets.s3.ap-northeast-2.amazonaws.com/theVenti_logo.png'" />
-              <img v-else :src="'https://nexus-menu-assets.s3.ap-northeast-2.amazonaws.com/theVenti_logo.png'"
-                   alt="NEXUS" class="w-full h-full object-cover" />
+              <img v-else :src="'https://nexus-menu-assets.s3.ap-northeast-2.amazonaws.com/theVenti_logo.png'" alt="NEXUS" class="w-full h-full object-cover" />
             </div>
           </div>
         </div>
@@ -669,6 +663,7 @@ onMounted(() => {
         </div>
       </div>
     </div>
+    </Teleport>
     <ConfirmModal :open="showDeleteConfirm" title="메뉴를 삭제하시겠습니까?" message="이 작업은 되돌릴 수 없습니다." confirm-text="삭제" type="danger" @close="showDeleteConfirm = false" @confirm="confirmDelete" />
     <div v-if="showCategoryModal" class="fixed inset-0 z-50 flex items-center justify-center">
       <div class="absolute inset-0 bg-black/40" @click="showCategoryModal = false"></div>
@@ -710,18 +705,14 @@ onMounted(() => {
         <ChevronLeft class="w-4 h-4" />
       </button>
       <button v-for="pageIdx in visiblePages" :key="pageIdx" class="w-8 h-8 rounded text-sm font-semibold cursor-pointer transition-colors"
-              :class="pagination.currentPage === pageIdx
-          ? 'bg-[#F37321] text-white'
-          : 'text-gray-500 hover:bg-gray-50'"
-              @click="changePage(pageIdx)">
+              :class="pagination.currentPage === pageIdx? 'bg-[#F37321] text-white' : 'text-gray-500 hover:bg-gray-50'" @click="changePage(pageIdx)">
         {{ pageIdx + 1 }}
       </button>
-      <button
-        class="p-2 rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-        :disabled="pagination.currentPage >= pagination.totalPage - 1"
-        @click="changePage(pagination.currentPage + 1)">
+      <button class="p-2 rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+        :disabled="pagination.currentPage >= pagination.totalPage - 1" @click="changePage(pagination.currentPage + 1)">
         <ChevronRight class="w-4 h-4" />
       </button>
     </div>
+    <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
   </div>
 </template>

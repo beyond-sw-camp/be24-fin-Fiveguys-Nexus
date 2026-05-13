@@ -46,7 +46,12 @@ public interface StoreInventoryRepository extends JpaRepository<StoreInventory, 
     long countByStore_IdxAndStatus(Long storeIdx, InventoryStatus status);
 
     // 점주 대시보드용 - 재고 위험 품목 목록 (CRITICAL/LOW 상태 조회)
-    List<StoreInventory> findByStore_IdxAndStatusInOrderByStatusDesc(Long storeIdx, List<InventoryStatus> statuses);
+    @Query("SELECT s FROM StoreInventory s JOIN FETCH s.product " +
+            "WHERE s.store.idx = :storeIdx AND s.status IN :statuses " +
+            "ORDER BY s.status DESC")
+    List<StoreInventory> findByStore_IdxAndStatusInOrderByStatusDesc(
+            @Param("storeIdx") Long storeIdx,
+            @Param("statuses") List<InventoryStatus> statuses);
 
     Optional<StoreInventory> findByStore_IdxAndProduct_IdxAndManufacturedDate(Long storeIdx, Long productIdx, LocalDateTime manufacturedDate);
 

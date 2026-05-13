@@ -103,8 +103,11 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
     );
 
     // 점주 대시보드 - 배송완료 제외 최신순
+    @Query("SELECT d FROM Delivery d JOIN FETCH d.orders o " +
+            "WHERE o.store.idx = :storeIdx AND d.deliveryStatus <> :excludeStatus " +
+            "ORDER BY d.departureDate DESC")
     List<Delivery> findByOrders_Store_IdxAndDeliveryStatusNotOrderByDepartureDateDesc(
-            Long storeIdx,
-            DeliveryStatus excludeStatus
+            @Param("storeIdx") Long storeIdx,
+            @Param("excludeStatus") DeliveryStatus excludeStatus
     );
 }

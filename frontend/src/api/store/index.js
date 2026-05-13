@@ -23,7 +23,7 @@ export const getStoreInventoryByStore = (storeIdx, page = 0, size = 10) =>
   api.get(`/store/inventory/list/${storeIdx}`, { params: { page, size } })
 
 export const getPresignedUrl = (fileName, fileSize ) =>
-  api.get('/store/presignedUrl/${encodeURIComponent(fileName)}?fileSize=${fileSize}')
+  api.get(`/store/presignedUrl/${fileName}?fileSize=${fileSize}`)
 
 export const postNewRegister = (storeRegDto)=>
   api.post('/store/new/register',storeRegDto)

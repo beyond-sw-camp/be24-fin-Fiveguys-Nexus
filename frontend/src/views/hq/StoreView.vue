@@ -51,7 +51,6 @@ const storeListRes = async (page = 0)=>{
   // 토탈 수 조회
   const totalRes = await getStoreTotal()
   storeTotalCount.value = totalRes.data.result
-  console.log(storeTotalCount.value)
   // 가맹점 리스트 조회
   const res = await getStoreList(searchReq, page, pagination.currentSize)
   storesList.value.splice(0, storesList.value.length, ...res.data.result.storeList)
@@ -182,7 +181,7 @@ async function saveStore() {
     let finalFilePath = form.filePath;
     if (selectedFile.value) {
       const newS3Path = await uploadFileToS3(selectedFile.value.name,selectedFile.value.size );
-      console.log(newS3Path)
+
       if (newS3Path) {
         finalFilePath = newS3Path;
       }
@@ -292,7 +291,6 @@ async function downloadPdf() {
     window.URL.revokeObjectURL(url);
 
   } catch (error) {
-    console.error('다운로드 중 오류 발생:', error);
     // 만약 CORS 에러가 난다면, 가장 단순한 방법인 window.open을 백업으로 사용합니다.
     showToast('브라우저 보안 정책으로 인해 직접 다운로드가 제한되었습니다. 새 탭에서 파일을 엽니다.', 'error');
     window.open(fileUrl, '_blank');

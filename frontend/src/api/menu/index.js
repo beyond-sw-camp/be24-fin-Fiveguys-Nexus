@@ -19,7 +19,7 @@ export const getCategoryList = () => api.get('/menu/category/list')
 export const getMenuItemList = (menuIdx) => api.get(`/menu/item/list/${menuIdx}`)
 
 export const getPresignedUrl = (fileName, fileSize) =>
-  api.get('/menu/presignedUrl/${encodeURIComponent(fileName)}?fileSize=${fileSize}')
+  api.get(`/menu/presignedUrl/${fileName}?fileSize=${fileSize}`)
 
 export const postNewRegister = (menuRegReq) =>
   api.post('/menu/new/register', menuRegReq)

@@ -113,7 +113,15 @@ public interface OrdersRepository extends JpaRepository<Orders, Long>, JpaSpecif
     long sumApprovedPriceByStoreAndPeriod(@Param("storeIdx") Long storeIdx, @Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 
     // 점주 제안 발주서 & 점주 대시보드  - 미확정 제안 발주서 목록
-    List<Orders> findAllByStore_IdxAndOrdersStatusAndOrdersTypeOrderByCreatedAtDesc(Long storeIdx, OrdersStatus ordersStatus, OrdersType ordersType);
+    @Query("SELECT DISTINCT o FROM Orders o " +
+            "LEFT JOIN FETCH o.ordersItemList i " +
+            "LEFT JOIN FETCH i.product " +
+            "WHERE o.store.idx = :storeIdx AND o.ordersStatus = :ordersStatus AND o.ordersType = :ordersType " +
+            "ORDER BY o.createdAt DESC")
+    List<Orders> findAllByStore_IdxAndOrdersStatusAndOrdersTypeOrderByCreatedAtDesc(
+            @Param("storeIdx") Long storeIdx,
+            @Param("ordersStatus") OrdersStatus ordersStatus,
+            @Param("ordersType") OrdersType ordersType);
 
     // 점주 제안 발주서 - Store, OrdersItemList, Product 한 번에 로딩 (N+1 방지)
     @Query("SELECT DISTINCT o FROM Orders o " +

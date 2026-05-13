@@ -60,6 +60,7 @@ public class MenuDto {
     public static class ItemList{
         private Long idx;
         private Long productIdx;
+        private String productName;
         private Integer quantity;
         private String menuUnit;
 
@@ -68,6 +69,7 @@ public class MenuDto {
             return ItemList.builder()
                     .idx(entity.getIdx())
                     .productIdx(entity.getProduct().getIdx())
+                    .productName(entity.getProduct().getProductName())
                     .quantity(entity.getQuantity())
                     .menuUnit(entity.getMenuUnit())
                     .build();

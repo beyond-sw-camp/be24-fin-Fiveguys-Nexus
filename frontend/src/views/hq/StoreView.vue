@@ -64,7 +64,7 @@ const storeListRes = async (page = 0)=>{
 
 // 페이지 변경
 const changePage = (page) => {
-  // 0보다 작거나 마지막 페이지(totalPage - 1)보다 크면 무시[cite: 1]
+  // 0보다 작거나 마지막 페이지(totalPage - 1)보다 크면 무시
   if (page < 0 || page >= pagination.totalPage) return
   storeListRes(page)
 }
@@ -74,24 +74,6 @@ watch(searchQuery, () => {
   storeListRes(0)
 })
 
-// const blockInvalidKeys = (e) => {
-//   const allowedKeys = ['Backspace', 'Tab', 'ArrowLeft', 'ArrowRight', 'Delete', 'Enter'];
-//
-//   if (e.ctrlKey || e.metaKey) return;
-//
-//   // 한글 입력(IME)이 감지된 경우
-//   if (e.keyCode === 229 || e.isComposing) {
-//     showToast("숫자만 입력 가능합니다.", "error");
-//     e.preventDefault();
-//     return;
-//   }
-//
-//   // 허용된 키나 숫자가 아닌 다른 키(영문, 특수문자 등)가 눌린 경우
-//   if (!allowedKeys.includes(e.key) && !/^[0-9]$/.test(e.key)) {
-//     showToast("숫자만 입력 가능합니다.", "error");
-//     e.preventDefault();
-//   }
-// };
 
 // 사업자 번호 포맷팅
 const formatBusinessNumber = (e) => {
@@ -113,7 +95,7 @@ const formatBusinessNumber = (e) => {
     return; // 아래 숫자 포맷팅 로직은 타지 않고 여기서 종료
   }
 
-  // --- 정상적으로 숫자만 들어왔을 때의 하이픈(-) 포맷팅 로직 ---
+  // 정상적으로 숫자만 들어왔을 때의 하이픈(-) 포맷팅 로직
   let val = inputValue.replace(/[^0-9]/g, '');
   if (val.length > 10) val = val.substring(0, 10);
 
@@ -179,11 +161,11 @@ async function uploadFileToS3() {
   if (!selectedFile.value) return null;
 
   try {
-    // 1. 백엔드에 Presigned URL 요청
-    const presigned = await getPresignedUrl(selectedFile.value.name);
+    // 백엔드에 Presigned URL 요청
+    const presigned = await getPresignedUrl(selectedFile.value.name,selectedFile.value.size );
     const { url, fileName: s3Path } = presigned.data.result;
 
-    // 2. S3에 실제 파일 업로드 (PUT 방식)
+    // S3에 실제 파일 업로드 (PUT 방식)
     await axios.put(url, selectedFile.value, {
       headers: { 'Content-Type': 'application/pdf' }
     });
@@ -199,12 +181,13 @@ async function saveStore() {
   try {
     let finalFilePath = form.filePath;
     if (selectedFile.value) {
-      const newS3Path = await uploadFileToS3();
+      const newS3Path = await uploadFileToS3(selectedFile.value.name,selectedFile.value.size );
+      console.log(newS3Path)
       if (newS3Path) {
         finalFilePath = newS3Path;
       }
     }
-    // --- 수정 로직 ---
+    // [ 수정 로직 ]
     if (editTarget.value) {
       const updateData = {
         storeName: form.storeName,
@@ -224,7 +207,7 @@ async function saveStore() {
         showModal.value = false;
       }
     }
-    // --- 등록 로직 ---
+    // [ 등록 로직 ]
     else {
       const storeRegDto = {
         storeName: form.storeName,
@@ -253,9 +236,8 @@ async function saveStore() {
   }
 }
 
-// 모두 입력시 버튼 활성화
+// 필수 항목들이 비어있는지 확인 후 모두 입력시 버튼 활성화
 const isFormValid = computed(() => {
-  // 필수 항목들이 비어있는지 확인
   const fields = [
     form.storeName,
     form.ownerEmail,
@@ -288,24 +270,24 @@ async function downloadPdf() {
   const fileUrl = s3BaseUrl + filePath;
 
   try {
-    // 1. fetch로 파일을 가져옵니다.
+    // fetch로 파일을 가져옵니다.
     const response = await fetch(fileUrl);
     if (!response.ok) throw new Error('파일을 가져오는데 실패했습니다.');
 
-    // 2. 파일 데이터를 Blob(Binary Large Object)으로 변환합니다.
+    // 파일 데이터를 Blob(Binary Large Object)으로 변환합니다.
     const blob = await response.blob();
 
-    // 3. Blob 데이터를 위한 임시 URL을 생성합니다.
+    // Blob 데이터를 위한 임시 URL을 생성합니다.
     const url = window.URL.createObjectURL(blob);
 
-    // 4. 가상의 링크를 생성하여 클릭을 유도합니다.
+    // 가상의 링크를 생성하여 클릭을 유도합니다.
     const link = document.createElement('a');
     link.href = url;
     link.download = `${detailTarget.value.storeName}_사업자등록증.pdf`; // 저장될 파일명
     document.body.appendChild(link);
     link.click();
 
-    // 5. 사용이 끝난 임시 URL과 링크를 제거합니다.
+    // 사용이 끝난 임시 URL과 링크를 제거합니다.
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
 
@@ -321,12 +303,12 @@ async function downloadPdf() {
 const sample6_execDaumPostcode = () => {
   new window.daum.Postcode({
     oncomplete: (data) => {
-      let addr = ''; // 주소 변수
+      let addr = '';
 
       // 사용자가 선택한 주소 타입에 따라 해당 주소 값을 가져온다.
-      if (data.userSelectedType === 'R') { // 도로명 주소
+      if (data.userSelectedType === 'R') {
         addr = data.roadAddress;
-      } else { // 지번 주소
+      } else {
         addr = data.jibunAddress;
       }
 
@@ -344,7 +326,7 @@ const sample6_execDaumPostcode = () => {
 
 // 버튼 클릭
 const visiblePages = computed(() => {
-  const range = 10; // 한 번에 보여줄 페이지 개수
+  const range = 10;
   const currentGroup = Math.floor(pagination.currentPage / range);
   const start = currentGroup * range;
   const end = Math.min(start + range, pagination.totalPage);
@@ -369,7 +351,6 @@ onMounted(() => {
 
 <template>
   <div class="p-5 space-y-4">
-    <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
     <!-- Header -->
     <div class="flex justify-between items-center">
       <div>
@@ -379,7 +360,6 @@ onMounted(() => {
         <Plus class="w-4 h-4" /> 신규 가맹점 등록
       </button>
     </div>
-
     <!-- Summary -->
     <div class="grid grid-cols-3 gap-4">
       <div class="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
@@ -457,6 +437,7 @@ onMounted(() => {
       </table>
     </div>
     <!-- 입점 가맹점 상세 정보 모달 -->
+    <Teleport to="body">
     <div v-if="showDetailModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
       <div class="absolute inset-0 bg-black/40" @click="showDetailModal = false"></div>
       <div class="relative bg-white rounded-xl w-full max-w-lg border border-gray-200 shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
@@ -546,8 +527,10 @@ onMounted(() => {
         </div>
       </div>
     </div>
+    </Teleport>
     <!-- 신규 가맹점 등록 / 수정 모달 -->
-    <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <Teleport to="body">
+    <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-hidden">
       <div class="absolute inset-0 bg-black/40" @click="showModal = false"></div>
       <div class="relative bg-white rounded-lg w-full max-w-lg border border-gray-200 shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
         <div class="px-8 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
@@ -620,6 +603,7 @@ onMounted(() => {
         </form>
       </div>
     </div>
+    </Teleport>
     <div v-if="pagination.totalPage > 1" class="flex justify-center items-center gap-2 pt-2">
       <button
         class="p-2 rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
@@ -644,5 +628,6 @@ onMounted(() => {
         <ChevronRight class="w-4 h-4" />
       </button>
     </div>
+    <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
   </div>
 </template>

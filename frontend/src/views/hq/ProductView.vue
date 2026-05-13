@@ -80,7 +80,16 @@
             </td>
           </tr>
           <tr v-if="filteredProducts.length === 0">
-            <td colspan="9" class="px-5 py-12 text-center text-gray-400 text-sm">등록된 제품이 없거나 검색 결과가 없습니다.</td>
+            <td colspan="9" class="px-5 py-24 text-center">
+              <div class="flex flex-col items-center justify-center space-y-4">
+                <p class="text-gray-400 text-sm">등록된 제품이 없거나 검색 결과가 없습니다.</p>
+                <button @click="resetFilters"
+                        class="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-[#F37321] border border-[#F37321] rounded-lg hover:bg-orange-50 transition-all shadow-sm cursor-pointer active:scale-95">
+                  <RefreshCw class="w-4 h-4" />
+                  전체 제품 다시 불러오기
+                </button>
+              </div>
+            </td>
           </tr>
           </tbody>
         </table>
@@ -219,7 +228,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { Trash2, Search, Tag, Plus, ChevronLeft, ChevronRight } from 'lucide-vue-next'
+import {Trash2, Search, Tag, Plus, ChevronLeft, ChevronRight, RefreshCw} from 'lucide-vue-next'
 import { createCategory, readCategoryList, deleteCategory } from '@/api/category'
 import { getProductList, addNewProduct, updateProduct, deleteProduct, searchProduct } from '@/api/product'
 
@@ -420,4 +429,13 @@ async function deleteCategoryAction(idx, name) {
     alert('삭제 실패: 해당 카테고리를 사용하는 제품이 있을 수 있습니다.')
   }
 }
+
+// 전체 제품 다시 불러오기 (필터 초기화)
+const resetFilters = async () => {
+  searchQuery.value = ''
+  selectedCategory.value = '전체'
+  await fetchProducts(0)
+  await fetchCategories()
+}
+
 </script>

@@ -8,7 +8,7 @@
     leave-to-class="opacity-0">
     <div
       v-if="show"
-      class="fixed bottom-8 right-8 bg-gray-800 text-white px-5 py-3 rounded-xl shadow-xl flex items-center gap-3 z-50">
+      class="fixed bottom-7 right-24 bg-gray-800 text-white px-5 py-3 rounded-xl shadow-xl flex items-center gap-3 z-50">
       <CheckCircle v-if="type === 'success'" class="w-5 h-5 text-green-400 shrink-0" />
       <AlertCircle v-else class="w-5 h-5 text-red-400 shrink-0" />
       <span class="text-sm font-medium">{{ message }}</span>

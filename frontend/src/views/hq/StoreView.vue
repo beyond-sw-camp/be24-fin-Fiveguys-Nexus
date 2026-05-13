@@ -1,6 +1,6 @@
 <script setup>
 import {ref, reactive, onMounted, computed, nextTick, watch} from 'vue'
-import {Plus, Search, FileText, ChevronRight, ChevronLeft} from 'lucide-vue-next'
+import {Plus, Search, FileText, ChevronRight, ChevronLeft, RefreshCw} from 'lucide-vue-next'
 import { getStoreList , getStoreDetailList, getPresignedUrl, postNewRegister, putStoreUpdate, getStoreTotal} from '@/api/store/index.js'
 import axios from 'axios'
 import Toast from '@/components/common/Toast.vue'
@@ -51,7 +51,6 @@ const storeListRes = async (page = 0)=>{
   // 토탈 수 조회
   const totalRes = await getStoreTotal()
   storeTotalCount.value = totalRes.data.result
-  console.log(storeTotalCount.value)
   // 가맹점 리스트 조회
   const res = await getStoreList(searchReq, page, pagination.currentSize)
   storesList.value.splice(0, storesList.value.length, ...res.data.result.storeList)
@@ -64,7 +63,7 @@ const storeListRes = async (page = 0)=>{
 
 // 페이지 변경
 const changePage = (page) => {
-  // 0보다 작거나 마지막 페이지(totalPage - 1)보다 크면 무시[cite: 1]
+  // 0보다 작거나 마지막 페이지(totalPage - 1)보다 크면 무시
   if (page < 0 || page >= pagination.totalPage) return
   storeListRes(page)
 }
@@ -74,16 +73,32 @@ watch(searchQuery, () => {
   storeListRes(0)
 })
 
+
 // 사업자 번호 포맷팅
 const formatBusinessNumber = (e) => {
-  // 1. 숫자 이외의 문자(한글, 영문 등)를 모두 제거
-  let val = e.target.value.replace(/[^0-9]/g, '');
+  const inputValue = e.target.value;
 
-  // 2. 최대 10자리까지만 남기기
+  // 한글이나 영문이 감지되거나, 조합 중일 때
+  if (e.isComposing || /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣a-zA-Z]/.test(inputValue)) {
+    showToast("숫자만 입력 가능합니다.", "error");
+
+    // 1. 인풋 아예 끄기 (초점 강제 해제 -> 한글 조합 상태 파괴)
+    e.target.blur();
+
+    // 2. 아주 찰나의 시간(10ms) 뒤에 입력된 글자를 지우고 다시 켜기
+    setTimeout(() => {
+      e.target.value = form.business; // 기존에 입력해둔 안전한 숫자로 되돌림
+      e.target.focus();               // 다시 인풋 켜기 (초점 주기)
+    }, 10);
+
+    return; // 아래 숫자 포맷팅 로직은 타지 않고 여기서 종료
+  }
+
+  // 정상적으로 숫자만 들어왔을 때의 하이픈(-) 포맷팅 로직
+  let val = inputValue.replace(/[^0-9]/g, '');
   if (val.length > 10) val = val.substring(0, 10);
 
-  // 3. 포맷팅 로직 (000-00-00000)
-  let formatted;
+  let formatted = '';
   if (val.length <= 3) {
     formatted = val;
   } else if (val.length <= 5) {
@@ -91,9 +106,9 @@ const formatBusinessNumber = (e) => {
   } else {
     formatted = `${val.slice(0, 3)}-${val.slice(3, 5)}-${val.slice(5, 10)}`;
   }
-  // [중요] input 태그의 실제 값과 Vue 상태를 강제로 일치시킴
-  e.target.value = formatted;
+
   form.business = formatted;
+  e.target.value = formatted;
 };
 
 // 가맹점 목록 클릭시 상세 모달창
@@ -145,11 +160,11 @@ async function uploadFileToS3() {
   if (!selectedFile.value) return null;
 
   try {
-    // 1. 백엔드에 Presigned URL 요청
-    const presigned = await getPresignedUrl(selectedFile.value.name);
+    // 백엔드에 Presigned URL 요청
+    const presigned = await getPresignedUrl(selectedFile.value.name,selectedFile.value.size );
     const { url, fileName: s3Path } = presigned.data.result;
 
-    // 2. S3에 실제 파일 업로드 (PUT 방식)
+    // S3에 실제 파일 업로드 (PUT 방식)
     await axios.put(url, selectedFile.value, {
       headers: { 'Content-Type': 'application/pdf' }
     });
@@ -165,12 +180,13 @@ async function saveStore() {
   try {
     let finalFilePath = form.filePath;
     if (selectedFile.value) {
-      const newS3Path = await uploadFileToS3();
+      const newS3Path = await uploadFileToS3(selectedFile.value.name,selectedFile.value.size );
+
       if (newS3Path) {
         finalFilePath = newS3Path;
       }
     }
-    // --- 수정 로직 ---
+    // [ 수정 로직 ]
     if (editTarget.value) {
       const updateData = {
         storeName: form.storeName,
@@ -190,7 +206,7 @@ async function saveStore() {
         showModal.value = false;
       }
     }
-    // --- 등록 로직 ---
+    // [ 등록 로직 ]
     else {
       const storeRegDto = {
         storeName: form.storeName,
@@ -219,9 +235,8 @@ async function saveStore() {
   }
 }
 
-// 모두 입력시 버튼 활성화
+// 필수 항목들이 비어있는지 확인 후 모두 입력시 버튼 활성화
 const isFormValid = computed(() => {
-  // 필수 항목들이 비어있는지 확인
   const fields = [
     form.storeName,
     form.ownerEmail,
@@ -254,29 +269,28 @@ async function downloadPdf() {
   const fileUrl = s3BaseUrl + filePath;
 
   try {
-    // 1. fetch로 파일을 가져옵니다.
+    // fetch로 파일을 가져옵니다.
     const response = await fetch(fileUrl);
     if (!response.ok) throw new Error('파일을 가져오는데 실패했습니다.');
 
-    // 2. 파일 데이터를 Blob(Binary Large Object)으로 변환합니다.
+    // 파일 데이터를 Blob(Binary Large Object)으로 변환합니다.
     const blob = await response.blob();
 
-    // 3. Blob 데이터를 위한 임시 URL을 생성합니다.
+    // Blob 데이터를 위한 임시 URL을 생성합니다.
     const url = window.URL.createObjectURL(blob);
 
-    // 4. 가상의 링크를 생성하여 클릭을 유도합니다.
+    // 가상의 링크를 생성하여 클릭을 유도합니다.
     const link = document.createElement('a');
     link.href = url;
     link.download = `${detailTarget.value.storeName}_사업자등록증.pdf`; // 저장될 파일명
     document.body.appendChild(link);
     link.click();
 
-    // 5. 사용이 끝난 임시 URL과 링크를 제거합니다.
+    // 사용이 끝난 임시 URL과 링크를 제거합니다.
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
 
   } catch (error) {
-    console.error('다운로드 중 오류 발생:', error);
     // 만약 CORS 에러가 난다면, 가장 단순한 방법인 window.open을 백업으로 사용합니다.
     showToast('브라우저 보안 정책으로 인해 직접 다운로드가 제한되었습니다. 새 탭에서 파일을 엽니다.', 'error');
     window.open(fileUrl, '_blank');
@@ -287,12 +301,12 @@ async function downloadPdf() {
 const sample6_execDaumPostcode = () => {
   new window.daum.Postcode({
     oncomplete: (data) => {
-      let addr = ''; // 주소 변수
+      let addr = '';
 
       // 사용자가 선택한 주소 타입에 따라 해당 주소 값을 가져온다.
-      if (data.userSelectedType === 'R') { // 도로명 주소
+      if (data.userSelectedType === 'R') {
         addr = data.roadAddress;
-      } else { // 지번 주소
+      } else {
         addr = data.jibunAddress;
       }
 
@@ -310,7 +324,7 @@ const sample6_execDaumPostcode = () => {
 
 // 버튼 클릭
 const visiblePages = computed(() => {
-  const range = 10; // 한 번에 보여줄 페이지 개수
+  const range = 10;
   const currentGroup = Math.floor(pagination.currentPage / range);
   const start = currentGroup * range;
   const end = Math.min(start + range, pagination.totalPage);
@@ -327,8 +341,15 @@ const selectStatus = (status) => {
   storeListRes(0);
 };
 
+// 전체 가맹점 다시 불러오기 (필터 초기화)
+const resetFilters = () => {
+  searchQuery.value = ''
+  filterStatus.value = '전체'
+  storeListRes(0)
+}
+
 onMounted(() => {
-  storeListRes()
+  storeListRes(0)
 })
 </script>
 
@@ -344,7 +365,6 @@ onMounted(() => {
         <Plus class="w-4 h-4" /> 신규 가맹점 등록
       </button>
     </div>
-
     <!-- Summary -->
     <div class="grid grid-cols-3 gap-4">
       <div class="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
@@ -418,10 +438,23 @@ onMounted(() => {
             </div>
           </td>
         </tr>
+        <tr v-if="storesList.length === 0">
+          <td colspan="8" class="px-5 py-24 text-center">
+            <div class="flex flex-col items-center justify-center space-y-4">
+              <p class="text-gray-400 text-sm">등록된 가맹점이 없거나 검색 결과가 없습니다.</p>
+              <button @click="resetFilters"
+                      class="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-[#F37321] border border-[#F37321] rounded-lg hover:bg-orange-50 transition-all shadow-sm cursor-pointer active:scale-95">
+                <RefreshCw class="w-4 h-4" />
+                전체 가맹점 다시 불러오기
+              </button>
+            </div>
+          </td>
+        </tr>
         </tbody>
       </table>
     </div>
     <!-- 입점 가맹점 상세 정보 모달 -->
+    <Teleport to="body">
     <div v-if="showDetailModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
       <div class="absolute inset-0 bg-black/40" @click="showDetailModal = false"></div>
       <div class="relative bg-white rounded-xl w-full max-w-lg border border-gray-200 shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
@@ -511,8 +544,10 @@ onMounted(() => {
         </div>
       </div>
     </div>
+    </Teleport>
     <!-- 신규 가맹점 등록 / 수정 모달 -->
-    <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <Teleport to="body">
+    <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-hidden">
       <div class="absolute inset-0 bg-black/40" @click="showModal = false"></div>
       <div class="relative bg-white rounded-lg w-full max-w-lg border border-gray-200 shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
         <div class="px-8 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
@@ -563,7 +598,7 @@ onMounted(() => {
           </div>
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">사업자번호</label>
-            <input :value="form.business" @input="formatBusinessNumber" type="text" placeholder="숫자만 입력하세요" maxlength="12" class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all"/>
+            <input :value="form.business" @input="formatBusinessNumber" inputmode="numeric" type="text" placeholder="숫자만 입력하세요" maxlength="12" class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all"/>
           </div>
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">사업자 PDF</label>
@@ -585,6 +620,7 @@ onMounted(() => {
         </form>
       </div>
     </div>
+    </Teleport>
     <div v-if="pagination.totalPage > 1" class="flex justify-center items-center gap-2 pt-2">
       <button
         class="p-2 rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"

@@ -97,7 +97,7 @@ watch(searchQuery, () => {
 const formatBusinessNumber = (e) => {
   const inputValue = e.target.value;
 
-  // 🌟 후경님 아이디어 적용: 한글이나 영문이 감지되거나, 조합 중일 때
+  // 한글이나 영문이 감지되거나, 조합 중일 때
   if (e.isComposing || /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣a-zA-Z]/.test(inputValue)) {
     showToast("숫자만 입력 가능합니다.", "error");
 

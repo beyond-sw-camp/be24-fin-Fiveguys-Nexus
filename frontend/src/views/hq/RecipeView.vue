@@ -1,5 +1,5 @@
 <script setup>
-import {ref, computed, onMounted, reactive, watch} from 'vue'
+import {ref, computed, onMounted, reactive, watch, nextTick} from 'vue'
 import {Plus, Search, Image as ImageIcon, Tag, Trash2, ChevronRight, ChevronLeft, RefreshCw} from 'lucide-vue-next'
 import {getProductList, getCategoryList, getMenuList, getMenuItemList, getPresignedUrl, postNewRegister, putMenuUpdate, putMenuDelete, postMenuCategoryRegister, deleteCategory} from '@/api/menu/index.js'
 import axios from 'axios'
@@ -144,33 +144,51 @@ async function openEditMenuModal(menu) {
   }
 }
 
-// 글자 감지 시 알람 띄우고 입력 차단
-const blockInvalidKeys = (e) => {
-  const allowedKeys = ['Backspace', 'Tab', 'ArrowLeft', 'ArrowRight', 'Delete', 'Enter'];
-
-  if (e.ctrlKey || e.metaKey) return;
-
-  // 한글 입력(IME)이 감지된 경우
-  if (e.keyCode === 229 || e.isComposing) {
-    showToast("숫자만 입력 가능합니다.", "error");
-    e.preventDefault();
-    return;
-  }
-
-  // 허용된 키나 숫자가 아닌 다른 키(영문, 특수문자 등)가 눌린 경우
-  if (!allowedKeys.includes(e.key) && !/^[0-9]$/.test(e.key)) {
-    showToast("숫자만 입력 가능합니다.", "error");
-    e.preventDefault();
-  }
-};
+// // 글자 감지 시 알람 띄우고 입력 차단
+// const blockInvalidKeys = (e) => {
+//   const inputValue = e.target.value;
+//
+//   if (e.ctrlKey || e.metaKey) return;
+//
+//   // 한글 입력(IME)이 감지된 경우
+//   if (e.keyCode === 229 || e.isComposing) {
+//     showToast("숫자만 입력 가능합니다.", "error");
+//     e.preventDefault();
+//     return;
+//   }
+//
+//   // 허용된 키나 숫자가 아닌 다른 키(영문, 특수문자 등)가 눌린 경우
+//   if (!allowedKeys.includes(e.key) && !/^[0-9]$/.test(e.key)) {
+//     showToast("숫자만 입력 가능합니다.", "error");
+//     e.preventDefault();
+//   }
+// };
 
 // 콤마를 찍어주고 가격을 저장하는 함수
 const onPriceInput = (e) => {
-  const rawValue = e.target.value.replace(/[^0-9]/g, '');
+  const inputValue = e.target.value;
+
+  // 1. 한글/영문 감지 시 포커스 해제 (조합 파괴 트릭)
+  if (e.isComposing || /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣a-zA-Z]/.test(inputValue)) {
+    showToast("숫자만 입력 가능합니다.", "error");
+    e.target.blur();
+
+    setTimeout(() => {
+      // 기존 가격으로 안전하게 되돌리고 다시 포커스
+      e.target.value = menuForm.value.price !== null ? menuForm.value.price.toLocaleString('ko-KR') : '';
+      e.target.focus();
+    }, 10);
+    return;
+  }
+
+  // 2. 정상적인 숫자 처리 로직
+  const rawValue = inputValue.replace(/[^0-9]/g, '');
 
   if (!rawValue) {
     menuForm.value.price = null;
-    e.target.value = '';
+    nextTick(() => {
+      e.target.value = '';
+    });
     return;
   }
 
@@ -182,8 +200,12 @@ const onPriceInput = (e) => {
     showToast("가격은 1억 원을 초과할 수 없습니다.", "error");
   }
 
+  // 3. Vue 상태 업데이트 후 DOM 안전하게 업데이트
   menuForm.value.price = numericValue;
-  e.target.value = numericValue.toLocaleString('ko-KR');
+
+  nextTick(() => {
+    e.target.value = numericValue.toLocaleString('ko-KR');
+  });
 };
 
 // 재료 버튼 클릭시 menuForm에 재료 추가
@@ -535,7 +557,7 @@ onMounted(() => {
             <div class="space-y-1.5">
               <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">가격 (원)</label>
               <input :value="menuForm.price !== null ? menuForm.price.toLocaleString('ko-KR') : ''"
-                @keydown="blockInvalidKeys" @input="onPriceInput" required type="text" placeholder="0"
+                @input="onPriceInput" required type="text" placeholder="0"
                 class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#F97316] focus:ring-4 focus:ring-[#F97316]/5 transition-all text-right"
               />
             </div>

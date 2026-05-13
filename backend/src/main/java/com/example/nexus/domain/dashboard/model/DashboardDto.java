@@ -121,4 +121,25 @@ public class DashboardDto {
         private List<DeliveryItem> items;
         private boolean hasNext;
     }
+
+    // 실시간 대시보드 DTO
+    @Getter
+    @Builder
+    public static class RealtimeSalesRes {
+        private long todaySales;
+    }
+
+    @Getter
+    @Builder
+    public static class RankingItem {
+        private Long idx;
+        private String name;
+        private long score;
+    }
+
+    @Getter
+    @Builder
+    public static class RankingRes {
+        private List<RankingItem> rankings;
+    }
 }

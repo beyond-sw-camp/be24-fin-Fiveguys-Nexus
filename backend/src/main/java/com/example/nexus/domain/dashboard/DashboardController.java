@@ -15,6 +15,23 @@ import org.springframework.web.bind.annotation.RestController;
 public class DashboardController {
     private final DashboardService dashboardService;
 
+    // === 실시간 대시보드 API (부하 테스트용 DB 직접 쿼리 방식) ===
+
+    @GetMapping("/realtime/sales/today")
+    public ResponseEntity<BaseResponse> getTodaySales() {
+        return ResponseEntity.ok(BaseResponse.success(dashboardService.getTodaySales()));
+    }
+
+    @GetMapping("/realtime/store/top")
+    public ResponseEntity<BaseResponse> getTopStores() {
+        return ResponseEntity.ok(BaseResponse.success(dashboardService.getTopStores()));
+    }
+
+    @GetMapping("/realtime/menu/top")
+    public ResponseEntity<BaseResponse> getTopMenus() {
+        return ResponseEntity.ok(BaseResponse.success(dashboardService.getTopMenus()));
+    }
+
     /**
      * 가맹점 현황 KPI 조회
      *

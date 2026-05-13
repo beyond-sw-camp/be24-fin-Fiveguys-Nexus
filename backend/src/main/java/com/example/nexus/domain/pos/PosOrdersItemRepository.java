@@ -21,4 +21,14 @@ public interface PosOrdersItemRepository extends JpaRepository<PosOrdersItem, Lo
             "GROUP BY m.menuName " +
             "ORDER BY SUM(poi.quantity) DESC")
     List<String> findTopSellingMenus(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate, Pageable pageable);
+
+    // 실시간 대시보드: 메뉴별 판매 수량 랭킹 TOP N
+    @Query("SELECT m.idx, m.menuName, SUM(poi.quantity) " +
+            "FROM PosOrdersItem poi " +
+            "JOIN poi.menu m " +
+            "JOIN poi.posPay p " +
+            "WHERE p.paidAt >= :start AND p.paidAt < :end " +
+            "GROUP BY m.idx, m.menuName " +
+            "ORDER BY SUM(poi.quantity) DESC")
+    List<Object[]> findTopMenusByPeriod(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end, Pageable pageable);
 }

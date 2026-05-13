@@ -501,7 +501,7 @@ onMounted(() => {
           <tr v-if="menus.length === 0">
             <td colspan="6" class="px-5 py-16 text-center">
               <div class="flex flex-col items-center justify-center space-y-4">
-                <p class="text-gray-400 text-sm">해당하는 메뉴가 없습니다.</p>
+                <p class="text-gray-400 text-sm">등록된 메뉴가 없거나 검색 결과가 없습니다.</p>
                 <button @click="resetFilters" class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-[#F37321] border border-[#F37321] rounded-lg hover:bg-orange-50 transition-colors cursor-pointer">
                   <RefreshCw class="w-4 h-4" />전체 메뉴 다시 불러오기
                 </button>

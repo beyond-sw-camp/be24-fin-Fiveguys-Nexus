@@ -1,6 +1,6 @@
 <script setup>
 import {ref, reactive, onMounted, computed, nextTick, watch} from 'vue'
-import {Plus, Search, FileText, ChevronRight, ChevronLeft} from 'lucide-vue-next'
+import {Plus, Search, FileText, ChevronRight, ChevronLeft, RefreshCw} from 'lucide-vue-next'
 import { getStoreList , getStoreDetailList, getPresignedUrl, postNewRegister, putStoreUpdate, getStoreTotal} from '@/api/store/index.js'
 import axios from 'axios'
 import Toast from '@/components/common/Toast.vue'
@@ -343,6 +343,13 @@ const selectStatus = (status) => {
   storeListRes(0);
 };
 
+// 전체 가맹점 다시 불러오기 (필터 초기화)
+const resetFilters = () => {
+  searchQuery.value = ''
+  filterStatus.value = '전체'
+  storeListRes(0)
+}
+
 onMounted(() => {
   storeListRes(0)
 })
@@ -429,6 +436,18 @@ onMounted(() => {
                 ? 'text-[#F37321] border border-[#F37321] hover:bg-orange-50 cursor-pointer'
                 : 'text-gray-400 border border-gray-200 bg-gray-50 cursor-not-allowed'">
                 수정
+              </button>
+            </div>
+          </td>
+        </tr>
+        <tr v-if="storesList.length === 0">
+          <td colspan="8" class="px-5 py-24 text-center">
+            <div class="flex flex-col items-center justify-center space-y-4">
+              <p class="text-gray-400 text-sm">등록된 가맹점이 없거나 검색 결과가 없습니다.</p>
+              <button @click="resetFilters"
+                      class="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-[#F37321] border border-[#F37321] rounded-lg hover:bg-orange-50 transition-all shadow-sm cursor-pointer active:scale-95">
+                <RefreshCw class="w-4 h-4" />
+                전체 가맹점 다시 불러오기
               </button>
             </div>
           </td>

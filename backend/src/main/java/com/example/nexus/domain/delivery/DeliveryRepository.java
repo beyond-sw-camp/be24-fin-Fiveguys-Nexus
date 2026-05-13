@@ -95,8 +95,10 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
     );
 
     // 본사 대시보드 - 지연 배송 목록 무한스크롤 페이징
+    @Query("SELECT d FROM Delivery d JOIN FETCH d.orders o JOIN FETCH o.store s " +
+            "WHERE d.deliveryStatus = :status")
     Slice<Delivery> findByDeliveryStatus(
-            DeliveryStatus status,
+            @Param("status") DeliveryStatus status,
             Pageable pageable
     );
 

@@ -74,16 +74,50 @@ watch(searchQuery, () => {
   storeListRes(0)
 })
 
+// const blockInvalidKeys = (e) => {
+//   const allowedKeys = ['Backspace', 'Tab', 'ArrowLeft', 'ArrowRight', 'Delete', 'Enter'];
+//
+//   if (e.ctrlKey || e.metaKey) return;
+//
+//   // 한글 입력(IME)이 감지된 경우
+//   if (e.keyCode === 229 || e.isComposing) {
+//     showToast("숫자만 입력 가능합니다.", "error");
+//     e.preventDefault();
+//     return;
+//   }
+//
+//   // 허용된 키나 숫자가 아닌 다른 키(영문, 특수문자 등)가 눌린 경우
+//   if (!allowedKeys.includes(e.key) && !/^[0-9]$/.test(e.key)) {
+//     showToast("숫자만 입력 가능합니다.", "error");
+//     e.preventDefault();
+//   }
+// };
+
 // 사업자 번호 포맷팅
 const formatBusinessNumber = (e) => {
-  // 1. 숫자 이외의 문자(한글, 영문 등)를 모두 제거
-  let val = e.target.value.replace(/[^0-9]/g, '');
+  const inputValue = e.target.value;
 
-  // 2. 최대 10자리까지만 남기기
+  // 🌟 후경님 아이디어 적용: 한글이나 영문이 감지되거나, 조합 중일 때
+  if (e.isComposing || /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣a-zA-Z]/.test(inputValue)) {
+    showToast("숫자만 입력 가능합니다.", "error");
+
+    // 1. 인풋 아예 끄기 (초점 강제 해제 -> 한글 조합 상태 파괴)
+    e.target.blur();
+
+    // 2. 아주 찰나의 시간(10ms) 뒤에 입력된 글자를 지우고 다시 켜기
+    setTimeout(() => {
+      e.target.value = form.business; // 기존에 입력해둔 안전한 숫자로 되돌림
+      e.target.focus();               // 다시 인풋 켜기 (초점 주기)
+    }, 10);
+
+    return; // 아래 숫자 포맷팅 로직은 타지 않고 여기서 종료
+  }
+
+  // --- 정상적으로 숫자만 들어왔을 때의 하이픈(-) 포맷팅 로직 ---
+  let val = inputValue.replace(/[^0-9]/g, '');
   if (val.length > 10) val = val.substring(0, 10);
 
-  // 3. 포맷팅 로직 (000-00-00000)
-  let formatted;
+  let formatted = '';
   if (val.length <= 3) {
     formatted = val;
   } else if (val.length <= 5) {
@@ -91,9 +125,9 @@ const formatBusinessNumber = (e) => {
   } else {
     formatted = `${val.slice(0, 3)}-${val.slice(3, 5)}-${val.slice(5, 10)}`;
   }
-  // [중요] input 태그의 실제 값과 Vue 상태를 강제로 일치시킴
-  e.target.value = formatted;
+
   form.business = formatted;
+  e.target.value = formatted;
 };
 
 // 가맹점 목록 클릭시 상세 모달창
@@ -328,13 +362,14 @@ const selectStatus = (status) => {
 };
 
 onMounted(() => {
-  storeListRes()
+  storeListRes(0)
 })
 </script>
 
 
 <template>
   <div class="p-5 space-y-4">
+    <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
     <!-- Header -->
     <div class="flex justify-between items-center">
       <div>
@@ -563,7 +598,7 @@ onMounted(() => {
           </div>
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">사업자번호</label>
-            <input :value="form.business" @input="formatBusinessNumber" type="text" placeholder="숫자만 입력하세요" maxlength="12" class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all"/>
+            <input :value="form.business" @input="formatBusinessNumber" inputmode="numeric" type="text" placeholder="숫자만 입력하세요" maxlength="12" class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all"/>
           </div>
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">사업자 PDF</label>
@@ -609,6 +644,5 @@ onMounted(() => {
         <ChevronRight class="w-4 h-4" />
       </button>
     </div>
-    <Toast :show="toast.show" :message="toast.message" :type="toast.type" />
   </div>
 </template>

@@ -60,11 +60,11 @@ public class DeliveryController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
         }
 
-        Long storeIdx = authUserDetails.getIdx();
+        Long userIdx = authUserDetails.getIdx();
 
         return ResponseEntity.ok(BaseResponse.success(
                 deliveryService.getDeliveriesForStore(
-                        storeIdx,
+                        userIdx,
                         orderIdx,
                         status,
                         year,

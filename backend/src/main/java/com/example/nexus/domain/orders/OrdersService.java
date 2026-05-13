@@ -33,7 +33,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -118,17 +117,29 @@ public class OrdersService {
         int period = dangerRepository.findById(1L)
                 .map(Danger::getPeriod).orElse(3);
 
-        return ordersRepository.findAll(spec, pageable).map(orders -> {
-            LocalDateTime since = orders.getCreatedAt().minusMonths(period);
-            Integer avgQty = ordersRepository.findAvgQtyByStoreAndPeriod(
-                    orders.getStore().getIdx(), since, orders.getIdx());
-            return DangerDto.DangerListRes.from(orders, avgQty);
+        Page<Orders> page = ordersRepository.findAll(spec, pageable);
+        List<Long> orderIds = page.getContent().stream().map(Orders::getIdx).toList();
+
+        Map<Long, int[]> dangerStatsMap = new HashMap<>();
+        if (!orderIds.isEmpty()) {
+            List<Object[]> rows = ordersRepository.findAvgQtyBatch(orderIds, period);
+            for (Object[] row : rows) {
+                Long ordersIdx = ((Number) row[0]).longValue();
+                int avgQty = ((Number) row[1]).intValue();
+                int totalQty = ((Number) row[2]).intValue();
+                dangerStatsMap.put(ordersIdx, new int[]{avgQty, totalQty});
+            }
+        }
+
+        return page.map(orders -> {
+            int[] stats = dangerStatsMap.getOrDefault(orders.getIdx(), new int[]{0, 0});
+            return DangerDto.DangerListRes.from(orders, stats[0], stats[1]);
         });
     }
 
     // 발주 상세 조회 (단건)
     public OrdersDto.OrdersRes findById(Long ordersIdx) {
-        Orders orders = ordersRepository.findById(ordersIdx).orElseThrow(
+        Orders orders = ordersRepository.findByIdWithDetails(ordersIdx).orElseThrow(
                 () -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
         return OrdersDto.OrdersRes.from(orders);
     }
@@ -154,29 +165,33 @@ public class OrdersService {
         dangerRepository.save(danger);
 
         // 기존 이상 발주 재평가: 새 기준 미달 시 isDanger 해제
-        List<Orders> dangerOrders = ordersRepository.findAllByIsDangerTrue();
+        List<Orders> dangerOrders = ordersRepository.findAllDangerWithDetails();
 
-        for (Orders orders : dangerOrders) {
-            List<OrdersItem> items = orders.getOrdersItemList() != null ? orders.getOrdersItemList() : Collections.emptyList();
-            int totalQty = items.stream().mapToInt(OrdersItem::getCount).sum();
-
-            LocalDateTime since = orders.getCreatedAt().minusMonths(req.getPeriod());
-
-            Integer avgQty = ordersRepository.findAvgQtyByStoreAndPeriod(orders.getStore().getIdx(), since, orders.getIdx());
-
-            int ratio = avgQty > 0 ? (totalQty - avgQty) * 100 / avgQty : 0;
-
-            if (ratio < req.getRatio()) {
-                orders.markDanger(false);
+        if (!dangerOrders.isEmpty()) {
+            List<Long> orderIds = dangerOrders.stream().map(Orders::getIdx).toList();
+            List<Object[]> rows = ordersRepository.findAvgQtyBatch(orderIds, req.getPeriod());
+            Map<Long, Integer> avgQtyMap = new HashMap<>();
+            for (Object[] row : rows) {
+                avgQtyMap.put(((Number) row[0]).longValue(), ((Number) row[1]).intValue());
             }
 
+            for (Orders orders : dangerOrders) {
+                List<OrdersItem> items = orders.getOrdersItemList() != null ? orders.getOrdersItemList() : Collections.emptyList();
+                int totalQty = items.stream().mapToInt(OrdersItem::getCount).sum();
+                int avgQty = avgQtyMap.getOrDefault(orders.getIdx(), 0);
+                int ratio = avgQty > 0 ? (totalQty - avgQty) * 100 / avgQty : 0;
+
+                if (ratio < req.getRatio()) {
+                    orders.markDanger(false);
+                }
+            }
         }
     }
 
     // 본사 - 이상 발주 개별 승인 (출고 처리 포함)
     @Transactional
     public void approve(Long ordersIdx) {
-        Orders orders = ordersRepository.findById(ordersIdx)
+        Orders orders = ordersRepository.findByIdWithDetailsForUpdate(ordersIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
 
         if (orders.getOrdersStatus() != OrdersStatus.CONFIRMED) {
@@ -192,7 +207,7 @@ public class OrdersService {
     // 본사 - 이상 발주 개별 반려
     @Transactional
     public void reject(Long ordersIdx) {
-        Orders orders = ordersRepository.findById(ordersIdx)
+        Orders orders = ordersRepository.findByIdForUpdate(ordersIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
 
         if (orders.getOrdersStatus() != OrdersStatus.CONFIRMED) {
@@ -205,7 +220,7 @@ public class OrdersService {
     // 본사 - 확정 발주 일괄 승인 (출고 처리 포함)
     @Transactional
     public void approveAllConfirmed() {
-        List<Orders> confirmedOrders = ordersRepository.findAllByOrdersStatus(OrdersStatus.CONFIRMED);
+        List<Orders> confirmedOrders = ordersRepository.findAllByOrdersStatusWithDetails(OrdersStatus.CONFIRMED);
 
         for (Orders orders : confirmedOrders) {
             try {
@@ -236,8 +251,8 @@ public class OrdersService {
     // 발주 승인 시 품목별 출고 처리 (재고 차감)
     private void applyOutboundForOrder(Orders orders, String memoPrefix) {
         Long storeIdx = orders.getStore().getIdx();
-        List<OrdersItem> items = ordersItemRepository.findByOrdersIdx(orders.getIdx());
-        if (items.isEmpty()) {
+        List<OrdersItem> items = orders.getOrdersItemList();
+        if (items == null || items.isEmpty()) {
             throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
         }
         String memo = memoPrefix + orders.getIdx();
@@ -354,7 +369,7 @@ public class OrdersService {
             }
         }
 
-        return ordersRepository.findAllByStore_IdxAndOrdersStatusAndOrdersTypeOrderByCreatedAtDesc(store.getIdx(), OrdersStatus.WAITING, OrdersType.AUTO).stream()
+        return ordersRepository.findPendingWithDetails(store.getIdx(), OrdersStatus.WAITING, OrdersType.AUTO).stream()
                 .map(order -> OrdersDto.OrdersRes.fromWithStock(order, stockMap))
                 .toList();
     }
@@ -365,7 +380,7 @@ public class OrdersService {
         Store store = storeRepository.findByUserIdx(userIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
 
-        Orders orders = ordersRepository.findById(ordersIdx)
+        Orders orders = ordersRepository.findByIdWithDetailsForUpdate(ordersIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
 
         if (!orders.getStore().getIdx().equals(store.getIdx())) {
@@ -407,7 +422,7 @@ public class OrdersService {
         Store store = storeRepository.findByUserIdx(userIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
 
-        Orders orders = ordersRepository.findById(ordersIdx)
+        Orders orders = ordersRepository.findByIdForUpdate(ordersIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
 
         if (!orders.getStore().getIdx().equals(store.getIdx())) {
@@ -439,7 +454,8 @@ public class OrdersService {
             throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
         }
 
-        Orders orders = item.getOrders();
+        Orders orders = ordersRepository.findByIdForUpdate(item.getOrders().getIdx())
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
         long priceDiff = (long) item.getProduct().getUnitPrice() * (count - item.getCount());
         item.updateCount(count);
         orders.updatePrice(orders.getPrice() + priceDiff);
@@ -458,7 +474,8 @@ public class OrdersService {
             throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
         }
 
-        Orders orders = item.getOrders();
+        Orders orders = ordersRepository.findByIdForUpdate(item.getOrders().getIdx())
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
         orders.updatePrice(orders.getPrice() - (long) item.getProduct().getUnitPrice() * item.getCount());
         ordersItemRepository.delete(item);
     }
@@ -501,7 +518,7 @@ public class OrdersService {
         Store store = storeRepository.findByUserIdx(userIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
 
-        Orders orders = ordersRepository.findById(ordersIdx)
+        Orders orders = ordersRepository.findByIdForUpdate(ordersIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
 
         if (!orders.getStore().getIdx().equals(store.getIdx())) {

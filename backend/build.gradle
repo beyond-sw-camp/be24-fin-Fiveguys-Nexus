@@ -21,6 +21,7 @@ repositories {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'io.micrometer:micrometer-registry-prometheus'
 
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 
@@ -68,6 +69,8 @@ dependencies {
 	implementation 'org.commonmark:commonmark:0.21.0'
 	// HTML을 PDF 파일로 구워주는 도구
 	implementation 'com.openhtmltopdf:openhtmltopdf-pdfbox:1.0.10'
+
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
 
 }
 

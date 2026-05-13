@@ -16,6 +16,9 @@ public interface MenuRepository extends JpaRepository<Menu, Long> {
     // 메뉴 이름 중복 확인
     boolean existsByMenuNameAndIdxNot(String menuName, Long idx);
 
+    Optional<Menu> findByMenuName(String menuName);
+    Optional<Menu> findByMenuNameAndIdxNot(String menuName, Long idx);
+
     // 메뉴 삭제 여부 확인
     Optional<Menu> findByIdxAndIsDeletedFalse(Long menuIdx);
 

@@ -86,9 +86,11 @@ public class StoreController {
 
     // S3 Pre-signed URL 요청
     @GetMapping("/presignedUrl/{fileName}")
-    public ResponseEntity presignedUrl(@PathVariable(name = "fileName") String fileName){
+    public ResponseEntity presignedUrl(
+            @PathVariable(name = "fileName") String fileName,
+            @RequestParam(name = "fileSize") long fileSize){
         // 1. 서비스를 호출하여 URL과 고유 파일명을 받아옵니다.
-        Map<String, String> result = storeService.getPresignedUrl(fileName);
+        Map<String, String> result = storeService.getPresignedUrl(fileName, fileSize);
 
         // 2. BaseResponse.success에 결과 Map을 담아 반환합니다.
         return ResponseEntity.ok(BaseResponse.success(result));

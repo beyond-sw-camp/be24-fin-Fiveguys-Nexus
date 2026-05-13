@@ -95,14 +95,19 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
     );
 
     // 본사 대시보드 - 지연 배송 목록 무한스크롤 페이징
+    @Query("SELECT d FROM Delivery d JOIN FETCH d.orders o JOIN FETCH o.store s " +
+            "WHERE d.deliveryStatus = :status")
     Slice<Delivery> findByDeliveryStatus(
-            DeliveryStatus status,
+            @Param("status") DeliveryStatus status,
             Pageable pageable
     );
 
     // 점주 대시보드 - 배송완료 제외 최신순
+    @Query("SELECT d FROM Delivery d JOIN FETCH d.orders o " +
+            "WHERE o.store.idx = :storeIdx AND d.deliveryStatus <> :excludeStatus " +
+            "ORDER BY d.departureDate DESC")
     List<Delivery> findByOrders_Store_IdxAndDeliveryStatusNotOrderByDepartureDateDesc(
-            Long storeIdx,
-            DeliveryStatus excludeStatus
+            @Param("storeIdx") Long storeIdx,
+            @Param("excludeStatus") DeliveryStatus excludeStatus
     );
 }

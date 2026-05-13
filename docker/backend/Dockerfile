@@ -10,4 +10,4 @@ RUN cd /app/mcp && npm install --omit=dev
 COPY backend/build/libs/*.jar app.jar
 
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-Xms512m", "-Xmx1024m", "-jar", "app.jar"]

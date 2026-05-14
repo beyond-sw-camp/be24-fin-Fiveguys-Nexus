@@ -15,6 +15,38 @@ import org.springframework.web.bind.annotation.RestController;
 public class DashboardController {
     private final DashboardService dashboardService;
 
+    // === 실시간 대시보드 API (부하 테스트용 DB 직접 쿼리 방식) ===
+
+    /**
+     * 오늘 전체 매장 실시간 매출 합계 조회
+     *
+     * @return ResponseEntity 오늘 전체 매출 금액
+     */
+    @GetMapping("/realtime/sales/today")
+    public ResponseEntity<BaseResponse> getTodaySales() {
+        return ResponseEntity.ok(BaseResponse.success(dashboardService.getTodaySales()));
+    }
+
+    /**
+     * 매장별 매출 랭킹 TOP 3 조회
+     *
+     * @return ResponseEntity 매출 상위 매장 3개 (매장명, 매출액)
+     */
+    @GetMapping("/realtime/store/top")
+    public ResponseEntity<BaseResponse> getTopStores() {
+        return ResponseEntity.ok(BaseResponse.success(dashboardService.getTopStores()));
+    }
+
+    /**
+     * 메뉴별 판매 수량 랭킹 TOP 3 조회
+     *
+     * @return ResponseEntity 판매 수량 상위 메뉴 3개 (메뉴명, 판매 수량)
+     */
+    @GetMapping("/realtime/menu/top")
+    public ResponseEntity<BaseResponse> getTopMenus() {
+        return ResponseEntity.ok(BaseResponse.success(dashboardService.getTopMenus()));
+    }
+
     /**
      * 가맹점 현황 KPI 조회
      *

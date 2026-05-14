@@ -273,6 +273,15 @@ public class OrdersService {
      * 주문 수량의 초과 비율이 기준 이상이면 이상 발주로 판정
      * 예: 평균 10개, 이번 30개, 기준 200% → (30-10)*100/10 = 200% → 이상 발주
      */
+    private List<OrdersItem> recalculatePrice(Orders orders) {
+        List<OrdersItem> items = ordersItemRepository.findByOrdersIdx(orders.getIdx());
+        long total = items.stream()
+                .mapToLong(item -> (long) item.getProduct().getUnitPrice() * item.getCount())
+                .sum();
+        orders.updatePrice(total);
+        return items;
+    }
+
     private boolean evaluateDanger(Long storeIdx, int totalQty, LocalDateTime baseTime, Long excludeIdx) {
         Danger danger = dangerRepository.findById(1L)
                 .orElse(Danger.builder().ratio(200).period(3).build());
@@ -391,8 +400,10 @@ public class OrdersService {
             throw new BaseException(BaseResponseStatus.REQUEST_ERROR);
         }
 
-        // 이상 발주 재판정: 점주가 아이템을 수정했을 수 있으므로 확정 시점에 재평가
-        List<OrdersItem> items = orders.getOrdersItemList() != null ? orders.getOrdersItemList() : Collections.emptyList();
+        // 점주가 아이템을 수정했을 수 있으므로 확정 시점에 가격 재계산
+        List<OrdersItem> items = recalculatePrice(orders);
+
+        // 이상 발주 재판정
         int totalQty = items.stream().mapToInt(OrdersItem::getCount).sum();
         boolean isDanger = evaluateDanger(store.getIdx(), totalQty, orders.getCreatedAt(), orders.getIdx());
         orders.markDanger(isDanger);
@@ -438,7 +449,7 @@ public class OrdersService {
                 .orders(orders)
                 .build());
 
-        orders.updatePrice(orders.getPrice() + (long) product.getUnitPrice() * req.getCount());
+        recalculatePrice(orders);
     }
 
     // 점주 - 제안 발주서 품목 수량 변경 (가격 차액 자동 반영)
@@ -456,9 +467,8 @@ public class OrdersService {
 
         Orders orders = ordersRepository.findByIdForUpdate(item.getOrders().getIdx())
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
-        long priceDiff = (long) item.getProduct().getUnitPrice() * (count - item.getCount());
         item.updateCount(count);
-        orders.updatePrice(orders.getPrice() + priceDiff);
+        recalculatePrice(orders);
     }
 
     // 점주 - 제안 발주서 품목 삭제 (가격 자동 차감)
@@ -476,8 +486,9 @@ public class OrdersService {
 
         Orders orders = ordersRepository.findByIdForUpdate(item.getOrders().getIdx())
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
-        orders.updatePrice(orders.getPrice() - (long) item.getProduct().getUnitPrice() * item.getCount());
         ordersItemRepository.delete(item);
+        ordersItemRepository.flush();
+        recalculatePrice(orders);
     }
 
     // 점주 - 제안 발주서 거절

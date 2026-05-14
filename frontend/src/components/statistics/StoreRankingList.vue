@@ -1,0 +1,47 @@
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
+import { getTopStores } from '@/api/statistics'
+
+const rankings = ref([])
+let polling = null
+
+const fetchData = async () => {
+  try {
+    const { data } = await getTopStores()
+    rankings.value = data.result.rankings
+  } catch (e) {
+    console.error('매장 랭킹 조회 실패', e)
+  }
+}
+
+onMounted(() => {
+  fetchData()
+  polling = setInterval(fetchData, 2000)
+})
+
+onUnmounted(() => {
+  if (polling) clearInterval(polling)
+})
+
+const formatted = (val) => val.toLocaleString('ko-KR')
+</script>
+
+<template>
+  <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col" style="min-height:280px">
+    <h2 class="font-bold text-gray-900 mb-1">매장 매출 TOP 5</h2>
+    <p class="text-xs text-gray-400 mb-4">오늘 매출 기준</p>
+    <ul class="space-y-3 flex-1">
+      <li v-for="(item, i) in rankings" :key="item.idx" class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
+            :class="i < 3 ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-500'">
+            {{ i + 1 }}
+          </span>
+          <span class="text-sm font-medium text-gray-800">{{ item.name }}</span>
+        </div>
+        <span class="text-sm font-semibold text-gray-600">₩ {{ formatted(item.score) }}</span>
+      </li>
+      <li v-if="rankings.length === 0" class="text-sm text-gray-400 text-center py-4">데이터 없음</li>
+    </ul>
+  </div>
+</template>

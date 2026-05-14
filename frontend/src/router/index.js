@@ -23,6 +23,12 @@ const router = createRouter({
       meta: { role: 'ADMIN' },
     },
     {
+      path: '/statistics',
+      name: 'statistics',
+      component: () => import('@/views/hq/StatisticsView.vue'),
+      meta: { role: 'ADMIN' },
+    },
+    {
       path: '/statistics/esg',
       name: 'statisticsEsg',
       component: () => import('@/views/hq/EsgDashboardView.vue'),

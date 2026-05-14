@@ -273,12 +273,13 @@ public class OrdersService {
      * 주문 수량의 초과 비율이 기준 이상이면 이상 발주로 판정
      * 예: 평균 10개, 이번 30개, 기준 200% → (30-10)*100/10 = 200% → 이상 발주
      */
-    private void recalculatePrice(Orders orders) {
+    private List<OrdersItem> recalculatePrice(Orders orders) {
         List<OrdersItem> items = ordersItemRepository.findByOrdersIdx(orders.getIdx());
         long total = items.stream()
                 .mapToLong(item -> (long) item.getProduct().getUnitPrice() * item.getCount())
                 .sum();
         orders.updatePrice(total);
+        return items;
     }
 
     private boolean evaluateDanger(Long storeIdx, int totalQty, LocalDateTime baseTime, Long excludeIdx) {
@@ -400,10 +401,9 @@ public class OrdersService {
         }
 
         // 점주가 아이템을 수정했을 수 있으므로 확정 시점에 가격 재계산
-        recalculatePrice(orders);
+        List<OrdersItem> items = recalculatePrice(orders);
 
         // 이상 발주 재판정
-        List<OrdersItem> items = orders.getOrdersItemList() != null ? orders.getOrdersItemList() : Collections.emptyList();
         int totalQty = items.stream().mapToInt(OrdersItem::getCount).sum();
         boolean isDanger = evaluateDanger(store.getIdx(), totalQty, orders.getCreatedAt(), orders.getIdx());
         orders.markDanger(isDanger);

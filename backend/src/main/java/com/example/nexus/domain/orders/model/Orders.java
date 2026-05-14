@@ -57,6 +57,7 @@ public class Orders {
 
     public void confirm() {
         this.ordersStatus = OrdersStatus.CONFIRMED;
+        this.createdAt = LocalDateTime.now();
     }
 
     public void cancel() {

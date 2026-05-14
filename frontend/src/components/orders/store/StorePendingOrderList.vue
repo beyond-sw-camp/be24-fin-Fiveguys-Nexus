@@ -19,6 +19,10 @@ function sortedItems(order) {
   return [...(order.ordersItemList || [])].sort((a, b) => b.idx - a.idx)
 }
 
+function calcTotal(order) {
+  return (order.ordersItemList || []).reduce((sum, item) => sum + (item.count || 0) * (item.unitPrice ?? 0), 0)
+}
+
 const debounceTimers = new Map()
 
 function onCountChange(item) {
@@ -181,7 +185,7 @@ function onCountChange(item) {
             <td class="px-5 py-3 text-left text-xs font-bold text-gray-500">합계</td>
             <td colspan="3"></td>
             <td class="px-5 py-3 text-right font-black text-blue-600">
-              ₩ {{ (order.price ?? 0).toLocaleString() }}
+              ₩ {{ calcTotal(order).toLocaleString() }}
             </td>
             <td></td>
           </tr>

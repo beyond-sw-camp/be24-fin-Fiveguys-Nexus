@@ -1,0 +1,106 @@
+import os
+import time
+import json
+import requests
+from kubernetes import client, config, watch
+
+WEBHOOK_URL = os.environ["DISCORD_WEBHOOK_URL"]
+NAMESPACES = os.environ.get("WATCH_NAMESPACES", "default,nexus,monitoring").split(",")
+CLUSTER_NAME = os.environ.get("CLUSTER_NAME", "nexus-cluster")
+
+REASON_KR = {
+    "BackOff": "컨테이너 재시작 반복",
+    "CrashLoopBackOff": "컨테이너 크래시 반복",
+    "ImagePullBackOff": "이미지 Pull 실패 (반복)",
+    "ErrImagePull": "이미지 Pull 실패",
+    "OOMKilled": "메모리 부족으로 종료",
+    "FailedScheduling": "스케줄링 실패 (자원 부족)",
+    "Unhealthy": "헬스체크 실패",
+    "FailedMount": "볼륨 마운트 실패",
+    "NodeNotReady": "노드 준비 안 됨",
+    "Evicted": "리소스 부족으로 추방됨",
+    "FailedCreate": "리소스 생성 실패",
+    "FailedDelete": "리소스 삭제 실패",
+}
+
+COLOR_MAP = {
+    "Warning": 0xFF6B35,  # 주황
+    "Normal": 0x2ECC71,   # 초록
+}
+
+
+def translate_reason(reason):
+    return REASON_KR.get(reason, reason)
+
+
+def send_discord(embed):
+    payload = {"embeds": [embed]}
+    try:
+        resp = requests.post(WEBHOOK_URL, json=payload, timeout=10)
+        if resp.status_code == 429:
+            retry_after = resp.json().get("retry_after", 5)
+            time.sleep(retry_after)
+            requests.post(WEBHOOK_URL, json=payload, timeout=10)
+    except requests.RequestException as e:
+        print(f"Discord 전송 실패: {e}")
+
+
+def build_embed(event):
+    obj = event.involved_object
+    reason = event.reason or "Unknown"
+    reason_kr = translate_reason(reason)
+    namespace = obj.namespace or "-"
+    name = obj.name or "Unknown"
+    kind = obj.kind or "Unknown"
+    message = event.message or ""
+    event_type = event.type or "Warning"
+
+    color = COLOR_MAP.get(event_type, 0xFF0000)
+
+    return {
+        "title": f"[{reason_kr}] {kind}/{name}",
+        "color": color,
+        "fields": [
+            {"name": "클러스터", "value": CLUSTER_NAME, "inline": True},
+            {"name": "네임스페이스", "value": namespace, "inline": True},
+            {"name": "원인", "value": f"{reason_kr} (`{reason}`)", "inline": False},
+            {"name": "상세", "value": message[:1024] if message else "-", "inline": False},
+        ],
+        "footer": {"text": f"{CLUSTER_NAME} | korean-alerter"},
+    }
+
+
+def main():
+    try:
+        config.load_incluster_config()
+    except config.ConfigException:
+        config.load_kube_config()
+
+    v1 = client.CoreV1Api()
+    print(f"korean-alerter 시작 - 감시 네임스페이스: {NAMESPACES}")
+
+    while True:
+        try:
+            for ns in NAMESPACES:
+                w = watch.Watch()
+                # 기존 이벤트 건너뛰고 새 이벤트만 감시
+                resource_version = v1.list_namespaced_event(ns).metadata.resource_version
+
+                for event in w.stream(v1.list_namespaced_event, ns,
+                                      resource_version=resource_version,
+                                      timeout_seconds=60):
+                    k8s_event = event["object"]
+                    if k8s_event.type == "Warning":
+                        embed = build_embed(k8s_event)
+                        send_discord(embed)
+
+        except client.exceptions.ApiException as e:
+            print(f"K8s API 에러: {e.status} - 재시도...")
+            time.sleep(5)
+        except Exception as e:
+            print(f"에러 발생: {e} - 재시도...")
+            time.sleep(5)
+
+
+if __name__ == "__main__":
+    main()

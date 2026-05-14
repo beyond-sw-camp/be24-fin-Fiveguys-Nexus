@@ -27,7 +27,7 @@ const emit = defineEmits(['close', 'confirm'])
           </div>
           <div class="flex justify-between items-center pt-3">
             <span class="text-sm font-bold text-gray-900">합계</span>
-            <span class="text-lg font-black text-blue-600">₩ {{ (order?.price ?? 0).toLocaleString() }}</span>
+            <span class="text-lg font-black text-blue-600">₩ {{ (order?.ordersItemList || []).reduce((sum, item) => sum + (item.count || 0) * (item.unitPrice ?? 0), 0).toLocaleString() }}</span>
           </div>
         </div>
       </div>

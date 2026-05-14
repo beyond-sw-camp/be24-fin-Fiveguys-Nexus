@@ -15,8 +15,6 @@ import com.example.nexus.domain.delivery.model.Delivery;
 import com.example.nexus.domain.head.HeadInventoryRepository;
 import com.example.nexus.domain.head.model.HeadInventory;
 import com.example.nexus.domain.orders.OrdersRepository;
-import com.example.nexus.domain.pos.PosOrdersItemRepository;
-import com.example.nexus.domain.pos.PosPayRepository;
 import com.example.nexus.domain.store.StoreRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -35,47 +33,6 @@ public class DashboardService {
     private final OrdersRepository ordersRepository;
     private final HeadInventoryRepository headInventoryRepository;
     private final DeliveryRepository deliveryRepository;
-    private final PosPayRepository posPayRepository;
-    private final PosOrdersItemRepository posOrdersItemRepository;
-
-    // 실시간 대시보드: 오늘 전체 매출 합계
-    public DashboardDto.RealtimeSalesRes getTodaySales() {
-        LocalDateTime start = LocalDate.now().atStartOfDay();
-        LocalDateTime end = start.plusDays(1);
-        long total = posPayRepository.sumTodaySales(start, end);
-        return DashboardDto.RealtimeSalesRes.builder().todaySales(total).build();
-    }
-
-    // 실시간 대시보드: 매장별 매출 랭킹 TOP 3
-    public DashboardDto.RankingRes getTopStores() {
-        LocalDateTime start = LocalDate.now().atStartOfDay();
-        LocalDateTime end = start.plusDays(1);
-        List<Object[]> rows = posPayRepository.findTopStoresByPeriod(start, end, PageRequest.of(0, 3));
-        List<DashboardDto.RankingItem> items = rows.stream()
-                .map(r -> DashboardDto.RankingItem.builder()
-                        .idx((Long) r[0])
-                        .name((String) r[1])
-                        .score((Long) r[2])
-                        .build())
-                .toList();
-        return DashboardDto.RankingRes.builder().rankings(items).build();
-    }
-
-    // 실시간 대시보드: 메뉴별 판매 수량 랭킹 TOP 3
-    public DashboardDto.RankingRes getTopMenus() {
-        LocalDateTime start = LocalDate.now().atStartOfDay();
-        LocalDateTime end = start.plusDays(1);
-        List<Object[]> rows = posOrdersItemRepository.findTopMenusByPeriod(start, end, PageRequest.of(0, 3));
-        List<DashboardDto.RankingItem> items = rows.stream()
-                .map(r -> DashboardDto.RankingItem.builder()
-                        .idx((Long) r[0])
-                        .name((String) r[1])
-                        .score((Long) r[2])
-                        .build())
-                .toList();
-        return DashboardDto.RankingRes.builder().rankings(items).build();
-    }
-
     // 본사 대시보드 입점 매장 카드 데이터 조회 메서드
     public DashboardDto.StoreKpiRes getStoreKpi() {
 

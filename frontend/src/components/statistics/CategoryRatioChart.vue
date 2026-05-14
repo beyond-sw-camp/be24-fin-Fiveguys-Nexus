@@ -20,7 +20,7 @@ const fetchAndRender = async () => {
     if (chartInstance) {
       chartInstance.data.labels = labels
       chartInstance.data.datasets[0].data = amounts
-      chartInstance.update('none')
+      chartInstance.update()
       return
     }
 

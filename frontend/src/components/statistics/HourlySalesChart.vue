@@ -20,7 +20,7 @@ const fetchAndRender = async () => {
 
     if (chartInstance) {
       chartInstance.data.datasets[0].data = salesByHour
-      chartInstance.update('none')
+      chartInstance.update()
       return
     }
 

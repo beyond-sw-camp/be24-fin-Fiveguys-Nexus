@@ -55,3 +55,7 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-mail'
 }
+
+bootRun {
+    workingDir = rootProject.projectDir
+}

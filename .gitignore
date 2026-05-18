@@ -23,3 +23,9 @@ backend/deploy.sh
 backend/init-db.sh
 frontend/deploy.sh
 frontend/bash
+
+# 로드 테스트 / 임시 파일
+cookies.txt
+k8s/load-test/k6-load-test.js
+k8s/load-test/seed-data.sql
+k8s/load-test/README.md

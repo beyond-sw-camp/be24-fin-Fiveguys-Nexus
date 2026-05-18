@@ -1,6 +1,8 @@
 spring:
   application:
-    name: Statistics
+    name: NexusStatistics
+  profiles:
+    active: dev
 
 server:
   port: 8081

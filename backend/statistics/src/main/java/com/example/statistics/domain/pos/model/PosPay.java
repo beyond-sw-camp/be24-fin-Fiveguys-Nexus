@@ -1,7 +1,7 @@
-package com.example.statistics.pos.model;
+package com.example.statistics.domain.pos.model;
 
 import com.example.statistics.common.enums.PosPayMethod;
-import com.example.statistics.store.model.Store;
+import com.example.statistics.domain.store.model.Store;
 import jakarta.persistence.*;
 import lombok.*;
 

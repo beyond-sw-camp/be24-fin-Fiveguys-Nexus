@@ -1,4 +1,4 @@
-package com.example.statistics.menu.model;
+package com.example.statistics.domain.menu.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

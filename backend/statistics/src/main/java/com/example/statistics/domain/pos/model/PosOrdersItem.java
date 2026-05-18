@@ -1,6 +1,6 @@
-package com.example.statistics.pos.model;
+package com.example.statistics.domain.pos.model;
 
-import com.example.statistics.menu.model.Menu;
+import com.example.statistics.domain.menu.model.Menu;
 import jakarta.persistence.*;
 import lombok.*;
 

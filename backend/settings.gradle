@@ -1,3 +1,4 @@
 rootProject.name = 'Nexus'
 
 include 'monolith'
+include 'statistics'

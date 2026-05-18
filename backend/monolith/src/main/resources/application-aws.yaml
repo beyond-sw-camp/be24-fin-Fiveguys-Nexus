@@ -1,0 +1,80 @@
+spring:
+  application:
+    name: Nexus
+  datasource:
+    url: jdbc:mariadb://nexus-db.cpymee4qqvbi.ap-northeast-2.rds.amazonaws.com:3306/nexus?useSSL=true&trustServerCertificate=true
+    username: admin
+    password: qwer1234
+    driver-class-name: org.mariadb.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 3
+      connection-timeout: 30000
+      idle-timeout: 600000
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: gpt-4o
+          temperature: 0.3
+    mcp:
+      client:
+        enabled: true
+        stdio:
+          connections:
+            naver-news:
+              command: node
+              args:
+                - /app/mcp/server.mjs
+              env:
+                NAVER_CLIENT_ID: ${NAVER_CLIENT_ID:}
+                NAVER_CLIENT_SECRET: ${NAVER_CLIENT_SECRET:}
+
+  cloud:
+    aws:
+      credentials:
+        access-key: ${AWS_ACCESS_KEY}
+        secret-key: ${AWS_SECRET_KEY}
+      s3:
+        store-bucket: ${AWS_S3_STORE_BUCKET}
+        menu-bucket: ${AWS_S3_MENU_BUCKET}
+        report-bucket: ${AWS_S3_REPORT_BUCKET}
+      region:
+        static: ${AWS_S3_STATIC}
+  sql:
+    init:
+      mode: never
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_ADDR}
+    password: ${MAIL_PASS}
+    properties:
+      mail:
+        smtp:
+          starttls:
+            enable: true
+            required: true
+          auth: true
+          timeout: 5000
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always
+
+portone:
+  portone_secret: ${PORTONE_SECRET}

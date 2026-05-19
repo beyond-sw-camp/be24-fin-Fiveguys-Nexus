@@ -1,6 +1,5 @@
 package com.example.pos;
 
-import com.example.pos.PosService;
 import com.example.pos.common.model.BaseResponse;
 import com.example.pos.common.model.PageResponse;
 import com.example.pos.domain.user.model.AuthUserDetails;
@@ -13,7 +12,7 @@ import org.springframework.security.web.bind.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.util.List;
 
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;

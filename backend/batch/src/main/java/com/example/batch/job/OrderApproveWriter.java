@@ -22,6 +22,9 @@ import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.stereotype.Component;
 
+import java.util.Comparator;
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -51,7 +54,11 @@ public class OrderApproveWriter implements ItemWriter<Orders> {
         Long storeIdx = orders.getStore().getIdx();
         String memo = "발주 일괄승인 ordersIdx=" + orders.getIdx();
 
-        for (OrdersItem item : orders.getOrdersItemList()) {
+        List<OrdersItem> sortedItems = orders.getOrdersItemList().stream()
+                .sorted(Comparator.comparing(item -> item.getProduct().getIdx()))
+                .toList();
+
+        for (OrdersItem item : sortedItems) {
             Long productIdx = item.getProduct().getIdx();
 
             HeadInventory headInventory = headInventoryRepository.findByProductIdxForUpdate(productIdx)
@@ -91,7 +98,7 @@ public class OrderApproveWriter implements ItemWriter<Orders> {
     }
 
     private void startDelivery(Orders orders) {
-        Delivery delivery = deliveryRepository.findByOrders(orders);
+        Delivery delivery = deliveryRepository.findByOrdersForUpdate(orders);
         if (delivery == null || delivery.getDeliveryStatus() != DeliveryStatus.READY) {
             return;
         }

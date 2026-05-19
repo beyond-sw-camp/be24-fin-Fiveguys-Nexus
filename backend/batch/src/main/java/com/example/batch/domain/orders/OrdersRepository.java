@@ -12,11 +12,14 @@ import java.util.Optional;
 public interface OrdersRepository extends JpaRepository<Orders, Long> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT o FROM Orders o WHERE o.idx = :idx")
+    Optional<Orders> lockById(@Param("idx") Long idx);
+
     @Query("SELECT DISTINCT o FROM Orders o " +
             "JOIN FETCH o.store " +
             "JOIN FETCH o.ordersItemList i " +
             "JOIN FETCH i.product " +
             "LEFT JOIN FETCH o.delivery " +
             "WHERE o.idx = :idx")
-    Optional<Orders> findByIdWithDetailsForUpdate(@Param("idx") Long idx);
+    Optional<Orders> findByIdWithDetails(@Param("idx") Long idx);
 }

@@ -18,8 +18,9 @@ public class OrderApproveProcessor implements ItemProcessor<Long, Orders> {
     @Override
     public Orders process(Long orderId) {
         log.info("processing orderId={}", orderId);
-        return ordersRepository.findByIdWithDetailsForUpdate(orderId)
+        return ordersRepository.lockById(orderId)
                 .filter(o -> o.getOrdersStatus() == OrdersStatus.CONFIRMED)
+                .flatMap(o -> ordersRepository.findByIdWithDetails(orderId))
                 .orElse(null);
     }
 }

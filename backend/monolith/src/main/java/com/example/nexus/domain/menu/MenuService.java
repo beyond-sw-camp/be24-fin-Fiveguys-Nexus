@@ -7,10 +7,13 @@ import com.example.nexus.domain.menu.model.MenuDto;
 import com.example.nexus.domain.menu.model.MenuItem;
 import com.example.nexus.domain.product.ProductRepository;
 import com.example.nexus.domain.product.model.Product;
+import com.example.nexus.event.KafkaTopics;
+import com.example.nexus.event.MenuEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -33,6 +36,7 @@ public class MenuService {
     private final MenuRepository menuRepository;
     private final MenuCategoryRepository menuCategoryRepository;
     private final ProductRepository productRepository;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     private final S3Presigner s3Presigner;
     private final S3Client s3Client;
@@ -141,7 +145,19 @@ public class MenuService {
 
 
             Menu menu = dto.toEntity(category, products);
-            menuRepository.save(menu);
+            Menu saved = menuRepository.save(menu);
+
+            // kafka 이벤트 발생
+            MenuEvent event = new MenuEvent(
+                    saved.getIdx(),
+                    saved.getMenuName(),
+                    saved.getPrice(),
+                    category.getIdx(),
+                    category.getMenuCategoryName(),
+                    saved.isDeleted()
+            );
+
+            kafkaTemplate.send(KafkaTopics.MENU_CREATED, event);
 
         } catch (Exception e) {
             // 등록 중 에러가 나면 DB는 롤백되지만, 이미 업로드된 파일은 좀비가 되므로 삭제 처리
@@ -223,6 +239,18 @@ public class MenuService {
                 menu.getMenuItemList().add(newItem);
             }
 
+            // kafka 이벤트 발생
+            MenuEvent event = new MenuEvent(
+                    menu.getIdx(),
+                    menu.getMenuName(),
+                    menu.getPrice(),
+                    category.getIdx(),
+                    category.getMenuCategoryName(),
+                    menu.isDeleted()
+            );
+
+            kafkaTemplate.send(KafkaTopics.MENU_UPDATED, event);
+
         }catch (Exception e) {
             if (newFilePath != null && !newFilePath.isEmpty()
                     && !newFilePath.equals(oldFilePath)
@@ -267,6 +295,18 @@ public class MenuService {
                 .orElseThrow(() -> new BaseException(NOT_FOUND_MENU));
 
         menu.deleteTrue();
+
+        // kafka 이벤트 발생
+        MenuEvent event = new MenuEvent(
+                menu.getIdx(),
+                menu.getMenuName(),
+                menu.getPrice(),
+                menu.getMenuCategory() != null ? menu.getMenuCategory().getIdx() : null,
+                menu.getMenuCategory() != null ? menu.getMenuCategory().getMenuCategoryName() : null,
+                true
+        );
+
+        kafkaTemplate.send(KafkaTopics.MENU_DELETED, event);
     }
 
     @Transactional(readOnly = true)

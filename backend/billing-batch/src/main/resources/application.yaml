@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: billing-batch
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASS}
+    driver-class-name: ${DB_DRIVER}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: never
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB      # 파일 하나당 최대 크기 (PDF 기준)
+      max-request-size: 15MB   # 전체 요청의 최대 크기
+server:
+  port: 8080
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always
+  health:
+    mail:
+      enabled: false
+
+logging:
+  level:
+    org.springframework.security: DEBUG

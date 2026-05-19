@@ -9,6 +9,15 @@ spring:
     hikari:
       maximum-pool-size: 20
       connection-timeout: 30000
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: gpt-4o
+          temperature: 0.3
+
   jpa:
     hibernate:
       ddl-auto: update             # 엔티티 복제 단계(B-1-3c)에서 테이블 자동 생성

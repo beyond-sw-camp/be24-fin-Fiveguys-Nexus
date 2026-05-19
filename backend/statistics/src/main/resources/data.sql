@@ -5,9 +5,8 @@ DELETE FROM menu;
 DELETE FROM menu_category;
 DELETE FROM store;
 
--- pos_pay, pos_orders_item만 AUTO_INCREMENT 사용 (store/menu/menu_category는 idx 직접 지정)
+-- pos_orders_item만 AUTO_INCREMENT 사용 (pos_pay/store/menu/menu_category는 idx 직접 지정)
 ALTER TABLE pos_orders_item AUTO_INCREMENT = 1;
-ALTER TABLE pos_pay AUTO_INCREMENT = 1;
 
 -- menu_category (4) — idx 직접 지정
 INSERT INTO menu_category (menu_category_idx, menu_category_name, is_deleted) VALUES
@@ -42,43 +41,43 @@ INSERT INTO store (store_idx, store_name, is_deleted) VALUES
 (4, '신촌점', false),
 (5, '광화문점', false);
 
--- pos_pay (30건, 오늘 CURDATE, 시간/매장/method 분산)
-INSERT INTO pos_pay (store_idx, method, paid_at, pay_amount) VALUES
+-- pos_pay (30건, 오늘 CURDATE, 시간/매장/method 분산) — pos_pay_idx 직접 지정
+INSERT INTO pos_pay (pos_pay_idx, store_idx, method, paid_at, pay_amount) VALUES
 -- 강남점 (10건)
-(1, 'CARD', CONCAT(CURDATE(), ' 08:15:00'), 1500),
-(1, 'CARD', CONCAT(CURDATE(), ' 09:20:00'), 5500),
-(1, 'CASH', CONCAT(CURDATE(), ' 10:45:00'), 2500),
-(1, 'CARD', CONCAT(CURDATE(), ' 11:30:00'), 7000),
-(1, 'CARD', CONCAT(CURDATE(), ' 12:05:00'), 4500),
-(1, 'CARD', CONCAT(CURDATE(), ' 12:40:00'), 6000),
-(1, 'CARD', CONCAT(CURDATE(), ' 13:15:00'), 3000),
-(1, 'CASH', CONCAT(CURDATE(), ' 15:30:00'), 5000),
-(1, 'CARD', CONCAT(CURDATE(), ' 17:00:00'), 4000),
-(1, 'CARD', CONCAT(CURDATE(), ' 19:20:00'), 3500),
+(1,  1, 'CARD', CONCAT(CURDATE(), ' 08:15:00'), 1500),
+(2,  1, 'CARD', CONCAT(CURDATE(), ' 09:20:00'), 5500),
+(3,  1, 'CASH', CONCAT(CURDATE(), ' 10:45:00'), 2500),
+(4,  1, 'CARD', CONCAT(CURDATE(), ' 11:30:00'), 7000),
+(5,  1, 'CARD', CONCAT(CURDATE(), ' 12:05:00'), 4500),
+(6,  1, 'CARD', CONCAT(CURDATE(), ' 12:40:00'), 6000),
+(7,  1, 'CARD', CONCAT(CURDATE(), ' 13:15:00'), 3000),
+(8,  1, 'CASH', CONCAT(CURDATE(), ' 15:30:00'), 5000),
+(9,  1, 'CARD', CONCAT(CURDATE(), ' 17:00:00'), 4000),
+(10, 1, 'CARD', CONCAT(CURDATE(), ' 19:20:00'), 3500),
 -- 홍대점 (8건)
-(2, 'CARD', CONCAT(CURDATE(), ' 09:00:00'), 2500),
-(2, 'CARD', CONCAT(CURDATE(), ' 11:15:00'), 4000),
-(2, 'CASH', CONCAT(CURDATE(), ' 12:30:00'), 5500),
-(2, 'CARD', CONCAT(CURDATE(), ' 13:00:00'), 3500),
-(2, 'CARD', CONCAT(CURDATE(), ' 14:45:00'), 7000),
-(2, 'CARD', CONCAT(CURDATE(), ' 16:20:00'), 4500),
-(2, 'CASH', CONCAT(CURDATE(), ' 18:00:00'), 3000),
-(2, 'CARD', CONCAT(CURDATE(), ' 20:00:00'), 5000),
+(11, 2, 'CARD', CONCAT(CURDATE(), ' 09:00:00'), 2500),
+(12, 2, 'CARD', CONCAT(CURDATE(), ' 11:15:00'), 4000),
+(13, 2, 'CASH', CONCAT(CURDATE(), ' 12:30:00'), 5500),
+(14, 2, 'CARD', CONCAT(CURDATE(), ' 13:00:00'), 3500),
+(15, 2, 'CARD', CONCAT(CURDATE(), ' 14:45:00'), 7000),
+(16, 2, 'CARD', CONCAT(CURDATE(), ' 16:20:00'), 4500),
+(17, 2, 'CASH', CONCAT(CURDATE(), ' 18:00:00'), 3000),
+(18, 2, 'CARD', CONCAT(CURDATE(), ' 20:00:00'), 5000),
 -- 잠실점 (6건)
-(3, 'CARD', CONCAT(CURDATE(), ' 10:00:00'), 3000),
-(3, 'CARD', CONCAT(CURDATE(), ' 11:45:00'), 4500),
-(3, 'CASH', CONCAT(CURDATE(), ' 12:55:00'), 6000),
-(3, 'CARD', CONCAT(CURDATE(), ' 14:20:00'), 2500),
-(3, 'CARD', CONCAT(CURDATE(), ' 16:00:00'), 3500),
-(3, 'CARD', CONCAT(CURDATE(), ' 18:30:00'), 5000),
+(19, 3, 'CARD', CONCAT(CURDATE(), ' 10:00:00'), 3000),
+(20, 3, 'CARD', CONCAT(CURDATE(), ' 11:45:00'), 4500),
+(21, 3, 'CASH', CONCAT(CURDATE(), ' 12:55:00'), 6000),
+(22, 3, 'CARD', CONCAT(CURDATE(), ' 14:20:00'), 2500),
+(23, 3, 'CARD', CONCAT(CURDATE(), ' 16:00:00'), 3500),
+(24, 3, 'CARD', CONCAT(CURDATE(), ' 18:30:00'), 5000),
 -- 신촌점 (4건)
-(4, 'CARD', CONCAT(CURDATE(), ' 11:00:00'), 2000),
-(4, 'CASH', CONCAT(CURDATE(), ' 12:20:00'), 4000),
-(4, 'CARD', CONCAT(CURDATE(), ' 14:00:00'), 3000),
-(4, 'CARD', CONCAT(CURDATE(), ' 17:30:00'), 5500),
+(25, 4, 'CARD', CONCAT(CURDATE(), ' 11:00:00'), 2000),
+(26, 4, 'CASH', CONCAT(CURDATE(), ' 12:20:00'), 4000),
+(27, 4, 'CARD', CONCAT(CURDATE(), ' 14:00:00'), 3000),
+(28, 4, 'CARD', CONCAT(CURDATE(), ' 17:30:00'), 5500),
 -- 광화문점 (2건)
-(5, 'CARD', CONCAT(CURDATE(), ' 12:15:00'), 3500),
-(5, 'CASH', CONCAT(CURDATE(), ' 15:00:00'), 4500);
+(29, 5, 'CARD', CONCAT(CURDATE(), ' 12:15:00'), 3500),
+(30, 5, 'CASH', CONCAT(CURDATE(), ' 15:00:00'), 4500);
 
 -- pos_orders_item (~45건, 결제당 1~3개)
 INSERT INTO pos_orders_item (pos_pay_idx, menu_idx, quantity) VALUES

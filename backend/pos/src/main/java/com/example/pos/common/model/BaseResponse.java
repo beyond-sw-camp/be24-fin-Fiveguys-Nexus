@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
-import static com.example.nexus.common.model.BaseResponseStatus.SUCCESS;
+import static com.example.pos.common.model.BaseResponseStatus.SUCCESS;
 
 
 @Getter

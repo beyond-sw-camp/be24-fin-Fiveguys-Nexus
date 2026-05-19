@@ -1,6 +1,6 @@
 package com.example.pos.model;
 
-import com.example.nexus.common.enums.PosPayMethod;
+import com.example.pos.common.enums.PosPayMethod;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;

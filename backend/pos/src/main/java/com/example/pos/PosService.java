@@ -1,5 +1,6 @@
 package com.example.pos;
 
+import com.example.pos.PosStoreInventoryRepository;
 import com.example.pos.common.enums.InventoryStatus;
 import com.example.pos.common.exception.BaseException;
 import com.example.pos.common.model.BaseResponseStatus;
@@ -10,20 +11,33 @@ import com.example.pos.domain.menu.model.Menu;
 import com.example.pos.domain.menu.model.MenuItem;
 import com.example.pos.PosOrdersItemRepository;
 import com.example.pos.PosPayRepository;
+import com.example.pos.domain.store.StoreInventoryRepository;
+import com.example.pos.domain.store.StoreRepository;
+import com.example.pos.domain.store.model.Store;
+import com.example.pos.domain.store.model.StoreInventory;
 import com.example.pos.model.*;
-//import com.example.pos.domain.store.StoreInventoryRepository;
-//import com.example.pos.domain.store.StoreRepository;
-//import com.example.pos.domain.store.model.Store;
-//import com.example.pos.domain.store.model.StoreInventory;
+import com.example.pos.model.PosStoreInventoryDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.example.pos.model.PosStoreInventory;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
+
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,21 +46,23 @@ public class PosService {
 
     private record MenuOrderLine(Menu menu, int quantity) {}
     private final PosStoreInventoryRepository posStoreInventoryRepository;
-//    private final StoreInventoryRepository storeInventoryRepository;
+    private final StoreRepository storeRepository;
+    private final StoreInventoryRepository storeInventoryRepository;
     private final MenuRepository menuRepository;
     private final MenuItemRepository menuItemRepository;
     private final PosPayRepository posPayRepository;
     private final PosOrdersItemRepository posOrdersItemRepository;
 
-    public PageResponse<PosStoreInventoryDto.ListRes> listByUserIdxPaged(Long idx, Long storeIdx, int page, int size) {
-//        Store store = storeRepository.findByUserIdx(userIdx)
-//                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
+    public PageResponse<PosStoreInventoryDto.ListRes> listByUserIdxPaged(Long idx, int page, int size) {
+        Store store = storeRepository.findByUserIdx(idx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
+
         Page<Long> productPage =
-                posStoreInventoryRepository.findPagedProductIdsByStoreIdx(storeIdx, PageRequest.of(page, size));
+                posStoreInventoryRepository.findPagedProductIdsByStoreIdx(store.getIdx(), PageRequest.of(page, size));
 
         List<Long> productIds = productPage.getContent();
 
-        List<PosStoreInventory> lots = posStoreInventoryRepository.findByStoreIdxAndProductIds(storeIdx, productIds);
+        List<PosStoreInventory> lots = posStoreInventoryRepository.findByStoreIdxAndProductIds(store.getIdx(), productIds);
 
         Map<Long, Integer> productOrder = new HashMap<>();
 
@@ -71,17 +87,13 @@ public class PosService {
     }
 
     public PosStoreInventoryDto.SyncCountRes changeCount(Long userIdx, Long posStoreInventoryIdx, Integer count) {
-//        Store store = storeRepository.findByUserIdx(userIdx)
-//                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
-
+        Store myStore = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
 
         PosStoreInventory posInventory = posStoreInventoryRepository.findById(posStoreInventoryIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.POS_INVENTORY_NOT_FOUND));
-
-
-        // StoreInventory 조회
-//        StoreInventory hqInventory = storeInventoryRepository.findById(posStoreInventoryIdx)
-//                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_INVENTORY_NOT_FOUND));
+        StoreInventory hqInventory = storeInventoryRepository.findById(posStoreInventoryIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_INVENTORY_NOT_FOUND));
 
         if (!posInventory.getStore().getIdx().equals(myStore.getIdx())) {
             throw new BaseException(BaseResponseStatus.STORE_INVENTORY_NOT_AUTHORIZED);
@@ -89,21 +101,19 @@ public class PosService {
 
         posInventory.setCount(count);
         posInventory.setStatus(resolveStatus(count, posInventory.getProduct().getMinStock()));
-        // StoreInventory 변경
-//        hqInventory.setCount(count);
-//        hqInventory.setStatus(resolveStatus(count, hqInventory.getProduct().getMinStock()));
+        hqInventory.setCount(count);
+        hqInventory.setStatus(resolveStatus(count, hqInventory.getProduct().getMinStock()));
 
         PosStoreInventory posSaved = posStoreInventoryRepository.save(posInventory);
-//        StoreInventory hqSaved = storeInventoryRepository.save(hqInventory);
+        StoreInventory hqSaved = storeInventoryRepository.save(hqInventory);
 
         return PosStoreInventoryDto.SyncCountRes.from(posSaved, hqSaved);
     }
 
     @Transactional(readOnly = true)
     public List<PosPayDto.TodayPayRes> listTodayPayHistory(Long userIdx) {
-
-//        Store store = storeRepository.findByUserIdx(userIdx)
-//                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
+        Store store = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
 
         LocalDateTime from = LocalDate.now().atStartOfDay();
         LocalDateTime to = from.plusDays(1);
@@ -139,8 +149,8 @@ public class PosService {
 
     @Transactional
     public PosCloseDto.CloseRes deductOnClose(Long userIdx) {
-//        Store store = storeRepository.findByUserIdx(userIdx)
-//                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
+        Store store = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
 
         LocalDateTime from = LocalDate.now().atStartOfDay();
         LocalDateTime to = from.plusDays(1);
@@ -200,8 +210,8 @@ public class PosService {
 
     @Transactional
     public PosPayDto.PayRes pay(Long userIdx, PosPayDto.PayReq req) {
-//        Store store = storeRepository.findByUserIdx(userIdx)
-//                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
+        Store store = storeRepository.findByUserIdx(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
 
         List<MenuOrderLine> lines = new ArrayList<>();
 
@@ -314,30 +324,30 @@ public class PosService {
         if (amount <= 0) {
             return;
         }
-//        List<StoreInventory> lots = storeInventoryRepository
-//                .findByStore_IdxAndProduct_IdxOrderByManufacturedDateAsc(storeIdx, productIdx);
-//        int availableTotal = lots.stream().mapToInt(StoreInventory::getCount).sum();
-//        if (availableTotal < amount) {
-//            Map<String, Object> detail = new LinkedHashMap<>();
-//            detail.put("productIdx", productIdx);
-//            detail.put("required", amount);
-//            detail.put("availableTotal", availableTotal);
-//            throw new BaseException(BaseResponseStatus.STORE_INVENTORY_INSUFFICIENT, detail);
-//        }
+        List<StoreInventory> lots = storeInventoryRepository
+                .findByStore_IdxAndProduct_IdxOrderByManufacturedDateAsc(storeIdx, productIdx);
+        int availableTotal = lots.stream().mapToInt(StoreInventory::getCount).sum();
+        if (availableTotal < amount) {
+            Map<String, Object> detail = new LinkedHashMap<>();
+            detail.put("productIdx", productIdx);
+            detail.put("required", amount);
+            detail.put("availableTotal", availableTotal);
+            throw new BaseException(BaseResponseStatus.STORE_INVENTORY_INSUFFICIENT, detail);
+        }
         int remaining = amount;
-//        for (StoreInventory lot : lots) {
-//            if (remaining <= 0) {
-//                break;
-//            }
-//            int onHand = lot.getCount();
-//            if (onHand <= 0) {
-//                continue;
-//            }
-//            int take = Math.min(onHand, remaining);
-//            lot.setCount(onHand - take);
-//            lot.setStatus(resolveStatus(lot.getCount(), lot.getProduct().getMinStock()));
-//            remaining -= take;
-//        }
+        for (StoreInventory lot : lots) {
+            if (remaining <= 0) {
+                break;
+            }
+            int onHand = lot.getCount();
+            if (onHand <= 0) {
+                continue;
+            }
+            int take = Math.min(onHand, remaining);
+            lot.setCount(onHand - take);
+            lot.setStatus(resolveStatus(lot.getCount(), lot.getProduct().getMinStock()));
+            remaining -= take;
+        }
     }
 
     private InventoryStatus resolveStatus(int count, int minStock) {

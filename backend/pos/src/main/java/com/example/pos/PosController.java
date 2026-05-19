@@ -1,5 +1,6 @@
 package com.example.pos;
 
+import com.example.pos.PosService;
 import com.example.pos.common.model.BaseResponse;
 import com.example.pos.common.model.PageResponse;
 import com.example.pos.domain.user.model.AuthUserDetails;
@@ -34,7 +35,7 @@ public class PosController {
             throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
         }
 
-        PageResponse<PosStoreInventoryDto.ListRes> result = posService.listByUserIdxPaged(userDetails.getIdx(), userDetails.ge, page, size);
+        PageResponse<PosStoreInventoryDto.ListRes> result = posService.listByUserIdxPaged(userDetails.getIdx(), page, size);
 
         return ResponseEntity.ok(BaseResponse.success(result));
     }

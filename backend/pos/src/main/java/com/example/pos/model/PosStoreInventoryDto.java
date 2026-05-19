@@ -1,7 +1,7 @@
 package com.example.pos.model;
 
-import com.example.nexus.common.enums.InventoryStatus;
-import com.example.nexus.domain.store.model.StoreInventory;
+import com.example.pos.common.enums.InventoryStatus;
+import com.example.pos.domain.store.model.StoreInventory;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

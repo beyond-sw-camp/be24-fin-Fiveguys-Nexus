@@ -18,6 +18,8 @@ public class AuthUserDetails implements UserDetails {
     private String username;
     private String password;
     private Role role;
+    private Long storeIdx;
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

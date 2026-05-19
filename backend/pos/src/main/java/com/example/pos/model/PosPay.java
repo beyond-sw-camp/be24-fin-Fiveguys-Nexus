@@ -1,7 +1,7 @@
 package com.example.pos.model;
 
-import com.example.nexus.common.enums.PosPayMethod;
-import com.example.nexus.domain.store.model.Store;
+import com.example.pos.common.enums.PosPayMethod;
+import com.example.pos.domain.store.model.Store;
 import jakarta.persistence.*;
 import lombok.*;
 

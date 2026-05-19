@@ -1,6 +1,6 @@
 package com.example.pos;
 
-import com.example.nexus.domain.pos.model.PosStoreInventory;
+import com.example.pos.model.PosStoreInventory;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

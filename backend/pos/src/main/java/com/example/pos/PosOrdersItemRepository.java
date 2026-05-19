@@ -1,6 +1,6 @@
 package com.example.pos;
 
-import com.example.pos.domain.pos.model.PosOrdersItem;
+import com.example.pos.model.PosOrdersItem;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

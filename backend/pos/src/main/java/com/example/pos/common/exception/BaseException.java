@@ -1,6 +1,6 @@
 package com.example.pos.common.exception;
 
-import com.example.nexus.common.model.BaseResponseStatus;
+import com.example.pos.common.model.BaseResponseStatus;
 import lombok.Getter;
 
 @Getter

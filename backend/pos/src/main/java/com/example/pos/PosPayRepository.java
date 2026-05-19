@@ -1,6 +1,6 @@
 package com.example.pos;
 
-import com.example.nexus.domain.pos.model.PosPay;
+import com.example.pos.model.PosPay;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

@@ -2,7 +2,6 @@ package com.example.batch.job;
 
 import com.example.batch.common.enums.DeliveryStatus;
 import com.example.batch.common.enums.InventoryStatus;
-import com.example.batch.common.enums.OrdersStatus;
 import com.example.batch.common.exception.BaseException;
 import com.example.batch.common.model.BaseResponseStatus;
 import com.example.batch.domain.delivery.DeliveryRepository;
@@ -13,21 +12,21 @@ import com.example.batch.domain.head.model.HeadIncome;
 import com.example.batch.domain.head.model.HeadInventory;
 import com.example.batch.domain.inventory.InventoryMovementRepository;
 import com.example.batch.domain.inventory.model.InventoryMovement;
-import com.example.batch.domain.orders.OrdersRepository;
 import com.example.batch.domain.orders.model.Orders;
 import com.example.batch.domain.orders.model.OrdersItem;
 import com.example.batch.domain.store.StoreInventoryRepository;
 import com.example.batch.domain.store.model.StoreInventory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class OrderApproveWriter implements ItemWriter<Long> {
+@Slf4j
+public class OrderApproveWriter implements ItemWriter<Orders> {
 
-    private final OrdersRepository ordersRepository;
     private final HeadInventoryRepository headInventoryRepository;
     private final HeadIncomeRepository headIncomeRepository;
     private final StoreInventoryRepository storeInventoryRepository;
@@ -35,28 +34,17 @@ public class OrderApproveWriter implements ItemWriter<Long> {
     private final DeliveryRepository deliveryRepository;
 
     @Override
-    public void write(Chunk<? extends Long> chunk) {
-        for (Long orderId : chunk) {
+    public void write(Chunk<? extends Orders> chunk) {
+        for (Orders orders : chunk) {
+            log.info("writing orderId={}", orders.getIdx());
             try {
-                processOrder(orderId);
+                applyOutbound(orders);
+                orders.approve();
+                saveHeadIncome(orders);
+                startDelivery(orders);
             } catch (BaseException e) {
             }
         }
-    }
-
-    private void processOrder(Long orderId) {
-        Orders orders = ordersRepository.findByIdWithDetailsForUpdate(orderId)
-                .filter(o -> o.getOrdersStatus() == OrdersStatus.CONFIRMED)
-                .orElse(null);
-
-        if (orders == null) {
-            return;
-        }
-
-        applyOutbound(orders);
-        orders.approve();
-        saveHeadIncome(orders);
-        startDelivery(orders);
     }
 
     private void applyOutbound(Orders orders) {

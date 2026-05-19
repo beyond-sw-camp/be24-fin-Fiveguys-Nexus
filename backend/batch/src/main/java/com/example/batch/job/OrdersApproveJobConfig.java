@@ -1,11 +1,13 @@
 package com.example.batch.job;
 
+import com.example.batch.domain.orders.model.Orders;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.database.JdbcCursorItemReader;
@@ -34,10 +36,13 @@ public class OrdersApproveJobConfig {
     }
 
     @Bean
-    public Step approveConfirmedOrdersStep(ItemWriter<Long> orderApproveWriter) {
+    public Step approveConfirmedOrdersStep(
+            ItemProcessor<Long, Orders> orderApproveProcessor,
+            ItemWriter<Orders> orderApproveWriter) {
         return new StepBuilder("approveConfirmedOrdersStep", jobRepository)
-                .<Long, Long>chunk(CHUNK_SIZE, transactionManager)
+                .<Long, Orders>chunk(CHUNK_SIZE, transactionManager)
                 .reader(confirmedOrderIdsReader())
+                .processor(orderApproveProcessor)
                 .writer(orderApproveWriter)
                 .build();
     }

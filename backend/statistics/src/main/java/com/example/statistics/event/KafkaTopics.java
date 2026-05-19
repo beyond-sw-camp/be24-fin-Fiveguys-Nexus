@@ -1,0 +1,12 @@
+package com.example.statistics.event;
+
+public final class KafkaTopics {
+    public static final String POS_PAYMENT_CREATED = "pos.payment.created";
+    public static final String STORE_CREATED = "store.created";
+    public static final String STORE_UPDATED = "store.updated";
+    public static final String MENU_CREATED = "menu.created";
+    public static final String MENU_UPDATED = "menu.updated";
+    public static final String MENU_DELETED = "menu.deleted";
+
+    private KafkaTopics() {}
+}

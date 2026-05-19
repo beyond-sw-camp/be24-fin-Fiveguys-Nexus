@@ -18,7 +18,6 @@ public class AuthUserDetails implements UserDetails {
     private String username;
     private String password;
     private Role role;
-    private Long storeIdx;
 
     public static AuthUserDetails from(User entity) {
         return AuthUserDetails.builder()

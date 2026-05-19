@@ -54,6 +54,9 @@ dependencies {
     implementation 'com.openhtmltopdf:openhtmltopdf-pdfbox:1.0.10'
 
     implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    // --- Kafka ---
+    implementation 'org.springframework.kafka:spring-kafka'
 }
 
 bootRun {

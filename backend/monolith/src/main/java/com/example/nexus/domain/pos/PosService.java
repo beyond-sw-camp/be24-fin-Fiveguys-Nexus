@@ -18,9 +18,13 @@ import com.example.nexus.domain.store.StoreInventoryRepository;
 import com.example.nexus.domain.store.StoreRepository;
 import com.example.nexus.domain.store.model.Store;
 import com.example.nexus.domain.store.model.StoreInventory;
+import com.example.nexus.event.KafkaTopics;
+import com.example.nexus.event.PaymentEvent;
+import com.example.nexus.event.PaymentEventItem;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,6 +51,7 @@ public class PosService {
     private final MenuItemRepository menuItemRepository;
     private final PosPayRepository posPayRepository;
     private final PosOrdersItemRepository posOrdersItemRepository;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     public PageResponse<PosStoreInventoryDto.ListRes> listByUserIdxPaged(Long idx, int page, int size) {
         Store store = storeRepository.findByUserIdx(idx)
@@ -262,6 +267,10 @@ public class PosService {
         }
         posOrdersItemRepository.saveAll(orderLines);
 
+        // Kafka 이벤트 발행
+        PaymentEvent event = buildPaymentEvent(savedPay, store, lines);
+        kafkaTemplate.send(KafkaTopics.POS_PAYMENT_CREATED, event);
+
         return PosPayDto.PayRes.builder()
                 .posPayIdx(savedPay.getIdx())
                 .storeIdx(store.getIdx())
@@ -270,6 +279,30 @@ public class PosService {
                 .paidAt(savedPay.getPaidAt())
                 .items(lineResList)
                 .build();
+    }
+
+    private PaymentEvent buildPaymentEvent(PosPay savedPay, Store store, List<MenuOrderLine> lines) {
+        List<PaymentEventItem> items = lines.stream()
+                .map(row -> new PaymentEventItem(
+                        row.menu().getIdx(),
+                        row.menu().getMenuName(),
+                        row.menu().getMenuCategory() != null ? row.menu().getMenuCategory().getIdx() : null,
+                        row.menu().getMenuCategory() != null ? row.menu().getMenuCategory().getMenuCategoryName() : null,
+                        row.menu().getPrice(),
+                        row.quantity(),
+                        (long) row.menu().getPrice() * row.quantity()
+                ))
+                .toList();
+
+        return new PaymentEvent(
+                savedPay.getIdx(),
+                store.getIdx(),
+                store.getStoreName(),
+                savedPay.getMethod().name(),       // PosPayMethod enum → String
+                savedPay.getPaidAt(),
+                savedPay.getPayAmount(),
+                items
+        );
     }
 
     private Map<Long, Integer> aggregateProductNeedFromRecipes(List<MenuOrderLine> lines) {

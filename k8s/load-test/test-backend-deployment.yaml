@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
         - name: nexus-backend
-          image: deatytim/nexusback:latest
+          image: deatytim/nexusback:dev-msa
           ports:
             - containerPort: 8080
           env:

@@ -11,3 +11,4 @@ data:
   AWS_S3_STORE_BUCKET: nexus-store-archive
   AWS_S3_MENU_BUCKET: nexus-menu-assets
   AWS_S3_STATIC: ap-northeast-2
+  KAFKA_BOOTSTRAP_SERVERS: nexus-kafka-kafka-bootstrap.kafka.svc:9092

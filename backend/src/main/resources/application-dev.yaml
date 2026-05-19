@@ -81,10 +81,9 @@ management:
     mail:
       enabled: false
 
-portone:
-  portone_secret: ${PORTONE_SECRET}
-
-
 logging:
   level:
     org.springframework.security: DEBUG
+
+billing:
+  secret-key: ${SECRET_KEY}

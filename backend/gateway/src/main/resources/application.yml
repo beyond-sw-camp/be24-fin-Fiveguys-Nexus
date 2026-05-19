@@ -1,34 +1,39 @@
+server:
+  port: 8088
+
+eureka:
+  instance:
+    lease-renewal-interval-in-seconds: 10     # 주소를 갱신하는 시간
+    lease-expiration-duration-in-seconds: 30  # 가져온 주소의 만료 시간
+    prefer-ip-address: true                   # 내 주소를 알려줄 때 Hostname 대신 IP 주소 알려주기
+  client:
+    service-url:
+      defaultZone: http://localhost:9090/eureka
+    register-with-eureka: false # 현재 자신의 IP주소를 유레카에 등록
+    fetch-registry: true        # 유레카에 등록된 주소들을 받아오는 것
+
 spring:
   application:
     name: gateway
 
-
-
   cloud:
     gateway:
-      server:
-        webflux:
-          routes:
-            - id: statistics
-              uri: http://localhost:8081
-              predicates:
-                - Path=/statistics/**
-              filters:
-                - JwtFilter
-            - id: pos
-              uri: http://localhost:8082
-              predicates:
-                - Path=/pos/**
-              filters:
-                - JwtFilter
+      routes:
+        - id: NexusStatistics
+          uri: lb://statistics
+          predicates:
+            - Path=/statistics/**
 
-
-            - id: origin
-              uri: http://localhost:8080
-              predicates:
-                - Path=/**
+        - id: NexusPos
+          uri: lb://pos
+          predicates:
+            - Path=/pos/**
 
 
 
-server:
-  port: 8088
+        - id: origin
+          uri: http://localhost:8080
+          predicates:
+            - Path=/**
+
+

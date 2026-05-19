@@ -6,3 +6,4 @@ include 'pos'
 include 'batch'
 
 include 'gateway'
+include 'discovery'

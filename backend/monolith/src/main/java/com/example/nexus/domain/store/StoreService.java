@@ -8,12 +8,14 @@ import com.example.nexus.domain.store.model.StoreInventory;
 import com.example.nexus.domain.store.model.StoreInventoryDto;
 import com.example.nexus.domain.user.UserRepository;
 import com.example.nexus.domain.user.model.User;
-import com.example.nexus.domain.wastelog.model.WasteLog;
+import com.example.nexus.event.KafkaTopics;
+import com.example.nexus.event.StoreEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -38,6 +40,7 @@ public class StoreService {
     private final StoreRepository storeRepository;
     private final StoreInventoryRepository storeInventoryRepository;
     private final UserRepository userRepository;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     // URL을 발행해주는 핵심 도구
     private final S3Presigner s3Presigner;
@@ -178,7 +181,17 @@ public class StoreService {
                     .user(owner)
                     .build();
 
-            storeRepository.save(store);
+            // kafka 이벤트 발생
+            Store saved = storeRepository.save(store);
+
+            StoreEvent event = new StoreEvent(
+                    saved.getIdx(),
+                    saved.getStoreName(),
+                    saved.isDeleted()
+            );
+
+            kafkaTemplate.send(KafkaTopics.STORE_CREATED, event);
+
         } catch (Exception e) {
             // 5. 예외 발생 시 S3 롤백 삭제
             // 트랜잭션 도중 에러가 나면 DB는 롤백되지만, S3에 업로드된 파일은 남으므로 삭제 처리
@@ -276,6 +289,15 @@ public class StoreService {
 
             store.update(dto);
             owner.updateOwner(dto.getOwnerName(), dto.getOwnerEmail());
+
+            // kafka 이벤트 발생
+            StoreEvent event = new StoreEvent(
+                    store.getIdx(),
+                    store.getStoreName(),
+                    store.isDeleted()
+            );
+
+            kafkaTemplate.send(KafkaTopics.STORE_UPDATED, event);
 
         } catch (Exception e) {
             if (newFilePath != null && !newFilePath.isEmpty() && !newFilePath.equals(oldFilePath)) {

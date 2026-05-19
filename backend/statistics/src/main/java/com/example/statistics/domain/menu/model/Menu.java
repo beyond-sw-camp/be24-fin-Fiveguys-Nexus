@@ -5,30 +5,28 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "menu")
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Menu {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "menu_idx")
     private Long idx;
 
-    @Column(name = "menu_name", nullable = false, unique = true)
+    @Column(name = "menu_name", nullable = false)
     private String menuName;
 
     @Column(name = "price", nullable = false)
     private Integer price;
 
-    @Column(name = "img_path", nullable = false)
-    private String imgPath;
-
     @Column(name = "is_deleted", nullable = false)
-    private boolean isDeleted = false;
+    private boolean isDeleted;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "menu_category_idx")

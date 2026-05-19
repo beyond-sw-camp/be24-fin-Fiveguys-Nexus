@@ -1,6 +1,7 @@
 package com.example.nexus.config;
 
 import com.example.nexus.common.enums.Role;
+import com.example.nexus.domain.store.StoreService;
 import com.example.nexus.domain.user.model.AuthUserDetails;
 import com.example.nexus.utils.JwtUtil;
 import jakarta.servlet.FilterChain;
@@ -8,6 +9,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -18,8 +20,11 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
+@RequiredArgsConstructor
 @Component
 public class JwtFilter extends OncePerRequestFilter {
+
+    private final StoreService storeService;
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
@@ -43,6 +48,7 @@ public class JwtFilter extends OncePerRequestFilter {
                                 .idx(idx)
                                 .username(username)
                                 .role(Role.valueOf(role))
+                                .storeIdx(storeService.findStoreIdx(idx))
                                 .build();
 
                         Authentication authentication = new UsernamePasswordAuthenticationToken(

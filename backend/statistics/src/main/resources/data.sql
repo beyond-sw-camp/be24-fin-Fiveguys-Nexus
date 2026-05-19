@@ -5,44 +5,42 @@ DELETE FROM menu;
 DELETE FROM menu_category;
 DELETE FROM store;
 
+-- pos_pay, pos_orders_item만 AUTO_INCREMENT 사용 (store/menu/menu_category는 idx 직접 지정)
 ALTER TABLE pos_orders_item AUTO_INCREMENT = 1;
 ALTER TABLE pos_pay AUTO_INCREMENT = 1;
-ALTER TABLE menu AUTO_INCREMENT = 1;
-ALTER TABLE menu_category AUTO_INCREMENT = 1;
-ALTER TABLE store AUTO_INCREMENT = 1;
 
--- menu_category (4)
-INSERT INTO menu_category (menu_category_name, is_deleted) VALUES
-                                                               ('커피', false),
-                                                               ('베버리지', false),
-                                                               ('아이스블렌디드', false),
-                                                               ('티 & 에이드', false);
+-- menu_category (4) — idx 직접 지정
+INSERT INTO menu_category (menu_category_idx, menu_category_name, is_deleted) VALUES
+(1, '커피', false),
+(2, '베버리지', false),
+(3, '아이스블렌디드', false),
+(4, '티 & 에이드', false);
 
--- menu (15)
-INSERT INTO menu (menu_name, price, img_path, is_deleted, menu_category_idx) VALUES
-                                                                                 ('아메리카노', 1500, '/uploads/menu/americano.jpg', false, 1),
-                                                                                 ('카페라떼', 2500, '/uploads/menu/cafelatte.jpg', false, 1),
-                                                                                 ('바닐라라떼', 3000, '/uploads/menu/vanillalatte.jpg', false, 1),
-                                                                                 ('카라멜마끼아또', 3500, '/uploads/menu/caramelmacchiato.jpg', false, 1),
-                                                                                 ('카푸치노', 2500, '/uploads/menu/cappuccino.jpg', false, 1),
-                                                                                 ('녹차라떼', 3000, '/uploads/menu/greentealatte.jpg', false, 2),
-                                                                                 ('초코라떼', 3000, '/uploads/menu/chocolatte.jpg', false, 2),
-                                                                                 ('딸기스무디', 3500, '/uploads/menu/strawberrysmoothie.jpg', false, 3),
-                                                                                 ('망고스무디', 3500, '/uploads/menu/mangosmoothie.jpg', false, 3),
-                                                                                 ('복숭아아이스티', 2500, '/uploads/menu/peachicedtea.jpg', false, 4),
-                                                                                 ('레몬에이드', 2500, '/uploads/menu/lemonade.jpg', false, 4),
-                                                                                 ('자몽에이드', 3000, '/uploads/menu/grapefruitade.jpg', false, 4),
-                                                                                 ('얼그레이티', 2000, '/uploads/menu/earlgrey.jpg', false, 4),
-                                                                                 ('캐모마일티', 2000, '/uploads/menu/chamomile.jpg', false, 4),
-                                                                                 ('히비스커스티', 2000, '/uploads/menu/hibiscus.jpg', false, 4);
+-- menu (15) — idx 직접, imgPath 제거
+INSERT INTO menu (menu_idx, menu_name, price, is_deleted, menu_category_idx) VALUES
+(1, '아메리카노', 1500, false, 1),
+(2, '카페라떼', 2500, false, 1),
+(3, '바닐라라떼', 3000, false, 1),
+(4, '카라멜마끼아또', 3500, false, 1),
+(5, '카푸치노', 2500, false, 1),
+(6, '녹차라떼', 3000, false, 2),
+(7, '초코라떼', 3000, false, 2),
+(8, '딸기스무디', 3500, false, 3),
+(9, '망고스무디', 3500, false, 3),
+(10, '복숭아아이스티', 2500, false, 4),
+(11, '레몬에이드', 2500, false, 4),
+(12, '자몽에이드', 3000, false, 4),
+(13, '얼그레이티', 2000, false, 4),
+(14, '캐모마일티', 2000, false, 4),
+(15, '히비스커스티', 2000, false, 4);
 
--- store (5)
-INSERT INTO store (store_name, address, address_detail, file_path, business, postcode, created_at, is_deleted) VALUES
-                                                                                                                   ('강남점', '서울 강남구 테헤란로 123', '1층', '/uploads/store/gangnam.jpg', '123-45-67890', '06234', NOW(), false),
-                                                                                                                   ('홍대점', '서울 마포구 와우산로 45', '2층', '/uploads/store/hongdae.jpg', '123-45-67891', '04057', NOW(), false),
-                                                                                                                   ('잠실점', '서울 송파구 올림픽로 240', '1층', '/uploads/store/jamsil.jpg', '123-45-67892', '05551', NOW(), false),
-                                                                                                                   ('신촌점', '서울 서대문구 연세로 14', '1층', '/uploads/store/sinchon.jpg', '123-45-67893', '03729', NOW(), false),
-                                                                                                                   ('광화문점', '서울 종로구 새문안로 1', '1층', '/uploads/store/gwanghwamun.jpg', '123-45-67894', '03174', NOW(), false);
+-- store (5) — idx 직접, 부수 컬럼 제거
+INSERT INTO store (store_idx, store_name, is_deleted) VALUES
+(1, '강남점', false),
+(2, '홍대점', false),
+(3, '잠실점', false),
+(4, '신촌점', false),
+(5, '광화문점', false);
 
 -- pos_pay (30건, 오늘 CURDATE, 시간/매장/method 분산)
 INSERT INTO pos_pay (store_idx, method, paid_at, pay_amount) VALUES

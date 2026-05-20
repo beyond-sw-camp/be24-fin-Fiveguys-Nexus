@@ -54,29 +54,4 @@ public class Orders {
     @BatchSize(size = 100)
     @OneToMany(mappedBy = "orders", fetch = FetchType.LAZY)
     private List<OrdersItem> ordersItemList;
-
-    public void confirm() {
-        this.ordersStatus = OrdersStatus.CONFIRMED;
-        this.createdAt = LocalDateTime.now();
-    }
-
-    public void cancel() {
-        this.ordersStatus = OrdersStatus.CANCELLED;
-    }
-
-    public void approve() {
-        this.ordersStatus = OrdersStatus.APPROVE;
-    }
-
-    public void reject() {
-        this.ordersStatus = OrdersStatus.REJECT;
-    }
-
-    public void markDanger(boolean isDanger) {
-        this.isDanger = isDanger;
-    }
-
-    public void updatePrice(Long price) {
-        this.price = price;
-    }
 }

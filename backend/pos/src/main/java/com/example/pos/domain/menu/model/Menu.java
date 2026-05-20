@@ -37,18 +37,7 @@ public class Menu {
     @Builder.Default
     private List<MenuItem> menuItemList = new ArrayList<>();
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "menu_category_idx")
-    private MenuCategory menuCategory;
+    @Column(name = "menu_category_name",  nullable = false)
+    private String menuCategoryName;
 
-    public void update(String menuName, Integer price, String imgPath, MenuCategory category) {
-        this.menuName = menuName;
-        this.price = price;
-        this.imgPath = imgPath;
-        this.menuCategory = category;
-    }
-
-    public void deleteTrue() {
-        this.isDeleted = true;
-    }
 }

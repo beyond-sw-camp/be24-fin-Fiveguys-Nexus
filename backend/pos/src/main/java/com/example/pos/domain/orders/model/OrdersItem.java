@@ -31,7 +31,4 @@ public class OrdersItem {
     @JoinColumn(name = "product_idx", nullable = false)
     private Product product;
 
-    public void updateCount(Integer count) {
-        this.count = count;
-    }
 }

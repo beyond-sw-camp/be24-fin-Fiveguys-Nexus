@@ -1,7 +1,6 @@
 package com.example.pos.domain.product.model;
 
 
-import com.example.pos.domain.category.model.Category;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
@@ -43,17 +42,7 @@ public class Product {
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_idx", nullable = false)
-    private Category category;
+    @Column(name = "category_name", nullable = false)
+    private String categoryName;
 
-    public void update(String productName, String productUnit, Integer maxStock, Integer minStock, Integer unitPrice, String dangerDays, Category category) {
-        this.productName = productName;
-        this.productUnit = productUnit;
-        this.maxStock = maxStock;
-        this.minStock = minStock;
-        this.unitPrice = unitPrice;
-        this.dangerDays = dangerDays;
-        this.category = category;
-    }
 }

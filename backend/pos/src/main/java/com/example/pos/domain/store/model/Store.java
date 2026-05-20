@@ -31,21 +31,6 @@ public class Store {
     @Column(name = "address_detail", nullable = false)
     private String addressDetail;
 
-    @Column(name = "file_path", nullable = false)
-    private String filePath;
-
-    @Column(nullable = false,  unique = true)
-    private String business;
-
-    @Column(nullable = false)
-    private String postcode;
-
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "closed_at")
-    private LocalDateTime closedAt;
-
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted = false;
 

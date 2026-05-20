@@ -29,3 +29,5 @@ cookies.txt
 k8s/load-test/k6-load-test.js
 k8s/load-test/seed-data.sql
 k8s/load-test/README.md
+k8s/load-test/test-statistics-secret.yaml
+k8s/load-test/test-backend-secret.yaml

@@ -27,7 +27,7 @@ public class PaymentEventConsumer {
     private final StoreRepository storeRepository;
     private final MenuRepository menuRepository;
 
-    @KafkaListener(topics = KafkaTopics.POS_PAYMENT_CREATED)
+    @KafkaListener(topics = KafkaTopics.POS_PAYMENT_CREATED, concurrency = "3")
     @Transactional
     public void onPaymentCreated(PaymentEvent event) {
         log.info("[pos.payment.created] received: posPayIdx={}, storeIdx={}, payAmount={}, items={}",

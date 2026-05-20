@@ -18,13 +18,13 @@ import com.example.nexus.domain.store.StoreInventoryRepository;
 import com.example.nexus.domain.store.StoreRepository;
 import com.example.nexus.domain.store.model.Store;
 import com.example.nexus.domain.store.model.StoreInventory;
-import com.example.nexus.event.KafkaTopics;
+import com.example.nexus.event.PaymentDomainEvent;
 import com.example.nexus.event.PaymentEvent;
 import com.example.nexus.event.PaymentEventItem;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,7 +51,7 @@ public class PosService {
     private final MenuItemRepository menuItemRepository;
     private final PosPayRepository posPayRepository;
     private final PosOrdersItemRepository posOrdersItemRepository;
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     public PageResponse<PosStoreInventoryDto.ListRes> listByUserIdxPaged(Long idx, int page, int size) {
         Store store = storeRepository.findByUserIdx(idx)
@@ -269,7 +269,7 @@ public class PosService {
 
         // Kafka 이벤트 발행
         PaymentEvent event = buildPaymentEvent(savedPay, store, lines);
-        kafkaTemplate.send(KafkaTopics.POS_PAYMENT_CREATED, event);
+        applicationEventPublisher.publishEvent(new PaymentDomainEvent(event));
 
         return PosPayDto.PayRes.builder()
                 .posPayIdx(savedPay.getIdx())

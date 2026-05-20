@@ -9,13 +9,14 @@ import com.example.nexus.domain.store.model.StoreInventoryDto;
 import com.example.nexus.domain.user.UserRepository;
 import com.example.nexus.domain.user.model.User;
 import com.example.nexus.event.KafkaTopics;
+import com.example.nexus.event.StoreDomainEvent;
 import com.example.nexus.event.StoreEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -40,7 +41,7 @@ public class StoreService {
     private final StoreRepository storeRepository;
     private final StoreInventoryRepository storeInventoryRepository;
     private final UserRepository userRepository;
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     // URL을 발행해주는 핵심 도구
     private final S3Presigner s3Presigner;
@@ -190,7 +191,7 @@ public class StoreService {
                     saved.isDeleted()
             );
 
-            kafkaTemplate.send(KafkaTopics.STORE_CREATED, event);
+            applicationEventPublisher.publishEvent(new StoreDomainEvent(event, KafkaTopics.STORE_CREATED));
 
         } catch (Exception e) {
             // 5. 예외 발생 시 S3 롤백 삭제
@@ -297,7 +298,7 @@ public class StoreService {
                     store.isDeleted()
             );
 
-            kafkaTemplate.send(KafkaTopics.STORE_UPDATED, event);
+            applicationEventPublisher.publishEvent(new StoreDomainEvent(event, KafkaTopics.STORE_UPDATED));
 
         } catch (Exception e) {
             if (newFilePath != null && !newFilePath.isEmpty() && !newFilePath.equals(oldFilePath)) {

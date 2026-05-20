@@ -22,8 +22,9 @@ import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.stereotype.Component;
 
-import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -38,10 +39,23 @@ public class OrderApproveWriter implements ItemWriter<Orders> {
 
     @Override
     public void write(Chunk<? extends Orders> chunk) {
+        // 청크 전체 product_idx 수집 → 오름차순 정렬로 한 번에 락 획득
+        List<Long> productIds = chunk.getItems().stream()
+                .flatMap(o -> o.getOrdersItemList().stream())
+                .map(item -> item.getProduct().getIdx())
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
+
+        Map<Long, HeadInventory> inventoryMap = headInventoryRepository
+                .findAllByProductIdxInForUpdate(productIds)
+                .stream()
+                .collect(Collectors.toMap(h -> h.getProduct().getIdx(), h -> h));
+
         for (Orders orders : chunk) {
             log.info("writing orderId={}", orders.getIdx());
             try {
-                applyOutbound(orders);
+                applyOutbound(orders, inventoryMap);
                 orders.approve();
                 saveHeadIncome(orders);
                 startDelivery(orders);
@@ -50,19 +64,17 @@ public class OrderApproveWriter implements ItemWriter<Orders> {
         }
     }
 
-    private void applyOutbound(Orders orders) {
+    private void applyOutbound(Orders orders, Map<Long, HeadInventory> inventoryMap) {
         Long storeIdx = orders.getStore().getIdx();
         String memo = "발주 일괄승인 ordersIdx=" + orders.getIdx();
 
-        List<OrdersItem> sortedItems = orders.getOrdersItemList().stream()
-                .sorted(Comparator.comparing(item -> item.getProduct().getIdx()))
-                .toList();
-
-        for (OrdersItem item : sortedItems) {
+        for (OrdersItem item : orders.getOrdersItemList()) {
             Long productIdx = item.getProduct().getIdx();
 
-            HeadInventory headInventory = headInventoryRepository.findByProductIdxForUpdate(productIdx)
-                    .orElseThrow(() -> new BaseException(BaseResponseStatus.HEAD_INVENTORY_NOT_FOUND));
+            HeadInventory headInventory = inventoryMap.get(productIdx);
+            if (headInventory == null) {
+                throw new BaseException(BaseResponseStatus.HEAD_INVENTORY_NOT_FOUND);
+            }
 
             if (headInventory.getCount() < item.getCount()) {
                 throw new BaseException(BaseResponseStatus.ORDERS_APPROVE_INSUFFICIENT_STOCK);

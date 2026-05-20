@@ -38,3 +38,5 @@ management:
 logging:
   level:
     org.springframework.security: DEBUG
+billing:
+  secret-key: ${SECRET_KEY}

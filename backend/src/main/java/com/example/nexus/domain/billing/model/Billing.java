@@ -24,4 +24,5 @@ public class Billing {
     private String authenticatedAt; // 등록 시간
     private String method; // 결제 수단
     private String billingKey;
+    private Long storeIdx;
 }

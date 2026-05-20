@@ -4,9 +4,9 @@ server:
 
 eureka:
   instance:
-    lease-renewal-interval-in-seconds: 10     # 주소를 갱신하는 시간
-    lease-expiration-duration-in-seconds: 30  # 가져온 주소의 만료 시간
-    prefer-ip-address: true                   # 내 주소를 알려줄 때 Hostname 대신 IP 주소 알려주기
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+    prefer-ip-address: true
   client:
     service-url:
       defaultZone: http://localhost:9090/eureka

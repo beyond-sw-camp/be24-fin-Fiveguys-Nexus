@@ -36,9 +36,9 @@ public class JwtGatewayFilterFactory extends AbstractGatewayFilterFactory<JwtGat
                 String role = JwtUtil.getRole(token);
 
                 ServerHttpRequest newRequest = exchange.getRequest().mutate()
-                        .header("X-User-Idx", ""+String.valueOf(userIdx))
-                        .header("X-User-Name", ""+userName)
-                        .header("X-User-Role", ""+role)
+                        .header("X-User-Idx", String.valueOf(userIdx))
+                        .header("X-User-Name", userName)
+                        .header("X-User-Role", role)
                         .build();
 
                 return chain.filter(exchange.mutate().request(newRequest).build());

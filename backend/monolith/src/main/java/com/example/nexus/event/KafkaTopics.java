@@ -7,6 +7,9 @@ public final class KafkaTopics {
     public static final String MENU_CREATED = "menu.created";
     public static final String MENU_UPDATED = "menu.updated";
     public static final String MENU_DELETED = "menu.deleted";
+    public static final String PRODUCT_CREATED = "product.created";
+    public static final String PRODUCT_UPDATED = "product.updated";
+    public static final String PRODUCT_DELETED = "product.deleted";
 
     private KafkaTopics() {}
 }

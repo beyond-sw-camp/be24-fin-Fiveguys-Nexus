@@ -17,7 +17,7 @@ public class StoreEventConsumer {
     private final StoreRepository storeRepository;
 
 
-    // monolith 에서 발생한 매장 생성/수정 이벤트 구독 -> pos DB 동기화
+    // monolith 에서 발생한 매장 생성 이벤트 구독 -> pos DB 동기화
     @KafkaListener(topics = KafkaTopics.STORE_CREATED, groupId = "pos-kafka-group")
     public void onStoreCreatedEvnet(StoreEvent event){
         log.info("[Kafka] Pos - Store CreateEvent 수신: storeIdx={}, storeName={}", event.storeIdx(), event.storeName());
@@ -30,7 +30,7 @@ public class StoreEventConsumer {
         }
     }
 
-    // monolith 에서 발생한 매장 생성/수정 이벤트 구독 -> pos DB 동기화
+    // monolith 에서 발생한 매장 수정 이벤트 구독 -> pos DB 동기화
     @KafkaListener(topics = KafkaTopics.STORE_UPDATED, groupId = "pos-kafka-group")
     public void onStoreUpdatedEvnet(StoreEvent event){
         log.info("[Kafka] Pos - Store DeleteEvent 수신: storeIdx={}, storeName={}", event.storeIdx(), event.storeName(), event.isDeleted());

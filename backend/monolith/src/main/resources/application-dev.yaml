@@ -18,7 +18,7 @@ spring:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
         spring.json.add.type.headers: true
-        spring.json.type.mapping: paymentEvent:com.example.nexus.event.PaymentEvent,storeEvent:com.example.nexus.event.StoreEvent,menuEvent:com.example.nexus.event.MenuEvent
+        spring.json.type.mapping: paymentEvent:com.example.nexus.event.PaymentEvent,storeEvent:com.example.nexus.event.StoreEvent,menuEvent:com.example.nexus.event.MenuEvent,productEvent:com.example.nexus.event.ProductEvent
 
   ai:
     openai:

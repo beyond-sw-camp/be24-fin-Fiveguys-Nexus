@@ -16,13 +16,13 @@ public class StoreEventConsumer {
 
     private final StoreRepository storeRepository;
 
-    @KafkaListener(topics = KafkaTopics.STORE_CREATED)
+    @KafkaListener(topics = KafkaTopics.STORE_CREATED, concurrency = "3")
     public void onStoreCreated(StoreEvent event) {
         log.info("[store.created] received: idx = {}, name = {}", event.storeIdx(), event.storeName());
         upsert(event);
     }
 
-    @KafkaListener(topics = KafkaTopics.STORE_UPDATED)
+    @KafkaListener(topics = KafkaTopics.STORE_UPDATED, concurrency = "3")
     public void onStoreUpdated(StoreEvent event) {
         log.info("[store.updated] received: idx={}, name={}, isDeleted={}",
                 event.storeIdx(), event.storeName(), event.isDeleted());

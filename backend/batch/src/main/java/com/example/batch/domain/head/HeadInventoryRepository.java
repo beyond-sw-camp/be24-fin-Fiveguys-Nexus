@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface HeadInventoryRepository extends JpaRepository<HeadInventory, Long> {
@@ -14,4 +15,8 @@ public interface HeadInventoryRepository extends JpaRepository<HeadInventory, Lo
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT h FROM HeadInventory h WHERE h.product.idx = :productIdx")
     Optional<HeadInventory> findByProductIdxForUpdate(@Param("productIdx") Long productIdx);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT h FROM HeadInventory h WHERE h.product.idx IN :productIds ORDER BY h.product.idx ASC")
+    List<HeadInventory> findAllByProductIdxInForUpdate(@Param("productIds") List<Long> productIds);
 }

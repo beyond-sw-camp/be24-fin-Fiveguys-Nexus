@@ -4,6 +4,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: test-db-statefulset
+  namespace: test
 spec:
   replicas: 1
   selector:
@@ -57,6 +58,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: test-db-service
+  namespace: test
 spec:
   clusterIP: None
   selector:

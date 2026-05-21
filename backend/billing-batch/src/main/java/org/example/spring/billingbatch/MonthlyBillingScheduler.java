@@ -18,7 +18,7 @@ public class MonthlyBillingScheduler {
     private final Job settlementJob; // BillingBatch에 정의된 Job Bean 주입
 
     // 매달 1일 0시 0분 0초에 실행
-    @Scheduled(fixedRate = 20000)
+    @Scheduled(cron = "0 0 4 10 * *")
     public void executeMonthlyBilling() {
         try {
             // 배치가 매번 새로운 Job 인스턴스로 인식하고 실행될 수 있도록 현재 시간을 파라미터로 주입합니다.

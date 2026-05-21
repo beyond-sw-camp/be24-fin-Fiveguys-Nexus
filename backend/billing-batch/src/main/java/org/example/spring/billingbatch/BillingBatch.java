@@ -1,5 +1,6 @@
 package org.example.spring.billingbatch;
 
+import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.example.spring.billingbatch.model.AfterBilling;
@@ -16,10 +17,13 @@ import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
+import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.data.RepositoryItemReader;
 import org.springframework.batch.item.data.builder.RepositoryItemReaderBuilder;
 import org.springframework.batch.item.data.RepositoryItemWriter;
 import org.springframework.batch.item.data.builder.RepositoryItemWriterBuilder;
+import org.springframework.batch.item.database.JpaCursorItemReader;
+import org.springframework.batch.item.database.builder.JpaCursorItemReaderBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -45,11 +49,12 @@ public class BillingBatch {
     private final BillingRepository billingRepository; // 추가
     private final OrdersService ordersService;
     private final AfterBillingRepository afterBillingRepository;
+    private final EntityManagerFactory entityManagerFactory;
 
     @Value("${billing.secret-key}")
     private String secretKey;
 //    YearMonth yearMonth = YearMonth.from(LocalDateTime.now());
-
+    int count = 0;
     @Bean
     public Job settlementJob() {
         return new JobBuilder("billingJob", jobRepository)
@@ -61,7 +66,7 @@ public class BillingBatch {
     @Bean
     public Step billingStep() {
         return new StepBuilder("billingStep", jobRepository)
-                .<Store, AfterBilling>chunk(10, platformTransactionManager)
+                .<Store, AfterBilling>chunk(5, platformTransactionManager)
                 .reader(storeIdReader())
                 .processor(billingProcessor())
                 .writer(billingWriter(afterBillingRepository))
@@ -71,19 +76,62 @@ public class BillingBatch {
                 .build();
     }
 
+
+//    @Bean
+//    public JpaCursorItemReader<Store> storeIdReader() {
+//        return new JpaCursorItemReaderBuilder<Store>()
+//                .name("storeIdReader")
+//                .entityManagerFactory(entityManagerFactory)
+//                .queryString("SELECT s FROM Store s ORDER BY s.idx ASC")
+//                .build();
+//    }
+
+
+//    @Bean
+//    public RepositoryItemReader<Store> storeIdReader() {
+//        RepositoryItemReader<Store> reader = new RepositoryItemReaderBuilder<Store>()
+//                .name("storeIdReader")
+//                .pageSize(5)
+//                .methodName("findAll")
+//                .repository(storeRepository)
+//                .sorts(Map.of("idx", Sort.Direction.ASC))
+//                .build();
+//        return reader;
+//    }
+
+
     @Bean
-    public RepositoryItemReader<Store> storeIdReader() {
-        return new RepositoryItemReaderBuilder<Store>()
-                .name("storeIdReader")
-                .pageSize(10)
-                .methodName("findAll")
-                .repository(storeRepository)
-                .sorts(Map.of("idx", Sort.Direction.ASC))
-                .build();
+    public ItemReader<Store> storeIdReader() {
+
+        RepositoryItemReader<Store> delegate =
+                new RepositoryItemReaderBuilder<Store>()
+                        .name("storeIdReader")
+                        .pageSize(5)
+                        .methodName("findAll")
+                        .repository(storeRepository)
+                        .sorts(Map.of("idx", Sort.Direction.ASC))
+                        .build();
+
+        return () -> {
+            Store store = delegate.read();
+
+            System.out.println(
+                    "READER READ = " +
+                            (store != null ? store.getIdx() : "NULL")
+            );
+
+            return store;
+        };
     }
+
+
+
+    int count2 = 0;
 
     @Bean
     public ItemProcessor<Store, AfterBilling> billingProcessor() {
+        count ++;
+        System.out.println(count + " 번째 Processor 실행");
         return new ItemProcessor<Store, AfterBilling>() {
 
             // 토스 API용 공통 헤더 생성 (프로세서 초기화 시 딱 한 번만 수행)
@@ -99,9 +147,9 @@ public class BillingBatch {
             @Override
             public AfterBilling process(@NonNull Store store) throws Exception {
                 Long storeIdx = store.getIdx();
-
+                count2++;
                 System.out.println(storeIdx);
-                System.out.println("-----");
+                System.out.println(count2 + " 번째 process 실행");
                 // 1. 각 가맹점의 한 달 총 발주 금액 구함
                 int totalPayAmount = ordersService.totalPayAmount(storeIdx);
 
@@ -112,11 +160,11 @@ public class BillingBatch {
 
                 // 2. 가맹점 결제(Billing) 정보 조회
                 Billing target = billingRepository.findByStoreIdx(storeIdx);
-                System.out.println("billingKey-------------------------------" + target.getBillingKey());
                 if (target == null) {
                     System.err.println("결제 정보가 없는 가맹점 코드: " + storeIdx);
                     return null;
                 }
+                System.out.println("billingKey-------------------------------" + target.getBillingKey());
 
                 try {
                     // 3. 토스페이먼츠 API 요청 Body 생성

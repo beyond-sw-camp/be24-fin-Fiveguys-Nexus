@@ -91,7 +91,11 @@ public class PaymentEventConsumer {
 
         // 2. 매장 매출 랭킹
         String storeRankKey = "sales:store:ranking:" + date;
-        redisTemplate.opsForZSet().incrementScore(storeRankKey, event.storeName(), event.payAmount());
+        redisTemplate.opsForZSet().incrementScore(
+                storeRankKey,
+                event.storeIdx() + "|" + event.storeName(),
+                event.payAmount()
+        );
         redisTemplate.expire(storeRankKey, ttl);
 
         // 3. 시간대별 매출
@@ -108,7 +112,11 @@ public class PaymentEventConsumer {
         String menuRankKey = "sales:menu:ranking:" + date;
         String categoryKey = "sales:category:" + date;
         for (PaymentEventItem item : event.items()) {
-            redisTemplate.opsForZSet().incrementScore(menuRankKey, item.menuName(), item.quantity());
+            redisTemplate.opsForZSet().incrementScore(
+                    menuRankKey,
+                    item.menuIdx() + "|" + item.menuName(),
+                    item.quantity()
+            );
             redisTemplate.opsForHash().increment(categoryKey, item.menuCategoryName(), item.lineAmount());
         }
         redisTemplate.expire(menuRankKey, ttl);

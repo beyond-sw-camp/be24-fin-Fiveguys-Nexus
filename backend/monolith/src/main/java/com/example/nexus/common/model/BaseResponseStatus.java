@@ -73,7 +73,8 @@ public enum BaseResponseStatus {
     ORDERS_APPROVE_INSUFFICIENT_STOCK(false, 4201, "본사 재고가 부족하여 발주를 승인할 수 없습니다."),
 
     // 5000번대 실패
-    FAIL(false, 5000, "요청 실패");
+    FAIL(false, 5000, "요청 실패"),
+    DATABASE_ERROR(false, 5001, "데이터베이스 연결 및 처리 오류");
 
     private final boolean success;
     private final int code;

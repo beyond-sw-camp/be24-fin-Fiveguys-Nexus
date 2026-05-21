@@ -91,6 +91,3 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
-
-portone:
-  portone_secret: ${PORTONE_SECRET}

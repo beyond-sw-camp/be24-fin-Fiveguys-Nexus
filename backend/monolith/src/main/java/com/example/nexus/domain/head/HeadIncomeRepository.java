@@ -59,4 +59,18 @@ public interface HeadIncomeRepository extends JpaRepository<HeadIncome, Long> {
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end
     );
-}
+
+    @Query("""
+            SELECT hi
+            FROM HeadIncome hi
+            WHERE hi.store.idx = :storeIdx
+              AND hi.status = false
+              AND hi.orders.createdAt >= :start
+              AND hi.orders.createdAt < :end
+            """)
+    List<HeadIncome> findUnpaidByStoreAndMonth(
+            @Param("storeIdx") Long storeIdx,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end
+    );
+    }

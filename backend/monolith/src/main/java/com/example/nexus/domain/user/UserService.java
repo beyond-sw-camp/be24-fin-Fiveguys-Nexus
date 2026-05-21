@@ -1,6 +1,8 @@
 package com.example.nexus.domain.user;
 
 import com.example.nexus.common.enums.Role;
+import com.example.nexus.domain.store.StoreRepository;
+import com.example.nexus.domain.store.model.Store;
 import com.example.nexus.domain.user.model.AuthUserDetails;
 import com.example.nexus.domain.user.model.User;
 import com.example.nexus.domain.user.model.UserDto;
@@ -20,12 +22,12 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
+    private final StoreRepository storeRepository;
     private final PasswordEncoder passwordEncoder;
     private final JavaMailSender javaMailSender;
 
     public void sendTempPassword(String toEmail, String tempPassword) {
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(toEmail);
         message.setTo(toEmail);
         message.setSubject("[Nexus] 임시 비밀번호 안내");
         message.setText("임시 비밀번호는 [ " + tempPassword + " ] 입니다.");
@@ -76,10 +78,12 @@ public class UserService implements UserDetailsService {
         return AuthUserDetails.from(user);
     }
 
-    public UserDto.StoreInfoRes getStoreInfo(Long storeIdx) {
+    public UserDto.StoreInfoRes getStoreInfo(Long userIdx) {
+        User user = userRepository.findById(userIdx).orElse(null);
+        if (user == null) return null;
 
-        User user = userRepository.findById(storeIdx).orElse(null);
-        return UserDto.StoreInfoRes.from(user);
+        Long storeIdx = storeRepository.findByUser(user).map(Store::getIdx).orElse(null);
+        return UserDto.StoreInfoRes.from(user, storeIdx);
     }
 
     // 비밀번호 변경

@@ -25,7 +25,6 @@
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">이름</th>
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">부서</th>
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">이메일</th>
-            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">아바타</th>
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">관리</th>
           </tr>
         </thead>
@@ -35,11 +34,7 @@
             <td class="px-5 py-3.5 font-semibold text-gray-900">{{ account.name }}</td>
             <td class="px-5 py-3.5 text-gray-600">{{ account.dept }}</td>
             <td class="px-5 py-3.5 text-gray-600">{{ account.email }}</td>
-            <td class="px-5 py-3.5">
-              <span class="inline-flex items-center justify-center w-7 h-7 rounded border border-gray-200 bg-gray-50 text-xs font-bold text-[#F37321]">
-                {{ account.avatar }}
-              </span>
-            </td>
+            
             <td class="px-5 py-3.5">
               <div class="flex items-center justify-center gap-2">
                 <button
@@ -145,17 +140,7 @@
             </div>
           </div>
 
-          <div v-if="formMode !== 'create'" class="space-y-1.5">
-            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">아바타 이니셜</label>
-            <input
-              v-model.trim="form.avatar"
-              type="text"
-              maxlength="2"
-              placeholder="예: HK"
-              class="w-full max-w-24 px-3 py-2 rounded border border-gray-200 text-sm focus:border-[#F37321] focus:ring-2 focus:ring-[#F37321]/10 outline-none uppercase"
-              required
-            />
-          </div>
+          
 
           <div class="flex gap-3 pt-2">
             <button
@@ -205,8 +190,7 @@ const defaultAccounts = [
     name: '이재혁',
     role: 'ADMIN',
     dept: 'SCM 통제센터',
-    email: 'jh.lee@hanwha-nexus.com',
-    avatar: 'HQ',
+    email: 'jh.lee@hanwha-nexus.com'
   },
 ]
 
@@ -221,7 +205,6 @@ const form = reactive({
   name: '',
   dept: '',
   email: '',
-  avatar: '',
 })
 
 function loadAccounts() {
@@ -248,7 +231,6 @@ function resetForm() {
   form.name = ''
   form.dept = ''
   form.email = ''
-  form.avatar = ''
 }
 
 function openCreateModal() {
@@ -265,7 +247,6 @@ function openEditModal(account) {
   form.name = account.name
   form.dept = account.dept
   form.email = account.email
-  form.avatar = account.avatar
   isFormModalOpen.value = true
 }
 
@@ -277,7 +258,6 @@ function closeFormModal() {
 async function submitForm() {
   const normalizedId = form.name.toUpperCase()
   const normalizedEmail = form.email.toLowerCase()
-  const normalizedAvatar = (form.avatar || form.name).toUpperCase()
 
   if (formMode.value === 'create') {
     if (accounts.value.some((account) => account.email.toLowerCase() === normalizedEmail)) {
@@ -288,11 +268,9 @@ async function submitForm() {
     try {
       const response = await api.post('/store/signup', {
         email: normalizedEmail,
-        password: 'password123',
         name: form.name.trim(),
       })
 
-      const avatar = normalizedAvatar.slice(0, 2) || 'ST'
       saveAccounts([
         {
           id: normalizedId,
@@ -300,7 +278,6 @@ async function submitForm() {
           role: 'STORE_OWNER',
           dept: '가맹점',
           email: normalizedEmail,
-          avatar,
         },
         ...accounts.value,
       ])
@@ -323,7 +300,7 @@ async function submitForm() {
     saveAccounts(
       accounts.value.map((account) =>
         account.id === selectedAccount.value.id
-          ? { ...account, name: form.name, dept: form.dept, email: normalizedEmail, avatar: normalizedAvatar }
+          ? { ...account, name: form.name, dept: form.dept, email: normalizedEmail }
           : account
       )
     )

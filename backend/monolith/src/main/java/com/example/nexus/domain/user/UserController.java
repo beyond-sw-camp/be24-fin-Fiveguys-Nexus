@@ -21,15 +21,17 @@ public class UserController {
     private final AuthenticationManager authenticationManager;
     private final JavaMailSender javaMailSender;
 
-    @PostMapping("/signup")
-    public ResponseEntity signup(@RequestBody UserDto.SignupReq dto) {
-        userService.signup(dto);
-        return ResponseEntity.ok("성공");
-    }
+//    @PostMapping("/signup")
+//    public ResponseEntity signup(@RequestBody UserDto.SignupReq dto) {
+//        userService.signup(dto);
+//        return ResponseEntity.ok("성공");
+//    }
 
     @PostMapping("/store/signup")
     public ResponseEntity storeSignup(@RequestBody UserDto.StoreSignupReq dto) {
         UserDto.StoreSignupRes storeSignupRes = userService.storeSignup(dto);
+
+
 
         userService.sendTempPassword(storeSignupRes.getEmail(), storeSignupRes.getPassword());
 

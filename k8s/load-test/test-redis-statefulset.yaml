@@ -1,0 +1,68 @@
+## 부하 테스트 전용 Redis (statistics MSA 의 사전 집계 저장소)
+## 운영 Redis 와 완전히 분리된 별도 인스턴스
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: test-redis-statefulset
+  namespace: test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      type: test-redis
+  serviceName: test-redis-service
+  template:
+    metadata:
+      labels:
+        type: test-redis
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          # AOF 영구 저장 활성화 + 메모리 상한 256mb + LRU 정책
+          command:
+            - redis-server
+            - --appendonly
+            - "yes"
+            - --maxmemory
+            - "256mb"
+            - --maxmemory-policy
+            - "allkeys-lru"
+          ports:
+            - containerPort: 6379
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 384Mi
+          volumeMounts:
+            - name: volume
+              mountPath: /data
+      terminationGracePeriodSeconds: 10
+  volumeClaimTemplates:
+    - metadata:
+        name: volume
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: longhorn
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-redis-service
+  namespace: test
+spec:
+  clusterIP: None
+  selector:
+    type: test-redis
+  ports:
+    - port: 6379
+      targetPort: 6379

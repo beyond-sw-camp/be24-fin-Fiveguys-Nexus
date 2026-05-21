@@ -34,7 +34,7 @@
     <!-- 2. 카드 등록 버튼 -->
     <div class="section action-section">
       <button v-if="status === 'READY'" class="btn btn-primary" @click="requestBilling('카드')">
-        새로운 카드 등록하기
+        새로운 카드 등록 및 변경하기
       </button>
 
       <!-- 진행 상태 -->
@@ -72,6 +72,7 @@ const billingList = ref([])
 const errorData = ref({ code: '', message: '' })
 
 onMounted(async () => {
+  loadTossSDK()
   await fetchBillingList()
 
   const urlParams = new URLSearchParams(window.location.search)
@@ -85,8 +86,6 @@ onMounted(async () => {
   } else if (errorCode && errorMessage) {
     status.value = 'FAIL'
     errorData.value = { code: errorCode, message: errorMessage }
-  } else {
-    loadTossSDK()
   }
 })
 
@@ -131,7 +130,7 @@ const requestBilling = (method) => {
   const currentUrl = window.location.origin + window.location.pathname
 
   // rawStoreIdx를 우선 사용하고, 없으면 storeId에서 추출, 둘 다 없으면 중단
-  const storeIdx = authStore.user?.rawStoreIdx || 
+  const storeIdx = authStore.user?.rawStoreIdx ||
                    (authStore.user?.storeId ? authStore.user.storeId.replace('S', '') : null)
 
   if (!storeIdx) {
@@ -166,7 +165,7 @@ const handleIssueBillingKey = async (authKey, customerKey) => {
     }
   } catch (error) {
     status.value = 'FAIL'
-    errorData.value = { code: 'NETWORK_ERROR', message: '서버와 통신할 수 없습니다.' }
+    errorData.value = { code: 'NETWORK_ERROR', message: '잠시 후 다시 시도해주세요.' }
   } finally {
     window.history.replaceState({}, document.title, window.location.pathname)
   }

@@ -94,14 +94,16 @@ public class UserDto {
         private String userName;
         private String tel;
         private Role role;
+        private Long storeIdx;
 
-        public static StoreInfoRes from(User entity) {
+        public static StoreInfoRes from(User entity, Long storeIdx) {
             return StoreInfoRes.builder()
                     .idx(entity.getIdx())
                     .email(entity.getEmail())
                     .userName(entity.getUserName())
                     .tel(entity.getTel())
                     .role(entity.getRole())
+                    .storeIdx(storeIdx)
                     .build();
         }
     }

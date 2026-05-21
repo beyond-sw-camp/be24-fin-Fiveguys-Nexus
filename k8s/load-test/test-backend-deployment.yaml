@@ -4,6 +4,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: test-backend
+  namespace: test
   labels:
     app: test-backend
 spec:
@@ -23,7 +24,7 @@ spec:
     spec:
       containers:
         - name: nexus-backend
-          image: deatytim/nexusback:latest
+          image: deatytim/nexusback:dev-msa
           ports:
             - containerPort: 8080
           env:
@@ -34,7 +35,7 @@ spec:
             - configMapRef:
                 name: test-backend-config
             - secretRef:
-                name: nexus-backend-secret   # Secret은 운영과 공유 (API 키 등)
+                name: test-backend-secret    # test namespace 자체 Secret (운영과 분리)
           resources:
             requests:
               cpu: 500m
@@ -65,6 +66,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: test-backend-service
+  namespace: test
 spec:
   type: NodePort
   selector:

@@ -1,0 +1,109 @@
+spring:
+  application:
+    name: Nexus
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASS}
+    driver-class-name: ${DB_DRIVER}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    defer-datasource-initialization: true
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: true
+        spring.json.type.mapping: paymentEvent:com.example.nexus.event.PaymentEvent,storeEvent:com.example.nexus.event.StoreEvent,menuEvent:com.example.nexus.event.MenuEvent
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: gpt-4o
+          temperature: 0.3
+    mcp:
+      client:
+        stdio:
+          connections:
+            naver-news:
+              command: node
+              args:
+                - ${MCP_NEWS_SERVER_PATH}
+              env:
+                NAVER_CLIENT_ID: ${NAVER_CLIENT_ID:}
+                NAVER_CLIENT_SECRET: ${NAVER_CLIENT_SECRET:}
+
+  cloud:
+    aws:
+      credentials:
+        access-key: ${AWS_ACCESS_KEY}
+        secret-key: ${AWS_SECRET_KEY}
+      s3:
+        enabled: true # false = S3 작동 X
+        store-bucket: ${AWS_S3_STORE_BUCKET}
+        menu-bucket: ${AWS_S3_MENU_BUCKET}
+        report-bucket: ${AWS_S3_REPORT_BUCKET}
+      region:
+        static: ${AWS_S3_STATIC}
+  sql:
+    init:
+      mode: never
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_ADDR}
+    password: ${MAIL_PASS}
+    properties:
+      mail:
+        smtp:
+          starttls:
+            enable: true
+            required: true
+          auth: true
+          timeout: 5000
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB      # 파일 하나당 최대 크기 (PDF 기준)
+      max-request-size: 15MB   # 전체 요청의 최대 크기
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always
+  health:
+    mail:
+      enabled: false
+
+portone:
+  portone_secret: ${PORTONE_SECRET}
+
+eureka:
+  instance:
+    lease-renewal-interval-in-seconds: 10     # 주소를 갱신하는 시간
+    lease-expiration-duration-in-seconds: 30  # 가져온 주소의 만료 시간
+    prefer-ip-address: true                   # 내 주소를 알려줄 때 Hostname 대신 IP 주소 알려주기
+  client:
+    service-url:
+      defaultZone: http://localhost:9090/eureka
+    register-with-eureka: true # 현재 자신의 IP주소를 유레카에 등록
+    fetch-registry: true       # 유레카에 등록된 주소들을 받아오는 것
+
+
+logging:
+  level:
+    org.springframework.security: DEBUG

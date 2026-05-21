@@ -1,0 +1,39 @@
+eureka:
+  instance:
+    lease-renewal-interval-in-seconds: 10     # 주소를 갱신하는 시간
+    lease-expiration-duration-in-seconds: 30  # 가져온 주소의 만료 시간
+    prefer-ip-address: true                   # 내 주소를 알려줄 때 Hostname 대신 IP 주소 알려주기
+  client:
+    service-url:
+      defaultZone: http://localhost:9090/eureka
+    register-with-eureka: true # 현재 자신의 IP주소를 유레카에 등록
+    fetch-registry: true       # 유레카에 등록된 주소들을 받아오는 것
+
+spring:
+  application:
+    name: NexusPos
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASS}
+    driver-class-name: ${DB_DRIVER}
+    hikari:
+      maximum-pool-size: 20
+      connection-timeout: 30000
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: gpt-4o
+          temperature: 0.3
+
+  jpa:
+    hibernate:
+      ddl-auto: update             # 엔티티 복제 단계(B-1-3c)에서 테이블 자동 생성
+    show-sql: false
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always

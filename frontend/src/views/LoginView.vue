@@ -102,7 +102,7 @@ const demoAccounts = [
     badgeClass: 'bg-orange-50 text-orange-600 border border-orange-200',
   },
   {
-    email: 'store01@theventi.co.kr', name: '김동현', avatar: 'KD', roleLabel: '점주 (가맹점)',
+    email: 'store0001@theventi.co.kr', name: '김동현', avatar: 'KD', roleLabel: '점주 (가맹점)',
     colorClass: 'bg-blue-500',
     badgeClass: 'bg-blue-50 text-blue-600 border border-blue-200',
   },

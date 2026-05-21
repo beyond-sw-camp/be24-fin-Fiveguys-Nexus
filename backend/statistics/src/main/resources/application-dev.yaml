@@ -1,0 +1,43 @@
+eureka:
+  instance:
+    lease-renewal-interval-in-seconds: 10     # 주소를 갱신하는 시간
+    lease-expiration-duration-in-seconds: 30  # 가져온 주소의 만료 시간
+    prefer-ip-address: true                   # 내 주소를 알려줄 때 Hostname 대신 IP 주소 알려주기
+  client:
+    service-url:
+      defaultZone: http://localhost:9090/eureka
+    register-with-eureka: true # 현재 자신의 IP주소를 유레카에 등록
+    fetch-registry: true       # 유레카에 등록된 주소들을 받아오는 것
+
+spring:
+  application:
+    name: NexusStatistics
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASS}
+    driver-class-name: ${DB_DRIVER}
+    hikari:
+      maximum-pool-size: 20
+      connection-timeout: 30000
+  jpa:
+    hibernate:
+      ddl-auto: update             # 엔티티 복제 단계에서 테이블 자동 생성
+    show-sql: false
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    consumer:
+      group-id: statistics-kafka
+      auto-offset-reset: earliest              # 토픽 처음부터 읽기
+      key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      properties:
+        spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+        spring.json.trusted.packages: "*"
+        spring.json.type.mapping: paymentEvent:com.example.statistics.event.PaymentEvent,storeEvent:com.example.statistics.event.StoreEvent,menuEvent:com.example.statistics.event.MenuEvent

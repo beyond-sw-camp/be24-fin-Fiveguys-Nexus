@@ -25,6 +25,7 @@ bin/
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+.env
 
 ### NetBeans ###
 /nbproject/private/
@@ -35,5 +36,7 @@ out/
 
 ### VS Code ###
 .vscode/
-.env
+monolith/.env
 datalocal.sql
+k8s/load-test/test-db-statefulset.yaml
+convention.md

@@ -24,6 +24,7 @@ spec:
       containers:
         - name: nexus-statistics
           image: deatytim/nexusstat:dev-msa
+          imagePullPolicy: Always
           ports:
             - containerPort: 8081
           env:

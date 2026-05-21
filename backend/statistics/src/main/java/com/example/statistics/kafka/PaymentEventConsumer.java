@@ -9,12 +9,15 @@ import com.example.statistics.domain.pos.model.PosPay;
 import com.example.statistics.domain.store.StoreRepository;
 import com.example.statistics.event.KafkaTopics;
 import com.example.statistics.event.PaymentEvent;
+import com.example.statistics.event.PaymentEventItem;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.util.List;
 
 @Slf4j
@@ -26,6 +29,7 @@ public class PaymentEventConsumer {
     private final PosOrdersItemRepository posOrdersItemRepository;
     private final StoreRepository storeRepository;
     private final MenuRepository menuRepository;
+    private final StringRedisTemplate redisTemplate;
 
     @KafkaListener(topics = KafkaTopics.POS_PAYMENT_CREATED, concurrency = "3")
     @Transactional
@@ -58,5 +62,64 @@ public class PaymentEventConsumer {
                         .build())
                 .toList();
         posOrdersItemRepository.saveAll(orderItems);
+
+        // Redis 사전 집계 (DB INSERT 다음 호출)
+        aggregateToRedis(event);
+    }
+
+    /**
+     * 결제 이벤트로부터 6개 통계 키에 사전 집계.
+     *
+     * - sales:today:DATE          (String, INCRBY)
+     * - sales:store:ranking:DATE  (Sorted Set, ZINCRBY)
+     * - sales:menu:ranking:DATE   (Sorted Set, ZINCRBY)
+     * - sales:hourly:DATE         (Hash, HINCRBY)
+     * - sales:category:DATE       (Hash, HINCRBY)
+     * - sales:payment:DATE        (Hash, HINCRBY)
+     *
+     * 각 키에 7일 TTL 설정 (Redis 메모리 관리).
+     */
+    private void aggregateToRedis(PaymentEvent event) {
+        String date = event.paidAt().toLocalDate().toString();   // "2026-05-21"
+        int hour = event.paidAt().getHour();
+        Duration ttl = Duration.ofDays(7);
+
+        // 1. 오늘 총 매출
+        String todayKey = "sales:today:" + date;
+        redisTemplate.opsForValue().increment(todayKey, event.payAmount());
+        redisTemplate.expire(todayKey, ttl);
+
+        // 2. 매장 매출 랭킹
+        String storeRankKey = "sales:store:ranking:" + date;
+        redisTemplate.opsForZSet().incrementScore(
+                storeRankKey,
+                event.storeIdx() + "|" + event.storeName(),
+                event.payAmount()
+        );
+        redisTemplate.expire(storeRankKey, ttl);
+
+        // 3. 시간대별 매출
+        String hourlyKey = "sales:hourly:" + date;
+        redisTemplate.opsForHash().increment(hourlyKey, String.valueOf(hour), event.payAmount());
+        redisTemplate.expire(hourlyKey, ttl);
+
+        // 4. 결제수단별 매출
+        String paymentKey = "sales:payment:" + date;
+        redisTemplate.opsForHash().increment(paymentKey, event.method(), event.payAmount());
+        redisTemplate.expire(paymentKey, ttl);
+
+        // 5, 6. 메뉴 판매 랭킹 + 카테고리별 매출 (items 순회)
+        String menuRankKey = "sales:menu:ranking:" + date;
+        String categoryKey = "sales:category:" + date;
+        for (PaymentEventItem item : event.items()) {
+            redisTemplate.opsForZSet().incrementScore(
+                    menuRankKey,
+                    item.menuIdx() + "|" + item.menuName(),
+                    item.quantity()
+            );
+            redisTemplate.opsForHash().increment(categoryKey, item.menuCategoryName(), item.lineAmount());
+        }
+        redisTemplate.expire(menuRankKey, ttl);
+        redisTemplate.expire(categoryKey, ttl);
     }
 }

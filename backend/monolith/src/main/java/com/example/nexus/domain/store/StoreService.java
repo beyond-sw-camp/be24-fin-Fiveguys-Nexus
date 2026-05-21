@@ -187,7 +187,10 @@ public class StoreService {
             StoreEvent event = new StoreEvent(
                     saved.getIdx(),
                     saved.getStoreName(),
-                    saved.isDeleted()
+                    saved.isDeleted(),
+                    saved.getUser().getIdx(),
+                    saved.getAddress(),
+                    saved.getAddressDetail()
             );
 
             kafkaTemplate.send(KafkaTopics.STORE_CREATED, event);
@@ -294,7 +297,10 @@ public class StoreService {
             StoreEvent event = new StoreEvent(
                     store.getIdx(),
                     store.getStoreName(),
-                    store.isDeleted()
+                    store.isDeleted(),
+                    store.getUser().getIdx(),
+                    store.getAddress(),
+                    store.getAddressDetail()
             );
 
             kafkaTemplate.send(KafkaTopics.STORE_UPDATED, event);

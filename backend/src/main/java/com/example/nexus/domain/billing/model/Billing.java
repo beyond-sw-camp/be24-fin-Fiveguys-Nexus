@@ -25,4 +25,12 @@ public class Billing {
     private String method; // 결제 수단
     private String billingKey;
     private Long storeIdx;
+
+    public void updateBillingInfo(String mId, String customerKey, String authenticatedAt, String method, String billingKey) {
+        this.mId = mId;
+        this.customerKey = customerKey;
+        this.authenticatedAt = authenticatedAt;
+        this.method = method;
+        this.billingKey = billingKey;
+    }
 }

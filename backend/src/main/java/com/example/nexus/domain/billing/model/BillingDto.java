@@ -1,38 +1,40 @@
 package com.example.nexus.domain.billing.model;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+
+import java.util.List;
 
 public class BillingDto {
-    @Builder
-    @Getter
-    public static class UserReqDto {
-        private String mId; // 상점 ID, 토스페이먼츠에서 발급
-        private String customerKey; // 구매자 ID, 빌링키와 연결
-        private String authenticatedAt;
-        private String method;  // 결제 수단
-        private String billingKey;  // 정기 결제 카드 등록 시 발급
-        private Long storeIdx;  // 본인 가맹점
 
-        public Billing toEntity() {
-            return Billing.builder()
-                    .mId(mId)
-                    .customerKey(customerKey)
-                    .authenticatedAt(authenticatedAt)
-                    .method(method)
-                    .billingKey(billingKey)
-                    .storeIdx(storeIdx)
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class IssueBillingKeyRequestDto {
+        private String authKey;
+        private String customerKey;
+    }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class BillingResponseDto {
+        private Long id;
+        private String mId;
+        private String customerKey;
+        private String authenticatedAt;
+        private String method;
+        private Long storeIdx;
+
+        public static BillingResponseDto from(Billing billing) {
+            return BillingResponseDto.builder()
+                    .id(billing.getId())
+                    .mId(billing.getMId())
+                    .customerKey(billing.getCustomerKey())
+                    .authenticatedAt(billing.getAuthenticatedAt())
+                    .method(billing.getMethod())
+                    .storeIdx(billing.getStoreIdx())
                     .build();
         }
-
     }
-
-
-    @Getter @Setter
-    public static class BillingKeyReqDto {
-        private String authKey;   //
-        private String customerKey;     //
-    }
-
 }

@@ -5,5 +5,9 @@ include 'statistics'
 include 'pos'
 include 'batch'
 
+include 'billing-batch'
+
+
 include 'gateway'
 include 'discovery'
+

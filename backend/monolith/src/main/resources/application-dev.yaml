@@ -89,9 +89,6 @@ management:
     mail:
       enabled: false
 
-portone:
-  portone_secret: ${PORTONE_SECRET}
-
 eureka:
   instance:
     lease-renewal-interval-in-seconds: 10     # 주소를 갱신하는 시간
@@ -107,3 +104,6 @@ eureka:
 logging:
   level:
     org.springframework.security: DEBUG
+
+billing:
+  secret-key: ${SECRET_KEY}

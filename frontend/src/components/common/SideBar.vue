@@ -67,7 +67,7 @@ const storeMenus = [
   { path: '/store-inventory', name: '매장 재고',  icon: Warehouse },
   { path: '/store-delivery',  name: '배송 현황',  icon: Truck },
   { path: '/store-settlement',name: '정산 내역',  icon: Receipt },
-  { path: '/store-payment-test', name: '결제 테스트', icon: CreditCard },
+  { path: '/store-payment-test', name: '결제 수단 관리', icon: CreditCard },
   { path: '/store-news',       name: '지역 뉴스', icon: Newspaper },
   { path: '/store-notification', name: '알림', icon: Bell },
 ]

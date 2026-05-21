@@ -34,11 +34,11 @@ public class UserService implements UserDetailsService {
         javaMailSender.send(message);
     }
 
-    public void signup(UserDto.SignupReq dto) {
-        User user = dto.toEntity();
-        user.setPassword(passwordEncoder.encode(dto.getPassword()));
-        userRepository.save(user);
-    }
+//    public void signup(UserDto.SignupReq dto) {
+//        User user = dto.toEntity();
+//        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+//        userRepository.save(user);
+//    }
 
     // store 회원가입
     public UserDto.StoreSignupRes storeSignup(UserDto.StoreSignupReq dto) {

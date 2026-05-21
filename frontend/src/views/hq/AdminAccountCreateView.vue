@@ -288,7 +288,6 @@ async function submitForm() {
     try {
       const response = await api.post('/store/signup', {
         email: normalizedEmail,
-        password: 'password123',
         name: form.name.trim(),
       })
 

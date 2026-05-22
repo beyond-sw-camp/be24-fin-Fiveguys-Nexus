@@ -1,7 +1,6 @@
 package com.example.nexus.domain.user.model;
 
 import com.example.nexus.common.enums.Role;
-import com.example.nexus.domain.user.model.User;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -118,4 +117,21 @@ public class UserDto {
     public static class ChangeTelDto {
         private String tel;
     }
+
+    @Getter
+    @Builder
+    public static class UserListRes {
+        private String name;
+        private Role role;
+        private String email;
+
+        public static UserListRes from(User entity) {
+            return UserListRes.builder()
+                    .name(entity.getUserName())
+                    .role(entity.getRole())
+                    .email(entity.getEmail())
+                    .build();
+        }
+    }
+
 }

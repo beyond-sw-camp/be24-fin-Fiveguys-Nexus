@@ -15,24 +15,24 @@
     <section class="bg-white border border-gray-200 rounded-lg overflow-hidden">
       <div class="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
         <h2 class="text-sm font-bold text-gray-800">계정 리스트</h2>
-        <span class="text-xs text-gray-400">총 {{ accounts.length }}명</span>
+        <span class="text-xs text-gray-400">총 {{ pagination.totalCount }}명</span>
       </div>
 
       <table class="w-full text-sm text-left">
         <thead>
           <tr class="bg-gray-50 border-b border-gray-200">
-            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">ID</th>
+            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">No.</th>
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">이름</th>
-            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">부서</th>
+            <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">권한</th>
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">이메일</th>
             <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">관리</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
-          <tr v-for="account in accounts" :key="account.id" class="hover:bg-gray-50/60">
-            <td class="px-5 py-3.5 text-xs font-mono text-gray-500">{{ account.id }}</td>
+          <tr v-for="(account, index) in accounts" :key="account.email" class="hover:bg-gray-50/60">
+            <td class="px-5 py-3.5 text-xs font-mono text-gray-500">{{ (pagination.currentPage * pagination.currentSize) + index + 1 }}</td>
             <td class="px-5 py-3.5 font-semibold text-gray-900">{{ account.name }}</td>
-            <td class="px-5 py-3.5 text-gray-600">{{ account.dept }}</td>
+            <td class="px-5 py-3.5 text-gray-600">{{ account.role }}</td>
             <td class="px-5 py-3.5 text-gray-600">{{ account.email }}</td>
             
             <td class="px-5 py-3.5">
@@ -58,6 +58,32 @@
         </tbody>
       </table>
     </section>
+
+    <!-- Pagination -->
+    <div v-if="pagination.totalPage > 1" class="flex justify-center items-center gap-2 pt-2">
+      <button
+        class="p-2 rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+        :disabled="pagination.currentPage === 0"
+        @click="changePage(pagination.currentPage - 1)">
+        <ChevronLeft class="w-4 h-4" />
+      </button>
+
+      <button v-for="pageIdx in visiblePages" :key="pageIdx"
+              class="w-8 h-8 rounded text-sm font-semibold cursor-pointer transition-colors"
+              :class="pagination.currentPage === pageIdx
+          ? 'bg-[#F37321] text-white'
+          : 'text-gray-500 hover:bg-gray-50'"
+              @click="changePage(pageIdx)">
+        {{ pageIdx + 1 }}
+      </button>
+
+      <button
+        class="p-2 rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+        :disabled="pagination.currentPage >= pagination.totalPage - 1"
+        @click="changePage(pagination.currentPage + 1)">
+        <ChevronRight class="w-4 h-4" />
+      </button>
+    </div>
 
     <div v-if="isFormModalOpen" class="fixed inset-0 z-50 flex items-center justify-center">
       <div class="absolute inset-0 bg-black/40" @click="closeFormModal"></div>
@@ -140,8 +166,6 @@
             </div>
           </div>
 
-          
-
           <div class="flex gap-3 pt-2">
             <button
               type="button"
@@ -174,7 +198,9 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { reactive, ref, onMounted, computed } from 'vue'
+import { ChevronRight, ChevronLeft } from 'lucide-vue-next'
+import { getUserList } from '@/api/user/index.js'
 import api from '@/plugins/axiosinterceptor'
 import Toast from '@/components/common/Toast.vue'
 import ConfirmModal from '@/components/common/ConfirmModal.vue'
@@ -182,19 +208,14 @@ import { useToast } from '@/composables/useToast'
 
 const { toast, showToast } = useToast()
 
-const STORAGE_KEY = 'nexus_admin_accounts'
+const accounts = ref([])
+const pagination = reactive({
+  totalPage: 0,
+  totalCount: 0,
+  currentPage: 0,
+  currentSize: 20
+})
 
-const defaultAccounts = [
-  {
-    id: 'A001',
-    name: '이재혁',
-    role: 'ADMIN',
-    dept: 'SCM 통제센터',
-    email: 'jh.lee@hanwha-nexus.com'
-  },
-]
-
-const accounts = ref(loadAccounts())
 const isFormModalOpen = ref(false)
 const isDeleteModalOpen = ref(false)
 const formMode = ref('create')
@@ -207,24 +228,47 @@ const form = reactive({
   email: '',
 })
 
-function loadAccounts() {
+async function fetchAccounts(page = 0) {
   try {
-    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null')
-    if (!Array.isArray(parsed) || parsed.length === 0) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultAccounts))
-      return [...defaultAccounts]
-    }
-    return parsed
-  } catch {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultAccounts))
-    return [...defaultAccounts]
+    const response = await getUserList(page, pagination.currentSize)
+    
+    // 현재 백엔드 사양: 전체 리스트 반환 (List<UserDto.UserListRes>)
+    // 클라이언트에서 20명씩 잘라서 표시 (slice)
+    const allData = response.data || []
+    
+    pagination.totalCount = allData.length
+    pagination.totalPage = Math.ceil(allData.length / pagination.currentSize)
+    pagination.currentPage = page
+    
+    const start = page * pagination.currentSize
+    const end = start + pagination.currentSize
+    accounts.value = allData.slice(start, end)
+    
+  } catch (error) {
+    showToast('사용자 목록을 불러오는데 실패했습니다.', 'error')
   }
 }
 
-function saveAccounts(nextAccounts) {
-  accounts.value = nextAccounts
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(nextAccounts))
+const changePage = (page) => {
+  if (page < 0 || page >= pagination.totalPage) return
+  fetchAccounts(page)
 }
+
+const visiblePages = computed(() => {
+  const range = 10
+  const currentGroup = Math.floor(pagination.currentPage / range)
+  const start = currentGroup * range
+  const end = Math.min(start + range, pagination.totalPage)
+  const pages = []
+  for (let i = start; i < end; i++) {
+    pages.push(i)
+  }
+  return pages
+})
+
+onMounted(() => {
+  fetchAccounts()
+})
 
 function resetForm() {
   form.id = ''
@@ -243,9 +287,9 @@ function openCreateModal() {
 function openEditModal(account) {
   formMode.value = 'edit'
   selectedAccount.value = account
-  form.id = account.id
+  form.id = account.id || ''
   form.name = account.name
-  form.dept = account.dept
+  form.dept = account.role || ''
   form.email = account.email
   isFormModalOpen.value = true
 }
@@ -256,31 +300,19 @@ function closeFormModal() {
 }
 
 async function submitForm() {
-  const normalizedId = form.name.toUpperCase()
   const normalizedEmail = form.email.toLowerCase()
 
   if (formMode.value === 'create') {
-    if (accounts.value.some((account) => account.email.toLowerCase() === normalizedEmail)) {
-      showToast('이미 존재하는 이메일 입니다.', 'error')
-      return
-    }
-
+    // 중복 체크는 전체 데이터를 대상으로 해야 정확하지만, 
+    // 현재는 fetchAccounts에서 잘린 데이터만 가지고 있으므로 
+    // 실제 운영 환경에서는 서버에서 중복 체크를 수행해야 합니다.
     try {
       const response = await api.post('/store/signup', {
         email: normalizedEmail,
         name: form.name.trim(),
       })
 
-      saveAccounts([
-        {
-          id: normalizedId,
-          name: form.name.trim(),
-          role: 'STORE_OWNER',
-          dept: '가맹점',
-          email: normalizedEmail,
-        },
-        ...accounts.value,
-      ])
+      await fetchAccounts(pagination.currentPage)
 
       const responseData = response?.data
       let tempPassword = ''
@@ -297,14 +329,7 @@ async function submitForm() {
     }
   } else {
     if (!selectedAccount.value) return
-    saveAccounts(
-      accounts.value.map((account) =>
-        account.id === selectedAccount.value.id
-          ? { ...account, name: form.name, dept: form.dept, email: normalizedEmail }
-          : account
-      )
-    )
-    showToast('계정이 수정되었습니다.')
+    showToast('수정 기능은 현재 API 연동이 필요합니다.', 'warning')
   }
 
   closeFormModal()
@@ -322,8 +347,7 @@ function closeDeleteModal() {
 
 function confirmDelete() {
   if (!selectedAccount.value) return
-  saveAccounts(accounts.value.filter((account) => account.id !== selectedAccount.value.id))
+  showToast('삭제 기능은 현재 API 연동이 필요합니다.', 'warning')
   closeDeleteModal()
-  showToast('계정이 삭제되었습니다.')
 }
 </script>

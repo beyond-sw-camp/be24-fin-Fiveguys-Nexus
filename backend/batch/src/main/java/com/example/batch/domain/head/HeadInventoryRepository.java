@@ -22,31 +22,31 @@ public interface HeadInventoryRepository extends JpaRepository<HeadInventory, Lo
     List<HeadInventory> findAllByProductIdxInForUpdate(@Param("productIds") List<Long> productIds);
 
     /**
-     * 재고 복구 시 사용하는 원자적 UPDATE.
+     * 재고 복구 시 사용하는 원자적 단일 테이블 UPDATE.
      * <p>
-     * SELECT FOR UPDATE + Java-side modify 패턴 대신 이 메서드를 사용하면
-     * MariaDB InnoDB 커서 스캔 중 concurrent modification으로 발생하는
-     * Error 1020 (ER_CHECKREAD) 을 방지할 수 있다.
-     * count = count + delta 는 단일 행 UPDATE로 원자적으로 실행된다.
+     * ① SELECT FOR UPDATE + Java-side modify → Error 1020 발생 (커서 스캔 race)
+     * ② UPDATE ... JOIN product ... → Error 1020 발생 (멀티테이블 UPDATE read/write 분리 race)
+     * ③ 단일 테이블 UPDATE (이 메서드) → Error 1020 없음 (InnoDB row-level atomic)
      * <p>
-     * ※ MariaDB SET 절 평가 순서 주의:
-     *   SET 절은 좌→우 순서로 평가되므로 h.count 갱신 후 CASE를 평가할 때
-     *   h.count 는 이미 (old + delta) 이다.
-     *   따라서 CASE 안에서는 h.count 만 참조하면 신규 재고 기준으로 상태를 결정한다.
+     * minStock, halfMinStock 은 호출부(Java)에서 product.minStock 으로 계산해 전달한다.
+     * <p>
+     * SET 절 평가 순서: MariaDB는 SET 절을 좌→우로 순차 평가하므로
+     * CASE 를 평가하는 시점의 `count` 는 이미 (old + delta) 인 신규 값이다.
      */
     @Modifying
     @Query(value = """
-            UPDATE head_inventory h
-            JOIN product p ON h.product_idx = p.product_idx
-            SET h.count  = h.count + :delta,
-                h.status = CASE
-                    WHEN h.count <= 0               THEN 'CRITICAL'
-                    WHEN h.count <= p.min_stock / 2 THEN 'CRITICAL'
-                    WHEN h.count <= p.min_stock     THEN 'LOW'
+            UPDATE head_inventory
+            SET `count`  = `count` + :delta,
+                status = CASE
+                    WHEN `count` <= 0             THEN 'CRITICAL'
+                    WHEN `count` <= :halfMinStock  THEN 'CRITICAL'
+                    WHEN `count` <= :minStock      THEN 'LOW'
                     ELSE 'NORMAL'
                 END
-            WHERE h.product_idx = :productIdx
+            WHERE product_idx = :productIdx
             """, nativeQuery = true)
     void restoreCountByProductIdx(@Param("productIdx") Long productIdx,
-                                  @Param("delta") int delta);
+                                  @Param("delta") int delta,
+                                  @Param("halfMinStock") int halfMinStock,
+                                  @Param("minStock") int minStock);
 }

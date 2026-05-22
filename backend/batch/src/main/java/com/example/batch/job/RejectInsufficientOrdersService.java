@@ -50,10 +50,15 @@ public class RejectInsufficientOrdersService {
 
         if (!processedItems.isEmpty()) {
             for (OrdersItem item : processedItems) {
-                // 1. HeadInventory 재고 복구 – 원자적 UPDATE (커서 스캔 없음 → Error 1020 방지)
+                int minStock = item.getProduct().getMinStock();
+
+                // 1. HeadInventory 재고 복구 – 단일 테이블 원자적 UPDATE
+                //    JOIN 없는 단일 테이블 UPDATE → Error 1020 (ER_CHECKREAD) 방지
                 headInventoryRepository.restoreCountByProductIdx(
                         item.getProduct().getIdx(),
-                        item.getCount()
+                        item.getCount(),
+                        minStock / 2,
+                        minStock
                 );
 
                 // 2. StoreInventory 삭제

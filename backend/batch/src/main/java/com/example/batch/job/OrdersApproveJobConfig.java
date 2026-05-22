@@ -37,13 +37,24 @@ public class OrdersApproveJobConfig {
     private final OrderApproveProcessor orderApproveProcessor;
     private final OrderApproveStep2Writer orderApproveStep2Writer;
     private final RejectInsufficientOrdersTasklet rejectInsufficientOrdersTasklet;
+    private final PrepareOrdersStagingTasklet prepareOrdersStagingTasklet;
 
     @Bean
     public Job approveConfirmedOrdersJob() {
         return new JobBuilder("approveConfirmedOrdersJob", jobRepository)
-                .start(productProcessPartitionStep())
-                .next(rejectInsufficientOrdersStep())
-                .next(orderApproveStep())
+                .start(prepareOrdersStagingStep())          // Step0: 스냅샷 고정
+                .next(productProcessPartitionStep())         // Step1: 병렬 재고 처리
+                .next(rejectInsufficientOrdersStep())        // Step1.5: 재고 부족 롤백
+                .next(orderApproveStep())                    // Step2: 최종 승인
+                .build();
+    }
+
+    // ── Step0: 스테이징 테이블 스냅샷 ────────────────────────────────────
+
+    @Bean
+    public Step prepareOrdersStagingStep() {
+        return new StepBuilder("prepareOrdersStagingStep", jobRepository)
+                .tasklet(prepareOrdersStagingTasklet, transactionManager)
                 .build();
     }
 
@@ -94,15 +105,11 @@ public class OrdersApproveJobConfig {
                 .name("ordersItemByProductReader")
                 .dataSource(dataSource)
                 .sql("""
-                        SELECT oi.orders_item_idx, oi.count, oi.orders_idx,
-                               o.store_idx, oi.product_idx, p.min_stock
-                        FROM orders_item oi
-                        JOIN orders o  ON oi.orders_idx  = o.orders_idx
-                        JOIN product p ON oi.product_idx = p.product_idx
-                        WHERE oi.product_idx = ?
-                          AND o.order_status = 'CONFIRMED'
-                          AND oi.processed   = false
-                        ORDER BY o.orders_idx ASC
+                        SELECT orders_item_idx, count, orders_idx,
+                               store_idx, product_idx, min_stock
+                        FROM order_batch.orders_item_staging
+                        WHERE product_idx = ?
+                        ORDER BY orders_idx ASC
                         """)
                 .preparedStatementSetter(ps -> ps.setLong(1, productId))
                 .rowMapper((rs, rowNum) -> new OrdersItemRow(
@@ -144,14 +151,18 @@ public class OrdersApproveJobConfig {
                 .name("fullyProcessedOrderReader")
                 .dataSource(dataSource)
                 .sql("""
-                        SELECT o.orders_idx FROM orders o
+                        SELECT DISTINCT s.orders_idx
+                        FROM order_batch.orders_item_staging s
+                        JOIN orders o ON s.orders_idx = o.orders_idx
                         WHERE o.order_status = 'CONFIRMED'
                           AND NOT EXISTS (
-                              SELECT 1 FROM orders_item oi
-                              WHERE oi.orders_idx = o.orders_idx
+                              SELECT 1
+                              FROM order_batch.orders_item_staging s2
+                              JOIN orders_item oi ON s2.orders_item_idx = oi.orders_item_idx
+                              WHERE s2.orders_idx = s.orders_idx
                                 AND oi.processed  = false
                           )
-                        ORDER BY o.orders_idx ASC
+                        ORDER BY s.orders_idx ASC
                         """)
                 .rowMapper((rs, rowNum) -> rs.getLong("orders_idx"))
                 .build();

@@ -49,6 +49,10 @@ public class InventoryMovement {
     @Column(name = "memo")
     private String memo;
 
+    // 롤백 식별용: 어떤 주문으로 생성된 이동 기록인지 추적
+    @Column(name = "orders_idx")
+    private Long ordersIdx;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -59,13 +63,13 @@ public class InventoryMovement {
         }
     }
 
-    public static InventoryMovement transferOut(Product product, Long storeIdx, Integer quantity, String memo) {
+    public static InventoryMovement transferOut(Product product, Long storeIdx, Integer quantity, String memo, Long ordersIdx) {
         return new InventoryMovement(
                 null, product,
                 MovementType.TRANSFER_OUT, quantity,
                 MovementLocationType.HEAD, null,
                 MovementLocationType.STORE, storeIdx,
-                memo, null
+                memo, ordersIdx, null
         );
     }
 }

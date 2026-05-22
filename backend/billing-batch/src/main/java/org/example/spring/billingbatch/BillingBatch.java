@@ -78,6 +78,8 @@ public class BillingBatch {
                 .processor(billingProcessor())
                 .writer(billingWriter(afterBillingRepository))
                 .faultTolerant()
+                .retry(Exception.class) // 에러 발생 시 재시도
+                .retryLimit(3)          // 최대 3회 재시도
                 .skip(Exception.class)
                 .skipLimit(100)
                 .build();
@@ -187,16 +189,18 @@ public class BillingBatch {
                         afterBilling.setIsPaid(true);
                         afterBilling.setIsSuccess(true);
                         System.out.println("결제 성공: " + req.storeIdx());
+                        afterBillingRepository.save(afterBilling);
 
                     } catch (Exception e) {
-                        // 4. API 호출 실패 처리
-                        System.err.println("결제 API 에러: " + req.storeIdx() + " - " + e.getMessage());
+                        // API 호출 실패 시 에러 기록 후 예외를 던져서 Retry 유도
+                        System.err.println("결제 API 에러 (재시도 대상): " + req.storeIdx() + " - " + e.getMessage());
                         afterBilling.setIsPaid(false);
                         afterBilling.setIsSuccess(false);
                         afterBilling.setFailReason("API 호출 실패: " + e.getMessage());
-                    } finally {
-                        // 최종 저장
                         afterBillingRepository.save(afterBilling);
+                        
+                        // Exception을 던져야 Spring Batch가 Retry를 인식합니다.
+                        throw e;
                     }
                 }
             }

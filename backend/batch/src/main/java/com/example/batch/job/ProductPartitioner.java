@@ -18,12 +18,10 @@ public class ProductPartitioner implements Partitioner {
 
     @Override
     public Map<String, ExecutionContext> partition(int gridSize) {
+        // PrepareOrdersStagingTasklet 이 고정한 스냅샷 기준으로 파티션 생성
+        // → 배치 실행 중 새로 유입된 CONFIRMED 발주가 파티션에 끼어들지 않음
         List<Long> productIds = jdbcTemplate.queryForList(
-                "SELECT DISTINCT oi.product_idx " +
-                "FROM orders_item oi " +
-                "JOIN orders o ON oi.orders_idx = o.orders_idx " +
-                "WHERE o.order_status = 'CONFIRMED' " +
-                "  AND oi.processed = false",
+                "SELECT DISTINCT product_idx FROM order_batch.orders_item_staging",
                 Long.class
         );
 

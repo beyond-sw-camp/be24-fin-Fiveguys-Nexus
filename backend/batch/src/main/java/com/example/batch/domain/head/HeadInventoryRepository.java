@@ -28,6 +28,11 @@ public interface HeadInventoryRepository extends JpaRepository<HeadInventory, Lo
      * MariaDB InnoDB 커서 스캔 중 concurrent modification으로 발생하는
      * Error 1020 (ER_CHECKREAD) 을 방지할 수 있다.
      * count = count + delta 는 단일 행 UPDATE로 원자적으로 실행된다.
+     * <p>
+     * ※ MariaDB SET 절 평가 순서 주의:
+     *   SET 절은 좌→우 순서로 평가되므로 h.count 갱신 후 CASE를 평가할 때
+     *   h.count 는 이미 (old + delta) 이다.
+     *   따라서 CASE 안에서는 h.count 만 참조하면 신규 재고 기준으로 상태를 결정한다.
      */
     @Modifying
     @Query(value = """
@@ -35,9 +40,9 @@ public interface HeadInventoryRepository extends JpaRepository<HeadInventory, Lo
             JOIN product p ON h.product_idx = p.product_idx
             SET h.count  = h.count + :delta,
                 h.status = CASE
-                    WHEN (h.count + :delta) <= 0             THEN 'CRITICAL'
-                    WHEN (h.count + :delta) <= p.min_stock / 2 THEN 'CRITICAL'
-                    WHEN (h.count + :delta) <= p.min_stock   THEN 'LOW'
+                    WHEN h.count <= 0               THEN 'CRITICAL'
+                    WHEN h.count <= p.min_stock / 2 THEN 'CRITICAL'
+                    WHEN h.count <= p.min_stock     THEN 'LOW'
                     ELSE 'NORMAL'
                 END
             WHERE h.product_idx = :productIdx

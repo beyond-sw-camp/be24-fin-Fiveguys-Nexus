@@ -1,9 +1,7 @@
 package com.example.batch.job;
 
-import com.example.batch.common.enums.InventoryStatus;
 import com.example.batch.common.enums.OrdersStatus;
 import com.example.batch.domain.head.HeadInventoryRepository;
-import com.example.batch.domain.head.model.HeadInventory;
 import com.example.batch.domain.inventory.InventoryMovementRepository;
 import com.example.batch.domain.orders.OrdersItemRepository;
 import com.example.batch.domain.orders.OrdersRepository;
@@ -17,8 +15,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +31,8 @@ public class RejectInsufficientOrdersService {
      * 재고 부족으로 일부 처리 실패한 주문 1건을 독립 트랜잭션으로 롤백 후 REJECT 처리.
      * <p>
      * 롤백 순서:
-     * 1. HeadInventory 재고 복구 (product_idx 오름차순 락 → 데드락 방지)
+     * 1. HeadInventory 재고 복구 – restoreCountByProductIdx() 원자적 UPDATE 사용
+     *    (SELECT FOR UPDATE + Java-side modify 제거 → Error 1020 ER_CHECKREAD 방지)
      * 2. StoreInventory 삭제 (orders_item_idx 기준)
      * 3. InventoryMovement 삭제 (orders_idx 기준)
      * 4. ordersItem.processed 리셋
@@ -52,24 +49,17 @@ public class RejectInsufficientOrdersService {
         List<OrdersItem> processedItems = ordersItemRepository.findProcessedByOrdersIdx(orderId);
 
         if (!processedItems.isEmpty()) {
-            // product_idx 오름차순 정렬 후 일괄 락 (Step1 파티셔닝과 동일한 락 순서 → 데드락 방지)
-            List<Long> productIds = processedItems.stream()
-                    .map(oi -> oi.getProduct().getIdx())
-                    .distinct()
-                    .sorted()
-                    .collect(Collectors.toList());
-
-            Map<Long, HeadInventory> hiMap = headInventoryRepository
-                    .findAllByProductIdxInForUpdate(productIds)
-                    .stream()
-                    .collect(Collectors.toMap(hi -> hi.getProduct().getIdx(), hi -> hi));
-
             for (OrdersItem item : processedItems) {
-                HeadInventory hi = hiMap.get(item.getProduct().getIdx());
+                int minStock = item.getProduct().getMinStock();
 
-                // 1. HeadInventory 재고 복구
-                hi.setCount(hi.getCount() + item.getCount());
-                hi.setStatus(resolveStatus(hi.getCount(), item.getProduct().getMinStock()));
+                // 1. HeadInventory 재고 복구 – 단일 테이블 원자적 UPDATE
+                //    JOIN 없는 단일 테이블 UPDATE → Error 1020 (ER_CHECKREAD) 방지
+                headInventoryRepository.restoreCountByProductIdx(
+                        item.getProduct().getIdx(),
+                        item.getCount(),
+                        minStock / 2,
+                        minStock
+                );
 
                 // 2. StoreInventory 삭제
                 storeInventoryRepository.deleteByOrdersItemIdx(item.getIdx());
@@ -85,12 +75,5 @@ public class RejectInsufficientOrdersService {
         // 5. 주문 REJECT
         orders.reject();
         log.info("orderId={} → REJECT (재고 부족, rollback 완료, processedItems={}건)", orderId, processedItems.size());
-    }
-
-    private InventoryStatus resolveStatus(int count, int minStock) {
-        if (count <= 0) return InventoryStatus.CRITICAL;
-        if (count <= minStock / 2) return InventoryStatus.CRITICAL;
-        if (count <= minStock) return InventoryStatus.LOW;
-        return InventoryStatus.NORMAL;
     }
 }

@@ -105,6 +105,13 @@ public class BillingBatch {
     public ItemProcessor<Store, BillingRequestDto> billingProcessor() {
         return store -> {
             Long storeIdx = store.getIdx();
+            String currentMonth = YearMonth.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
+
+            if (afterBillingRepository.existsByStoreIdxAndPayedMonthAndIsSuccessTrue(storeIdx, currentMonth)) {
+                System.out.println("SKIP: 가맹점 " + storeIdx + "는 이미 " + currentMonth + " 정산 완료(성공) 데이터가 존재합니다.");
+                return null;
+            }
+
             int totalPayAmount = ordersService.totalPayAmount(storeIdx);
             Billing target = billingRepository.findByStoreIdx(storeIdx);
 

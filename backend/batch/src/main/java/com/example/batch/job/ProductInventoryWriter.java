@@ -82,12 +82,13 @@ public class ProductInventoryWriter implements ItemWriter<OrdersItemRow> {
                 headInventory.getManufacturedDate(),
                 item.getCount(),
                 store,
-                product
+                product,
+                item.getOrdersItemIdx()  // 롤백 식별용
         ));
 
         inventoryMovementRepository.save(
                 InventoryMovement.transferOut(product, item.getStoreIdx(), item.getCount(),
-                        "발주 일괄승인 ordersIdx=" + item.getOrdersIdx())
+                        "발주 일괄승인 ordersIdx=" + item.getOrdersIdx(), item.getOrdersIdx())  // 롤백 식별용
         );
     }
 

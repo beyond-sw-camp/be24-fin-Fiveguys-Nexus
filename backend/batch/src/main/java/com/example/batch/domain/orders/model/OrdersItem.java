@@ -29,4 +29,8 @@ public class OrdersItem {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_idx", nullable = false)
     private Product product;
+
+    public void resetProcessed() {
+        this.processed = false;
+    }
 }

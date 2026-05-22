@@ -36,11 +36,13 @@ public class OrdersApproveJobConfig {
     private final ProductInventoryWriter productInventoryWriter;
     private final OrderApproveProcessor orderApproveProcessor;
     private final OrderApproveStep2Writer orderApproveStep2Writer;
+    private final RejectInsufficientOrdersTasklet rejectInsufficientOrdersTasklet;
 
     @Bean
     public Job approveConfirmedOrdersJob() {
         return new JobBuilder("approveConfirmedOrdersJob", jobRepository)
                 .start(productProcessPartitionStep())
+                .next(rejectInsufficientOrdersStep())
                 .next(orderApproveStep())
                 .build();
     }
@@ -100,6 +102,7 @@ public class OrdersApproveJobConfig {
                         WHERE oi.product_idx = ?
                           AND o.order_status = 'CONFIRMED'
                           AND oi.processed   = false
+                        ORDER BY o.orders_idx ASC
                         """)
                 .preparedStatementSetter(ps -> ps.setLong(1, productId))
                 .rowMapper((rs, rowNum) -> new OrdersItemRow(
@@ -110,6 +113,15 @@ public class OrdersApproveJobConfig {
                         rs.getLong("product_idx"),
                         rs.getInt("min_stock")
                 ))
+                .build();
+    }
+
+    // ── Step1.5: 재고 부족 주문 롤백 + REJECT ────────────────────────────
+
+    @Bean
+    public Step rejectInsufficientOrdersStep() {
+        return new StepBuilder("rejectInsufficientOrdersStep", jobRepository)
+                .tasklet(rejectInsufficientOrdersTasklet, transactionManager)
                 .build();
     }
 

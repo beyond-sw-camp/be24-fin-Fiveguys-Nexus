@@ -21,11 +21,15 @@ spec:
       containers:
         - name: redis
           image: redis:7-alpine
-          # AOF 영구 저장 활성화 + 메모리 상한 256mb + LRU 정책
+          # AOF 제거, RDB 영속화 유지 (Kafka가 안전망) + 메모리 상한 256mb + LRU 정책
+          # 부하 테스트 결과 영향 방지를 위해 자동 save 비활성화 (--save "")
+          # 운영 환경에서는 별도 CronJob 으로 새벽 BGSAVE 트리거 예정
           command:
             - redis-server
             - --appendonly
-            - "yes"
+            - "no"
+            - --save
+            - ""
             - --maxmemory
             - "256mb"
             - --maxmemory-policy

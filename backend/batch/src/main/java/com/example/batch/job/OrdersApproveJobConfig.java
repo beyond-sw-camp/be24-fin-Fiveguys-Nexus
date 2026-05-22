@@ -35,7 +35,7 @@ public class OrdersApproveJobConfig {
     private final ProductPartitioner productPartitioner;
     private final ProductInventoryWriter productInventoryWriter;
     private final OrderApproveProcessor orderApproveProcessor;
-    private final OrderApproveStep2Writer orderApproveStep2Writer;
+    private final OrderApproveStepWriter orderApproveStepWriter;
     private final RejectInsufficientOrdersTasklet rejectInsufficientOrdersTasklet;
     private final PrepareOrdersStagingTasklet prepareOrdersStagingTasklet;
 
@@ -140,7 +140,7 @@ public class OrdersApproveJobConfig {
                 .<Long, Orders>chunk(STEP2_CHUNK_SIZE, transactionManager)
                 .reader(fullyProcessedOrderReader())
                 .processor((ItemProcessor<Long, Orders>) orderApproveProcessor::process)
-                .writer(orderApproveStep2Writer)
+                .writer(orderApproveStepWriter)
                 .build();
     }
 

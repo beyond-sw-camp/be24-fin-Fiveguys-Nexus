@@ -20,17 +20,17 @@ public class RejectInsufficientOrdersTasklet implements Tasklet {
     private final RejectInsufficientOrdersService rejectService;
 
     /**
-     * Step1 완료 후 processed=false가 남아있는 CONFIRMED 주문을 조회한다.
-     * Step1이 모든 product 파티션을 완전히 커밋한 뒤에 실행되므로,
-     * 이 시점에 processed=false가 남아있는 건 재고 부족으로 처리 불가한 item이다.
+     * Step1 완료 후 스테이징 기준으로 processed=false 가 남아있는 CONFIRMED 주문을 조회한다.
+     * <p>
+     * orders_item_staging 에 없는 항목(배치 실행 중 새로 유입된 발주)은 조회 대상에서 제외되므로,
+     * 신규 유입 발주를 재고 부족으로 오판하는 문제가 발생하지 않는다.
      */
     private static final String INSUFFICIENT_ORDER_IDS_SQL = """
-            SELECT DISTINCT o.orders_idx
-            FROM orders o
-            JOIN orders_item oi ON o.orders_idx = oi.orders_idx
-            WHERE o.order_status = 'CONFIRMED'
-              AND oi.processed = false
-            ORDER BY o.orders_idx ASC
+            SELECT DISTINCT s.orders_idx
+            FROM order_batch.orders_item_staging s
+            JOIN orders_item oi ON s.orders_item_idx = oi.orders_item_idx
+            WHERE oi.processed = false
+            ORDER BY s.orders_idx ASC
             """;
 
     @Override

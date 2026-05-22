@@ -7,6 +7,7 @@ import com.example.nexus.domain.user.model.AuthUserDetails;
 import com.example.nexus.domain.user.model.User;
 import com.example.nexus.domain.user.model.UserDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,6 +17,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -111,4 +114,15 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
     }
 
+    public List<UserDto.UserListRes> findAllUser() {
+
+        List<User> userList = userRepository.findAll();
+        List<UserDto.UserListRes> userDtoList = new ArrayList<>();
+
+        for (User user : userList) {
+            userDtoList.add(UserDto.UserListRes.from(user));
+        }
+
+        return userDtoList;
+    }
 }

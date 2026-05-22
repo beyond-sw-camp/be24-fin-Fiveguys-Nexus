@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.List;
+
 @Controller
 @RequiredArgsConstructor
 public class UserController {
@@ -82,6 +84,11 @@ public class UserController {
 
         userService.changeTel(authUserDetails, dto.getTel());
         return ResponseEntity.ok("Tel Change Success");
+    }
+
+    @GetMapping("/user/list")
+    public ResponseEntity<List<UserDto.UserListRes>> userList() {
+        return ResponseEntity.ok(userService.findAllUser());
     }
 
 }

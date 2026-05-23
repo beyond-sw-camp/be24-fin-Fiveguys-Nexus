@@ -8,12 +8,13 @@ import com.example.nexus.domain.menu.model.MenuItem;
 import com.example.nexus.domain.product.ProductRepository;
 import com.example.nexus.domain.product.model.Product;
 import com.example.nexus.event.KafkaTopics;
+import com.example.nexus.event.MenuDomainEvent;
 import com.example.nexus.event.MenuEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -36,7 +37,7 @@ public class MenuService {
     private final MenuRepository menuRepository;
     private final MenuCategoryRepository menuCategoryRepository;
     private final ProductRepository productRepository;
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     private final S3Presigner s3Presigner;
     private final S3Client s3Client;
@@ -167,7 +168,7 @@ public class MenuService {
                     ite
             );
 
-            kafkaTemplate.send(KafkaTopics.MENU_CREATED, event);
+            applicationEventPublisher.publishEvent(new MenuDomainEvent(event, KafkaTopics.MENU_CREATED));
 
         } catch (Exception e) {
             // 등록 중 에러가 나면 DB는 롤백되지만, 이미 업로드된 파일은 좀비가 되므로 삭제 처리
@@ -259,7 +260,7 @@ public class MenuService {
                     menu.isDeleted()
             );
 
-            kafkaTemplate.send(KafkaTopics.MENU_UPDATED, event);
+            applicationEventPublisher.publishEvent(new MenuDomainEvent(event, KafkaTopics.MENU_UPDATED));
 
         }catch (Exception e) {
             if (newFilePath != null && !newFilePath.isEmpty()
@@ -316,7 +317,7 @@ public class MenuService {
                 true
         );
 
-        kafkaTemplate.send(KafkaTopics.MENU_DELETED, event);
+        applicationEventPublisher.publishEvent(new MenuDomainEvent(event, KafkaTopics.MENU_DELETED));
     }
 
     @Transactional(readOnly = true)

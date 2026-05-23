@@ -58,4 +58,8 @@ public class Orders {
     public void approve() {
         this.ordersStatus = OrdersStatus.APPROVE;
     }
+
+    public void reject() {
+        this.ordersStatus = OrdersStatus.REJECT;
+    }
 }

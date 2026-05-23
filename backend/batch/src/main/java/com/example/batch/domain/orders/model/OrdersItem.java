@@ -19,6 +19,9 @@ public class OrdersItem {
     @Column(name = "count", nullable = false)
     private Integer count;
 
+    @Column(name = "processed", nullable = false)
+    private boolean processed = false;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "orders_idx", nullable = false)
     private Orders orders;
@@ -26,4 +29,8 @@ public class OrdersItem {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_idx", nullable = false)
     private Product product;
+
+    public void resetProcessed() {
+        this.processed = false;
+    }
 }

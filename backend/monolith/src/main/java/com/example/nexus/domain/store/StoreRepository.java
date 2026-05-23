@@ -16,6 +16,9 @@ public interface StoreRepository extends JpaRepository<Store,Long> {
     // 사용자 식별자(userIdx)로 가맹점 정보 조회
     Optional<Store> findByUserIdx(Long userIdx);
 
+    // 사용자 객체로 가맹점 정보 조회 (UserService에서 사용)
+    Optional<Store> findByUser(User user);
+
     // 대소문자 구분 없이 가맹점명에 키워드가 포함된 목록 조회
     List<Store> findByStoreNameContainingIgnoreCase(String keyword);
 

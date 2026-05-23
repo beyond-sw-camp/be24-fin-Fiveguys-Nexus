@@ -37,4 +37,8 @@ public class HeadIncome {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "orders_idx", nullable = false)
     private Orders orders;
+
+    public void updateStatus(Boolean status) {
+        this.status = status;
+    }
 }

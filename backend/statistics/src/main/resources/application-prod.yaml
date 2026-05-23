@@ -33,6 +33,17 @@ spring:
         spring.json.trusted.packages: "*"
         spring.json.type.mapping: paymentEvent:com.example.statistics.event.PaymentEvent,storeEvent:com.example.statistics.event.StoreEvent,menuEvent:com.example.statistics.event.MenuEvent
 
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 8
+          min-idle: 2
+
 server:
   port: 8081
 

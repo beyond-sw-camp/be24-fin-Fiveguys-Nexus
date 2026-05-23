@@ -1,10 +1,13 @@
 package com.example.nexus.domain.user;
 
 import com.example.nexus.common.enums.Role;
+import com.example.nexus.domain.store.StoreRepository;
+import com.example.nexus.domain.store.model.Store;
 import com.example.nexus.domain.user.model.AuthUserDetails;
 import com.example.nexus.domain.user.model.User;
 import com.example.nexus.domain.user.model.UserDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,29 +17,31 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
+    private final StoreRepository storeRepository;
     private final PasswordEncoder passwordEncoder;
     private final JavaMailSender javaMailSender;
 
     public void sendTempPassword(String toEmail, String tempPassword) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(toEmail);
-        message.setTo(toEmail);
         message.setSubject("[Nexus] 임시 비밀번호 안내");
         message.setText("임시 비밀번호는 [ " + tempPassword + " ] 입니다.");
         javaMailSender.send(message);
     }
 
-    public void signup(UserDto.SignupReq dto) {
-        User user = dto.toEntity();
-        user.setPassword(passwordEncoder.encode(dto.getPassword()));
-        userRepository.save(user);
-    }
+//    public void signup(UserDto.SignupReq dto) {
+//        User user = dto.toEntity();
+//        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+//        userRepository.save(user);
+//    }
 
     // store 회원가입
     public UserDto.StoreSignupRes storeSignup(UserDto.StoreSignupReq dto) {
@@ -76,10 +81,12 @@ public class UserService implements UserDetailsService {
         return AuthUserDetails.from(user);
     }
 
-    public UserDto.StoreInfoRes getStoreInfo(Long storeIdx) {
+    public UserDto.StoreInfoRes getStoreInfo(Long userIdx) {
+        User user = userRepository.findById(userIdx).orElse(null);
+        if (user == null) return null;
 
-        User user = userRepository.findById(storeIdx).orElse(null);
-        return UserDto.StoreInfoRes.from(user);
+        Long storeIdx = storeRepository.findByUser(user).map(Store::getIdx).orElse(null);
+        return UserDto.StoreInfoRes.from(user, storeIdx);
     }
 
     // 비밀번호 변경
@@ -107,4 +114,15 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
     }
 
+    public List<UserDto.UserListRes> findAllUser() {
+
+        List<User> userList = userRepository.findAll();
+        List<UserDto.UserListRes> userDtoList = new ArrayList<>();
+
+        for (User user : userList) {
+            userDtoList.add(UserDto.UserListRes.from(user));
+        }
+
+        return userDtoList;
+    }
 }

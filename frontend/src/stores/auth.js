@@ -70,7 +70,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       await api.post('/login', {
         email: email,
-        password : password,
+        password: password,
       })
 
       const ctoken = getCookie('CTOKEN')
@@ -80,22 +80,47 @@ export const useAuthStore = defineStore('auth', () => {
 
       user.value = nextUser
       localStorage.setItem('nexus_user', JSON.stringify(nextUser))
+
+      // 로그인 성공 후 상세 정보(storeIdx 등) 조회
+      await fetchUserInfo()
+
       return true
     } catch {
       return false
     }
   }
 
-  async function logout() {
-  try {
-    await api.post('/logout'); 
-  } catch (error) {
-    console.error('Logout failed:', error);
-  } finally {
-    user.value = null;
-    localStorage.removeItem('nexus_user');
-    window.location.href = '/'; 
+  async function fetchUserInfo() {
+    if (!user.value) return
+    try {
+      const res = await api.get('/user/mypage')
+      console.log('MyPage Response:', res.data)
+      if (res.data) {
+        user.value = {
+          ...user.value,
+          storeId: res.data.storeIdx ? 'S' + String(res.data.storeIdx).padStart(3, '0') : user.value.storeId,
+          rawStoreIdx: res.data.storeIdx ?? null,
+          name: res.data.userName || user.value.name,
+          tel: res.data.tel || user.value.tel,
+        }
+        localStorage.setItem('nexus_user', JSON.stringify(user.value))
+        console.log('Updated User Object:', user.value)
+      }
+    } catch (error) {
+      console.error('Failed to fetch user info:', error)
+    }
   }
-}
-  return { user, isLoggedIn, isAdmin, isStoreOwner, login, logout }
+
+  async function logout() {
+    try {
+      await api.post('/logout')
+    } catch (error) {
+      console.error('Logout failed:', error)
+    } finally {
+      user.value = null
+      localStorage.removeItem('nexus_user')
+      window.location.href = '/'
+    }
+  }
+  return { user, isLoggedIn, isAdmin, isStoreOwner, login, logout, fetchUserInfo }
 })

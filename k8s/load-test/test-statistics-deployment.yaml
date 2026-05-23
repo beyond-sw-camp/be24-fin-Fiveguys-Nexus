@@ -7,7 +7,7 @@ metadata:
   labels:
     app: test-statistics
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: test-statistics
@@ -24,6 +24,7 @@ spec:
       containers:
         - name: nexus-statistics
           image: deatytim/nexusstat:dev-msa
+          imagePullPolicy: Always
           ports:
             - containerPort: 8081
           env:

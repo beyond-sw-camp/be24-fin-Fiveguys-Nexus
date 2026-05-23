@@ -39,3 +39,4 @@ out/
 monolith/.env
 datalocal.sql
 k8s/load-test/test-db-statefulset.yaml
+convention.md

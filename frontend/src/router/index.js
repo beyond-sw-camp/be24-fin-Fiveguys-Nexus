@@ -148,7 +148,7 @@ const router = createRouter({
     {
       path: '/store-payment-test',
       name: 'storePaymentTest',
-      component: () => import('@/views/store/PaymentTestView.vue'),
+      component: () => import('@/views/store/PaymentView.vue'),
       meta: { role: 'STORE_OWNER' },
     },
 

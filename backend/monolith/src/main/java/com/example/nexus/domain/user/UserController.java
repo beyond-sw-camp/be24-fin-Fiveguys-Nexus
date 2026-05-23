@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.List;
+
 @Controller
 @RequiredArgsConstructor
 public class UserController {
@@ -21,15 +23,17 @@ public class UserController {
     private final AuthenticationManager authenticationManager;
     private final JavaMailSender javaMailSender;
 
-    @PostMapping("/signup")
-    public ResponseEntity signup(@RequestBody UserDto.SignupReq dto) {
-        userService.signup(dto);
-        return ResponseEntity.ok("성공");
-    }
+//    @PostMapping("/signup")
+//    public ResponseEntity signup(@RequestBody UserDto.SignupReq dto) {
+//        userService.signup(dto);
+//        return ResponseEntity.ok("성공");
+//    }
 
     @PostMapping("/store/signup")
     public ResponseEntity storeSignup(@RequestBody UserDto.StoreSignupReq dto) {
         UserDto.StoreSignupRes storeSignupRes = userService.storeSignup(dto);
+
+
 
         userService.sendTempPassword(storeSignupRes.getEmail(), storeSignupRes.getPassword());
 
@@ -80,6 +84,11 @@ public class UserController {
 
         userService.changeTel(authUserDetails, dto.getTel());
         return ResponseEntity.ok("Tel Change Success");
+    }
+
+    @GetMapping("/user/list")
+    public ResponseEntity<List<UserDto.UserListRes>> userList() {
+        return ResponseEntity.ok(userService.findAllUser());
     }
 
 }

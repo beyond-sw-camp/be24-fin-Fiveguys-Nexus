@@ -20,7 +20,7 @@ public class MenuEventConsumer {
     private final MenuRepository menuRepository;
     private final MenuCategoryRepository menuCategoryRepository;
 
-    @KafkaListener(topics = KafkaTopics.MENU_CREATED)
+    @KafkaListener(topics = KafkaTopics.MENU_CREATED, concurrency = "3")
     @Transactional
     public void onMenuCreated(MenuEvent event) {
         log.info("[menu.created] received: idx={}, name={}, category={}",
@@ -28,14 +28,14 @@ public class MenuEventConsumer {
         upsert(event);
     }
 
-    @KafkaListener(topics = KafkaTopics.MENU_UPDATED)
+    @KafkaListener(topics = KafkaTopics.MENU_UPDATED, concurrency = "3")
     @Transactional
     public void onMenuUpdated(MenuEvent event) {
         log.info("[menu.updated] received: idx={}, name={}", event.menuIdx(), event.menuName());
         upsert(event);
     }
 
-    @KafkaListener(topics = KafkaTopics.MENU_DELETED)
+    @KafkaListener(topics = KafkaTopics.MENU_DELETED, concurrency = "3")
     @Transactional
     public void onMenuDeleted(MenuEvent event) {
         log.info("[menu.deleted] received: idx={}", event.menuIdx());

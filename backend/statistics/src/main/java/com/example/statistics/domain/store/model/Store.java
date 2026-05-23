@@ -6,9 +6,16 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.SQLInsert;
 
 @Entity
 @Table(name = "store")
+@SQLInsert(sql =
+        "INSERT INTO store (store_idx, store_name, is_deleted) " +
+        "VALUES (?, ?, ?) " +
+        "ON DUPLICATE KEY UPDATE " +
+        "store_name = VALUES(store_name), " +
+        "is_deleted = VALUES(is_deleted)")
 @Getter
 @Setter
 @NoArgsConstructor

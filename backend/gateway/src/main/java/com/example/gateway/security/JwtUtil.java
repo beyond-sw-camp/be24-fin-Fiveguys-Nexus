@@ -10,10 +10,18 @@ import javax.crypto.SecretKey;
 
 import java.util.Date;
 
+import org.springframework.beans.factory.annotation.Value;
+
 @Component
 public class JwtUtil {
-    static String key = "dsfaijasdifjasdilfknasffi3iln39f09asdf0as8df09230u9hasfj92j31j1fnaldfn1";
-    static SecretKey encodedKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(key));
+    static String key;
+    static SecretKey encodedKey;
+
+    @Value("${jwt.secret}")
+    public void setKey(String secretKey) {
+        key = secretKey;
+        encodedKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(key));
+    }
 
     public static String createToken(Long idx, String email, String role) {
         String jwt = Jwts.builder()

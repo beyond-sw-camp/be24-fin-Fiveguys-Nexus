@@ -2,6 +2,8 @@ package com.example.statistics.domain.daily;
 
 import com.example.statistics.domain.daily.model.DailyStoreSales;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -30,4 +32,24 @@ public interface DailyStoreSalesRepository extends JpaRepository<DailyStoreSales
      * @return 이미 dump 되었으면 true, 아니면 false
      */
     boolean existsByAggregateDate(LocalDate aggregateDate);
+
+    /**
+     * 특정 기간(start ~ end) 내 매장별 매출 합계 (장기 통계).
+     * 매장별로 합산해서 매출 큰 순으로 정렬.
+     *
+     * @param start 시작 날짜 (포함)
+     * @param end   종료 날짜 (포함)
+     * @return [storeIdx(Long), storeName(String), total(Long)] 배열 리스트
+     */
+    @Query(value = """
+            SELECT store_idx, store_name, SUM(amount) AS total
+            FROM daily_store_sales
+            WHERE aggregate_date BETWEEN :start AND :end
+            GROUP BY store_idx, store_name
+            ORDER BY total DESC
+            """, nativeQuery = true)
+    List<Object[]> findStoreSalesGroupByRange(
+            @Param("start") LocalDate start,
+            @Param("end") LocalDate end
+    );
 }

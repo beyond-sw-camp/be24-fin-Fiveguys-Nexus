@@ -72,4 +72,20 @@ public class LongTermStatisticsDto {
     public static class CategorySalesRes {
         private List<CategorySalesItem> categories;
     }
+
+    // ─── 메뉴별 ─────────────────────────────────────
+
+    @Getter
+    @Builder
+    public static class MenuSalesItem {
+        private Long menuIdx;
+        private String menuName;
+        private long totalQuantity;
+    }
+
+    @Getter
+    @Builder
+    public static class MenuSalesRes {
+        private List<MenuSalesItem> menus;
+    }
 }

@@ -44,6 +44,7 @@ const adminMenus = [
     path: '/statistics', name: '통계', icon: BarChart3,
     children: [
       { path: '/statistics', name: '실시간 통계' },
+      { path: '/statistics/long-term', name: '장기 통계' },
       { path: '/statistics/esg', name: 'ESG 대시보드' },
     ],
   },

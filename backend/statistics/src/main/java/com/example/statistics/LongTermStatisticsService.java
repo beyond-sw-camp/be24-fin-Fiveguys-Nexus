@@ -1,6 +1,7 @@
 package com.example.statistics;
 
 import com.example.statistics.domain.daily.DailyCategorySalesRepository;
+import com.example.statistics.domain.daily.DailyMenuSalesRepository;
 import com.example.statistics.domain.daily.DailyStoreSalesRepository;
 import com.example.statistics.domain.daily.DailyTotalSalesRepository;
 import com.example.statistics.model.LongTermStatisticsDto;
@@ -21,6 +22,7 @@ public class LongTermStatisticsService {
     private final DailyTotalSalesRepository totalRepo;
     private final DailyStoreSalesRepository storeRepo;
     private final DailyCategorySalesRepository categoryRepo;
+    private final DailyMenuSalesRepository menuRepo;
 
     /**
      * 연도별 총 매출 (전체 기간).
@@ -97,6 +99,28 @@ public class LongTermStatisticsService {
                 .toList();
         return LongTermStatisticsDto.CategorySalesRes.builder()
                 .categories(items)
+                .build();
+    }
+
+    /**
+     * 특정 기간의 메뉴별 판매량 합계 (판매량 많은 순).
+     *
+     * @param year  조회할 연도
+     * @param month 조회할 월 (선택)
+     */
+    public LongTermStatisticsDto.MenuSalesRes getMenuSales(int year, Integer month) {
+        LocalDate[] range = calculateDateRange(year, month);
+
+        List<LongTermStatisticsDto.MenuSalesItem> items = menuRepo
+                .findMenuSalesGroupByRange(range[0], range[1]).stream()
+                .map(r -> LongTermStatisticsDto.MenuSalesItem.builder()
+                        .menuIdx(((Number) r[0]).longValue())
+                        .menuName((String) r[1])
+                        .totalQuantity(r[2] == null ? 0L : ((Number) r[2]).longValue())
+                        .build())
+                .toList();
+        return LongTermStatisticsDto.MenuSalesRes.builder()
+                .menus(items)
                 .build();
     }
 

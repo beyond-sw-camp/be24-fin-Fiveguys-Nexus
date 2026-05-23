@@ -80,4 +80,23 @@ public class LongTermStatisticsController {
                 longTermStatisticsService.getCategorySales(year, month)
         ));
     }
+
+    /**
+     * 특정 기간 메뉴별 판매량 (판매량 많은 순).
+     *
+     * GET /statistics/long-term/menus?year=2026&month=5
+     * GET /statistics/long-term/menus?year=2026
+     *
+     * @param year  조회할 연도
+     * @param month 조회할 월 (선택, 없으면 그 해 전체)
+     */
+    @GetMapping("/menus")
+    public ResponseEntity<BaseResponse> getMenus(
+            @RequestParam int year,
+            @RequestParam(required = false) Integer month
+    ) {
+        return ResponseEntity.ok(BaseResponse.success(
+                longTermStatisticsService.getMenuSales(year, month)
+        ));
+    }
 }

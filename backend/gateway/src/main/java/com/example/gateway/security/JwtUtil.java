@@ -9,21 +9,22 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 
 import java.util.Date;
-
 import org.springframework.beans.factory.annotation.Value;
+import jakarta.annotation.PostConstruct;
 
 @Component
 public class JwtUtil {
-    static String key;
-    static SecretKey encodedKey;
-
     @Value("${jwt.secret}")
-    public void setKey(String secretKey) {
-        key = secretKey;
+    private String key;
+    
+    private SecretKey encodedKey;
+
+    @PostConstruct
+    public void init() {
         encodedKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(key));
     }
 
-    public static String createToken(Long idx, String email, String role) {
+    public String createToken(Long idx, String email, String role) {
         String jwt = Jwts.builder()
                 .claim("idx", idx)
                 .claim("email", email)
@@ -35,7 +36,7 @@ public class JwtUtil {
         return jwt;
     }
 
-    public static Long getUserIdx(String token) {
+    public Long getUserIdx(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(encodedKey)
                 .build()
@@ -45,7 +46,7 @@ public class JwtUtil {
         return claims.get("idx", Long.class);
     }
 
-    public static String getUsername(String token) {
+    public String getUsername(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(encodedKey)
                 .build()
@@ -55,7 +56,7 @@ public class JwtUtil {
         return claims.get("email", String.class);
     }
 
-    public static String getRole(String token) {
+    public String getRole(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(encodedKey)
                 .build()

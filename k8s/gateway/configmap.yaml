@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: nexus-gateway-config
 data:
-  EUREKA_SERVICE_URL: "http://192.100.30.50:32567/eureka"
+  EUREKA_SERVICE_URL: "http://nexus-discovery-service:9090/eureka"
   FRONTEND_PROD_URL: "https://www.nexusscm.kro.kr"
   ROUTE_STATISTICS_ID: "statistics"
   ROUTE_STATISTICS_URI: "lb://NexusStatistics"

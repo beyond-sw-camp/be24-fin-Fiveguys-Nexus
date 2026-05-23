@@ -11,8 +11,12 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 public class JwtGatewayFilterFactory extends AbstractGatewayFilterFactory<JwtGatewayFilterFactory.Config> {
-    public JwtGatewayFilterFactory() {
+    
+    private final JwtUtil jwtUtil;
+
+    public JwtGatewayFilterFactory(JwtUtil jwtUtil) {
         super(Config.class);
+        this.jwtUtil = jwtUtil;
     }
     public static class Config {}
 
@@ -31,9 +35,9 @@ public class JwtGatewayFilterFactory extends AbstractGatewayFilterFactory<JwtGat
             String token = cookie.getValue();
 
             try {
-                Long userIdx = JwtUtil.getUserIdx(token);
-                String userName = JwtUtil.getUsername(token);
-                String role = JwtUtil.getRole(token);
+                Long userIdx = jwtUtil.getUserIdx(token);
+                String userName = jwtUtil.getUsername(token);
+                String role = jwtUtil.getRole(token);
 
                 ServerHttpRequest newRequest = exchange.getRequest().mutate()
                         .header("X-User-Idx", String.valueOf(userIdx))

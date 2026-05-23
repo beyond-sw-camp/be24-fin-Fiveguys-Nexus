@@ -2,6 +2,8 @@ package com.example.statistics.domain.daily;
 
 import com.example.statistics.domain.daily.model.DailyMenuSales;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -15,19 +17,31 @@ public interface DailyMenuSalesRepository extends JpaRepository<DailyMenuSales, 
 
     /**
      * 특정 날짜의 모든 메뉴 판매량을 조회.
-     * 판매된 메뉴 수만큼 row 가 반환되므로 List 형태.
-     *
-     * @param aggregateDate 조회할 집계 날짜
-     * @return 해당 날짜의 메뉴별 판매량 목록 (없으면 빈 List)
      */
     List<DailyMenuSales> findByAggregateDate(LocalDate aggregateDate);
 
     /**
-     * 특정 날짜의 dump 가 이미 수행되었는지 확인.
-     * 스케줄러/수동 트리거 의 멱등성 체크에 사용.
-     *
-     * @param aggregateDate 확인할 집계 날짜
-     * @return 이미 dump 되었으면 true, 아니면 false
+     * 특정 날짜의 dump 가 이미 수행되었는지 확인 (멱등성 체크용).
      */
     boolean existsByAggregateDate(LocalDate aggregateDate);
+
+    /**
+     * 특정 기간(start ~ end) 내 메뉴별 판매량 합계 (장기 통계).
+     * 메뉴별로 합산해서 판매량 많은 순으로 정렬.
+     *
+     * @param start 시작 날짜 (포함)
+     * @param end   종료 날짜 (포함)
+     * @return [menuIdx(Long), menuName(String), totalQuantity(Long)] 배열 리스트
+     */
+    @Query(value = """
+            SELECT menu_idx, menu_name, SUM(quantity) AS total_qty
+            FROM daily_menu_sales
+            WHERE aggregate_date BETWEEN :start AND :end
+            GROUP BY menu_idx, menu_name
+            ORDER BY total_qty DESC
+            """, nativeQuery = true)
+    List<Object[]> findMenuSalesGroupByRange(
+            @Param("start") LocalDate start,
+            @Param("end") LocalDate end
+    );
 }

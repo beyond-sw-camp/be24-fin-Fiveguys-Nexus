@@ -2,6 +2,9 @@
 server:
   port: 8088
 
+jwt:
+  secret: ${JWT_SECRET}
+
 eureka:
   instance:
     lease-renewal-interval-in-seconds: 10
@@ -9,7 +12,7 @@ eureka:
     prefer-ip-address: true
   client:
     service-url:
-      defaultZone: http://localhost:9090/eureka
+      defaultZone: ${EUREKA_SERVICE_URL:http://192.100.30.50:32567/eureka}
     register-with-eureka: false
     fetch-registry: true
 
@@ -24,7 +27,7 @@ spring:
           '[/**]':
             allowedOrigins:
               - "http://localhost:5173"
-              - "https://www.nexusscm.kro.kr"
+              - "${FRONTEND_PROD_URL:https://www.nexusscm.kro.kr}"
             allowedMethods:
               - GET
               - POST
@@ -38,15 +41,15 @@ spring:
             maxAge: 3600
 
       routes:
-        - id: statistics
-          uri: lb://NexusStatistics
+        - id: ${ROUTE_STATISTICS_ID:statistics}
+          uri: ${ROUTE_STATISTICS_URI:lb://NexusStatistics}
           predicates:
             - Path=/statistics/**
           filters:
             - Jwt
 
-        - id: pos
-          uri: lb://NexusPos
+        - id: ${ROUTE_POS_ID:pos}
+          uri: ${ROUTE_POS_URI:lb://NexusPos}
           predicates:
             - Path=/pos/**
           filters:

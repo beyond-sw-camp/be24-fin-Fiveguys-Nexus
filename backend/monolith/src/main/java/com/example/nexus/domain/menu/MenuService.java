@@ -147,6 +147,14 @@ public class MenuService {
             Menu menu = dto.toEntity(category, products);
             Menu saved = menuRepository.save(menu);
 
+            List<MenuEvent.MenuItemEvent> items = menu.getMenuItemList().stream()
+                    .map(mi -> new MenuEvent.MenuItemEvent(
+                            mi.getIdx(),
+                            mi.getProduct().getIdx(),
+                            mi.getQuantity(),
+                            mi.getMenuUnit()
+                    )).toList();
+
             // kafka 이벤트 발생
             MenuEvent event = new MenuEvent(
                     saved.getIdx(),
@@ -154,7 +162,9 @@ public class MenuService {
                     saved.getPrice(),
                     category.getIdx(),
                     category.getMenuCategoryName(),
-                    saved.isDeleted()
+                    saved.isDeleted(),
+                    saved.getImgPath(),
+                    ite
             );
 
             kafkaTemplate.send(KafkaTopics.MENU_CREATED, event);

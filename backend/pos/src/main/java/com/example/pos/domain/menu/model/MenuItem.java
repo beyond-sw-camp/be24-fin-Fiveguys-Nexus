@@ -4,6 +4,7 @@ import com.example.pos.domain.product.model.Product;
 import com.example.pos.domain.menu.model.Menu;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.domain.Persistable;
 
 @Entity
 @Table(name = "menu_item")
@@ -11,9 +12,8 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class MenuItem {
+public class MenuItem implements Persistable<Long> {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "menu_item_idx")
     private Long idx;
 
@@ -31,4 +31,21 @@ public class MenuItem {
     @JoinColumn(name = "product_idx", nullable = false)
     @Setter
     private Product product;
+
+    @Transient
+    @Builder.Default
+    private boolean isNew = false;
+
+    @Override
+    public Long getId() {
+        return idx;
+    }
+
+    @Override
+    public boolean isNew() {
+        return isNew;
+    }
+
+    @PostLoad @PrePersist
+    void markNotNew() { this.isNew = false; }
 }

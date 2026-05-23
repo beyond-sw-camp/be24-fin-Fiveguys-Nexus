@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.domain.Persistable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,9 +16,8 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Menu {
+public class Menu implements Persistable<Long> {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "menu_idx")
     private Long idx;
 
@@ -40,4 +40,20 @@ public class Menu {
     @Column(name = "menu_category_name",  nullable = false)
     private String menuCategoryName;
 
+    @Transient
+    @Builder.Default
+    private boolean isNew = false;
+
+    @Override
+    public Long getId() {
+        return idx;
+    }
+
+    @Override
+    public boolean isNew() {
+        return isNew;
+    }
+
+    @PostLoad @PrePersist
+    void markNotNew() { this.isNew = false; }
 }

@@ -86,12 +86,12 @@ const wasteCards = computed(() => [
     title: '이번달 폐기량',
     value: stats.value.wasteSum?.toLocaleString() || '0',
     unit: '개',
-    sub: stats.value.wasteGradient ? `전월 대비 ${Math.abs((stats.value.wasteGradient - 1) * 100).toFixed(1)}% ${stats.value.wasteGradient > 1 ? '증가' : '감소'}` : '전월 데이터 없음',
+    sub: stats.value.wasteGradient !== null ? `전월 대비 ${Math.abs((stats.value.wasteGradient - 1) * 100).toFixed(1)}% ${stats.value.wasteGradient > 1 ? '증가' : '감소'}` : '전월 데이터 없음',
     valueClass: stats.value.wasteGradient > 1 ? 'text-red-500' : 'text-green-600',
   },
   {
     title: '지난달 대비 감소율',
-    value: stats.value.wasteGradient ? `${(stats.value.wasteGradient > 1 ? '+' : '-')}${Math.abs((stats.value.wasteGradient - 1) * 100).toFixed(1)}` : '0',
+    value: stats.value.wasteGradient !== null ? Math.abs((stats.value.wasteGradient - 1) * 100).toFixed(1) : '0',
     unit: '%',
     sub: stats.value.lastMonthWasteSum ? `전월 ${stats.value.lastMonthWasteSum}개 → 이번달 ${stats.value.wasteSum}개` : '전월 데이터 없음',
     valueClass: stats.value.wasteGradient > 1 ? 'text-red-500' : 'text-green-600',
@@ -168,7 +168,7 @@ const overStockMonthlyData = computed(() => ({
 
 const inventoryRows = computed(() => stats.value.storeTurnoverTrend?.map((item, index) => ({
   store: item.storeName,
-  stockRate: stats.value.optimalStockRate || 0,
+  stockRate: item.optimalStockRate || 0,
   turnover: item.turnover
 })) || [])
 
@@ -280,34 +280,24 @@ function renderInventoryCharts() {
   }
 }
 
-watch(activeTab, (tab) => {
-  nextTick(() => {
-    destroyCharts()
-    if (tab === 'waste') renderWasteCharts()
-    else renderInventoryCharts()
-  })
-})
+function renderAllCharts() {
+  renderWasteCharts()
+  renderInventoryCharts()
+}
 
 watch(stats, () => {
-  if (activeTab.value === 'waste') {
-    nextTick(renderWasteCharts)
-  } else {
-    nextTick(renderInventoryCharts)
-  }
+  nextTick(renderAllCharts)
 }, { deep: true })
 
 onMounted(() => {
   fetchStats()
-  nextTick(() => {
-    if (activeTab.value === 'waste') renderWasteCharts()
-    else renderInventoryCharts()
-  })
+  nextTick(renderAllCharts)
 })
 onBeforeUnmount(() => destroyCharts())
 </script>
 
 <template>
-  <div class="flex-1 overflow-auto p-5 space-y-4 bg-gray-50/30">
+  <div class="flex-1 overflow-auto p-5 space-y-8 bg-gray-50/30">
     <!-- Header -->
     <div class="flex justify-between items-center">
       <div>
@@ -335,24 +325,13 @@ onBeforeUnmount(() => destroyCharts())
       </div>
     </div>
 
-    <!-- 탭 -->
-    <div class="flex gap-1 border-b border-gray-200">
-      <button
-        v-for="tab in tabs"
-        :key="tab.value"
-        type="button"
-        @click="activeTab = tab.value"
-        class="px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px cursor-pointer"
-        :class="activeTab === tab.value
-          ? 'border-[#F37321] text-[#F37321]'
-          : 'border-transparent text-gray-500 hover:text-gray-700'"
-      >
-        {{ tab.label }}
-      </button>
-    </div>
+    <!-- 섹션 1: 폐기 최소화 -->
+    <section class="space-y-4">
+      <div class="flex items-center gap-2 pb-1 border-b border-gray-200">
+        <Trash2 class="w-5 h-5 text-[#F37321]" />
+        <h2 class="text-lg font-bold text-gray-900">폐기 최소화</h2>
+      </div>
 
-    <!-- 탭 1: 폐기 최소화 -->
-    <template v-if="activeTab === 'waste'">
       <!-- 요약 카드 -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div
@@ -373,7 +352,6 @@ onBeforeUnmount(() => destroyCharts())
 
       <!-- 차트 영역 -->
       <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
-        <!-- 월별 폐기량 추이 -->
         <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col" style="min-height: 300px">
           <div class="mb-4 shrink-0">
             <h2 class="font-bold text-gray-900">월별 폐기량 추이</h2>
@@ -384,7 +362,6 @@ onBeforeUnmount(() => destroyCharts())
           </div>
         </div>
 
-        <!-- 품목별 폐기 비중 -->
         <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col" style="min-height: 300px">
           <div class="mb-4 shrink-0">
             <h2 class="font-bold text-gray-900">품목별 폐기 비중</h2>
@@ -414,11 +391,7 @@ onBeforeUnmount(() => destroyCharts())
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-50">
-              <tr
-                v-for="row in expiryRows"
-                :key="row.store"
-                class="hover:bg-gray-50/50 transition-colors"
-              >
+              <tr v-for="row in expiryRows" :key="row.store" class="hover:bg-gray-50/50 transition-colors">
                 <td class="px-4 py-3 font-medium text-gray-800">{{ row.store }}</td>
                 <td class="px-4 py-3 text-center text-gray-600">{{ row.warned }}</td>
                 <td class="px-4 py-3 text-center text-green-600 font-semibold">{{ row.success }}</td>
@@ -436,56 +409,17 @@ onBeforeUnmount(() => destroyCharts())
           </table>
         </div>
       </div>
+    </section>
 
-      <!-- 폐기 관리 안내 및 캠페인 -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-          <div class="px-5 py-4 border-b border-gray-50 bg-gray-50/50">
-            <h3 class="font-bold text-gray-900 flex items-center gap-2">
-              <Trash2 class="w-4 h-4 text-gray-500" />
-              폐기 처리 기준 안내
-            </h3>
-          </div>
-          <div class="p-5 space-y-3">
-            <div class="flex gap-4 p-3.5 rounded-xl bg-gray-50 border border-gray-100">
-              <div class="w-7 h-7 rounded-full bg-white flex items-center justify-center text-xs font-bold text-[#F37321] border border-orange-100 shrink-0">01</div>
-              <div>
-                <p class="text-sm font-bold text-gray-800">유통기한 만료</p>
-                <p class="text-xs text-gray-500 mt-1">상품의 유통기한이 현재 날짜를 지난 경우 즉시 폐기 대상으로 분류됩니다.</p>
-              </div>
-            </div>
-            <div class="flex gap-4 p-3.5 rounded-xl bg-gray-50 border border-gray-100">
-              <div class="w-7 h-7 rounded-full bg-white flex items-center justify-center text-xs font-bold text-[#F37321] border border-orange-100 shrink-0">02</div>
-              <div>
-                <p class="text-sm font-bold text-gray-800">품질 저하 및 파손</p>
-                <p class="text-xs text-gray-500 mt-1">가맹점 POS에서 직접 등록한 파손/변질 상품은 별도 승인 없이 폐기 처리됩니다.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-[#F37321]/5 rounded-2xl border border-[#F37321]/10 p-6 flex flex-col items-center justify-center text-center">
-          <div class="w-12 h-12 bg-white rounded-2xl shadow-sm flex items-center justify-center mb-4">
-            <TrendingDown class="w-6 h-6 text-[#F37321]" />
-          </div>
-          <h3 class="text-lg font-bold text-gray-900">폐기 최소화 캠페인</h3>
-          <p class="text-xs text-gray-600 mt-2 max-w-sm leading-relaxed">
-            Nexus 시스템은 유통기한 임박 알림을 통해 폐기를 사전에 방지합니다. 현재 전 가맹점 평균 소진 성공률은 <strong>{{ (stats.useSuccessRate || 0).toFixed(1) }}%</strong>입니다.
-          </p>
-          <div class="mt-4 flex items-center gap-2 p-3 bg-white/50 rounded-lg border border-[#F37321]/10">
-            <AlertCircle class="w-4 h-4 text-blue-500" />
-            <p class="text-[11px] text-gray-500 text-left">
-              본 시스템은 매일 유통기한을 체크하여 경과 상품을 자동으로 폐기 목록에 등록합니다.
-            </p>
-          </div>
-        </div>
+    <!-- 섹션 2: 재고 효율 -->
+    <section class="space-y-4">
+      <div class="flex items-center gap-2 pb-1 border-b border-gray-200">
+        <RefreshCw class="w-5 h-5 text-blue-600" />
+        <h2 class="text-lg font-bold text-gray-900">재고 효율</h2>
       </div>
-    </template>
 
-    <!-- 탭 2: 재고 효율 -->
-    <template v-if="activeTab === 'inventory'">
       <!-- 요약 카드 -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
         <div
           v-for="card in inventoryCards"
           :key="card.title"
@@ -504,7 +438,6 @@ onBeforeUnmount(() => destroyCharts())
 
       <!-- 차트 영역 -->
       <div class="grid grid-cols-1 gap-4">
-        <!-- 매장별 재고 회전율 -->
         <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col" style="min-height: 300px">
           <div class="mb-4 shrink-0">
             <h2 class="font-bold text-gray-900">매장별 재고 회전율</h2>
@@ -532,11 +465,7 @@ onBeforeUnmount(() => destroyCharts())
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-50">
-              <tr
-                v-for="row in inventoryRows"
-                :key="row.store"
-                class="hover:bg-gray-50/50 transition-colors"
-              >
+              <tr v-for="row in inventoryRows" :key="row.store" class="hover:bg-gray-50/50 transition-colors">
                 <td class="px-4 py-3 font-medium text-gray-800">{{ row.store }}</td>
                 <td class="px-4 py-3 text-center">
                   <span
@@ -552,6 +481,6 @@ onBeforeUnmount(() => destroyCharts())
           </table>
         </div>
       </div>
-    </template>
+    </section>
   </div>
 </template>

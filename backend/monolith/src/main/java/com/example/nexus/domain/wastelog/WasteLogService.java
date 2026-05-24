@@ -1,6 +1,7 @@
 package com.example.nexus.domain.wastelog;
 
 
+import com.example.nexus.domain.orders.OrdersRepository;
 import com.example.nexus.domain.store.StoreInventoryRepository;
 
 import com.example.nexus.common.enums.InventoryStatus;
@@ -35,6 +36,7 @@ public class WasteLogService {
     private final StoreRepository storeRepository;
     private final PosStoreInventoryRepository posStoreInventoryRepository;
     private final StoreInventoryRepository storeInventoryRepository;
+    private final OrdersRepository ordersRepository;
 
     public WasteLogDto.StatsRes getWasteStats() {
         YearMonth lastMonth = YearMonth.from(LocalDateTime.now()).minusMonths(1);
@@ -79,8 +81,7 @@ public class WasteLogService {
             long manual = obj[2] != null ? ((Number) obj[2]).longValue() : 0L;
             long expired = obj[3] != null ? ((Number) obj[3]).longValue() : 0L;
             
-            // Assuming "warned" corresponds to total items that reached critical status? 
-            // For now, let's use the query results mapping to DTO
+
             double rate = total > 0 ? (double) manual / total * 100 : 0.0;
             
             totalWarned += total;
@@ -97,20 +98,57 @@ public class WasteLogService {
 
         float overallSuccessRate = totalWarned > 0 ? (float) totalSuccess / totalWarned * 100 : 0.0f;
 
+        // ── 재고 효율성 지표 추가 ──────────────────────────────
+        List<Store> allStores = storeRepository.findAll();
+        List<WasteLogDto.StoreTurnover> turnoverTrend = new ArrayList<>();
+        float totalTurnover = 0;
+        float totalOptimalRate = 0;
+
+        for (Store store : allStores) {
+            // 1. 재고 회전율 (Turnover Rate) = 당월 출고량(발주승인수량) / 평균 재고
+            long monthlySales = ordersRepository.sumApprovedPriceByStoreAndPeriod(
+                    store.getIdx(), thisMonthStart, thisMonthEnd) / 5000; // 가상의 평균 단가로 수량 추정 또는 ordersItem 활용
+            
+            List<StoreInventory> storeInventories = storeInventoryRepository.findByStoreIdx(store.getIdx());
+            double avgStock = storeInventories.stream()
+                    .mapToInt(StoreInventory::getCount)
+                    .average().orElse(1.0);
+            
+            float turnover = (float) (monthlySales / (avgStock > 0 ? avgStock : 1.0));
+            totalTurnover += turnover;
+
+            // 2. 적정 재고 유지율 (Optimal Stock Rate) = 적정 상태 품목 수 / 전체 품목 수
+            long totalItems = storeInventories.size();
+            long optimalItems = storeInventories.stream()
+                    .filter(si -> si.getStatus() == InventoryStatus.NORMAL)
+                    .count();
+            float optimalRate = totalItems > 0 ? (float) optimalItems / totalItems * 100 : 0.0f;
+            totalOptimalRate += optimalRate;
+
+            turnoverTrend.add(WasteLogDto.StoreTurnover.builder()
+                    .storeName(store.getStoreName())
+                    .turnover(turnover)
+                    .optimalStockRate(optimalRate)
+                    .build());
+        }
+
+        float avgTurnover = allStores.isEmpty() ? 0 : totalTurnover / allStores.size();
+        float avgOptimalStockRate = allStores.isEmpty() ? 0 : totalOptimalRate / allStores.size();
+
         return WasteLogDto.StatsRes.builder()
                 .wasteSum(thisMonthWasteSum)
                 .lastMonthWasteSum(lastMonthWasteSum)
                 .wasteGradient(wasteGradient)
                 .useSuccessRate(overallSuccessRate)
                 .wasteSavingAmount(wasteSavingAmount)
-                .avgTurnover(0.0f)
-                .optimalStockRate(0.0f)
+                .avgTurnover(avgTurnover)
+                .optimalStockRate(avgOptimalStockRate)
                 .overstockCount(0)
                 .autoOrderAccuracy(0.0f)
                 .monthlyWasteTrend(monthlyTrend)
                 .categoryWasteRatio(categoryRatio)
                 .storeWasteStatus(storeStatus)
-                .storeTurnoverTrend(new ArrayList<>())
+                .storeTurnoverTrend(turnoverTrend)
                 .storeOverstockTrend(new ArrayList<>())
                 .build();
     }

@@ -141,6 +141,7 @@ public class WasteLogDto {
     public static class StoreTurnover {
         private String storeName;
         private Float turnover;
+        private Float optimalStockRate;
     }
 
     @Builder

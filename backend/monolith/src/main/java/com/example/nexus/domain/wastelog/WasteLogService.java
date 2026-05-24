@@ -115,22 +115,42 @@ public class WasteLogService {
                 .build();
     }
 
+    @Transactional
     public List<WasteLogDto.RegRes> registerOverDueDateInventories(List<Long> idxList) {
 
         List<WasteLogDto.RegRes> resList = new ArrayList<>();
 
         for(Long idx : idxList) {
             StoreInventory inventory = storeInventoryRepository.findById(idx).orElse(null);
+            if (inventory == null || inventory.getCount() <= 0) continue;
+
+            int quantity = inventory.getCount();
+            long amountLoss = (long) quantity * inventory.getProduct().getUnitPrice();
+
             WasteLog entity = WasteLog.builder()
-                    .quantity(inventory.getCount())
-                    .amountLoss(inventory.getProduct().getUnitPrice())
-                    .wasteDate(inventory.getManufacturedDate().plusDays(Long.parseLong(inventory.getProduct().getDangerDays())))
+                    .quantity(quantity)
+                    .amountLoss((int) amountLoss)
+                    .wasteDate(LocalDateTime.now())
                     .wasteReason("유통기한 만료")
                     .store(inventory.getStore())
                     .product(inventory.getProduct())
                     .build();
-            wasteLogRepository.save(entity);
+            
+            // 재고 차감
+            inventory.setCount(0);
+            inventory.setStatus(InventoryStatus.CRITICAL); // 폐기됨
+            storeInventoryRepository.save(inventory);
 
+            // POS 재고도 차감 (동기화)
+            posStoreInventoryRepository.findByStore_IdxAndProduct_IdxAndManufacturedDate(
+                inventory.getStore().getIdx(), inventory.getProduct().getIdx(), inventory.getManufacturedDate()
+            ).ifPresent(posInventory -> {
+                posInventory.setCount(0);
+                posInventory.setStatus(InventoryStatus.CRITICAL);
+                posStoreInventoryRepository.save(posInventory);
+            });
+
+            wasteLogRepository.save(entity);
             resList.add(WasteLogDto.RegRes.from(entity));
         }
 

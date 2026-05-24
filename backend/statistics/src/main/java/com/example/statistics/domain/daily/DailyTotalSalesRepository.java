@@ -60,4 +60,19 @@ public interface DailyTotalSalesRepository extends JpaRepository<DailyTotalSales
             ORDER BY MONTH(aggregate_date)
             """, nativeQuery = true)
     List<Object[]> findMonthlySalesGroup(@Param("year") int year);
+
+    /**
+     * 특정 연도의 분기별 매출 집계 (장기 통계).
+     *
+     * @param year 조회할 연도
+     * @return [quarter(1~4), total(Long)] 배열 리스트, 분기 오름차순
+     */
+    @Query(value = """
+            SELECT QUARTER(aggregate_date) AS quarter, SUM(total_amount) AS total
+            FROM daily_total_sales
+            WHERE YEAR(aggregate_date) = :year
+            GROUP BY QUARTER(aggregate_date)
+            ORDER BY QUARTER(aggregate_date)
+            """, nativeQuery = true)
+    List<Object[]> findQuarterlySalesGroup(@Param("year") int year);
 }

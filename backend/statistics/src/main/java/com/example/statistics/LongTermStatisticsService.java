@@ -58,6 +58,24 @@ public class LongTermStatisticsService {
     }
 
     /**
+     * 특정 연도의 분기별 매출 (1~4분기).
+     *
+     * @param year 조회할 연도
+     */
+    public LongTermStatisticsDto.QuarterlySalesRes getQuarterlySales(int year) {
+        List<LongTermStatisticsDto.QuarterlySalesItem> items = totalRepo.findQuarterlySalesGroup(year).stream()
+                .map(r -> LongTermStatisticsDto.QuarterlySalesItem.builder()
+                        .quarter(((Number) r[0]).intValue())
+                        .total(r[1] == null ? 0L : ((Number) r[1]).longValue())
+                        .build())
+                .toList();
+        return LongTermStatisticsDto.QuarterlySalesRes.builder()
+                .year(year)
+                .quarterlyData(items)
+                .build();
+    }
+
+    /**
      * 특정 기간의 매장별 매출 합계 (매출 큰 순).
      * month 가 null 이면 해당 연도 전체.
      *

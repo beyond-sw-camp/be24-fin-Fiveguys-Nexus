@@ -44,6 +44,18 @@ public class LongTermStatisticsController {
     }
 
     /**
+     * 특정 연도의 분기별 매출 (1~4분기).
+     *
+     * GET /statistics/long-term/quarterly?year=2026
+     *
+     * @param year 조회할 연도
+     */
+    @GetMapping("/quarterly")
+    public ResponseEntity<BaseResponse> getQuarterly(@RequestParam int year) {
+        return ResponseEntity.ok(BaseResponse.success(longTermStatisticsService.getQuarterlySales(year)));
+    }
+
+    /**
      * 특정 기간 매장별 매출 (매출 큰 순).
      *
      * GET /statistics/long-term/stores?year=2026&month=5   (월 단위)

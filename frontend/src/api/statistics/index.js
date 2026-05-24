@@ -20,6 +20,9 @@ export const getYearlySales = () =>
 export const getMonthlySales = (year) =>
   api.get('/statistics/long-term/monthly', { params: { year } })
 
+export const getQuarterlySales = (year) =>
+  api.get('/statistics/long-term/quarterly', { params: { year } })
+
 export const getStoreSalesLongTerm = (year, month) =>
   api.get('/statistics/long-term/stores', {
     params: month ? { year, month } : { year },

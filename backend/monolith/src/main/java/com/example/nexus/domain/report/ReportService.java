@@ -48,7 +48,8 @@ public class ReportService {
 
     private final ChatClient chatClient;
     private final S3Client s3Client;
-    private final AiStatsTools aiStatsTools;   // AI가 대화 맥락에 맞춰 호출하는 데이터 조회 도구
+    private final AiStatsTools aiStatsTools;   // 매출/메뉴/매장 데이터 조회 도구
+    private final AiOrderTools aiOrderTools;   // 발주 데이터 조회 도구
 
     @Value("classpath:aiReport/prompts/report-template.md")
     private Resource reportTemplate;
@@ -68,6 +69,7 @@ public class ReportService {
                          ChatClient.Builder chatClientBuilder,
                          ChatMemory chatMemory,
                          AiStatsTools aiStatsTools,
+                         AiOrderTools aiOrderTools,
                          S3Client s3Client) {
         this.reportRepository = reportRepository;
         this.posPayRepository = posPayRepository;
@@ -75,6 +77,7 @@ public class ReportService {
         this.userRepository = userRepository;
         this.s3Client = s3Client;
         this.aiStatsTools = aiStatsTools;
+        this.aiOrderTools = aiOrderTools;
         // 대화 기억 어드바이저를 기본 등록 → 같은 conversationId의 이전 대화를 자동 재주입
         this.chatClient = chatClientBuilder
                 .defaultAdvisors(new MessageChatMemoryAdvisor(chatMemory))
@@ -181,7 +184,7 @@ public class ReportService {
             return chatClient.prompt()
                     .system(systemText)
                     .user(userMessage)
-                    .tools(aiStatsTools)
+                    .tools(aiStatsTools, aiOrderTools)
                     .advisors(a -> a
                             .param(AbstractChatMemoryAdvisor.CHAT_MEMORY_CONVERSATION_ID_KEY, conversationId)
                             .param(AbstractChatMemoryAdvisor.CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))

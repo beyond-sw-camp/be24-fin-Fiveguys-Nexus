@@ -1,24 +1,20 @@
 <script setup>
-import { ref, onMounted, computed, watch, onUnmounted, nextTick } from 'vue'
-import { Chart } from 'chart.js/auto'
+import { ref, onMounted, computed } from 'vue'
 import { getYearlySales } from '@/api/statistics'
 import { formatCurrency, calculateChange } from '@/utils/formatCurrency'
+import { useAnimatedNumber } from '@/composables/useAnimatedNumber'
 
-const allYears = ref([])      // [{year, total}, ...]
+const allYears = ref([])
 const selectedYear = ref(null)
-const sparklineCanvas = ref(null)
-let chartInstance = null
+const isMounted = ref(false)
 
 const fetchData = async () => {
   try {
     const { data } = await getYearlySales()
     allYears.value = data.result.yearlyData
-    // 기본값: 가장 최신 연도
     if (allYears.value.length > 0 && selectedYear.value == null) {
       selectedYear.value = allYears.value[allYears.value.length - 1].year
     }
-    await nextTick()
-    renderSparkline()
   } catch (e) {
     console.error('연도별 매출 조회 실패', e)
   }
@@ -29,75 +25,53 @@ const sortedYears = computed(() =>
 )
 
 const selectedTotal = computed(() => {
-  const found = allYears.value.find((d) => d.year === selectedYear.value)
-  return found ? found.total : 0
+  const f = allYears.value.find((d) => d.year === selectedYear.value)
+  return f ? f.total : 0
 })
 
-// YoY (전년 대비)
-const yoy = computed(() => {
+const previousTotal = computed(() => {
   const sorted = sortedYears.value
   const idx = sorted.findIndex((d) => d.year === selectedYear.value)
   if (idx <= 0) return null
-  return calculateChange(sorted[idx].total, sorted[idx - 1].total)
+  return sorted[idx - 1].total
 })
 
-const formattedTotal = computed(() => formatCurrency(selectedTotal.value))
+const yoy = computed(() => {
+  if (previousTotal.value == null) return null
+  return calculateChange(selectedTotal.value, previousTotal.value)
+})
+
 const yearOptions = computed(() => sortedYears.value.map((d) => d.year))
 
-const renderSparkline = () => {
-  if (!sparklineCanvas.value || sortedYears.value.length === 0) return
+// 카운트업 애니메이션
+const animatedTotal = useAnimatedNumber(selectedTotal)
+const formattedTotal = computed(() => formatCurrency(animatedTotal.value))
 
-  const labels = sortedYears.value.map((d) => `${d.year}`)
-  const totals = sortedYears.value.map((d) => d.total)
+// 프로그레스 바 (페이지 진입 시 0% → final 애니메이션 위해 isMounted 가드)
+const maxValue = computed(() => Math.max(selectedTotal.value, previousTotal.value || 0))
+const currentBarWidth = computed(() => {
+  if (!isMounted.value || maxValue.value === 0) return '0%'
+  return (selectedTotal.value / maxValue.value) * 100 + '%'
+})
+const previousBarWidth = computed(() => {
+  if (!isMounted.value || maxValue.value === 0 || previousTotal.value == null) return '0%'
+  return (previousTotal.value / maxValue.value) * 100 + '%'
+})
 
-  // 선택된 연도만 진하게, 나머지는 연하게
-  const backgroundColors = sortedYears.value.map((d) =>
-    d.year === selectedYear.value ? 'rgba(249,115,22,0.9)' : 'rgba(249,115,22,0.3)',
-  )
-
-  if (chartInstance) chartInstance.destroy()
-
-  chartInstance = new Chart(sparklineCanvas.value, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [{ data: totals, backgroundColor: backgroundColors, borderRadius: 3, barPercentage: 0.6 }],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: '#1f2937',
-          titleColor: '#f9fafb',
-          bodyColor: '#d1d5db',
-          padding: 8,
-          cornerRadius: 8,
-          callbacks: { label: (ctx) => ` ${formatCurrency(ctx.parsed.y)}` },
-        },
-      },
-      scales: {
-        x: { display: false },
-        y: { display: false, beginAtZero: true },
-      },
-    },
-  })
-}
-
-onMounted(fetchData)
-watch(selectedYear, () => renderSparkline())
-onUnmounted(() => {
-  if (chartInstance) chartInstance.destroy()
+onMounted(async () => {
+  await fetchData()
+  // 다음 frame 후 mount flag → 0% → final 트랜지션 트리거
+  setTimeout(() => { isMounted.value = true }, 100)
 })
 </script>
 
 <template>
-  <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col" style="min-height:200px">
+  <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col">
+    <!-- 헤더 -->
     <div class="flex items-start justify-between mb-4">
       <div>
         <h2 class="font-bold text-gray-900">연도별 매출</h2>
-        <p class="text-xs text-gray-400 mt-0.5">선택 연도의 총 매출</p>
+        <p class="text-xs text-gray-400 mt-0.5">{{ selectedYear }}년 총 매출</p>
       </div>
       <select v-model.number="selectedYear"
         class="border border-gray-200 rounded-md px-3 py-1.5 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-300">
@@ -105,23 +79,40 @@ onUnmounted(() => {
       </select>
     </div>
 
-    <div class="flex-1 flex items-center gap-6">
-      <!-- 큰 숫자 + YoY -->
-      <div class="flex-shrink-0 min-w-[140px]">
-        <p class="text-3xl font-extrabold text-orange-600 tracking-tight">
-          {{ formattedTotal }}
-        </p>
-        <p v-if="yoy" class="text-xs mt-1.5 font-semibold"
-          :class="yoy.isPositive ? 'text-emerald-600' : 'text-red-500'">
-          {{ yoy.text }}
-          <span class="text-gray-400 font-normal">vs 전년</span>
-        </p>
-        <p v-else class="text-xs mt-1.5 text-gray-400">전년 데이터 없음</p>
-      </div>
+    <!-- 큰 숫자 (카운트업) -->
+    <p class="text-4xl font-extrabold text-orange-600 tracking-tight">
+      {{ formattedTotal }}
+    </p>
 
-      <!-- Sparkline (선택 연도 강조) -->
-      <div class="flex-1 relative" style="height: 70px; min-width: 100px;">
-        <canvas ref="sparklineCanvas" style="display:block; width:100%; height:100%;"></canvas>
+    <!-- YoY 배지 -->
+    <p v-if="yoy" class="text-sm mt-2 font-semibold"
+      :class="yoy.isPositive ? 'text-emerald-600' : 'text-red-500'">
+      {{ yoy.isPositive ? '▲' : '▼' }} {{ yoy.text }}
+      <span class="text-gray-400 font-normal ml-1">vs 전년</span>
+    </p>
+    <p v-else class="text-sm mt-2 text-gray-400">전년 데이터 없음</p>
+
+    <!-- 프로그레스 바 (0% → final 애니메이션) -->
+    <div class="mt-5 space-y-2.5">
+      <div>
+        <div class="flex justify-between text-xs text-gray-500 mb-1">
+          <span>작년</span>
+          <span>{{ previousTotal != null ? formatCurrency(previousTotal) : '-' }}</span>
+        </div>
+        <div class="bg-gray-100 rounded-full h-2 overflow-hidden">
+          <div class="h-full bg-gray-300 rounded-full transition-all duration-1000 ease-out"
+            :style="{ width: previousBarWidth }"></div>
+        </div>
+      </div>
+      <div>
+        <div class="flex justify-between text-xs mb-1">
+          <span class="text-gray-700 font-semibold">올해</span>
+          <span class="text-gray-700 font-semibold">{{ formatCurrency(selectedTotal) }}</span>
+        </div>
+        <div class="bg-gray-100 rounded-full h-2 overflow-hidden">
+          <div class="h-full bg-orange-500 rounded-full transition-all duration-1000 ease-out"
+            :style="{ width: currentBarWidth }"></div>
+        </div>
       </div>
     </div>
   </div>

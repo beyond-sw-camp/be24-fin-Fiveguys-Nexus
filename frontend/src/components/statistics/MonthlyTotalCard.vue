@@ -1,23 +1,21 @@
 <script setup>
-import { ref, onMounted, watch, computed, onUnmounted, nextTick } from 'vue'
-import { Chart } from 'chart.js/auto'
+import { ref, onMounted, watch, computed } from 'vue'
 import { getMonthlySales } from '@/api/statistics'
 import { formatCurrency, calculateChange } from '@/utils/formatCurrency'
+import { useAnimatedNumber } from '@/composables/useAnimatedNumber'
 
 const currentYear = new Date().getFullYear()
 const currentMonth = new Date().getMonth() + 1
 
 const selectedYear = ref(currentYear)
 const selectedMonth = ref(currentMonth)
+const isMounted = ref(false)
 
-const currentYearData = ref([])    // 선택 연도 monthly
-const previousYearData = ref([])   // 작년 monthly (YoY 계산용)
+const currentYearData = ref([])
+const previousYearData = ref([])
 
 const yearOptions = [2025, 2026]
 const monthOptions = Array.from({ length: 12 }, (_, i) => i + 1)
-
-const sparklineCanvas = ref(null)
-let chartInstance = null
 
 const fetchData = async () => {
   try {
@@ -27,96 +25,55 @@ const fetchData = async () => {
     ])
     currentYearData.value = curr.data.result.monthlyData
     previousYearData.value = prev.data.result.monthlyData
-    await nextTick()
-    renderSparkline()
   } catch (e) {
     console.error('월별 매출 조회 실패', e)
   }
 }
 
 const selectedTotal = computed(() => {
-  const found = currentYearData.value.find((d) => d.month === selectedMonth.value)
-  return found ? found.total : 0
+  const f = currentYearData.value.find((d) => d.month === selectedMonth.value)
+  return f ? f.total : 0
 })
 
-// YoY (작년 동월 대비)
+const previousTotal = computed(() => {
+  const f = previousYearData.value.find((d) => d.month === selectedMonth.value)
+  return f ? f.total : null
+})
+
 const yoy = computed(() => {
-  const prev = previousYearData.value.find((d) => d.month === selectedMonth.value)?.total
-  if (prev == null) return null
-  return calculateChange(selectedTotal.value, prev)
+  if (previousTotal.value == null) return null
+  return calculateChange(selectedTotal.value, previousTotal.value)
 })
 
-const formattedTotal = computed(() => formatCurrency(selectedTotal.value))
+// 카운트업
+const animatedTotal = useAnimatedNumber(selectedTotal)
+const formattedTotal = computed(() => formatCurrency(animatedTotal.value))
 
-const renderSparkline = () => {
-  if (!sparklineCanvas.value) return
+// 프로그레스 바
+const maxValue = computed(() => Math.max(selectedTotal.value, previousTotal.value || 0))
+const currentBarWidth = computed(() => {
+  if (!isMounted.value || maxValue.value === 0) return '0%'
+  return (selectedTotal.value / maxValue.value) * 100 + '%'
+})
+const previousBarWidth = computed(() => {
+  if (!isMounted.value || maxValue.value === 0 || previousTotal.value == null) return '0%'
+  return (previousTotal.value / maxValue.value) * 100 + '%'
+})
 
-  const labels = monthOptions.map((m) => `${m}월`)
-  const totals = new Array(12).fill(0)
-  currentYearData.value.forEach((d) => {
-    totals[d.month - 1] = d.total
-  })
-
-  // 선택 월 포인트만 강조
-  const pointRadii = monthOptions.map((m) => (m === selectedMonth.value ? 5 : 0))
-  const pointColors = monthOptions.map((m) =>
-    m === selectedMonth.value ? '#f97316' : 'rgba(0,0,0,0)',
-  )
-
-  if (chartInstance) chartInstance.destroy()
-
-  chartInstance = new Chart(sparklineCanvas.value, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        data: totals,
-        borderColor: '#f97316',
-        backgroundColor: 'rgba(249,115,22,0.15)',
-        fill: true,
-        tension: 0.3,
-        pointRadius: pointRadii,
-        pointBackgroundColor: pointColors,
-        pointBorderColor: pointColors,
-        borderWidth: 2,
-      }],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: '#1f2937',
-          titleColor: '#f9fafb',
-          bodyColor: '#d1d5db',
-          padding: 8,
-          cornerRadius: 8,
-          callbacks: { label: (ctx) => ` ${formatCurrency(ctx.parsed.y)}` },
-        },
-      },
-      scales: {
-        x: { display: false },
-        y: { display: false, beginAtZero: true },
-      },
-    },
-  })
-}
-
-onMounted(fetchData)
+onMounted(async () => {
+  await fetchData()
+  setTimeout(() => { isMounted.value = true }, 100)
+})
 watch(() => selectedYear.value, fetchData)
-watch(() => selectedMonth.value, () => renderSparkline())
-onUnmounted(() => {
-  if (chartInstance) chartInstance.destroy()
-})
 </script>
 
 <template>
-  <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col" style="min-height:200px">
+  <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col">
+    <!-- 헤더 -->
     <div class="flex items-start justify-between mb-4">
       <div>
         <h2 class="font-bold text-gray-900">월별 매출</h2>
-        <p class="text-xs text-gray-400 mt-0.5">선택 달의 총 매출</p>
+        <p class="text-xs text-gray-400 mt-0.5">{{ selectedYear }}년 {{ selectedMonth }}월 총 매출</p>
       </div>
       <div class="flex gap-2">
         <select v-model.number="selectedYear"
@@ -130,23 +87,40 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <div class="flex-1 flex items-center gap-6">
-      <!-- 큰 숫자 + YoY -->
-      <div class="flex-shrink-0 min-w-[140px]">
-        <p class="text-3xl font-extrabold text-orange-600 tracking-tight">
-          {{ formattedTotal }}
-        </p>
-        <p v-if="yoy" class="text-xs mt-1.5 font-semibold"
-          :class="yoy.isPositive ? 'text-emerald-600' : 'text-red-500'">
-          {{ yoy.text }}
-          <span class="text-gray-400 font-normal">vs 작년 동월</span>
-        </p>
-        <p v-else class="text-xs mt-1.5 text-gray-400">작년 동월 데이터 없음</p>
-      </div>
+    <!-- 큰 숫자 (카운트업) -->
+    <p class="text-4xl font-extrabold text-orange-600 tracking-tight">
+      {{ formattedTotal }}
+    </p>
 
-      <!-- Sparkline (선택 월 강조) -->
-      <div class="flex-1 relative" style="height: 70px; min-width: 100px;">
-        <canvas ref="sparklineCanvas" style="display:block; width:100%; height:100%;"></canvas>
+    <!-- YoY 배지 -->
+    <p v-if="yoy" class="text-sm mt-2 font-semibold"
+      :class="yoy.isPositive ? 'text-emerald-600' : 'text-red-500'">
+      {{ yoy.isPositive ? '▲' : '▼' }} {{ yoy.text }}
+      <span class="text-gray-400 font-normal ml-1">vs 작년 동월</span>
+    </p>
+    <p v-else class="text-sm mt-2 text-gray-400">작년 동월 데이터 없음</p>
+
+    <!-- 프로그레스 바 -->
+    <div class="mt-5 space-y-2.5">
+      <div>
+        <div class="flex justify-between text-xs text-gray-500 mb-1">
+          <span>작년 {{ selectedMonth }}월</span>
+          <span>{{ previousTotal != null ? formatCurrency(previousTotal) : '-' }}</span>
+        </div>
+        <div class="bg-gray-100 rounded-full h-2 overflow-hidden">
+          <div class="h-full bg-gray-300 rounded-full transition-all duration-1000 ease-out"
+            :style="{ width: previousBarWidth }"></div>
+        </div>
+      </div>
+      <div>
+        <div class="flex justify-between text-xs mb-1">
+          <span class="text-gray-700 font-semibold">올해 {{ selectedMonth }}월</span>
+          <span class="text-gray-700 font-semibold">{{ formatCurrency(selectedTotal) }}</span>
+        </div>
+        <div class="bg-gray-100 rounded-full h-2 overflow-hidden">
+          <div class="h-full bg-orange-500 rounded-full transition-all duration-1000 ease-out"
+            :style="{ width: currentBarWidth }"></div>
+        </div>
       </div>
     </div>
   </div>

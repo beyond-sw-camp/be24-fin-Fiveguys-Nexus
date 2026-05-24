@@ -16,7 +16,6 @@ import org.springframework.web.server.ResponseStatusException;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 import java.time.LocalDateTime;
-import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,10 +33,6 @@ public class WasteLogController {
     public ResponseEntity findOverDueDateProducts () {
 
         List<StoreInventoryDto.ListRes> listRes = storeService.findAllStoreInventory();
-        // store_inventory 와 pos_store_inventory 테이블에서 manufactured_date와
-        // product 테이블에서 danger_days 를 더해서
-        // 오늘 날짜와 비교해서 이전이라면
-        // 폐기 리스트에 담아주기
 
         List<Long> overDueDateInventoryIdxList = new ArrayList<>();
 
@@ -70,31 +65,9 @@ public class WasteLogController {
 
 
     @GetMapping("/compare")
-        public ResponseEntity<BaseResponse<WasteLogDto.StatsRes>> compareWasteLog() {
-        YearMonth lastMonth = YearMonth.from(LocalDateTime.now()).minusMonths(1);
-        YearMonth thisMonth = YearMonth.from(LocalDateTime.now());
-
-
-        // 지난 달과 현재 달의 폐기율을 비교하기 위함
-        long lastMonthWasteQuantitySum = wasteLogService.getInputMonthWasteSum(lastMonth);
-        long thisMonthWasteQuantitySum = wasteLogService.getInputMonthWasteSum(thisMonth);
-
-        // - 유통기한 경고 알림 발송 후 실제 소진 성공/실패 여부를 집계하여 소진 성공률(%)을 표시한다.
-        // 유통기한 알림 걸린건
-
-
-
-
-
-
-        WasteLogDto.StatsRes resDto = WasteLogDto.StatsRes.builder()
-                .useSuccessRate(storeService.countUseWarnedProductBeforeDueDate(lastMonth))
-                .wasteSum(thisMonthWasteQuantitySum)
-                .wasteGradient((float) (thisMonthWasteQuantitySum/lastMonthWasteQuantitySum))
-                .build();
-
+    public ResponseEntity<BaseResponse<WasteLogDto.StatsRes>> compareWasteLog() {
+        WasteLogDto.StatsRes resDto = wasteLogService.getWasteStats();
         return ResponseEntity.ok(BaseResponse.success(resDto));
-
     }
 
 }

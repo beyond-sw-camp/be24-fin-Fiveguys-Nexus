@@ -48,6 +48,7 @@ public class ReportService {
 
     private final ChatClient chatClient;
     private final S3Client s3Client;
+    private final AiStatsTools aiStatsTools;   // AI가 대화 맥락에 맞춰 호출하는 데이터 조회 도구
 
     @Value("classpath:aiReport/prompts/report-template.md")
     private Resource reportTemplate;
@@ -66,12 +67,14 @@ public class ReportService {
                          UserRepository userRepository,
                          ChatClient.Builder chatClientBuilder,
                          ChatMemory chatMemory,
+                         AiStatsTools aiStatsTools,
                          S3Client s3Client) {
         this.reportRepository = reportRepository;
         this.posPayRepository = posPayRepository;
         this.posOrdersItemRepository = posOrdersItemRepository;
         this.userRepository = userRepository;
         this.s3Client = s3Client;
+        this.aiStatsTools = aiStatsTools;
         // 대화 기억 어드바이저를 기본 등록 → 같은 conversationId의 이전 대화를 자동 재주입
         this.chatClient = chatClientBuilder
                 .defaultAdvisors(new MessageChatMemoryAdvisor(chatMemory))
@@ -83,9 +86,14 @@ public class ReportService {
         User loginUser = userRepository.findById(userIdx)
                 .orElseThrow(() -> new BaseException(NOT_FOUND_USER));
 
-        // 세션ID가 있으면 그것을, 없으면 사용자별 기본 대화 ID를 conversationId로 사용
-        String conversationId = (sessionId != null && !sessionId.isBlank())
+        // 세션ID가 있으면 그것을, 없으면 사용자별 기본 대화 ID를 기준으로 사용
+        String baseId = (sessionId != null && !sessionId.isBlank())
                 ? sessionId : "user-" + userIdx;
+
+        // 보고서 의도(키워드)면 ':report' 통으로 분리 → 거대 보고서가 채팅 메모리를 오염시키지 않게
+        String lower = userMessage.toLowerCase();
+        boolean reportIntent = userMessage.contains("보고서") || userMessage.contains("리포트") || lower.contains("report");
+        String conversationId = reportIntent ? baseId + ":report" : baseId;
 
         // AI 답변 받기 (대화 컨텍스트 유지)
         String aiResponse = handleChatbotRequest(userMessage, conversationId);
@@ -158,28 +166,19 @@ public class ReportService {
         }
     }
 
-    // 3. AI에게 프롬프트 전송 (대화 기억 적용)
+    // 3. AI에게 프롬프트 전송 (대화 기억 + 데이터 조회 도구)
     public String handleChatbotRequest(String userMessage, String conversationId) {
-        ReportDto.ReportDataSummaryDto summary = getRecentSummary();
-
         try {
             String template = reportTemplate.getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
-            List<String> top5 = summary.topProducts();
+            // 상대 표현("이번 달/이전" 등) 해석을 위해 오늘 날짜만 주입 (고정 30일 집계 주입 제거)
+            String systemText = template.replace("{{today}}", java.time.LocalDate.now().toString());
 
-            // 규칙·데이터가 채워진 시스템 지시문 (사용자 질문은 별도 user 메시지로 전달)
-            String systemText = template
-                    .replace("{{totalSales}}", String.format("%,d", summary.totalSales()))
-                    .replace("{{product1}}", top5.size() > 0 ? top5.get(0) : "데이터 없음")
-                    .replace("{{product2}}", top5.size() > 1 ? top5.get(1) : "데이터 없음")
-                    .replace("{{product3}}", top5.size() > 2 ? top5.get(2) : "데이터 없음")
-                    .replace("{{product4}}", top5.size() > 3 ? top5.get(3) : "데이터 없음")
-                    .replace("{{product5}}", top5.size() > 4 ? top5.get(4) : "데이터 없음");
-
-            // system: 규칙·데이터(메모리에 안 쌓임) / user: 이번 질문(메모리에 저장)
+            // system: 규칙·오늘 날짜 / user: 이번 질문 / tools: AI가 필요 시 호출하는 데이터 조회 도구
             // advisors: 같은 conversationId의 최근 10턴을 컨텍스트로 재주입
             return chatClient.prompt()
                     .system(systemText)
                     .user(userMessage)
+                    .tools(aiStatsTools)
                     .advisors(a -> a
                             .param(AbstractChatMemoryAdvisor.CHAT_MEMORY_CONVERSATION_ID_KEY, conversationId)
                             .param(AbstractChatMemoryAdvisor.CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))

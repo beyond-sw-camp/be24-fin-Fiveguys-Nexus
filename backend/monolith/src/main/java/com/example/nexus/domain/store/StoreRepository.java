@@ -63,4 +63,12 @@ public interface StoreRepository extends JpaRepository<Store,Long> {
 
     // 가맹점 폐점수 조회
     long countByIsDeletedTrue();
+
+    // 월별 추이용 - 기준일 이후 입점(등록)된 가맹점들의 등록일자만 조회
+    @Query("SELECT s.createdAt FROM Store s WHERE s.createdAt >= :since")
+    List<LocalDateTime> findCreatedAtSince(@Param("since") LocalDateTime since);
+
+    // 월별 추이용 - 기준일 이후 폐점된 가맹점들의 폐점일자만 조회
+    @Query("SELECT s.closedAt FROM Store s WHERE s.closedAt IS NOT NULL AND s.closedAt >= :since")
+    List<LocalDateTime> findClosedAtSince(@Param("since") LocalDateTime since);
 }

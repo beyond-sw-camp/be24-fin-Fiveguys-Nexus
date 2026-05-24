@@ -68,6 +68,15 @@ public class StoreDto {
         private Long closedCount;  // 폐점
     }
 
+    // 월별 입점/폐점 추이 (최근 12개월) - 프론트 차트가 labels/openedCounts/closedCounts를 그대로 사용
+    @Getter
+    @Builder
+    public static class MonthlyTrendRes{
+        private List<String> labels;        // 월 라벨 (예: "2025-06")
+        private List<Long> openedCounts;    // 월별 입점(신규 등록) 건수
+        private List<Long> closedCounts;    // 월별 폐점 건수
+    }
+
     @Builder
     @Getter
     // 가맹점 목록 상세 조회

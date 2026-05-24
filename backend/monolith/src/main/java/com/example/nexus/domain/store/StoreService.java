@@ -28,6 +28,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
@@ -122,6 +123,50 @@ public class StoreService {
                 .totalCount(activeCount+closedCount)
                 .activeCount(activeCount)
                 .closedCount(closedCount)
+                .build();
+    }
+
+    // 선택 연도 1월~12월 월별 입점/폐점 추이 집계
+    @Transactional(readOnly = true)
+    public StoreDto.MonthlyTrendRes getMonthlyTrend(Integer year) {
+        DateTimeFormatter monthFmt = DateTimeFormatter.ofPattern("yyyy-MM");
+
+        // year가 없으면 올해를 기본값으로 사용
+        int targetYear = (year != null) ? year : YearMonth.now().getYear();
+
+        // 선택 연도 1월 ~ 12월 구간 (start = 선택 연도 1월 1일 00:00)
+        YearMonth start = YearMonth.of(targetYear, 1);
+        LocalDateTime since = start.atDay(1).atStartOfDay();
+
+        // 12개월 라벨을 순서대로 만들고, 각 월의 입점/폐점 카운트를 0으로 초기화
+        // LinkedHashMap을 써서 라벨 순서(과거 -> 현재)를 그대로 유지
+        List<String> labels = new ArrayList<>();
+        Map<String, Long> openedMap = new LinkedHashMap<>();
+        Map<String, Long> closedMap = new LinkedHashMap<>();
+        for (int i = 0; i < 12; i++) {
+            String key = start.plusMonths(i).format(monthFmt);
+            labels.add(key);
+            openedMap.put(key, 0L);
+            closedMap.put(key, 0L);
+        }
+
+        // 입점: 등록일(createdAt)을 월 단위로 묶어 카운트
+        for (LocalDateTime createdAt : storeRepository.findCreatedAtSince(since)) {
+            String key = YearMonth.from(createdAt).format(monthFmt);
+            // 구간 경계 밖 데이터는 무시 (containsKey로 방어)
+            openedMap.computeIfPresent(key, (k, v) -> v + 1);
+        }
+
+        // 폐점: 폐점일(closedAt)을 월 단위로 묶어 카운트
+        for (LocalDateTime closedAt : storeRepository.findClosedAtSince(since)) {
+            String key = YearMonth.from(closedAt).format(monthFmt);
+            closedMap.computeIfPresent(key, (k, v) -> v + 1);
+        }
+
+        return StoreDto.MonthlyTrendRes.builder()
+                .labels(labels)
+                .openedCounts(new ArrayList<>(openedMap.values()))
+                .closedCounts(new ArrayList<>(closedMap.values()))
                 .build();
     }
 

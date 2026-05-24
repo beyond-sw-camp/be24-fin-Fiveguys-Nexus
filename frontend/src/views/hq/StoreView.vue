@@ -4,6 +4,7 @@ import {Plus, Search, FileText, ChevronRight, ChevronLeft, RefreshCw} from 'luci
 import { getStoreList , getStoreDetailList, getPresignedUrl, postNewRegister, putStoreUpdate, getStoreTotal} from '@/api/store/index.js'
 import axios from 'axios'
 import Toast from '@/components/common/Toast.vue'
+import StoreTrendChart from '@/components/store/StoreTrendChart.vue'
 import { useToast } from '@/composables/useToast'
 
 const { toast, showToast } = useToast()
@@ -23,6 +24,8 @@ const showDetailModal = ref(false)
 const editTarget = ref(null)
 const detailTarget = ref(null)
 const selectedFile = ref(null);
+// 입점/폐점 추이 차트 컴포넌트 참조 (저장 후 차트 갱신용)
+const trendChart = ref(null)
 // 초기화 하는 함수
 const getInitialForm = () => ({
   storeName: '',
@@ -52,6 +55,7 @@ const storeListRes = async (page = 0)=>{
   const totalRes = await getStoreTotal()
   storeTotalCount.value = totalRes.data.result
   // 가맹점 리스트 조회
+
   const res = await getStoreList(searchReq, page, pagination.currentSize)
   storesList.value.splice(0, storesList.value.length, ...res.data.result.storeList)
 
@@ -380,6 +384,8 @@ onMounted(() => {
         <p class="text-3xl font-black text-red-500 mt-2">{{ storeTotalCount?.closedCount }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
       </div>
     </div>
+    <!-- 월별 입점/폐점 추이 그래프 -->
+    <StoreTrendChart ref="trendChart" />
     <div class="flex items-center justify-between gap-4">
       <div class="flex items-center gap-2 flex-1 max-w-md">
         <div class="relative">

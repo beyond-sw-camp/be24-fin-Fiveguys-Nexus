@@ -9,7 +9,9 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface PosStoreInventoryRepository extends JpaRepository<PosStoreInventory, Long> {
     // 목록 조회 시 Store·Product N+1 방지
@@ -62,4 +64,5 @@ public interface PosStoreInventoryRepository extends JpaRepository<PosStoreInven
             @Param("productIdx") Long productIdx
     );
 
+    Optional<PosStoreInventory> findByStore_IdxAndProduct_IdxAndManufacturedDate(Long storeIdx, Long productIdx, LocalDateTime manufacturedDate);
 }

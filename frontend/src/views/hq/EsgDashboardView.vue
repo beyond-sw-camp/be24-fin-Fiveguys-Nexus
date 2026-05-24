@@ -1,129 +1,190 @@
 <script setup>
-import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, watch, onMounted, onBeforeUnmount, nextTick, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { Chart } from 'chart.js/auto'
+import { getWasteStats, postOverDueDateWaste } from '@/api/wastelog'
+import { 
+  Trash2, 
+  TrendingDown, 
+  TrendingUp, 
+  AlertCircle, 
+  CheckCircle2,
+  RefreshCw,
+  Clock
+} from 'lucide-vue-next'
+import { useToast } from '@/composables/useToast'
+
+const route = useRoute()
+const toast = useToast()
+const loading = ref(false)
+const triggerLoading = ref(false)
+const stats = ref({
+  wasteSum: 0,
+  lastMonthWasteSum: 0,
+  wasteGradient: 0,
+  useSuccessRate: 0,
+  wasteSavingAmount: 0,
+  avgTurnover: 0,
+  optimalStockRate: 0,
+  overstockCount: 0,
+  autoOrderAccuracy: 0,
+  monthlyWasteTrend: [],
+  categoryWasteRatio: [],
+  storeWasteStatus: [],
+  storeTurnoverTrend: [],
+  storeOverstockTrend: []
+})
 
 const tabs = [
   { value: 'waste',     label: '폐기 최소화' },
   { value: 'inventory', label: '재고 효율' },
 ]
-const activeTab = ref('waste')
+const activeTab = ref(route.query.tab || 'waste')
+
+// URL 쿼리 파라미터 변경 감시
+watch(() => route.query.tab, (newTab) => {
+  if (newTab) activeTab.value = newTab
+})
+
+// ── 데이터 페칭 ───────────────────────────────────────────
+
+const fetchStats = async () => {
+  loading.value = true
+  try {
+    const response = await getWasteStats()
+    if (response.data.success) {
+      stats.value = response.data.result
+    }
+  } catch (error) {
+    console.error('Failed to fetch waste stats:', error)
+    toast.error('통계 데이터를 불러오는 데 실패했습니다.')
+  } finally {
+    loading.value = false
+  }
+}
+
+const handleTriggerWaste = async () => {
+  if (!confirm('유통기한이 지난 모든 재고를 폐기 처리하시겠습니까?')) return
+  
+  triggerLoading.value = true
+  try {
+    await postOverDueDateWaste()
+    toast.success('유통기한 경과 상품 폐기 처리가 완료되었습니다.')
+    await fetchStats()
+  } catch (error) {
+    console.error('Failed to trigger waste:', error)
+    toast.error('폐기 처리 중 오류가 발생했습니다.')
+  } finally {
+    triggerLoading.value = false
+  }
+}
 
 // ── 폐기 최소화 ───────────────────────────────────────────
 
-const wasteCards = [
+const wasteCards = computed(() => [
   {
     title: '이번달 폐기량',
-    value: '142',
-    unit: 'kg',
-    sub: '전월 대비 -18kg 감소',
+    value: stats.value.wasteSum?.toLocaleString() || '0',
+    unit: '개',
+    sub: stats.value.wasteGradient !== null ? `전월 대비 ${Math.abs((stats.value.wasteGradient - 1) * 100).toFixed(1)}% ${stats.value.wasteGradient > 1 ? '증가' : '감소'}` : '전월 데이터 없음',
+    valueClass: stats.value.wasteGradient > 1 ? 'text-red-500' : 'text-green-600',
   },
   {
     title: '지난달 대비 감소율',
-    value: '-11.2',
+    value: stats.value.wasteGradient !== null ? Math.abs((stats.value.wasteGradient - 1) * 100).toFixed(1) : '0',
     unit: '%',
-    sub: '전월 160kg → 이번달 142kg',
-    valueClass: 'text-green-600',
+    sub: stats.value.lastMonthWasteSum ? `전월 ${stats.value.lastMonthWasteSum}개 → 이번달 ${stats.value.wasteSum}개` : '전월 데이터 없음',
+    valueClass: stats.value.wasteGradient > 1 ? 'text-red-500' : 'text-green-600',
   },
   {
     title: '폐기 절감 금액',
-    value: '₩ 324,000',
+    value: stats.value.wasteSavingAmount ? `₩ ${stats.value.wasteSavingAmount.toLocaleString()}` : '₩ 0',
     unit: '',
     sub: '전월 대비 절감 추정액',
     valueClass: 'text-[#F37321]',
   },
   {
     title: '소진 성공률',
-    value: '76.4',
+    value: (stats.value.useSuccessRate || 0).toFixed(1),
     unit: '%',
     sub: '유통기한 경고 후 소진 성공 비율',
+    valueClass: 'text-blue-600'
   },
-]
+])
 
-const wasteMonthlyData = {
-  labels: ['11월', '12월', '1월', '2월', '3월', '4월'],
-  data: [198, 185, 173, 168, 160, 142],
-}
+const wasteMonthlyData = computed(() => ({
+  labels: stats.value.monthlyWasteTrend?.map(item => {
+    const [year, month] = item.month.split('-')
+    return `${parseInt(month)}월`
+  }) || [],
+  data: stats.value.monthlyWasteTrend?.map(item => item.quantity) || [],
+}))
 
-const wasteCategoryData = {
-  labels: ['한우·정육', '수산물', '채소·신선', '양념·소스', '유제품'],
-  data: [52, 34, 28, 20, 16],
-}
+const wasteCategoryData = computed(() => ({
+  labels: stats.value.categoryWasteRatio?.map(item => item.categoryName) || [],
+  data: stats.value.categoryWasteRatio?.map(item => item.quantity) || [],
+}))
 
-const expiryRows = [
-  { store: '한우 오마카세',   warned: 12, success: 10, fail: 2, rate: 83 },
-  { store: '이탈리안 키친',   warned: 9,  success: 7,  fail: 2, rate: 78 },
-  { store: '일식 스시바',     warned: 7,  success: 6,  fail: 1, rate: 86 },
-  { store: '차이나 가든',     warned: 11, success: 8,  fail: 3, rate: 73 },
-  { store: '프렌치 비스트로', warned: 6,  success: 3,  fail: 3, rate: 50 },
-]
+const expiryRows = computed(() => stats.value.storeWasteStatus?.map(item => ({
+  store: item.storeName,
+  warned: item.warnedCount,
+  success: item.successCount,
+  fail: item.failCount,
+  rate: Math.round(item.successRate)
+})) || [])
 
 // ── 재고 효율 ────────────────────────────────────────────
 
-const inventoryCards = [
+const inventoryCards = computed(() => [
   {
     title: '평균 재고 회전율',
-    value: '4.2',
+    value: (stats.value.avgTurnover || 0).toFixed(1),
     unit: '회/월',
     sub: '전체 매장 평균',
   },
   {
     title: '적정 재고 유지율',
-    value: '78.5',
+    value: (stats.value.optimalStockRate || 0).toFixed(1),
     unit: '%',
     sub: '기준 재고 범위 내 유지 비율',
   },
-  {
-    title: '과잉 재고 발생',
-    value: '37',
-    unit: '건',
-    sub: '이번달 전체 입점 매장 합계',
-    valueClass: 'text-amber-500',
-  },
-  {
-    title: '자동발주 정확도',
-    value: '88.3',
-    unit: '%',
-    sub: '자동발주 수량 적중률 평균',
-  },
-]
+])
 
-const turnoverData = {
-  labels: ['한우 오마카세', '이탈리안 키친', '일식 스시바', '차이나 가든', '프렌치 비스트로'],
-  data: [5.1, 4.8, 4.3, 3.9, 4.6],
-}
+const turnoverData = computed(() => ({
+  labels: stats.value.storeTurnoverTrend?.map(item => item.storeName) || [],
+  data: stats.value.storeTurnoverTrend?.map(item => item.turnover) || [],
+}))
 
-const overStockMonthlyData = {
-  labels: ['11월', '12월', '1월', '2월', '3월', '4월'],
-  datasets: [
-    { label: '한우 오마카세', data: [8, 7, 6, 5, 5, 4] },
-    { label: '일식 스시바',   data: [5, 6, 4, 5, 4, 3] },
-    { label: '차이나 가든',   data: [6, 5, 7, 6, 5, 6] },
-  ],
-}
+const overStockMonthlyData = computed(() => ({
+  labels: stats.value.monthlyWasteTrend?.map(item => {
+    const [year, month] = item.month.split('-')
+    return `${parseInt(month)}월`
+  }) || [],
+  datasets: stats.value.storeOverstockTrend?.map(item => ({
+    label: item.label,
+    data: item.data
+  })) || []
+}))
 
-const inventoryRows = [
-  { store: '한우 오마카세',   stockRate: 85, turnover: 5.1, overStock: 4, autoOrderAcc: 92 },
-  { store: '이탈리안 키친',   stockRate: 80, turnover: 4.8, overStock: 3, autoOrderAcc: 89 },
-  { store: '일식 스시바',     stockRate: 78, turnover: 4.3, overStock: 5, autoOrderAcc: 88 },
-  { store: '차이나 가든',     stockRate: 65, turnover: 3.9, overStock: 6, autoOrderAcc: 82 },
-  { store: '프렌치 비스트로', stockRate: 82, turnover: 4.6, overStock: 3, autoOrderAcc: 91 },
-]
+const inventoryRows = computed(() => stats.value.storeTurnoverTrend?.map((item, index) => ({
+  store: item.storeName,
+  stockRate: item.optimalStockRate || 0,
+  turnover: item.turnover
+})) || [])
 
 // ── 차트 ─────────────────────────────────────────────────
 
 const wasteMonthlyCanvas  = ref(null)
 const wasteCategoryCanvas = ref(null)
 const turnoverCanvas      = ref(null)
-const overStockCanvas     = ref(null)
 
-let wasteMonthlyChart, wasteCategoryChart, turnoverChart, overStockChart
+let wasteMonthlyChart, wasteCategoryChart, turnoverChart
 
 function destroyCharts() {
   wasteMonthlyChart?.destroy()
   wasteCategoryChart?.destroy()
   turnoverChart?.destroy()
-  overStockChart?.destroy()
-  wasteMonthlyChart = wasteCategoryChart = turnoverChart = overStockChart = undefined
+  wasteMonthlyChart = wasteCategoryChart = turnoverChart = undefined
 }
 
 const colors = ['#f97316', '#60a5fa', '#a78bfa', '#4ade80', '#fbbf24', '#94a3b8', '#fb7185', '#2dd4bf']
@@ -136,10 +197,10 @@ function renderWasteCharts() {
     wasteMonthlyChart = new Chart(wasteMonthlyCanvas.value, {
       type: 'line',
       data: {
-        labels: wasteMonthlyData.labels,
+        labels: wasteMonthlyData.value.labels,
         datasets: [{
-          label: '폐기량 (kg)',
-          data: wasteMonthlyData.data,
+          label: '폐기량 (개)',
+          data: wasteMonthlyData.value.data,
           borderColor: '#f97316',
           backgroundColor: 'rgba(249,115,22,0.1)',
           fill: true,
@@ -163,10 +224,10 @@ function renderWasteCharts() {
     wasteCategoryChart = new Chart(wasteCategoryCanvas.value, {
       type: 'doughnut',
       data: {
-        labels: wasteCategoryData.labels,
+        labels: wasteCategoryData.value.labels,
         datasets: [{
-          data: wasteCategoryData.data,
-          backgroundColor: wasteCategoryData.labels.map((_, i) => colors[i % colors.length]),
+          data: wasteCategoryData.value.data,
+          backgroundColor: wasteCategoryData.value.labels.map((_, i) => colors[i % colors.length]),
           borderWidth: 2,
           borderColor: '#fff',
         }],
@@ -181,7 +242,7 @@ function renderWasteCharts() {
               label: (ctx) => {
                 const total = ctx.dataset.data.reduce((a, b) => a + b, 0)
                 const pct = total ? ((ctx.parsed / total) * 100).toFixed(1) : '0'
-                return ` ${ctx.label}: ${ctx.parsed}kg (${pct}%)`
+                return ` ${ctx.label}: ${ctx.parsed}개 (${pct}%)`
               },
             },
           },
@@ -193,17 +254,16 @@ function renderWasteCharts() {
 
 function renderInventoryCharts() {
   turnoverChart?.destroy()
-  overStockChart?.destroy()
 
   if (turnoverCanvas.value) {
     turnoverChart = new Chart(turnoverCanvas.value, {
       type: 'bar',
       data: {
-        labels: turnoverData.labels,
+        labels: turnoverData.value.labels,
         datasets: [{
           label: '재고 회전율 (회/월)',
-          data: turnoverData.data,
-          backgroundColor: turnoverData.data.map(v => v >= 4.5 ? '#4ade80' : v >= 4.0 ? '#f97316' : '#fb7185'),
+          data: turnoverData.value.data,
+          backgroundColor: turnoverData.value.data.map(v => v >= 4.5 ? '#4ade80' : v >= 4.0 ? '#f97316' : '#fb7185'),
           borderRadius: 6,
         }],
       },
@@ -218,72 +278,60 @@ function renderInventoryCharts() {
       },
     })
   }
-
-  if (overStockCanvas.value) {
-    const dsColors = ['#f97316', '#60a5fa', '#a78bfa']
-    overStockChart = new Chart(overStockCanvas.value, {
-      type: 'line',
-      data: {
-        labels: overStockMonthlyData.labels,
-        datasets: overStockMonthlyData.datasets.map((ds, i) => ({
-          label: ds.label,
-          data: ds.data,
-          borderColor: dsColors[i % dsColors.length],
-          backgroundColor: 'transparent',
-          tension: 0.35,
-          pointRadius: 4,
-        })),
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { position: 'top' } },
-        scales: {
-          y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#f3f4f6' } },
-          x: { grid: { display: false } },
-        },
-      },
-    })
-  }
 }
 
-watch(activeTab, (tab) => {
-  nextTick(() => {
-    destroyCharts()
-    if (tab === 'waste') renderWasteCharts()
-    else renderInventoryCharts()
-  })
-})
+function renderAllCharts() {
+  renderWasteCharts()
+  renderInventoryCharts()
+}
 
-onMounted(() => nextTick(renderWasteCharts))
+watch(stats, () => {
+  nextTick(renderAllCharts)
+}, { deep: true })
+
+onMounted(() => {
+  fetchStats()
+  nextTick(renderAllCharts)
+})
 onBeforeUnmount(() => destroyCharts())
 </script>
 
 <template>
-  <div class="flex-1 overflow-auto p-5 space-y-4">
+  <div class="flex-1 overflow-auto p-5 space-y-8 bg-gray-50/30">
     <!-- Header -->
-    <div>
-      <h1 class="text-[22px] font-bold text-gray-900 tracking-tight">ESG 대시보드</h1>
+    <div class="flex justify-between items-center">
+      <div>
+        <h1 class="text-[22px] font-bold text-gray-900 tracking-tight">ESG 대시보드</h1>
+        <p class="text-xs text-gray-500 mt-1">친환경 경영을 위한 폐기량 관리 및 재고 효율 지표를 모니터링합니다.</p>
+      </div>
+      <div class="flex gap-2">
+        <button 
+          @click="fetchStats"
+          :disabled="loading"
+          class="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50 shadow-sm"
+        >
+          <RefreshCw class="w-3.5 h-3.5" :class="{ 'animate-spin': loading }" />
+          새로고침
+        </button>
+        <button 
+          @click="handleTriggerWaste"
+          :disabled="triggerLoading"
+          class="flex items-center gap-2 px-3 py-1.5 bg-[#F37321] text-white rounded-lg text-xs font-semibold hover:bg-[#e66a1a] transition-all shadow-sm disabled:opacity-50"
+        >
+          <Clock class="w-3.5 h-3.5" v-if="!triggerLoading" />
+          <RefreshCw class="w-3.5 h-3.5 animate-spin" v-else />
+          유통기한 경과 처리
+        </button>
+      </div>
     </div>
 
-    <!-- 탭 -->
-    <div class="flex gap-1 border-b border-gray-200">
-      <button
-        v-for="tab in tabs"
-        :key="tab.value"
-        type="button"
-        @click="activeTab = tab.value"
-        class="px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px cursor-pointer"
-        :class="activeTab === tab.value
-          ? 'border-[#F37321] text-[#F37321]'
-          : 'border-transparent text-gray-500 hover:text-gray-700'"
-      >
-        {{ tab.label }}
-      </button>
-    </div>
+    <!-- 섹션 1: 폐기 최소화 -->
+    <section class="space-y-4">
+      <div class="flex items-center gap-2 pb-1 border-b border-gray-200">
+        <Trash2 class="w-5 h-5 text-[#F37321]" />
+        <h2 class="text-lg font-bold text-gray-900">폐기 최소화</h2>
+      </div>
 
-    <!-- 탭 1: 폐기 최소화 -->
-    <template v-if="activeTab === 'waste'">
       <!-- 요약 카드 -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div
@@ -304,18 +352,16 @@ onBeforeUnmount(() => destroyCharts())
 
       <!-- 차트 영역 -->
       <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
-        <!-- 월별 폐기량 추이 -->
         <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col" style="min-height: 300px">
           <div class="mb-4 shrink-0">
             <h2 class="font-bold text-gray-900">월별 폐기량 추이</h2>
-            <p class="text-xs text-gray-400 mt-0.5">최근 6개월 폐기 수량 (kg)</p>
+            <p class="text-xs text-gray-400 mt-0.5">최근 6개월 폐기 수량 (개)</p>
           </div>
           <div class="flex-1 min-h-0 relative" style="height: 220px">
             <canvas ref="wasteMonthlyCanvas" class="block w-full h-full"></canvas>
           </div>
         </div>
 
-        <!-- 품목별 폐기 비중 -->
         <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col" style="min-height: 300px">
           <div class="mb-4 shrink-0">
             <h2 class="font-bold text-gray-900">품목별 폐기 비중</h2>
@@ -345,11 +391,7 @@ onBeforeUnmount(() => destroyCharts())
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-50">
-              <tr
-                v-for="row in expiryRows"
-                :key="row.store"
-                class="hover:bg-gray-50/50 transition-colors"
-              >
+              <tr v-for="row in expiryRows" :key="row.store" class="hover:bg-gray-50/50 transition-colors">
                 <td class="px-4 py-3 font-medium text-gray-800">{{ row.store }}</td>
                 <td class="px-4 py-3 text-center text-gray-600">{{ row.warned }}</td>
                 <td class="px-4 py-3 text-center text-green-600 font-semibold">{{ row.success }}</td>
@@ -367,12 +409,17 @@ onBeforeUnmount(() => destroyCharts())
           </table>
         </div>
       </div>
-    </template>
+    </section>
 
-    <!-- 탭 2: 재고 효율 -->
-    <template v-if="activeTab === 'inventory'">
+    <!-- 섹션 2: 재고 효율 -->
+    <section class="space-y-4">
+      <div class="flex items-center gap-2 pb-1 border-b border-gray-200">
+        <RefreshCw class="w-5 h-5 text-blue-600" />
+        <h2 class="text-lg font-bold text-gray-900">재고 효율</h2>
+      </div>
+
       <!-- 요약 카드 -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
         <div
           v-for="card in inventoryCards"
           :key="card.title"
@@ -390,8 +437,7 @@ onBeforeUnmount(() => destroyCharts())
       </div>
 
       <!-- 차트 영역 -->
-      <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
-        <!-- 매장별 재고 회전율 -->
+      <div class="grid grid-cols-1 gap-4">
         <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col" style="min-height: 300px">
           <div class="mb-4 shrink-0">
             <h2 class="font-bold text-gray-900">매장별 재고 회전율</h2>
@@ -401,24 +447,13 @@ onBeforeUnmount(() => destroyCharts())
             <canvas ref="turnoverCanvas" class="block w-full h-full"></canvas>
           </div>
         </div>
-
-        <!-- 과잉 재고 발생 횟수 -->
-        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col" style="min-height: 300px">
-          <div class="mb-4 shrink-0">
-            <h2 class="font-bold text-gray-900">과잉 재고 발생 횟수</h2>
-            <p class="text-xs text-gray-400 mt-0.5">최근 6개월 매장별 과잉 재고 발생 건수</p>
-          </div>
-          <div class="flex-1 min-h-0 relative" style="height: 220px">
-            <canvas ref="overStockCanvas" class="block w-full h-full"></canvas>
-          </div>
-        </div>
       </div>
 
       <!-- 매장별 적정 재고 유지 현황 -->
       <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
         <div class="mb-4">
           <h2 class="font-bold text-gray-900">매장별 적정 재고 유지 현황</h2>
-          <p class="text-xs text-gray-400 mt-0.5">이번달 기준 적정 재고 유지율 및 자동발주 정확도</p>
+          <p class="text-xs text-gray-400 mt-0.5">이번달 기준 적정 재고 유지율 및 재고 회전율</p>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
@@ -427,16 +462,10 @@ onBeforeUnmount(() => destroyCharts())
                 <th class="text-left px-4 py-3 font-semibold text-gray-600">매장명</th>
                 <th class="text-center px-4 py-3 font-semibold text-gray-600">적정 재고 유지율</th>
                 <th class="text-center px-4 py-3 font-semibold text-gray-600">재고 회전율</th>
-                <th class="text-center px-4 py-3 font-semibold text-gray-600">과잉 재고 건수</th>
-                <th class="text-center px-4 py-3 font-semibold text-gray-600">자동발주 정확도</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-50">
-              <tr
-                v-for="row in inventoryRows"
-                :key="row.store"
-                class="hover:bg-gray-50/50 transition-colors"
-              >
+              <tr v-for="row in inventoryRows" :key="row.store" class="hover:bg-gray-50/50 transition-colors">
                 <td class="px-4 py-3 font-medium text-gray-800">{{ row.store }}</td>
                 <td class="px-4 py-3 text-center">
                   <span
@@ -447,20 +476,11 @@ onBeforeUnmount(() => destroyCharts())
                   </span>
                 </td>
                 <td class="px-4 py-3 text-center text-gray-600">{{ row.turnover }}회</td>
-                <td class="px-4 py-3 text-center text-gray-600">{{ row.overStock }}건</td>
-                <td class="px-4 py-3 text-center">
-                  <span
-                    class="inline-block px-2 py-0.5 rounded-full text-xs font-bold"
-                    :class="row.autoOrderAcc >= 90 ? 'bg-green-100 text-green-700' : row.autoOrderAcc >= 75 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-600'"
-                  >
-                    {{ row.autoOrderAcc }}%
-                  </span>
-                </td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
-    </template>
+    </section>
   </div>
 </template>

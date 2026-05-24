@@ -6,12 +6,11 @@ import lombok.Getter;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.Builder;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class WasteLogDto {
 
@@ -37,9 +36,7 @@ public class WasteLogDto {
                     .storeIdx(entity.getStore().getIdx())
                     .build();
         }
-
     }
-
 
     @Getter
     @NoArgsConstructor
@@ -100,7 +97,57 @@ public class WasteLogDto {
     @Getter
     public static class StatsRes {
         private Long wasteSum;
+        private Long lastMonthWasteSum;
         private Float wasteGradient;
         private Float useSuccessRate;
+        private Long wasteSavingAmount;
+        private Float avgTurnover;
+        private Float optimalStockRate;
+        private Integer overstockCount;
+        private Float autoOrderAccuracy;
+        private List<MonthlyTrend> monthlyWasteTrend;
+        private List<CategoryRatio> categoryWasteRatio;
+        private List<StoreStatus> storeWasteStatus;
+        private List<StoreTurnover> storeTurnoverTrend;
+        private List<OverstockTrend> storeOverstockTrend;
+    }
+
+    @Builder
+    @Getter
+    public static class MonthlyTrend {
+        private String month;
+        private Long quantity;
+    }
+
+    @Builder
+    @Getter
+    public static class CategoryRatio {
+        private String categoryName;
+        private Long quantity;
+    }
+
+    @Builder
+    @Getter
+    public static class StoreStatus {
+        private String storeName;
+        private Long warnedCount;
+        private Long successCount;
+        private Long failCount;
+        private Double successRate;
+    }
+
+    @Builder
+    @Getter
+    public static class StoreTurnover {
+        private String storeName;
+        private Float turnover;
+        private Float optimalStockRate;
+    }
+
+    @Builder
+    @Getter
+    public static class OverstockTrend {
+        private String label;
+        private List<Long> data;
     }
 }

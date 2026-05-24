@@ -42,6 +42,22 @@ public class LongTermStatisticsDto {
         private List<MonthlySalesItem> monthlyData;
     }
 
+    // ─── 분기별 ─────────────────────────────────────
+
+    @Getter
+    @Builder
+    public static class QuarterlySalesItem {
+        private int quarter;   // 1~4
+        private long total;
+    }
+
+    @Getter
+    @Builder
+    public static class QuarterlySalesRes {
+        private int year;
+        private List<QuarterlySalesItem> quarterlyData;
+    }
+
     // ─── 매장별 ─────────────────────────────────────
 
     @Getter

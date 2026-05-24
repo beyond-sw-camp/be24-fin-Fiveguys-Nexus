@@ -48,6 +48,7 @@ public class BillingBatch {
     private final BillingRepository billingRepository;
     private final OrdersService ordersService;
     private final AfterBillingRepository afterBillingRepository;
+    private final org.example.spring.billingbatch.repository.FailedPaymentRepository failedPaymentRepository;
     private final EntityManagerFactory entityManagerFactory;
 
     @Value("${billing.secret-key}")
@@ -309,6 +310,19 @@ public class BillingBatch {
                         afterBilling.setIsSuccess(false);
                         afterBilling.setFailReason("API 호출 실패: " + e.getMessage());
                         afterBillingRepository.save(afterBilling);
+
+                        // 1회 결제 실패 테이블에 저장 (중복 체크)
+                        String month = YearMonth.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
+                        if (!failedPaymentRepository.existsByStoreIdxAndPayedMonth(req.storeIdx(), month)) {
+                            org.example.spring.billingbatch.model.FailedPayment failedPayment = org.example.spring.billingbatch.model.FailedPayment.builder()
+                                    .storeIdx(req.storeIdx())
+                                    .totalPayAmount(req.totalPayAmount())
+                                    .payedMonth(month)
+                                    .failReason(e.getMessage())
+                                    .createdAt(LocalDateTime.now())
+                                    .build();
+                            failedPaymentRepository.save(failedPayment);
+                        }
                         
                         // Retry 전략 시 중복 기록 방지를 위해 리스트에는 최종 실패(Skip 시점)나 성공 시점에만 담는 것이 좋으나,
                         // 여기서는 일단 담고 나중에 중복 제거 처리하거나 그대로 둠

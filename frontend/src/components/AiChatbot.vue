@@ -1,6 +1,6 @@
 <script setup>
 import { ref, nextTick } from 'vue'
-import { Bot, X, Send } from 'lucide-vue-next'
+import { Bot, X, Send, RefreshCw } from 'lucide-vue-next'
 import { postReportGenerate } from '@/api/report/index.js'
 import { useRouter } from 'vue-router'
 
@@ -36,6 +36,19 @@ const messages = ref([
 
 let nextId = 2
 
+// 대화 세션 식별자: 컴포넌트 생성 시 1회 발급 → 챗봇을 열고 닫아도 유지됨
+const sessionId = ref(crypto.randomUUID())
+
+// 최초 인사 메시지 스냅샷 (새 대화 시작 시 복원용)
+const initialMessages = JSON.parse(JSON.stringify(messages.value))
+
+// "새 대화" 시작: 세션ID 재발급 + 메시지/상태 초기화 (이전 대화 기억 끊김)
+function startNewChat() {
+  sessionId.value = crypto.randomUUID()
+  messages.value = JSON.parse(JSON.stringify(initialMessages))
+  nextId = 2
+}
+
 // 스크롤 하단 이동 함수
 async function scrollToBottom() {
   await nextTick()
@@ -57,7 +70,7 @@ async function sendMessage() {
   await scrollToBottom()
 
   try {
-    const chatRequest  = { message: text }
+    const chatRequest  = { message: text, sessionId: sessionId.value }
     const res = await postReportGenerate(chatRequest)
 
     messages.value.push({
@@ -122,9 +135,14 @@ async function sendMessage() {
             <Bot class="w-5 h-5 text-white" />
             <span class="text-sm font-bold text-white">Nexus AI 어시스턴트</span>
           </div>
-          <button @click="isOpen = false" class="text-white/80 hover:text-white transition-colors">
-            <X class="w-4 h-4" />
-          </button>
+          <div class="flex items-center gap-2">
+            <button @click="startNewChat" title="새 대화" class="text-white/80 hover:text-white transition-colors">
+              <RefreshCw class="w-4 h-4" />
+            </button>
+            <button @click="isOpen = false" class="text-white/80 hover:text-white transition-colors">
+              <X class="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         <!-- Messages -->

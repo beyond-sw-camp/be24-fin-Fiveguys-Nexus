@@ -89,16 +89,7 @@ management:
     mail:
       enabled: false
 
-eureka:
-  instance:
-    lease-renewal-interval-in-seconds: 10     # 주소를 갱신하는 시간
-    lease-expiration-duration-in-seconds: 30  # 가져온 주소의 만료 시간
-    prefer-ip-address: true                   # 내 주소를 알려줄 때 Hostname 대신 IP 주소 알려주기
-  client:
-    service-url:
-      defaultZone: ${EUREKA_SERVICE_URL}
-    register-with-eureka: true # 현재 자신의 IP주소를 유레카에 등록
-    fetch-registry: true       # 유레카에 등록된 주소들을 받아오는 것
+
 
 
 logging:

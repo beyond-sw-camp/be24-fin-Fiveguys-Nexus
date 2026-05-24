@@ -69,6 +69,14 @@ public class StoreController {
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 
+    // 월별 입점/폐점 추이 (연도 선택) - 본사 가맹점 관리 화면 차트용
+    @GetMapping("/stats/monthly")
+    public ResponseEntity<BaseResponse<StoreDto.MonthlyTrendRes>> monthlyTrend(
+            @RequestParam(required = false) Integer year){
+        StoreDto.MonthlyTrendRes result = storeService.getMonthlyTrend(year);
+        return ResponseEntity.ok(BaseResponse.success(result));
+    }
+
 
     // 가맹점 목록 상세 조회
     @GetMapping("/detail/list/{storeIdx}")

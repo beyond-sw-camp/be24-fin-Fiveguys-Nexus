@@ -36,6 +36,15 @@ const messages = ref([
 
 let nextId = 2
 
+// 추천 질문(quick replies): 현재 AI가 확실히 답할 수 있는 데이터(매출/메뉴/매장) 위주로 구성
+// 사용자가 "무엇을 물어볼 수 있는지" 바로 알도록 챗봇 시작 화면에 노출
+const suggestions = [
+  '이번 달 매출 알려줘',
+  '지난달 인기 메뉴 TOP 5',
+  '이번 달 매출 TOP 매장',
+  '이번 달 매출 보고서 만들어줘',
+]
+
 // 대화 세션 식별자: 컴포넌트 생성 시 1회 발급 → 챗봇을 열고 닫아도 유지됨
 const sessionId = ref(crypto.randomUUID())
 
@@ -57,9 +66,9 @@ async function scrollToBottom() {
   }
 }
 
-// 메세지 보내기
-async function sendMessage() {
-  const text = input.value.trim()
+// 메세지 보내기 (추천 질문 클릭 시 preset 문자열을 직접 전달; 버튼/엔터 이벤트 객체는 무시)
+async function sendMessage(preset) {
+  const text = (typeof preset === 'string' ? preset : input.value).trim()
   if (!text || isLoading.value) return
 
   messages.value.push({ id: nextId++, role: 'user', text })
@@ -167,6 +176,18 @@ async function sendMessage() {
             <div v-else class="max-w-[240px] px-3 py-2 rounded-2xl rounded-br-sm bg-[#F37321] text-sm text-white leading-relaxed">
               {{ msg.text }}
             </div>
+          </div>
+
+          <!-- 추천 질문(quick replies): 대화 시작 화면(인사말만 있을 때)에서만 노출 -->
+          <div v-if="messages.length <= 1 && !isLoading" class="flex flex-wrap gap-2 pl-9">
+            <button
+              v-for="s in suggestions"
+              :key="s"
+              @click="sendMessage(s)"
+              class="text-xs px-3 py-1.5 rounded-full border border-[#F37321]/40 text-[#F37321] bg-orange-50 hover:bg-orange-100 transition-colors cursor-pointer"
+            >
+              {{ s }}
+            </button>
           </div>
 
           <!-- Loading indicator -->

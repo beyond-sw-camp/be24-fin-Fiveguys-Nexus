@@ -98,8 +98,11 @@ public class ReportService {
         // AI 답변 받기 (대화 컨텍스트 유지)
         String aiResponse = handleChatbotRequest(userMessage, conversationId);
 
-        if (aiResponse.contains("[CHAT]")) {
-            return aiResponse.replace("[CHAT]", "").trim();
+        // A안: 보고서는 '명시적 요청(reportIntent)' + 'AI가 [REPORT] 판단' 둘 다일 때만 생성.
+        // 키워드가 없거나 AI가 [CHAT]이면 PDF를 만들지 않고 채팅 답변으로 반환 → 의도치 않은 보고서 생성 차단
+        boolean wantsReport = reportIntent && !aiResponse.contains("[CHAT]");
+        if (!wantsReport) {
+            return aiResponse.replaceAll("\\[CHAT\\]|\\[REPORT\\]|\\[TITLE:.*?\\]", "").trim();
         }
 
         // 제목 추출 로직

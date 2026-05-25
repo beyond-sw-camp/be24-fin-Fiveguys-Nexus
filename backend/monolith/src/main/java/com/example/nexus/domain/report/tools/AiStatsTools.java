@@ -1,4 +1,4 @@
-package com.example.nexus.domain.report;
+package com.example.nexus.domain.report.tools;
 
 import com.example.nexus.domain.pos.PosOrdersItemRepository;
 import com.example.nexus.domain.pos.PosPayRepository;

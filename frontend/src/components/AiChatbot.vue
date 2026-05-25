@@ -45,15 +45,25 @@ const suggestions = [
   '이번 달 매출 보고서 만들어줘',
 ]
 
+// 세션ID 생성: crypto.randomUUID는 보안 컨텍스트(https/localhost)에서만 동작 → 평문 http 대비 fallback
+function makeSessionId() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID()
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0
+    const v = c === 'x' ? r : (r & 0x3) | 0x8
+    return v.toString(16)
+  })
+}
+
 // 대화 세션 식별자: 컴포넌트 생성 시 1회 발급 → 챗봇을 열고 닫아도 유지됨
-const sessionId = ref(crypto.randomUUID())
+const sessionId = ref(makeSessionId())
 
 // 최초 인사 메시지 스냅샷 (새 대화 시작 시 복원용)
 const initialMessages = JSON.parse(JSON.stringify(messages.value))
 
 // "새 대화" 시작: 세션ID 재발급 + 메시지/상태 초기화 (이전 대화 기억 끊김)
 function startNewChat() {
-  sessionId.value = crypto.randomUUID()
+  sessionId.value = makeSessionId()
   messages.value = JSON.parse(JSON.stringify(initialMessages))
   nextId = 2
 }

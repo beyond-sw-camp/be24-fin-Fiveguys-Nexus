@@ -1,4 +1,4 @@
-package com.example.nexus.domain.report;
+package com.example.nexus.domain.report.tools;
 
 import com.example.nexus.domain.head.HeadIncomeRepository;
 import org.springframework.ai.tool.annotation.Tool;

@@ -1,4 +1,4 @@
-package com.example.nexus.domain.report;
+package com.example.nexus.domain.report.tools;
 
 import com.example.nexus.common.enums.NewsCollectTarget;
 import com.example.nexus.domain.news.NewsRepository;

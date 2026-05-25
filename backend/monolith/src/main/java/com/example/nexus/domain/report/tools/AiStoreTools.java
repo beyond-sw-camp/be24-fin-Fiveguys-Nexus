@@ -1,4 +1,4 @@
-package com.example.nexus.domain.report;
+package com.example.nexus.domain.report.tools;
 
 import com.example.nexus.domain.store.StoreRepository;
 import com.example.nexus.domain.store.StoreService;

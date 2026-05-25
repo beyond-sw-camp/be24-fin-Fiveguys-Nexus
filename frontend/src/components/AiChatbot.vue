@@ -1,6 +1,6 @@
 <script setup>
 import { ref, nextTick } from 'vue'
-import { Bot, X, Send } from 'lucide-vue-next'
+import { Bot, X, Send, RefreshCw } from 'lucide-vue-next'
 import { postReportGenerate } from '@/api/report/index.js'
 import { useRouter } from 'vue-router'
 
@@ -36,6 +36,38 @@ const messages = ref([
 
 let nextId = 2
 
+// 추천 질문(quick replies): 현재 AI가 확실히 답할 수 있는 데이터(매출/메뉴/매장) 위주로 구성
+// 사용자가 "무엇을 물어볼 수 있는지" 바로 알도록 챗봇 시작 화면에 노출
+const suggestions = [
+  '이번 달 매출 알려줘',
+  '지난달 인기 메뉴 TOP 5',
+  '이번 달 매출 TOP 매장',
+  '이번 달 매출 보고서 만들어줘',
+]
+
+// 세션ID 생성: crypto.randomUUID는 보안 컨텍스트(https/localhost)에서만 동작 → 평문 http 대비 fallback
+function makeSessionId() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID()
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0
+    const v = c === 'x' ? r : (r & 0x3) | 0x8
+    return v.toString(16)
+  })
+}
+
+// 대화 세션 식별자: 컴포넌트 생성 시 1회 발급 → 챗봇을 열고 닫아도 유지됨
+const sessionId = ref(makeSessionId())
+
+// 최초 인사 메시지 스냅샷 (새 대화 시작 시 복원용)
+const initialMessages = JSON.parse(JSON.stringify(messages.value))
+
+// "새 대화" 시작: 세션ID 재발급 + 메시지/상태 초기화 (이전 대화 기억 끊김)
+function startNewChat() {
+  sessionId.value = makeSessionId()
+  messages.value = JSON.parse(JSON.stringify(initialMessages))
+  nextId = 2
+}
+
 // 스크롤 하단 이동 함수
 async function scrollToBottom() {
   await nextTick()
@@ -44,9 +76,9 @@ async function scrollToBottom() {
   }
 }
 
-// 메세지 보내기
-async function sendMessage() {
-  const text = input.value.trim()
+// 메세지 보내기 (추천 질문 클릭 시 preset 문자열을 직접 전달; 버튼/엔터 이벤트 객체는 무시)
+async function sendMessage(preset) {
+  const text = (typeof preset === 'string' ? preset : input.value).trim()
   if (!text || isLoading.value) return
 
   messages.value.push({ id: nextId++, role: 'user', text })
@@ -57,7 +89,7 @@ async function sendMessage() {
   await scrollToBottom()
 
   try {
-    const chatRequest  = { message: text }
+    const chatRequest  = { message: text, sessionId: sessionId.value }
     const res = await postReportGenerate(chatRequest)
 
     messages.value.push({
@@ -122,9 +154,14 @@ async function sendMessage() {
             <Bot class="w-5 h-5 text-white" />
             <span class="text-sm font-bold text-white">Nexus AI 어시스턴트</span>
           </div>
-          <button @click="isOpen = false" class="text-white/80 hover:text-white transition-colors">
-            <X class="w-4 h-4" />
-          </button>
+          <div class="flex items-center gap-2">
+            <button @click="startNewChat" title="새 대화" class="text-white/80 hover:text-white transition-colors">
+              <RefreshCw class="w-4 h-4" />
+            </button>
+            <button @click="isOpen = false" class="text-white/80 hover:text-white transition-colors">
+              <X class="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         <!-- Messages -->
@@ -149,6 +186,18 @@ async function sendMessage() {
             <div v-else class="max-w-[240px] px-3 py-2 rounded-2xl rounded-br-sm bg-[#F37321] text-sm text-white leading-relaxed">
               {{ msg.text }}
             </div>
+          </div>
+
+          <!-- 추천 질문(quick replies): 대화 시작 화면(인사말만 있을 때)에서만 노출 -->
+          <div v-if="messages.length <= 1 && !isLoading" class="flex flex-wrap gap-2 pl-9">
+            <button
+              v-for="s in suggestions"
+              :key="s"
+              @click="sendMessage(s)"
+              class="text-xs px-3 py-1.5 rounded-full border border-[#F37321]/40 text-[#F37321] bg-orange-50 hover:bg-orange-100 transition-colors cursor-pointer"
+            >
+              {{ s }}
+            </button>
           </div>
 
           <!-- Loading indicator -->

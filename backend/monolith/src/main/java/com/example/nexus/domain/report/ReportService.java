@@ -5,6 +5,12 @@ import com.example.nexus.domain.pos.PosOrdersItemRepository;
 import com.example.nexus.domain.pos.PosPayRepository;
 import com.example.nexus.domain.report.model.Report;
 import com.example.nexus.domain.report.model.ReportDto;
+import com.example.nexus.domain.report.tools.AiFinanceTools;
+import com.example.nexus.domain.report.tools.AiNewsTools;
+import com.example.nexus.domain.report.tools.AiOpsTools;
+import com.example.nexus.domain.report.tools.AiOrderTools;
+import com.example.nexus.domain.report.tools.AiStatsTools;
+import com.example.nexus.domain.report.tools.AiStoreTools;
 import com.example.nexus.domain.user.UserRepository;
 import com.example.nexus.domain.user.model.User;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
@@ -12,6 +18,9 @@ import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor;
+import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -45,9 +54,18 @@ public class ReportService {
 
     private final ChatClient chatClient;
     private final S3Client s3Client;
+    private final AiStatsTools aiStatsTools;   // 매출/메뉴/매장 데이터 조회 도구
+    private final AiOrderTools aiOrderTools;   // 발주 데이터 조회 도구
+    private final AiOpsTools aiOpsTools;       // 재고/폐기/배송(공급망·운영) 데이터 조회 도구
+    private final AiFinanceTools aiFinanceTools; // 본사 청구/정산 데이터 조회 도구
+    private final AiStoreTools aiStoreTools;     // 가맹점 수/입폐점 추이 데이터 조회 도구
+    private final AiNewsTools aiNewsTools;       // 뉴스 요약 데이터 조회 도구
 
     @Value("classpath:aiReport/prompts/report-template.md")
-    private Resource reportTemplate;
+    private Resource reportTemplate;   // 보고서 요청용(보고서 양식 포함, 김)
+
+    @Value("classpath:aiReport/prompts/chat-template.md")
+    private Resource chatTemplate;     // 일반 채팅용(짧음, 토큰 절감)
 
     @Value("${spring.cloud.aws.s3.report-bucket}")
     private String reportBucket;
@@ -62,25 +80,53 @@ public class ReportService {
                          PosOrdersItemRepository posOrdersItemRepository,
                          UserRepository userRepository,
                          ChatClient.Builder chatClientBuilder,
+                         ChatMemory chatMemory,
+                         AiStatsTools aiStatsTools,
+                         AiOrderTools aiOrderTools,
+                         AiOpsTools aiOpsTools,
+                         AiFinanceTools aiFinanceTools,
+                         AiStoreTools aiStoreTools,
+                         AiNewsTools aiNewsTools,
                          S3Client s3Client) {
         this.reportRepository = reportRepository;
         this.posPayRepository = posPayRepository;
         this.posOrdersItemRepository = posOrdersItemRepository;
         this.userRepository = userRepository;
         this.s3Client = s3Client;
-        this.chatClient = chatClientBuilder.build();
+        this.aiStatsTools = aiStatsTools;
+        this.aiOrderTools = aiOrderTools;
+        this.aiOpsTools = aiOpsTools;
+        this.aiFinanceTools = aiFinanceTools;
+        this.aiStoreTools = aiStoreTools;
+        this.aiNewsTools = aiNewsTools;
+        // 대화 기억 어드바이저를 기본 등록 → 같은 conversationId의 이전 대화를 자동 재주입
+        this.chatClient = chatClientBuilder
+                .defaultAdvisors(new MessageChatMemoryAdvisor(chatMemory))
+                .build();
     }
 
     // 1. 메인 로직 (트랜잭션 분리 및 안전한 예외 처리)
-    public String createAndSaveReport(Long userIdx, String userMessage) {
+    public String createAndSaveReport(Long userIdx, String userMessage, String sessionId) {
         User loginUser = userRepository.findById(userIdx)
                 .orElseThrow(() -> new BaseException(NOT_FOUND_USER));
 
-        // AI 답변 받기
-        String aiResponse = handleChatbotRequest(userMessage);
+        // 세션ID가 있으면 그것을, 없으면 사용자별 기본 대화 ID를 기준으로 사용
+        String baseId = (sessionId != null && !sessionId.isBlank())
+                ? sessionId : "user-" + userIdx;
 
-        if (aiResponse.contains("[CHAT]")) {
-            return aiResponse.replace("[CHAT]", "").trim();
+        // 보고서 의도(키워드)면 ':report' 통으로 분리 → 거대 보고서가 채팅 메모리를 오염시키지 않게
+        String lower = userMessage.toLowerCase();
+        boolean reportIntent = userMessage.contains("보고서") || userMessage.contains("리포트") || lower.contains("report");
+        String conversationId = reportIntent ? baseId + ":report" : baseId;
+
+        // AI 답변 받기 (대화 컨텍스트 유지 + reportIntent로 프롬프트 분기)
+        String aiResponse = handleChatbotRequest(userMessage, conversationId, reportIntent);
+
+        // A안: 보고서는 '명시적 요청(reportIntent)' + 'AI가 [REPORT] 판단' 둘 다일 때만 생성.
+        // 키워드가 없거나 AI가 [CHAT]이면 PDF를 만들지 않고 채팅 답변으로 반환 → 의도치 않은 보고서 생성 차단
+        boolean wantsReport = reportIntent && !aiResponse.contains("[CHAT]");
+        if (!wantsReport) {
+            return aiResponse.replaceAll("\\[CHAT\\]|\\[REPORT\\]|\\[TITLE:.*?\\]", "").trim();
         }
 
         // 제목 추출 로직
@@ -147,31 +193,29 @@ public class ReportService {
         }
     }
 
-    // 3. AI에게 프롬프트 전송
-    public String handleChatbotRequest(String userMessage) {
-        ReportDto.ReportDataSummaryDto summary = getRecentSummary();
-
+    // 3. AI에게 프롬프트 전송 (대화 기억 + 데이터 조회 도구)
+    public String handleChatbotRequest(String userMessage, String conversationId, boolean reportIntent) {
         try {
-            String template = reportTemplate.getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
-            List<String> top5 = summary.topProducts();
+            // 보고서 요청이면 전체 양식 포함 프롬프트, 일반 질문이면 짧은 채팅 프롬프트(토큰 절감)
+            Resource tpl = reportIntent ? reportTemplate : chatTemplate;
+            // 상대 표현("이번 달/이전" 등) 해석을 위해 오늘 날짜 주입
+            String systemText = tpl.getContentAsString(java.nio.charset.StandardCharsets.UTF_8)
+                    .replace("{{today}}", java.time.LocalDate.now().toString());
 
-            String finalInstruction = template
-                    .replace("{{totalSales}}", String.format("%,d", summary.totalSales()))
-                    .replace("{{product1}}", top5.size() > 0 ? top5.get(0) : "데이터 없음")
-                    .replace("{{product2}}", top5.size() > 1 ? top5.get(1) : "데이터 없음")
-                    .replace("{{product3}}", top5.size() > 2 ? top5.get(2) : "데이터 없음")
-                    .replace("{{product4}}", top5.size() > 3 ? top5.get(3) : "데이터 없음")
-                    .replace("{{product5}}", top5.size() > 4 ? top5.get(4) : "데이터 없음");
-
-            String finalPrompt = finalInstruction + "\n\n사용자의 질문: " + userMessage;
-
+            // system: 규칙·오늘 날짜 / user: 이번 질문 / tools: AI가 필요 시 호출하는 데이터 조회 도구
+            // advisors: 같은 conversationId의 최근 10턴을 컨텍스트로 재주입
             return chatClient.prompt()
-                    .user(finalPrompt)
+                    .system(systemText)
+                    .user(userMessage)
+                    .tools(aiStatsTools, aiOrderTools, aiOpsTools, aiFinanceTools, aiStoreTools, aiNewsTools)
+                    .advisors(a -> a
+                            .param(AbstractChatMemoryAdvisor.CHAT_MEMORY_CONVERSATION_ID_KEY, conversationId)
+                            .param(AbstractChatMemoryAdvisor.CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
                     .call()
                     .content();
 
         } catch (java.io.IOException e) {
-            throw new RuntimeException("보고서 템플릿 파일을 읽는 중 오류가 발생했습니다.", e);
+            throw new RuntimeException("프롬프트 템플릿 파일을 읽는 중 오류가 발생했습니다.", e);
         }
     }
 

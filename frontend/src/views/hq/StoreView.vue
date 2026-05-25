@@ -179,8 +179,33 @@ async function uploadFileToS3() {
   }
 }
 
+// 이메일 유효성 검사
+const emailError = ref('');
+const validateEmail = () => {
+  if (!form.ownerEmail) {
+    emailError.value = '';
+    return true;
+  }
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const isValid = emailPattern.test(form.ownerEmail);
+  
+  if (!isValid) {
+    emailError.value = '올바른 이메일 형식으로 작성해주세요.';
+    // 사용자가 이해할 수 있도록 주석 추가: 이메일 형식이 틀렸을 때 하단 빨간 글씨와 함께 우측 상단 토스트 알림을 띄움
+    showToast('올바른 이메일 형식으로 작성해주세요.', 'error');
+  } else {
+    emailError.value = '';
+  }
+  return isValid;
+};
+
 // 등록 및 저장
 async function saveStore() {
+  if (!validateEmail()) {
+    showToast('올바른 이메일 형식으로 작성해주세요.', 'error');
+    return;
+  }
+
   try {
     let finalFilePath = form.filePath;
     if (selectedFile.value) {
@@ -350,6 +375,7 @@ const resetFilters = () => {
   searchQuery.value = ''
   filterStatus.value = '전체'
   storeListRes(0)
+  trendChart.value?.reload()
 }
 
 onMounted(() => {
@@ -574,8 +600,10 @@ onMounted(() => {
             </div>
             <div class="space-y-1.5">
               <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">이메일</label>
-              <input v-model="form.ownerEmail" type="email" placeholder="example@email.com"
-                     class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
+              <input v-model="form.ownerEmail" @blur="validateEmail" type="email" placeholder="example@email.com"
+                     class="w-full px-4 py-2 rounded-lg border text-sm outline-none transition-all"
+                     :class="emailError ? 'border-red-500 focus:ring-4 focus:ring-red-500/20' : 'border-gray-200 focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5'" />
+              <p v-if="emailError" class="text-xs text-red-500 mt-1">{{ emailError }}</p>
             </div>
           </div>
           <div class="space-y-3">

@@ -52,7 +52,10 @@ public class ReportService {
     private final AiOrderTools aiOrderTools;   // 발주 데이터 조회 도구
 
     @Value("classpath:aiReport/prompts/report-template.md")
-    private Resource reportTemplate;
+    private Resource reportTemplate;   // 보고서 요청용(보고서 양식 포함, 김)
+
+    @Value("classpath:aiReport/prompts/chat-template.md")
+    private Resource chatTemplate;     // 일반 채팅용(짧음, 토큰 절감)
 
     @Value("${spring.cloud.aws.s3.report-bucket}")
     private String reportBucket;
@@ -98,8 +101,8 @@ public class ReportService {
         boolean reportIntent = userMessage.contains("보고서") || userMessage.contains("리포트") || lower.contains("report");
         String conversationId = reportIntent ? baseId + ":report" : baseId;
 
-        // AI 답변 받기 (대화 컨텍스트 유지)
-        String aiResponse = handleChatbotRequest(userMessage, conversationId);
+        // AI 답변 받기 (대화 컨텍스트 유지 + reportIntent로 프롬프트 분기)
+        String aiResponse = handleChatbotRequest(userMessage, conversationId, reportIntent);
 
         // A안: 보고서는 '명시적 요청(reportIntent)' + 'AI가 [REPORT] 판단' 둘 다일 때만 생성.
         // 키워드가 없거나 AI가 [CHAT]이면 PDF를 만들지 않고 채팅 답변으로 반환 → 의도치 않은 보고서 생성 차단
@@ -173,11 +176,13 @@ public class ReportService {
     }
 
     // 3. AI에게 프롬프트 전송 (대화 기억 + 데이터 조회 도구)
-    public String handleChatbotRequest(String userMessage, String conversationId) {
+    public String handleChatbotRequest(String userMessage, String conversationId, boolean reportIntent) {
         try {
-            String template = reportTemplate.getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
-            // 상대 표현("이번 달/이전" 등) 해석을 위해 오늘 날짜만 주입 (고정 30일 집계 주입 제거)
-            String systemText = template.replace("{{today}}", java.time.LocalDate.now().toString());
+            // 보고서 요청이면 전체 양식 포함 프롬프트, 일반 질문이면 짧은 채팅 프롬프트(토큰 절감)
+            Resource tpl = reportIntent ? reportTemplate : chatTemplate;
+            // 상대 표현("이번 달/이전" 등) 해석을 위해 오늘 날짜 주입
+            String systemText = tpl.getContentAsString(java.nio.charset.StandardCharsets.UTF_8)
+                    .replace("{{today}}", java.time.LocalDate.now().toString());
 
             // system: 규칙·오늘 날짜 / user: 이번 질문 / tools: AI가 필요 시 호출하는 데이터 조회 도구
             // advisors: 같은 conversationId의 최근 10턴을 컨텍스트로 재주입
@@ -192,7 +197,7 @@ public class ReportService {
                     .content();
 
         } catch (java.io.IOException e) {
-            throw new RuntimeException("보고서 템플릿 파일을 읽는 중 오류가 발생했습니다.", e);
+            throw new RuntimeException("프롬프트 템플릿 파일을 읽는 중 오류가 발생했습니다.", e);
         }
     }
 

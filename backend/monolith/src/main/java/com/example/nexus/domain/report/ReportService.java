@@ -51,6 +51,9 @@ public class ReportService {
     private final AiStatsTools aiStatsTools;   // 매출/메뉴/매장 데이터 조회 도구
     private final AiOrderTools aiOrderTools;   // 발주 데이터 조회 도구
     private final AiOpsTools aiOpsTools;       // 재고/폐기/배송(공급망·운영) 데이터 조회 도구
+    private final AiFinanceTools aiFinanceTools; // 본사 청구/정산 데이터 조회 도구
+    private final AiStoreTools aiStoreTools;     // 가맹점 수/입폐점 추이 데이터 조회 도구
+    private final AiNewsTools aiNewsTools;       // 뉴스 요약 데이터 조회 도구
 
     @Value("classpath:aiReport/prompts/report-template.md")
     private Resource reportTemplate;   // 보고서 요청용(보고서 양식 포함, 김)
@@ -75,6 +78,9 @@ public class ReportService {
                          AiStatsTools aiStatsTools,
                          AiOrderTools aiOrderTools,
                          AiOpsTools aiOpsTools,
+                         AiFinanceTools aiFinanceTools,
+                         AiStoreTools aiStoreTools,
+                         AiNewsTools aiNewsTools,
                          S3Client s3Client) {
         this.reportRepository = reportRepository;
         this.posPayRepository = posPayRepository;
@@ -84,6 +90,9 @@ public class ReportService {
         this.aiStatsTools = aiStatsTools;
         this.aiOrderTools = aiOrderTools;
         this.aiOpsTools = aiOpsTools;
+        this.aiFinanceTools = aiFinanceTools;
+        this.aiStoreTools = aiStoreTools;
+        this.aiNewsTools = aiNewsTools;
         // 대화 기억 어드바이저를 기본 등록 → 같은 conversationId의 이전 대화를 자동 재주입
         this.chatClient = chatClientBuilder
                 .defaultAdvisors(new MessageChatMemoryAdvisor(chatMemory))
@@ -192,7 +201,7 @@ public class ReportService {
             return chatClient.prompt()
                     .system(systemText)
                     .user(userMessage)
-                    .tools(aiStatsTools, aiOrderTools, aiOpsTools)
+                    .tools(aiStatsTools, aiOrderTools, aiOpsTools, aiFinanceTools, aiStoreTools, aiNewsTools)
                     .advisors(a -> a
                             .param(AbstractChatMemoryAdvisor.CHAT_MEMORY_CONVERSATION_ID_KEY, conversationId)
                             .param(AbstractChatMemoryAdvisor.CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))

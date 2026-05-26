@@ -250,7 +250,6 @@ public class MenuService {
                 MenuItem newItem = itemReq.toEntity(menu, product);
                 menu.getMenuItemList().add(newItem);
             }
-            menuItemRepository.saveAllAndFlush(menu.getMenuItemList());
 
             //  저장 결과를 새로운 리스트(savedItems)로 반드시 받아옵니다!
             List<MenuItem> savedItems = menuItemRepository.saveAllAndFlush(menu.getMenuItemList());

@@ -6,15 +6,15 @@ public record MenuEvent(
         Long menuIdx,
         String menuName,
         Integer price,
+        String menuCategoryName,
         String imgPath,
         Boolean isDeleted,
-        String menuCategoryName,
         List<MenuItemEvent> menuItems
 ) {
     public record MenuItemEvent(
             Long idx,
-            String menuUnit,
             Integer quantity,
+            String menuUnit,
             Long productIdx
     ){}
 }

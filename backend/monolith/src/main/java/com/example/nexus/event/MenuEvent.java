@@ -8,10 +8,8 @@ public record MenuEvent(
         Integer price,
         Long menuCategoryIdx,
         String menuCategoryName,
-        Boolean isDeleted,
-
-        // pos
         String imgPath,
+        Boolean isDeleted,
         List<MenuItemEvent> menuItems
 ) {
     public record MenuItemEvent(

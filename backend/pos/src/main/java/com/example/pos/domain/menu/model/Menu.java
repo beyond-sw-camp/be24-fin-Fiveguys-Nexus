@@ -40,6 +40,14 @@ public class Menu implements Persistable<Long> {
     @Column(name = "menu_category_name",  nullable = false)
     private String menuCategoryName;
 
+    public void update(String menuName, Integer price, String imgPath, String menuCategoryName, boolean isDeleted) {
+        this.menuName = menuName;
+        this.price = price;
+        this.imgPath = imgPath;
+        this.menuCategoryName = menuCategoryName;
+        this.isDeleted = isDeleted;
+    }
+
     @Transient
     @Builder.Default
     private boolean isNew = false;

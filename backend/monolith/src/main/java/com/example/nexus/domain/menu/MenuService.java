@@ -36,6 +36,7 @@ import static com.example.nexus.common.model.BaseResponseStatus.*;
 public class MenuService {
     private final MenuRepository menuRepository;
     private final MenuCategoryRepository menuCategoryRepository;
+    private final MenuItemRepository menuItemRepository;
     private final ProductRepository productRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
 
@@ -151,9 +152,9 @@ public class MenuService {
             List<MenuEvent.MenuItemEvent> items = menu.getMenuItemList().stream()
                     .map(mi -> new MenuEvent.MenuItemEvent(
                             mi.getIdx(),
-                            mi.getProduct().getIdx(),
                             mi.getQuantity(),
-                            mi.getMenuUnit()
+                            mi.getMenuUnit(),
+                            mi.getProduct().getIdx()
                     )).toList();
 
             // kafka 이벤트 발생
@@ -163,9 +164,9 @@ public class MenuService {
                     saved.getPrice(),
                     category.getIdx(),
                     category.getMenuCategoryName(),
-                    saved.isDeleted(),
                     saved.getImgPath(),
-                    ite
+                    saved.isDeleted(),
+                    items
             );
 
             applicationEventPublisher.publishEvent(new MenuDomainEvent(event, KafkaTopics.MENU_CREATED));
@@ -249,15 +250,28 @@ public class MenuService {
                 MenuItem newItem = itemReq.toEntity(menu, product);
                 menu.getMenuItemList().add(newItem);
             }
+            menuItemRepository.saveAllAndFlush(menu.getMenuItemList());
 
-            // kafka 이벤트 발생
+            //  저장 결과를 새로운 리스트(savedItems)로 반드시 받아옵니다!
+            List<MenuItem> savedItems = menuItemRepository.saveAllAndFlush(menu.getMenuItemList());
+
+            List<MenuEvent.MenuItemEvent> items = savedItems.stream()
+                    .map(mi -> new MenuEvent.MenuItemEvent(
+                            mi.getIdx(),
+                            mi.getQuantity(),
+                            mi.getMenuUnit(),
+                            mi.getProduct().getIdx()
+                    )).toList();
+
             MenuEvent event = new MenuEvent(
                     menu.getIdx(),
                     menu.getMenuName(),
                     menu.getPrice(),
                     category.getIdx(),
                     category.getMenuCategoryName(),
-                    menu.isDeleted()
+                    menu.getImgPath(),
+                    menu.isDeleted(),
+                    items
             );
 
             applicationEventPublisher.publishEvent(new MenuDomainEvent(event, KafkaTopics.MENU_UPDATED));
@@ -314,7 +328,9 @@ public class MenuService {
                 menu.getPrice(),
                 menu.getMenuCategory() != null ? menu.getMenuCategory().getIdx() : null,
                 menu.getMenuCategory() != null ? menu.getMenuCategory().getMenuCategoryName() : null,
-                true
+                menu.getImgPath(),
+                true,
+                null
         );
 
         applicationEventPublisher.publishEvent(new MenuDomainEvent(event, KafkaTopics.MENU_DELETED));

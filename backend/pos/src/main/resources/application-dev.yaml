@@ -41,7 +41,8 @@ spring:
         spring.json.trusted.packages: "*" # 모든 패키지의 JSON 객체 허용
         spring.json.type.mapping: >
           storeEvent:com.example.pos.event.StoreEvent,
-          productEvent:com.example.pos.event.ProductEvent
+          productEvent:com.example.pos.event.ProductEvent,
+          menuEvent:com.example.pos.event.MenuEvent
 
         
 

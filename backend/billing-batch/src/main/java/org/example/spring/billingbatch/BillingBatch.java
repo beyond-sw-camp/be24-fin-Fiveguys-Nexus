@@ -189,7 +189,7 @@ public class BillingBatch {
                 .retry(Exception.class) // 에러 발생 시 재시도
                 .retryLimit(3)          // 최대 3회 재시도
                 .skip(Exception.class)
-                .skipLimit(100)
+                .skipLimit(Integer.MAX_VALUE)
                 .build();
     }
 

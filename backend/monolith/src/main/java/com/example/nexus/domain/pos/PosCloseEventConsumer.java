@@ -41,7 +41,7 @@ public class PosCloseEventConsumer {
         }
         
         // 2. AI 자동 발주 수행
-       //  autoOrderService.generateAutoOrder(event.userIdx());
+        autoOrderService.generateAutoOrder(event.userIdx());
     }
 
 

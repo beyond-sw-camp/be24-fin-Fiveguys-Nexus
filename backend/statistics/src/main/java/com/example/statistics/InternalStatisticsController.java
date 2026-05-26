@@ -2,6 +2,9 @@ package com.example.statistics;
 
 import com.example.statistics.domain.daily.DailyDumpService;
 import com.example.statistics.domain.daily.dto.DumpResult;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +21,7 @@ import java.time.LocalDate;
  *
  * ⚠️ 운영 환경에서는 K8s NetworkPolicy 또는 Spring Security 로 외부 접근 차단 필수.
  */
+@Tag(name = "내부 운영 도구", description = "수동 dump / 운영 검증용. K8s NetworkPolicy 로 외부 접근 차단 권장 (#889).")
 @RestController
 @RequestMapping("/internal/statistics")
 @RequiredArgsConstructor
@@ -30,8 +34,25 @@ public class InternalStatisticsController {
      * @param date 처리할 날짜 (생략 시 어제)
      * @return DumpResult — status (SUCCESS/FAILED/SKIPPED), 처리 건수, 소요 시간 등
      */
+    @Operation(
+            summary = "수동 일별 dump",
+            description = """
+                    특정 날짜의 Redis 일별 집계를 MariaDB (daily_*_sales) 에 저장.
+
+                    용도:
+                    - 자동 스케줄러 (#889 새벽 5시) 실패 시 복구
+                    - 누락된 날짜 catch-up
+                    - 개발/검증 시 임의 시점 dump
+
+                    응답: DumpResult { status, processed_count, duration_ms, ... }
+                    """
+    )
     @PostMapping("/dailyDump")
     public ResponseEntity<DumpResult> manualDailyDump(
+            @Parameter(
+                    description = "처리할 날짜 (yyyy-MM-dd 형식, 생략 시 어제). 예: 2026-05-25",
+                    example = "2026-05-25"
+            )
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
     ) {

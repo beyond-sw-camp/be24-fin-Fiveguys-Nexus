@@ -20,7 +20,6 @@ import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 @RequiredArgsConstructor
 public class PosController {
     private final PosService posService;
-    private final AutoOrderService autoOrderService;
 
     // [가맹점] 로그인한 가맹점주(STORE)의 user_idx로 해당 매장 재고 조회
     @GetMapping("/inventory/list")
@@ -87,14 +86,6 @@ public class PosController {
         }
 
         PosCloseDto.CloseRes res = posService.deductOnClose(userIdx);
-        autoOrderService.generateAutoOrder(userIdx);
-        PosCloseDto.CloseRes body = PosCloseDto.CloseRes.builder()
-                .storeIdx(res.getStoreIdx())
-                .processedPayCount(res.getProcessedPayCount())
-                .deductedProductKinds(res.getDeductedProductKinds())
-                .closedAt(res.getClosedAt())
-                .message(res.getMessage() + " 자동 발주를 실행했습니다.")
-                .build();
-        return ResponseEntity.ok(BaseResponse.success(body));
+        return ResponseEntity.ok(BaseResponse.success(res));
     }
 }

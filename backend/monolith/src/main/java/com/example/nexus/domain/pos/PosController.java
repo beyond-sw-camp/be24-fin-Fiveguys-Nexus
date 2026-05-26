@@ -86,7 +86,7 @@ public class PosController {
         }
 
         PosCloseDto.CloseRes res = posService.deductOnClose(userDetails.getIdx());
-        autoOrderService.generateAutoOrder(userDetails.getIdx());
+
         PosCloseDto.CloseRes body = PosCloseDto.CloseRes.builder()
                 .storeIdx(res.getStoreIdx())
                 .processedPayCount(res.getProcessedPayCount())

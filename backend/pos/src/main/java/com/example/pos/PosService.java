@@ -45,6 +45,7 @@ public class PosService {
     private final MenuItemRepository menuItemRepository;
     private final PosPayRepository posPayRepository;
     private final PosOrdersItemRepository posOrdersItemRepository;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     public PageResponse<PosStoreInventoryDto.ListRes> listByUserIdxPaged(Long idx, int page, int size) {
         Store store = storeRepository.findByUserIdx(idx)
@@ -191,6 +192,10 @@ public class PosService {
                 "당일 결제 %d건 기준으로 본사 재고에 %d종 원자재를 차감했습니다.",
                 pending.size(),
                 productNeed.size());
+
+        eventPublisher.publishEvent(
+            new com.example.pos.event.PosCloseDomainEvent(new com.example.pos.event.PosCloseEvent(userIdx, store.getIdx(), productNeed))
+        );
 
         return PosCloseDto.CloseRes.builder()
                 .storeIdx(store.getIdx())

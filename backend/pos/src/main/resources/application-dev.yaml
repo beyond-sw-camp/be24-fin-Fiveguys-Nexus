@@ -21,13 +21,6 @@ spring:
       maximum-pool-size: 20
       connection-timeout: 30000
 
-  ai:
-    openai:
-      api-key: ${OPENAI_API_KEY}
-      chat:
-        options:
-          model: gpt-4o
-          temperature: 0.3
 
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
@@ -43,8 +36,12 @@ spring:
           storeEvent:com.example.pos.event.StoreEvent,
           productEvent:com.example.pos.event.ProductEvent,
           menuEvent:com.example.pos.event.MenuEvent
-
-        
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: true
+        spring.json.type.mapping: posCloseEvent:com.example.pos.event.PosCloseEvent
 
 
 

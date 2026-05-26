@@ -19,7 +19,6 @@
               <span class="method-name">{{ billing.cardCompany || billing.method }}</span>
             </div>
             <div class="card-details">
-              <p><strong>가맹점 번호:</strong> {{ billing.storeIdx }}</p>
               <p v-if="billing.cardNumber"><strong>카드번호:</strong> {{ billing.cardNumber }}</p>
               <p><strong>등록일:</strong> {{ formatDate(billing.authenticatedAt) }}</p>
             </div>

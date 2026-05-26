@@ -2,6 +2,7 @@ package com.example.nexus.domain.billing;
 
 import com.example.nexus.common.exception.BaseException;
 import com.example.nexus.common.model.BaseResponseStatus;
+import com.example.nexus.common.enums.CardCompany;
 import com.example.nexus.domain.billing.model.Billing;
 import com.example.nexus.domain.billing.model.BillingDto;
 import lombok.RequiredArgsConstructor;
@@ -68,7 +69,7 @@ public class BillingService {
                 // issuerCode로 카드사 이름 찾기
                 Object issuerCodeObj = cardInfo.get("issuerCode");
                 String issuerCode = (issuerCodeObj != null) ? issuerCodeObj.toString() : "";
-                cardCompany = getCardCompanyName(issuerCode);
+                cardCompany = CardCompany.getKorNameByCode(issuerCode);
                 
                 // 카드 번호 (토스가 마스킹해서 줌)
                 Object numberObj = cardInfo.get("number");
@@ -107,25 +108,6 @@ public class BillingService {
     private String getSafeString(Map<?, ?> map, String key) {
         Object val = map.get(key);
         return (val != null) ? val.toString() : "";
-    }
-
-    // 카드사 코드 매핑 (Toss Payments 표준 코드)
-    private String getCardCompanyName(String code) {
-        if (code == null || code.isEmpty()) return "알 수 없는 카드";
-        return switch (code) {
-            case "31" -> "비씨카드";
-            case "11" -> "국민카드";
-            case "51" -> "삼성카드";
-            case "61" -> "현대카드";
-            case "41" -> "신한카드";
-            case "21" -> "하나카드";
-            case "71" -> "롯데카드";
-            case "91" -> "농협카드";
-            case "36" -> "씨티카드";
-            case "33" -> "우리카드";
-            case "W1" -> "우리컬쳐";
-            default -> "기타카드(" + code + ")";
-        };
     }
 
     @Transactional(readOnly = true)

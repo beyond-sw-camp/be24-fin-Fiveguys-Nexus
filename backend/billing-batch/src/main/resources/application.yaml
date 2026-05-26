@@ -1,6 +1,9 @@
 spring:
   application:
     name: billing-batch
+  batch:
+    job:
+      enabled: false
   jpa:
     hibernate:
       ddl-auto: update

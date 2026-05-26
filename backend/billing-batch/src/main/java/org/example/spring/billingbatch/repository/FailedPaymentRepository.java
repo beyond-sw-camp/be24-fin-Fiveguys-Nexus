@@ -11,5 +11,6 @@ import java.util.List;
 @Repository
 public interface FailedPaymentRepository extends JpaRepository<FailedPayment, Long> {
     Page<FailedPayment> findByPayedMonth(String payedMonth, Pageable pageable);
+    List<FailedPayment> findByPayedMonth(String payedMonth);
     boolean existsByStoreIdxAndPayedMonth(Long storeIdx, String payedMonth);
 }

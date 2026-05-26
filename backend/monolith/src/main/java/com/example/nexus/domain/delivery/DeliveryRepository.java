@@ -37,8 +37,8 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
 
     // 본사 배송 관리 - 필터 조회
     @Query("SELECT d FROM Delivery d " +
-            "JOIN FETCH d.orders o " +
-            "JOIN FETCH o.store s " +
+            "JOIN d.orders o " +
+            "JOIN o.store s " +
             "WHERE (:storeName IS NULL OR s.storeName LIKE %:storeName%) " +
             "AND (:status IS NULL OR d.deliveryStatus = :status) " +
             "AND (:year IS NULL OR FUNCTION('YEAR', d.departureDate) = :year) " +
@@ -55,8 +55,8 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
 
     // 가맹점 배송 현황 - 전체 조회
     @Query("SELECT d FROM Delivery d " +
-            "JOIN FETCH d.orders o " +
-            "JOIN FETCH o.store s " +
+            "JOIN d.orders o " +
+            "JOIN o.store s " +
             "WHERE s.idx = :storeIdx")
     List<Delivery> findAllByOrdersStoreIdx(
             @Param("storeIdx") Long storeIdx
@@ -64,8 +64,8 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
 
     // 가맹점 배송 현황 - 필터 및 발주번호 검색 조회
     @Query("SELECT d FROM Delivery d " +
-            "JOIN FETCH d.orders o " +
-            "JOIN FETCH o.store s " +
+            "JOIN d.orders o " +
+            "JOIN o.store s " +
             "WHERE s.idx = :storeIdx " +
             "AND (:orderIdx IS NULL OR o.idx = :orderIdx) " +
             "AND (:status IS NULL OR d.deliveryStatus = :status) " +
@@ -95,7 +95,7 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
     );
 
     // 본사 대시보드 - 지연 배송 목록 무한스크롤 페이징
-    @Query("SELECT d FROM Delivery d JOIN FETCH d.orders o JOIN FETCH o.store s " +
+    @Query("SELECT d FROM Delivery d JOIN d.orders o JOIN o.store s " +
             "WHERE d.deliveryStatus = :status")
     Slice<Delivery> findByDeliveryStatus(
             @Param("status") DeliveryStatus status,
@@ -103,7 +103,7 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
     );
 
     // 점주 대시보드 - 배송완료 제외 최신순
-    @Query("SELECT d FROM Delivery d JOIN FETCH d.orders o " +
+    @Query("SELECT d FROM Delivery d JOIN d.orders o " +
             "WHERE o.store.idx = :storeIdx AND d.deliveryStatus <> :excludeStatus " +
             "ORDER BY d.departureDate DESC")
     List<Delivery> findByOrders_Store_IdxAndDeliveryStatusNotOrderByDepartureDateDesc(

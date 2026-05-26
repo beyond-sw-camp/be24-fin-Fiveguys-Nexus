@@ -43,10 +43,19 @@ const deleteBillingInfo = (storeIdx) => {
   return api.delete(`/api/billing/delete/${storeIdx}`)
 }
 
+/**
+ * 최종 미결제 목록 조회 - 2차 재시도까지 실패한 내역 조회
+ * @returns {Promise} 최종 실패 내역 리스트 (FinalRetryFailRes)
+ */
+const getUnpaidList = () => {
+  return api.get('/unpaid/list')
+}
+
 export default {
   prepareSettlement,
   verifySettlement,
   issueBillingKey,
   getBillingList,
   deleteBillingInfo,
+  getUnpaidList,
 }

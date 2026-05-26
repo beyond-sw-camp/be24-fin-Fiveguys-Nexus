@@ -36,5 +36,16 @@ public class SettlementDto {
         private Long settlementIdx;
     }
 
+    @Getter
+    @Builder
+    public static class FinalRetryFailRes {
+        private Long idx;
+        private Long storeIdx;
+        private Integer amount;
+        private String payedMonth;
+        private String failReason;
+        private List<Long> headIncomeIdxList;
+    }
+
 
 }

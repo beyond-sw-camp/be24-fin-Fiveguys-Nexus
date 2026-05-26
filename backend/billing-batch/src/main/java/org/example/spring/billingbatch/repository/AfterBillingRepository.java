@@ -9,4 +9,5 @@ public interface AfterBillingRepository extends JpaRepository<AfterBilling, Long
     boolean existsByStoreIdxAndPayedMonth(Long storeIdx, String payedMonth);
     boolean existsByStoreIdxAndPayedMonthAndIsSuccessTrue(Long storeIdx, String payedMonth);
     Optional<AfterBilling> findByStoreIdxAndPayedMonth(Long storeIdx, String payedMonth);
+    List<AfterBilling> findByPayedMonthAndIsRetryFailedTrue(String payedMonth);
 }

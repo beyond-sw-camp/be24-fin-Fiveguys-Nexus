@@ -22,6 +22,7 @@ public class SettlementService {
 
     private final SettlementRepository settlementRepository;
     private final HeadIncomeRepository headIncomeRepository;
+    private final AfterBillingRepository afterBillingRepository;
 
     @Transactional
     public void verify(AuthUserDetails authUserDetails, SettlementDto.VerifyReq dto, Long settlementIdx) {
@@ -56,11 +57,44 @@ public class SettlementService {
             for (HeadIncome headIncome : headIncomeList) {
                 headIncome.setStatus(true);
                 headIncomeRepository.save(headIncome);
+            }
 
+            // AfterBilling 업데이트 (실패 건 수동 결제 성공 시)
+            afterBillingRepository.findByStoreIdxAndPayedMonth(settlement.getStoreIdx(), settlement.getSettlementYm())
+                    .ifPresent(after -> {
+                        after.setIsPaid(true);
+                        after.setIsSuccess(true);
+                        after.setIsRetryFailed(false);
+                        after.setFailReason(null);
+                        afterBillingRepository.save(after);
+                    });
         }
 
             
 
+    }
+
+    public List<SettlementDto.FinalRetryFailRes> getFinalRetryFailures(Long storeIdx) {
+        return afterBillingRepository.findByStoreIdxAndIsRetryFailedTrue(storeIdx).stream()
+                .map(after -> {
+                    YearMonth ym = YearMonth.parse(after.getPayedMonth());
+                    LocalDateTime start = ym.atDay(1).atStartOfDay();
+                    LocalDateTime end = ym.plusMonths(1).atDay(1).atStartOfDay();
+
+                    List<Long> ids = headIncomeRepository.findUnpaidByStoreAndMonth(storeIdx, start, end).stream()
+                            .map(HeadIncome::getIdx)
+                            .toList();
+
+                    return SettlementDto.FinalRetryFailRes.builder()
+                            .idx(after.getIdx())
+                            .storeIdx(after.getStoreIdx())
+                            .amount(after.getTotalPayAmount())
+                            .payedMonth(after.getPayedMonth())
+                            .failReason(after.getFailReason())
+                            .headIncomeIdxList(ids)
+                            .build();
+                })
+                .toList();
     }
 
     @Transactional

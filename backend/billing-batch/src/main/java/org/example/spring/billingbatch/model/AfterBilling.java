@@ -32,5 +32,8 @@ public class AfterBilling {
 
     private String failReason; // 실패 사유 (추가)
 
+    @Builder.Default
+    private Boolean isRetryFailed = false; // 재시도 실패 여부 (추가)
+
     private LocalDateTime createdAt; // 생성 일시
 }

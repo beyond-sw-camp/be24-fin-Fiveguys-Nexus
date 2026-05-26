@@ -113,11 +113,19 @@
             </div>
             <span class="font-bold text-gray-900 text-sm">{{ d.storeName }}</span>
           </div>
-          <span
-            class="text-xs font-bold px-2 py-0.5 rounded whitespace-nowrap"
-            :class="statusClass(d.statusEnum)">
-            {{ d.statusLabel }}
-          </span>
+          <div class="flex items-center gap-3">
+            <span v-if="d.orderPrice != null" class="text-[11px] font-medium text-gray-500 bg-white/80 px-2 py-0.5 rounded-full border border-gray-100 shadow-sm">
+              {{ formatPrice(d.orderPrice) }} ({{ d.itemCount }}건)
+            </span>
+            <span
+              class="text-xs font-bold px-2 py-0.5 rounded whitespace-nowrap"
+              :class="statusClass(d.statusEnum)">
+              {{ d.statusLabel }}
+              <span v-if="d.statusEnum === 'DELIVERED' && d.deliveredTime" class="ml-1 opacity-80 font-medium text-[10px]">
+                ({{ d.deliveredTime }})
+              </span>
+            </span>
+          </div>
         </div>
 
         <!-- 타임라인 -->
@@ -172,6 +180,15 @@
 
     <!-- 페이지네이션 -->
     <div v-if="totalPages > 1" class="flex justify-center items-center gap-2 mt-6">
+      <!-- 이전 10페이지 그룹 -->
+      <button
+        @click="fetchDeliveries(Math.max(0, currentPage - 10))"
+        :disabled="currentPage < 10"
+        class="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 19l-7-7 7-7m8 14l-7-7 7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+
+      <!-- 이전 페이지 -->
       <button
         @click="fetchDeliveries(currentPage - 1)"
         :disabled="currentPage === 0"
@@ -181,19 +198,21 @@
         </svg>
       </button>
 
+      <!-- 페이지 번호 (최대 10개) -->
       <div class="flex gap-1">
         <button
-          v-for="p in totalPages"
+          v-for="p in visiblePages"
           :key="p"
           @click="fetchDeliveries(p - 1)"
           class="w-9 h-9 text-sm font-semibold rounded-lg transition-colors cursor-pointer"
           :class="currentPage === p - 1
-        ? 'bg-blue-500 text-white'
-        : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'">
+            ? 'bg-blue-500 text-white'
+            : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'">
           {{ p }}
         </button>
       </div>
 
+      <!-- 다음 페이지 -->
       <button
         @click="fetchDeliveries(currentPage + 1)"
         :disabled="currentPage === totalPages - 1"
@@ -201,6 +220,14 @@
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path d="M9 5l7 7-7 7" stroke-width="2"/>
         </svg>
+      </button>
+
+      <!-- 다음 10페이지 그룹 -->
+      <button
+        @click="fetchDeliveries(Math.min(totalPages - 1, currentPage + 10))"
+        :disabled="currentPage >= Math.floor((totalPages - 1) / 10) * 10"
+        class="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 5l7 7-7 7M5 5l7 7-7 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
     </div>
 
@@ -310,10 +337,37 @@ function formatDatetime(val) {
   return String(val).replace('T', ' ').substring(0, 16)
 }
 
+function formatShortTime(val) {
+  if (!val) return null
+  const date = new Date(val)
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  const h = String(date.getHours()).padStart(2, '0')
+  const i = String(date.getMinutes()).padStart(2, '0')
+  return `${m}.${d} ${h}:${i}`
+}
+
+function formatPrice(value) {
+  if (value === null || value === undefined) return '0원'
+  return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(value)
+}
+
 function extractDate(val) {
   if (!val) return null
   return String(val).substring(0, 10) // "YYYY-MM-DD"
 }
+
+const visiblePages = computed(() => {
+  const range = 10
+  const startPage = Math.floor(currentPage.value / range) * range + 1
+  const endPage = Math.min(startPage + range - 1, totalPages.value)
+
+  const pages = []
+  for (let i = startPage; i <= endPage; i++) {
+    pages.push(i)
+  }
+  return pages
+})
 
 // DeliveryDto -> 프론트엔드 포맷 매핑
 // DeliveryStatus enum 순서 기반 타임라인 구성
@@ -325,6 +379,7 @@ function mapDelivery(dto) {
   const estimatedFormatted = formatDatetime(dto.estimatedArrivalAt)
   const deliveredFormatted = formatDatetime(dto.deliveredDate)
   const dateStr            = extractDate(dto.departureDate)
+  const deliveredTimeShort = formatShortTime(dto.deliveredDate)
 
   // READY -> START -> DELIVERYING -> DELIVERED
   // DELAY 는 DELIVERYING 단계에서 발생
@@ -376,6 +431,9 @@ function mapDelivery(dto) {
     statusEnum,
     statusLabel,
     delayReason:  dto.delayReason  || '',
+    orderPrice:   dto.orderPrice,
+    itemCount:    dto.itemCount,
+    deliveredTime: deliveredTimeShort,
     timeline,
   }
 }

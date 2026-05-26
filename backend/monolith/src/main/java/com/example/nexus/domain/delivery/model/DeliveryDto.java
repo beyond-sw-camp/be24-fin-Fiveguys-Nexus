@@ -1,5 +1,6 @@
 package com.example.nexus.domain.delivery.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.springframework.data.domain.Page;
 
@@ -12,14 +13,35 @@ import java.util.List;
 @AllArgsConstructor
 public class DeliveryDto {
 
+    @JsonProperty("deliveryIdx")
     private Long deliveryIdx;
+
+    @JsonProperty("orderIdx")
     private Long orderIdx;
+
+    @JsonProperty("storeName")
     private String storeName;
+
+    @JsonProperty("deliveryStatus")
     private String deliveryStatus;
+
+    @JsonProperty("delayReason")
     private String delayReason;
+
+    @JsonProperty("departureDate")
     private LocalDateTime departureDate;
+
+    @JsonProperty("estimatedArrivalAt")
     private LocalDateTime estimatedArrivalAt;
+
+    @JsonProperty("deliveredDate")
     private LocalDateTime deliveredDate;
+
+    @JsonProperty("orderPrice")
+    private Long orderPrice;
+
+    @JsonProperty("itemCount")
+    private Integer itemCount;
 
     public static DeliveryDto from(Delivery delivery) {
 
@@ -32,6 +54,8 @@ public class DeliveryDto {
                 .departureDate(delivery.getDepartureDate())
                 .estimatedArrivalAt(delivery.getEstimatedArrivalAt())
                 .deliveredDate(delivery.getDeliveredDate())
+                .orderPrice(delivery.getOrders().getPrice())
+                .itemCount(delivery.getOrders().getOrdersItemList() != null ? delivery.getOrders().getOrdersItemList().size() : 0)
                 .build();
     }
 

@@ -200,6 +200,7 @@ public class FailedPaymentRetryBatch {
                                 .ifPresent(afterBilling -> {
                                     afterBilling.setIsPaid(true);
                                     afterBilling.setIsSuccess(true);
+                                    afterBilling.setIsRetryFailed(false);
                                     afterBilling.setFailReason(null);
                                     afterBillingRepository.save(afterBilling);
                                 });
@@ -213,10 +214,11 @@ public class FailedPaymentRetryBatch {
                         // 또 실패한 경우
                         results.add(new RetryResult(req.storeIdx(), req.amount(), false, "재시도 실패: " + e.getMessage()));
                         
-                        // AfterBilling 에 실패 사유 갱신
+                        // AfterBilling 에 실패 사유 및 재시도 실패 플래그 갱신
                         afterBillingRepository.findByStoreIdxAndPayedMonth(req.storeIdx(), req.payedMonth())
                                 .ifPresent(afterBilling -> {
                                     afterBilling.setFailReason("재시도 실패: " + e.getMessage());
+                                    afterBilling.setIsRetryFailed(true);
                                     afterBillingRepository.save(afterBilling);
                                 });
                     }

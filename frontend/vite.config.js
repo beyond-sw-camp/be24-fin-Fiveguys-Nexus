@@ -18,11 +18,10 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
       '/api/statistics': {
-        target: 'http://localhost:8088', // Gateway (통계도 있다면 추가)
+        target: 'http://localhost:8081', // 통계 MSA 직접 (Gateway 안 띄울 때)
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
-
       '/api': {
         target: 'http://localhost:8080',
         changeOrigin: true,

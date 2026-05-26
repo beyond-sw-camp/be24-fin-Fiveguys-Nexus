@@ -5,7 +5,7 @@ eureka:
     prefer-ip-address: true                   # 내 주소를 알려줄 때 Hostname 대신 IP 주소 알려주기
   client:
     service-url:
-      defaultZone: ${EUREKA_SERVICE_URL:http://192.100.30.50:32567/eureka}
+      defaultZone: ${EUREKA_SERVICE_URL}
     register-with-eureka: true # 현재 자신의 IP주소를 유레카에 등록
     fetch-registry: true       # 유레카에 등록된 주소들을 받아오는 것
 

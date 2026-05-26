@@ -17,7 +17,8 @@ public class ReportDto {
     // 사용자 요청 DTO
     public record ChatRequest(
             @NotBlank(message = "메시지는 비어있을 수 없습니다.")
-            String message
+            String message,
+            String sessionId   // 대화 세션 식별자 (선택값, 없으면 서버에서 userIdx 기반 기본값 사용)
     ) {}
 
     // DB에서 데이터를 가져올때 사용하는 DTO

@@ -28,7 +28,7 @@ public class ReportController {
         }
 
         Long userIdx = userDetails.getIdx();
-        String result = reportService.createAndSaveReport(userIdx, request.message());
+        String result = reportService.createAndSaveReport(userIdx, request.message(), request.sessionId());
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 

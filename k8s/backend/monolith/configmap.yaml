@@ -13,4 +13,4 @@ data:
   AWS_S3_MENU_BUCKET: nexus-menu-prod
   AWS_S3_REPORT_BUCKET: nexus-report-prod
   AWS_S3_STATIC: ap-northeast-2
-  MAIL_ADDR: nexus@theventi.co.kr
+  MAIL_ADDR: rhdaldthd12@gmail.com

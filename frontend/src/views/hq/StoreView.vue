@@ -125,6 +125,8 @@ async function openDetail(idx) {
 
 // 수정 등록 팝업 창 열기
 async function openModal(idx =! null) {
+  emailError.value = '';
+  businessError.value = '';
   if (idx) {
     // [수정 모드]
     const res = await getStoreDetailList(idx);
@@ -199,12 +201,24 @@ const validateEmail = () => {
   return isValid;
 };
 
+// 사업자 등록번호 유효성 검사 (숫자 10자리)
+const businessError = ref('');
+const validateBusiness = () => {
+  if (!form.business) { businessError.value = ''; return true; }   // 빈 값은 isFormValid가 처리
+  const digits = String(form.business).replace(/\D/g, '');         // 하이픈 제거 후 순수 숫자만 카운트
+  const isValid = digits.length === 10;
+  businessError.value = isValid ? '' : '사업자 등록번호를 다시 확인해주세요.';
+  if (!isValid) showToast('사업자 등록번호를 다시 확인해주세요.', 'error');
+  return isValid;
+};
+
 // 등록 및 저장
 async function saveStore() {
   if (!validateEmail()) {
     showToast('올바른 이메일 형식으로 작성해주세요.', 'error');
     return;
   }
+  if (!validateBusiness()) return;   // 사업자번호 미달 시 중단 (validateBusiness가 토스트 표시)
 
   try {
     let finalFilePath = form.filePath;
@@ -232,6 +246,7 @@ async function saveStore() {
       if (res.data.code === 2000) {
         showToast('가맹점 정보가 수정되었습니다.');
         await storeListRes(pagination.currentPage);
+        trendChart.value?.reload();   // 수정 후 월별 입점/폐점 그래프도 갱신
         showModal.value = false;
       }
     }
@@ -252,6 +267,7 @@ async function saveStore() {
         showToast('가맹점이 등록되었습니다.');
         storesList.value.length = 0;
         await storeListRes();
+        trendChart.value?.reload();   // 등록 후 월별 입점/폐점 그래프도 갱신
       }
     }
 
@@ -632,7 +648,10 @@ onMounted(() => {
           </div>
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">사업자번호</label>
-            <input :value="form.business" @input="formatBusinessNumber" inputmode="numeric" type="text" placeholder="숫자만 입력하세요" maxlength="12" class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all"/>
+            <input :value="form.business" @input="formatBusinessNumber" @blur="validateBusiness" inputmode="numeric" type="text" placeholder="숫자만 입력하세요" maxlength="12"
+                   class="w-full px-4 py-2 rounded-lg border text-sm outline-none transition-all"
+                   :class="businessError ? 'border-red-500 focus:ring-4 focus:ring-red-500/20' : 'border-gray-200 focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5'"/>
+            <p v-if="businessError" class="text-xs text-red-500 mt-1">{{ businessError }}</p>
           </div>
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">사업자 PDF</label>

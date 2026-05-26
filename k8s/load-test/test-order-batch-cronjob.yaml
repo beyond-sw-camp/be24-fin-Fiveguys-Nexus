@@ -14,6 +14,7 @@ spec:
   failedJobsHistoryLimit: 3
   jobTemplate:
     spec:
+      ttlSecondsAfterFinished: 60    # 완료 후 60초 뒤 Pod 자동 삭제
       template:
         spec:
           restartPolicy: OnFailure

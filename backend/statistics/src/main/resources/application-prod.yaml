@@ -35,10 +35,18 @@ spring:
 
   data:
     redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT:6379}
+      # Cluster 모드 (Master 3 + Slave 3) — #893 도입
+      # ConfigMap 의 REDIS_CLUSTER_NODES 에 콤마 구분 리스트
+      # 예: "redis-cluster-0.redis-cluster-service:6379,redis-cluster-1...:6379,..."
+      cluster:
+        nodes: ${REDIS_CLUSTER_NODES}
+        max-redirects: 3
       timeout: 2000ms
       lettuce:
+        cluster:
+          refresh:
+            adaptive: true       # 토폴로지 변경 자동 감지 (fail-over 등)
+            period: 30s          # 30초마다 토폴로지 refresh
         pool:
           max-active: 16
           max-idle: 8

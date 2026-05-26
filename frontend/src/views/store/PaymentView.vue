@@ -16,10 +16,11 @@
           <div class="card-info">
             <div class="card-method">
               <span class="icon">💳</span>
-              <span class="method-name">{{ billing.method }}</span>
+              <span class="method-name">{{ billing.cardCompany || billing.method }}</span>
             </div>
             <div class="card-details">
               <p><strong>가맹점 번호:</strong> {{ billing.storeIdx }}</p>
+              <p v-if="billing.cardNumber"><strong>카드번호:</strong> {{ billing.cardNumber }}</p>
               <p><strong>등록일:</strong> {{ formatDate(billing.authenticatedAt) }}</p>
             </div>
           </div>
@@ -129,7 +130,6 @@ const requestBilling = (method) => {
 
   const currentUrl = window.location.origin + window.location.pathname
 
-  // rawStoreIdx를 우선 사용하고, 없으면 storeId에서 추출, 둘 다 없으면 중단
   const storeIdx = authStore.user?.rawStoreIdx ||
                    (authStore.user?.storeId ? authStore.user.storeId.replace('S', '') : null)
 

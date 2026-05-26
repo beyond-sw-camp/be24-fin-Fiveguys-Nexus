@@ -7,6 +7,9 @@ import com.example.nexus.domain.orders.model.DangerDto;
 import com.example.nexus.domain.orders.model.OrdersDto;
 import com.example.nexus.domain.orders.model.OrdersItemDto;
 import com.example.nexus.domain.user.model.AuthUserDetails;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -25,6 +28,7 @@ import java.util.List;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 
+@Tag(name = "발주 관리", description = "본사 발주 (자동/확정/이력/이상) + 가맹점 제안 발주서 관리. 배치 서비스(:8090) 와 연동.")
 @RequestMapping("/orders")
 @RestController
 @RequiredArgsConstructor
@@ -37,17 +41,16 @@ public class OrdersController {
 
     /**
      * 자동 발주 목록 조회 겸 검색
-     *
-     * @param keyword 검색 키워드 (선택)
-     * @param page 페이지 번호 (기본값: 0)
-     * @param size 페이지 크기 (기본값: 10)
-     * @return ResponseEntity 자동 발주 목록 (페이징)
      */
+    @Operation(
+            summary = "자동 발주 목록 조회",
+            description = "본사가 보는 자동 발주 목록 (페이징, 검색)."
+    )
     @GetMapping("/list/auto")
     public ResponseEntity autoList(
-            @RequestParam(required = false) String keyword,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @Parameter(description = "검색 키워드 (선택)") @RequestParam(required = false) String keyword,
+            @Parameter(description = "페이지 번호", example = "0") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "페이지 크기", example = "10") @RequestParam(defaultValue = "10") int size
     ) {
         Page<OrdersDto.OrderListRes> result = orderService.findAllAuto(
                 keyword, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
@@ -57,17 +60,16 @@ public class OrdersController {
 
     /**
      * 확정 발주 목록 조회 겸 검색
-     *
-     * @param keyword 검색 키워드 (선택)
-     * @param page 페이지 번호 (기본값: 0)
-     * @param size 페이지 크기 (기본값: 10)
-     * @return ResponseEntity 확정 발주 목록 (페이징)
      */
+    @Operation(
+            summary = "확정 발주 목록 조회",
+            description = "본사가 보는 확정 발주 목록 (페이징, 검색)."
+    )
     @GetMapping("/list/confirmed")
     public ResponseEntity confirmedList(
-            @RequestParam(required = false) String keyword,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @Parameter(description = "검색 키워드 (선택)") @RequestParam(required = false) String keyword,
+            @Parameter(description = "페이지 번호", example = "0") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "페이지 크기", example = "10") @RequestParam(defaultValue = "10") int size
     ) {
         Page<OrdersDto.OrderListRes> result = orderService.findAllConfirmed(
                 keyword, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
@@ -76,9 +78,11 @@ public class OrdersController {
 
     /**
      * 확정 발주 일괄 승인
-     *
-     * @return ResponseEntity 일괄 승인 결과 메시지
      */
+    @Operation(
+            summary = "확정 발주 일괄 승인",
+            description = "배치 서비스(:8090)에 일괄 승인 작업 요청. RestTemplate 으로 batch-service/batch/jobs/approve 호출."
+    )
     @PutMapping("/confirmed/approve")
     public ResponseEntity approveAll() {
         restTemplate.postForEntity(
@@ -90,23 +94,19 @@ public class OrdersController {
 
     /**
      * 발주 이력 목록 조회 겸 검색
-     *
-     * @param ordersType 발주 유형 필터 (선택)
-     * @param startDate 조회 시작일 (선택)
-     * @param endDate 조회 종료일 (선택)
-     * @param keyword 검색 키워드 (선택)
-     * @param page 페이지 번호 (기본값: 0)
-     * @param size 페이지 크기 (기본값: 10)
-     * @return ResponseEntity 발주 이력 목록 (페이징)
      */
+    @Operation(
+            summary = "발주 이력 목록 조회",
+            description = "본사가 보는 발주 이력 (타입/날짜 범위/키워드 필터, 페이징)."
+    )
     @GetMapping("/list/history")
     public ResponseEntity historyList(
-            @RequestParam(required = false) OrdersType ordersType,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @RequestParam(required = false) String keyword,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @Parameter(description = "발주 유형 필터") @RequestParam(required = false) OrdersType ordersType,
+            @Parameter(description = "조회 시작일 (yyyy-MM-dd)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @Parameter(description = "조회 종료일 (yyyy-MM-dd)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @Parameter(description = "검색 키워드 (선택)") @RequestParam(required = false) String keyword,
+            @Parameter(description = "페이지 번호", example = "0") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "페이지 크기", example = "10") @RequestParam(defaultValue = "10") int size
     ) {
         Page<OrdersDto.OrderListRes> result = orderService.findOrderHistory(
                 ordersType, startDate, endDate, keyword,
@@ -116,21 +116,18 @@ public class OrdersController {
 
     /**
      * 이상 발주 목록 조회 겸 검색
-     *
-     * @param startDate 조회 시작일 (선택)
-     * @param endDate 조회 종료일 (선택)
-     * @param keyword 검색 키워드 (선택)
-     * @param page 페이지 번호 (기본값: 0)
-     * @param size 페이지 크기 (기본값: 10)
-     * @return ResponseEntity 위험 발주 목록 (페이징)
      */
+    @Operation(
+            summary = "이상 발주 목록 조회",
+            description = "이상 발주 기준 (수량 급증 등) 위반 발주 목록 (날짜/키워드, 페이징)."
+    )
     @GetMapping("/list/danger")
     public ResponseEntity dangerList(
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @RequestParam(required = false) String keyword,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @Parameter(description = "조회 시작일") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @Parameter(description = "조회 종료일") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @Parameter(description = "검색 키워드 (선택)") @RequestParam(required = false) String keyword,
+            @Parameter(description = "페이지 번호", example = "0") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "페이지 크기", example = "10") @RequestParam(defaultValue = "10") int size
     ) {
         Page<DangerDto.DangerListRes> result = orderService.findDangerOrders(
                 startDate, endDate, keyword,
@@ -140,21 +137,26 @@ public class OrdersController {
 
     /**
      * 발주 상세 정보 조회
-     *
-     * @param ordersIdx 조회할 발주의 고유 ID
-     * @return ResponseEntity 발주 상세 정보
      */
+    @Operation(
+            summary = "발주 상세 조회",
+            description = "특정 발주의 상세 정보 (발주 항목 포함)."
+    )
     @GetMapping("/{ordersIdx}")
-    public ResponseEntity ordersDetail(@PathVariable Long ordersIdx) {
+    public ResponseEntity ordersDetail(
+            @Parameter(description = "발주 고유 ID") @PathVariable Long ordersIdx
+    ) {
         OrdersDto.OrdersRes result = orderService.findById(ordersIdx);
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 
     /**
      * 이상 발주 기준 설정 조회
-     *
-     * @return ResponseEntity 위험 발주 기준 설정 정보
      */
+    @Operation(
+            summary = "이상 발주 기준 조회",
+            description = "본사가 설정한 이상 발주 판정 기준 (수량/금액 등)."
+    )
     @GetMapping("/danger")
     public ResponseEntity find() {
         DangerDto.DangerRes result = orderService.find();
@@ -163,10 +165,11 @@ public class OrdersController {
 
     /**
      * 이상 발주 기준 설정 수정
-     *
-     * @param req 위험 발주 기준 설정 요청 데이터
-     * @return ResponseEntity 수정 결과 메시지
      */
+    @Operation(
+            summary = "이상 발주 기준 수정",
+            description = "본사가 이상 발주 판정 기준 변경. 변경 후 새 발주 부터 적용."
+    )
     @PutMapping("/danger")
     public ResponseEntity save(@RequestBody DangerDto.DangerReq req) {
         orderService.save(req);
@@ -175,36 +178,41 @@ public class OrdersController {
 
     /**
      * 발주 승인
-     *
-     * @param ordersIdx 승인할 발주의 고유 ID
-     * @return ResponseEntity 승인 결과 메시지
      */
+    @Operation(
+            summary = "발주 승인",
+            description = "본사가 특정 발주 단건 승인."
+    )
     @PutMapping("/{ordersIdx}/approve")
-    public ResponseEntity approve(@PathVariable Long ordersIdx) {
+    public ResponseEntity approve(
+            @Parameter(description = "승인할 발주 ID") @PathVariable Long ordersIdx
+    ) {
         orderService.approve(ordersIdx);
         return ResponseEntity.ok(BaseResponse.success("update success"));
     }
 
     /**
      * 발주 반려
-     *
-     * @param ordersIdx 반려할 발주의 고유 ID
-     * @return ResponseEntity 반려 결과 메시지
      */
+    @Operation(
+            summary = "발주 반려",
+            description = "본사가 특정 발주 단건 반려."
+    )
     @PutMapping("/{ordersIdx}/reject")
-    public ResponseEntity reject(@PathVariable Long ordersIdx) {
+    public ResponseEntity reject(
+            @Parameter(description = "반려할 발주 ID") @PathVariable Long ordersIdx
+    ) {
         orderService.reject(ordersIdx);
         return ResponseEntity.ok(BaseResponse.success("update success"));
     }
 
     /**
      * 가맹점 수동 발주 생성
-     *
-     * @param authUserDetails 인증된 사용자 정보
-     * @param req 수동 발주 요청 데이터
-     * @return ResponseEntity 생성 결과 메시지
-     * @throws ResponseStatusException 로그인하지 않은 경우 (401)
      */
+    @Operation(
+            summary = "가맹점 수동 발주 생성",
+            description = "가맹점 사용자가 직접 발주 작성. 인증 필요 (401)."
+    )
     @PostMapping("/store/reg/manual")
     public ResponseEntity createStoreManualOrder(@AuthenticationPrincipal AuthUserDetails authUserDetails, @RequestBody OrdersDto.OrdersReq req) {
         if (authUserDetails == null) {
@@ -216,11 +224,11 @@ public class OrdersController {
 
     /**
      * 가맹점 제안 발주서 조회
-     *
-     * @param authUserDetails 인증된 사용자 정보
-     * @return ResponseEntity 가맹점 진행 중인 발주 목록
-     * @throws ResponseStatusException 로그인하지 않은 경우 (401)
      */
+    @Operation(
+            summary = "가맹점 제안 발주서 조회",
+            description = "현재 가맹점의 진행 중인 자동 발주 목록 (제안 상태). 인증 필요 (401)."
+    )
     @GetMapping("/store/find")
     public ResponseEntity storeFind(@AuthenticationPrincipal AuthUserDetails authUserDetails) {
         if (authUserDetails == null) {
@@ -232,16 +240,15 @@ public class OrdersController {
 
     /**
      * 가맹점 제안 발주서 확정
-     *
-     * @param authUserDetails 인증된 사용자 정보
-     * @param ordersIdx 확정할 발주의 고유 ID
-     * @return ResponseEntity 확정 결과 메시지
-     * @throws ResponseStatusException 로그인하지 않은 경우 (401)
      */
+    @Operation(
+            summary = "가맹점 제안 발주서 확정",
+            description = "가맹점이 자동 발주 제안을 확정. 인증 필요 (401)."
+    )
     @PutMapping("/store/{ordersIdx}/confirm")
     public ResponseEntity confirmStoreOrder(
             @AuthenticationPrincipal AuthUserDetails authUserDetails,
-            @PathVariable Long ordersIdx
+            @Parameter(description = "확정할 발주 ID") @PathVariable Long ordersIdx
     ) {
         if (authUserDetails == null) {
             throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
@@ -252,17 +259,15 @@ public class OrdersController {
 
     /**
      * 가맹점 제안 발주서 항목 추가
-     *
-     * @param authUserDetails 인증된 사용자 정보
-     * @param ordersIdx 항목을 추가할 발주의 고유 ID
-     * @param req 추가할 발주 항목 요청 데이터
-     * @return ResponseEntity 추가 결과 메시지
-     * @throws ResponseStatusException 로그인하지 않은 경우 (401)
      */
+    @Operation(
+            summary = "가맹점 제안 발주서 항목 추가",
+            description = "가맹점이 자동 발주 제안에 항목 추가. 인증 필요 (401)."
+    )
     @PostMapping("/store/{ordersIdx}/items")
     public ResponseEntity addStoreItem(
             @AuthenticationPrincipal AuthUserDetails authUserDetails,
-            @PathVariable Long ordersIdx,
+            @Parameter(description = "항목 추가할 발주 ID") @PathVariable Long ordersIdx,
             @RequestBody OrdersItemDto.OrdersItemReq req
     ) {
         if (authUserDetails == null) {
@@ -274,17 +279,15 @@ public class OrdersController {
 
     /**
      * 가맹점 제안 발주서 항목 수량 수정
-     *
-     * @param authUserDetails 인증된 사용자 정보
-     * @param ordersItemIdx 수정할 발주 항목의 고유 ID
-     * @param req 수정할 수량 요청 데이터
-     * @return ResponseEntity 수정 결과 메시지
-     * @throws ResponseStatusException 로그인하지 않은 경우 (401)
      */
+    @Operation(
+            summary = "가맹점 발주 항목 수량 수정",
+            description = "가맹점이 제안 발주서 항목의 수량 변경. 인증 필요 (401)."
+    )
     @PutMapping("/store/{ordersItemIdx}/items")
     public ResponseEntity updateStoreItemCount(
             @AuthenticationPrincipal AuthUserDetails authUserDetails,
-            @PathVariable Long ordersItemIdx,
+            @Parameter(description = "수정할 발주 항목 ID") @PathVariable Long ordersItemIdx,
             @RequestBody OrdersItemDto.OrdersItemReq req
     ) {
         if (authUserDetails == null) {
@@ -296,16 +299,15 @@ public class OrdersController {
 
     /**
      * 가맹점 제안 발주서 항목 삭제
-     *
-     * @param authUserDetails 인증된 사용자 정보
-     * @param ordersItemIdx 삭제할 발주 항목의 고유 ID
-     * @return ResponseEntity 삭제 결과 메시지
-     * @throws ResponseStatusException 로그인하지 않은 경우 (401)
      */
+    @Operation(
+            summary = "가맹점 발주 항목 삭제",
+            description = "가맹점이 제안 발주서 항목 제거. 인증 필요 (401)."
+    )
     @DeleteMapping("/store/{ordersItemIdx}/items")
     public ResponseEntity deleteStoreItem(
             @AuthenticationPrincipal AuthUserDetails authUserDetails,
-            @PathVariable Long ordersItemIdx
+            @Parameter(description = "삭제할 발주 항목 ID") @PathVariable Long ordersItemIdx
     ) {
         if (authUserDetails == null) {
             throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
@@ -316,16 +318,15 @@ public class OrdersController {
 
     /**
      * 가맹점 제안 발주서 거절
-     *
-     * @param authUserDetails 인증된 사용자 정보
-     * @param ordersIdx 거절할 발주의 고유 ID
-     * @return ResponseEntity 거절 결과 메시지
-     * @throws ResponseStatusException 로그인하지 않은 경우 (401)
      */
+    @Operation(
+            summary = "가맹점 제안 발주서 거절",
+            description = "가맹점이 자동 발주 제안 자체를 거절. 인증 필요 (401)."
+    )
     @PutMapping("/store/{ordersIdx}/reject")
     public ResponseEntity rejectStoreOrder(
             @AuthenticationPrincipal AuthUserDetails authUserDetails,
-            @PathVariable Long ordersIdx
+            @Parameter(description = "거절할 발주 ID") @PathVariable Long ordersIdx
     ) {
         if (authUserDetails == null) {
             throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
@@ -336,17 +337,16 @@ public class OrdersController {
 
     /**
      * 가맹점 발주 이력 조회 (페이징)
-     *
-     * @param authUserDetails 인증된 사용자 정보
-     * @param page 페이지 번호 (기본값: 0)
-     * @param size 페이지 크기 (기본값: 10)
-     * @return ResponseEntity 가맹점 발주 목록 (페이징)
      */
+    @Operation(
+            summary = "가맹점 발주 이력 조회",
+            description = "현재 가맹점의 발주 이력 (페이징). 인증 필요 (401)."
+    )
     @GetMapping("/store/list/paged")
     public ResponseEntity storeListPaged(
             @AuthenticationPrincipal AuthUserDetails authUserDetails,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @Parameter(description = "페이지 번호", example = "0") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "페이지 크기", example = "10") @RequestParam(defaultValue = "10") int size
     ) {
         if (authUserDetails == null) {
             throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
@@ -357,16 +357,15 @@ public class OrdersController {
 
     /**
      * 가맹점 발주 취소
-     *
-     * @param authUserDetails 인증된 사용자 정보
-     * @param ordersIdx 취소할 발주의 고유 ID
-     * @return ResponseEntity 취소 결과 메시지
-     * @throws ResponseStatusException 로그인하지 않은 경우 (401)
      */
+    @Operation(
+            summary = "가맹점 발주 취소",
+            description = "가맹점이 본인 발주 취소. 인증 필요 (401)."
+    )
     @PutMapping("/store/{ordersIdx}/cancel")
     public ResponseEntity cancel(
             @AuthenticationPrincipal AuthUserDetails authUserDetails,
-            @PathVariable Long ordersIdx
+            @Parameter(description = "취소할 발주 ID") @PathVariable Long ordersIdx
     ) {
         if (authUserDetails == null) {
             throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");

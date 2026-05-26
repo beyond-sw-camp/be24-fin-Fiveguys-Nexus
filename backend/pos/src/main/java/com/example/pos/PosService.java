@@ -12,6 +12,8 @@ import com.example.pos.domain.store.StoreInventoryRepository;
 import com.example.pos.domain.store.StoreRepository;
 import com.example.pos.domain.store.model.Store;
 import com.example.pos.domain.store.model.StoreInventory;
+import com.example.pos.event.PaymentEvent;
+import com.example.pos.event.PaymentEventItem;
 import com.example.pos.model.*;
 import com.example.pos.model.PosStoreInventoryDto;
 import lombok.RequiredArgsConstructor;
@@ -265,6 +267,10 @@ public class PosService {
         }
         posOrdersItemRepository.saveAll(orderLines);
 
+        // Kafka 이벤트 발행
+        com.example.pos.event.PaymentEvent event = buildPaymentEvent(savedPay, store, lines);
+        eventPublisher.publishEvent(new com.example.pos.event.PaymentDomainEvent(event));
+
         return PosPayDto.PayRes.builder()
                 .posPayIdx(savedPay.getIdx())
                 .storeIdx(store.getIdx())
@@ -273,6 +279,30 @@ public class PosService {
                 .paidAt(savedPay.getPaidAt())
                 .items(lineResList)
                 .build();
+    }
+
+    private com.example.pos.event.PaymentEvent buildPaymentEvent(PosPay savedPay, Store store, List<MenuOrderLine> lines) {
+        List<com.example.pos.event.PaymentEventItem> items = lines.stream()
+                .map(row -> new com.example.pos.event.PaymentEventItem(
+                        row.menu().getIdx(),
+                        row.menu().getMenuName(),
+                        null, // POS 메뉴는 카테고리 식별자(idx)가 없으므로 null
+                        row.menu().getMenuCategoryName(),
+                        row.menu().getPrice(),
+                        row.quantity(),
+                        (long) row.menu().getPrice() * row.quantity()
+                ))
+                .toList();
+
+        return new com.example.pos.event.PaymentEvent(
+                savedPay.getIdx(),
+                store.getIdx(),
+                store.getStoreName(),
+                savedPay.getMethod().name(),       // PosPayMethod enum → String
+                savedPay.getPaidAt(),
+                savedPay.getPayAmount(),
+                items
+        );
     }
 
     private Map<Long, Integer> aggregateProductNeedFromRecipes(List<MenuOrderLine> lines) {

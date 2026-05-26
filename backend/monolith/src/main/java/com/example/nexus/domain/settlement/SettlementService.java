@@ -9,6 +9,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -49,28 +50,25 @@ public class SettlementService {
 
         // 테스트용: 결제 금액이 정산 금액과 일치한다고 가정
 
-            settlement.setPaid(true);
-            settlement.setPgPaymentId(dto.getPaymentId());
+        settlement.setPaid(true);
+        settlement.setPgPaymentId(dto.getPaymentId());
 
-            // 관련 head_income도 status=true로 업데이트 (paid 상태로 표시)
-            List<HeadIncome> headIncomeList = headIncomeRepository.findBySettlementIdx(settlementIdx);
-            for (HeadIncome headIncome : headIncomeList) {
-                headIncome.setStatus(true);
-                headIncomeRepository.save(headIncome);
-            }
-
-            // AfterBilling 업데이트 (실패 건 수동 결제 성공 시)
-            afterBillingRepository.findByStoreIdxAndPayedMonth(settlement.getStoreIdx(), settlement.getSettlementYm())
-                    .ifPresent(after -> {
-                        after.setIsPaid(true);
-                        after.setIsSuccess(true);
-                        after.setIsRetryFailed(false);
-                        after.setFailReason(null);
-                        afterBillingRepository.save(after);
-                    });
+        // 관련 head_income도 status=true로 업데이트 (paid 상태로 표시)
+        List<HeadIncome> headIncomeList = headIncomeRepository.findBySettlementIdx(settlementIdx);
+        for (HeadIncome headIncome : headIncomeList) {
+            headIncome.setStatus(true);
+            headIncomeRepository.save(headIncome);
         }
 
-            
+        // AfterBilling 업데이트 (실패 건 수동 결제 성공 시)
+        afterBillingRepository.findByStoreIdxAndPayedMonth(settlement.getStoreIdx(), settlement.getSettlementYm())
+                .ifPresent(after -> {
+                    after.setIsPaid(true);
+                    after.setIsSuccess(true);
+                    after.setIsRetryFailed(false);
+                    after.setFailReason(null);
+                    afterBillingRepository.save(after);
+                });
 
     }
 

@@ -8,4 +8,5 @@ import java.util.Optional;
 
 public interface AfterBillingRepository extends JpaRepository<AfterBilling, Long> {
     List<AfterBilling> findByStoreIdxAndIsRetryFailedTrue(Long storeIdx);
+    Optional<AfterBilling> findByStoreIdxAndPayedMonth(Long storeIdx, String payedMonth);
 }

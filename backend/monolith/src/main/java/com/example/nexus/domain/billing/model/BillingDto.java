@@ -25,6 +25,8 @@ public class BillingDto {
         private String authenticatedAt;
         private String method;
         private Long storeIdx;
+        private String cardCompany;
+        private String cardNumber;
 
         public static BillingResponseDto from(Billing billing) {
             return BillingResponseDto.builder()
@@ -34,6 +36,8 @@ public class BillingDto {
                     .authenticatedAt(billing.getAuthenticatedAt())
                     .method(billing.getMethod())
                     .storeIdx(billing.getStoreIdx())
+                    .cardCompany(billing.getCardCompany())
+                    .cardNumber(billing.getCardNumber())
                     .build();
         }
     }

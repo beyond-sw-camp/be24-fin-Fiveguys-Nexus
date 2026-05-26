@@ -32,8 +32,6 @@ public class BillingService {
         String basicAuthHeader = "Basic " + Base64.getEncoder()
                 .encodeToString((secretKey + ":").getBytes());
 
-        // 프론트에서 넘어온 customerKey 대신 세션의 storeIdx를 사용하여 Toss API 호출
-        // (Toss는 요청 시 사용한 customerKey와 동일한 값을 보내야 함)
         String customerKey = "STORE_" + storeIdx;
 
         try {
@@ -52,25 +50,49 @@ public class BillingService {
                 throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
             }
 
-            // 1. 이미 해당 가맹점의 빌링 정보가 있는지 확인 (중복 체크)
+            // --- 1. 데이터 추출 및 매핑 (방어적 코드) ---
+            String mId = getSafeString(responseBody, "mId");
+            String resCustomerKey = getSafeString(responseBody, "customerKey");
+            String authenticatedAt = getSafeString(responseBody, "authenticatedAt");
+            String method = getSafeString(responseBody, "method");
+            String billingKey = getSafeString(responseBody, "billingKey");
+
+            String cardCompany = null;
+            String cardNumber = null;
+
+            // 카드 정보 추출
+            Object cardObj = responseBody.get("card");
+            if (cardObj instanceof Map) {
+                Map<String, Object> cardInfo = (Map<String, Object>) cardObj;
+                
+                // issuerCode로 카드사 이름 찾기
+                Object issuerCodeObj = cardInfo.get("issuerCode");
+                String issuerCode = (issuerCodeObj != null) ? issuerCodeObj.toString() : "";
+                cardCompany = getCardCompanyName(issuerCode);
+                
+                // 카드 번호 (토스가 마스킹해서 줌)
+                Object numberObj = cardInfo.get("number");
+                cardNumber = (numberObj != null) ? numberObj.toString() : null;
+            }
+
+            // --- 2. DB 저장 및 업데이트 ---
+            final String finalCardCompany = cardCompany;
+            final String finalCardNumber = cardNumber;
+
             billingRepository.findByStoreIdx(storeIdx).ifPresentOrElse(
-                // 2-1. 존재하면 기존 정보를 업데이트 (Dirty Checking 활용)
                 existingBilling -> existingBilling.updateBillingInfo(
-                    responseBody.get("mId").toString(),
-                    responseBody.get("customerKey").toString(),
-                    responseBody.get("authenticatedAt").toString(),
-                    responseBody.get("method").toString(),
-                    responseBody.get("billingKey").toString()
+                    mId, resCustomerKey, authenticatedAt, method, billingKey, finalCardCompany, finalCardNumber
                 ),
-                // 2-2. 존재하지 않으면 새로 생성하여 저장
                 () -> {
                     Billing newBilling = Billing.builder()
-                        .mId(responseBody.get("mId").toString())
-                        .customerKey(responseBody.get("customerKey").toString())
-                        .authenticatedAt(responseBody.get("authenticatedAt").toString())
-                        .method(responseBody.get("method").toString())
-                        .billingKey(responseBody.get("billingKey").toString())
+                        .mId(mId)
+                        .customerKey(resCustomerKey)
+                        .authenticatedAt(authenticatedAt)
+                        .method(method)
+                        .billingKey(billingKey)
                         .storeIdx(storeIdx)
+                        .cardCompany(finalCardCompany)
+                        .cardNumber(finalCardNumber)
                         .build();
                     billingRepository.save(newBilling);
                 }
@@ -79,6 +101,31 @@ public class BillingService {
         } catch (Exception e) {
             throw new RuntimeException("빌링키 발급 중 오류 발생: " + e.getMessage());
         }
+    }
+
+    // 맵에서 안전하게 문자열 가져오기
+    private String getSafeString(Map<?, ?> map, String key) {
+        Object val = map.get(key);
+        return (val != null) ? val.toString() : "";
+    }
+
+    // 카드사 코드 매핑 (Toss Payments 표준 코드)
+    private String getCardCompanyName(String code) {
+        if (code == null || code.isEmpty()) return "알 수 없는 카드";
+        return switch (code) {
+            case "31" -> "비씨카드";
+            case "11" -> "국민카드";
+            case "51" -> "삼성카드";
+            case "61" -> "현대카드";
+            case "41" -> "신한카드";
+            case "21" -> "하나카드";
+            case "71" -> "롯데카드";
+            case "91" -> "농협카드";
+            case "36" -> "씨티카드";
+            case "33" -> "우리카드";
+            case "W1" -> "우리컬쳐";
+            default -> "기타카드(" + code + ")";
+        };
     }
 
     @Transactional(readOnly = true)

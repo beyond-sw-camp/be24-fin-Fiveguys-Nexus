@@ -19,18 +19,23 @@ public class Billing {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String mId; // 상점 ID, 토스페이먼츠에서 발급
-    private String customerKey; // 구매자 ID, 빌링키와 연결
+    private String mId; // 상점 ID
+    private String customerKey; // 구매자 ID
     private String authenticatedAt; // 등록 시간
     private String method; // 결제 수단
     private String billingKey;
     private Long storeIdx;
+    
+    private String cardCompany; // 카드사 이름 (예: 신한카드)
+    private String cardNumber;  // 마스킹된 카드번호 (예: 4518********1234)
 
-    public void updateBillingInfo(String mId, String customerKey, String authenticatedAt, String method, String billingKey) {
+    public void updateBillingInfo(String mId, String customerKey, String authenticatedAt, String method, String billingKey, String cardCompany, String cardNumber) {
         this.mId = mId;
         this.customerKey = customerKey;
         this.authenticatedAt = authenticatedAt;
         this.method = method;
         this.billingKey = billingKey;
+        this.cardCompany = cardCompany;
+        this.cardNumber = cardNumber;
     }
 }

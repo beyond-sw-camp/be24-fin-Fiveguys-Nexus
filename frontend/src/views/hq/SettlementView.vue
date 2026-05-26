@@ -42,8 +42,11 @@
     <div class="grid grid-cols-1 gap-4">
       <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
         <div class="p-5">
-          <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">매장 청구 합계</p>
-          <p class="text-2xl font-black text-green-600">₩ {{ totalBillingAmount.toLocaleString() }}</p>
+          <div class="flex items-center gap-2">
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">매장 청구 합계</p>
+            <p class="text-xs font-bold text-gray-400">(단위: 천원)</p>
+          </div>
+          <p class="text-2xl font-black text-green-600">₩ {{ Math.floor(totalBillingAmount / 1000).toLocaleString() }}</p>
           <p class="text-xs text-gray-400 mt-2 pt-2 border-t border-gray-100">{{ selectedMonth }}</p>
         </div>
       </div>
@@ -70,7 +73,7 @@
           <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">대상</th>
           <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">정산 기간</th>
           <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">발주/납품 건수</th>
-          <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">정산금액</th>
+          <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">정산금액 (천원)</th>
           <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">상태</th>
         </tr>
         </thead>
@@ -80,7 +83,7 @@
           <td class="px-5 py-3.5 font-semibold text-gray-900">{{ s.storeName }}</td>
           <td class="px-5 py-3.5 text-xs text-gray-400 font-mono">{{ s.periodStart }} ~ {{ s.periodEnd }}</td>
           <td class="px-5 py-3.5 text-gray-600">{{ s.orderCount }}건</td>
-          <td class="px-5 py-3.5 font-bold text-gray-900">₩ {{ s.totalPrice?.toLocaleString() }}</td>
+          <td class="px-5 py-3.5 font-bold text-gray-900">₩ {{ Math.floor((s.totalPrice || 0) / 1000).toLocaleString() }}</td>
           <td class="px-5 py-3.5">
             <span
               class="text-xs font-bold px-2 py-0.5 rounded"

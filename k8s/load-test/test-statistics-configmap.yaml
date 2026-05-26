@@ -10,5 +10,8 @@ data:
   DB_USER: root
   KAFKA_BOOTSTRAP_SERVERS: nexus-kafka-kafka-bootstrap.kafka.svc:9092
   KAFKA_GROUP_ID: test-statistics-prod
-  SQL_INIT_MODE: never
-  REDIS_HOST: "test-redis-service"
+  # schema.sql 실행 보장 (ShedLock 분산 락 테이블 자동 생성, #893 quick fix)
+  # IF NOT EXISTS 라 멱등성 OK. data.sql 은 없으므로 부담 0
+  SQL_INIT_MODE: always
+  # Redis Cluster (Master 3 + Slave 3) — #893 도입, single redis (REDIS_HOST) 대체
+  REDIS_CLUSTER_NODES: "redis-cluster-0.redis-cluster-service:6379,redis-cluster-1.redis-cluster-service:6379,redis-cluster-2.redis-cluster-service:6379,redis-cluster-3.redis-cluster-service:6379,redis-cluster-4.redis-cluster-service:6379,redis-cluster-5.redis-cluster-service:6379"

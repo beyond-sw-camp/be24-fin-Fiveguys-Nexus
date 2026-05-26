@@ -17,6 +17,9 @@ spec:
         app: test-order-batch
       annotations:
         sidecar.istio.io/inject: "false"
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8090"
     spec:
       containers:
         - name: nexus-batch

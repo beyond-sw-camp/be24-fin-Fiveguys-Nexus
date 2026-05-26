@@ -109,7 +109,8 @@ public class InventoryMovementService {
                 headInventory.getManufacturedDate(),
                 req.getQuantity(),
                 store,
-                product
+                product,
+                null   // ordersItemIdx: 수동 이동은 발주와 무관
         );
 
         storeInventoryRepository.save(storeInventory);

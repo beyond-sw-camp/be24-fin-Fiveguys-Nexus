@@ -63,6 +63,10 @@ public class InventoryMovement {
     @Column(name = "memo")
     private String memo;
 
+    // 롤백 식별용: 어떤 주문으로 생성된 이동 기록인지 추적
+    @Column(name = "orders_idx")
+    private Long ordersIdx;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -84,7 +88,8 @@ public class InventoryMovement {
                 MovementLocationType.HEAD,
                 null,
                 memo,
-                null
+                null,   // ordersIdx
+                null    // createdAt
         );
     }
 
@@ -99,7 +104,8 @@ public class InventoryMovement {
                 MovementLocationType.STORE,
                 storeIdx,
                 memo,
-                null
+                null,   // ordersIdx
+                null    // createdAt
         );
     }
 }

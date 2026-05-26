@@ -8,6 +8,7 @@ import com.example.nexus.domain.orders.model.OrdersDto;
 import com.example.nexus.domain.orders.model.OrdersItemDto;
 import com.example.nexus.domain.user.model.AuthUserDetails;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -15,6 +16,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
@@ -28,6 +30,10 @@ import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 @RequiredArgsConstructor
 public class OrdersController {
     private final OrdersService orderService;
+    private final RestTemplate restTemplate;
+
+    @Value("${batch.service.url:http://batch-service:8090}")
+    private String batchServiceUrl;
 
     /**
      * 자동 발주 목록 조회 겸 검색
@@ -75,7 +81,10 @@ public class OrdersController {
      */
     @PutMapping("/confirmed/approve")
     public ResponseEntity approveAll() {
-        orderService.approveAllConfirmed();
+        restTemplate.postForEntity(
+            batchServiceUrl + "/batch/jobs/approve",
+            null, String.class
+        );
         return ResponseEntity.ok(BaseResponse.success("update success"));
     }
 

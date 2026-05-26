@@ -1,5 +1,7 @@
 # Blue/Green 배포 - Green 슬롯
 # Service의 selector.slot 값을 blue/green으로 전환하여 트래픽을 제어합니다.
+#
+# Frontend Nginx 가 TLS termination (nexus-tls Secret 의 ZeroSSL cert 사용)
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -24,3 +26,17 @@ spec:
           image: deatytim/nexusfront:latest
           ports:
             - containerPort: 80
+            - containerPort: 443
+          volumeMounts:
+            - name: ssl-certs
+              mountPath: /etc/nginx/ssl
+              readOnly: true
+      volumes:
+        - name: ssl-certs
+          secret:
+            secretName: nexus-tls          # ZeroSSL cert (kubectl-create 등록됨)
+            items:
+              - key: tls.crt
+                path: fullchain.pem        # Pod 안 /etc/nginx/ssl/fullchain.pem
+              - key: tls.key
+                path: privkey.pem          # Pod 안 /etc/nginx/ssl/privkey.pem

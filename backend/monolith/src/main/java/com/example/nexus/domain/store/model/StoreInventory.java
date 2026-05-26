@@ -53,4 +53,8 @@ public class StoreInventory {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_idx", nullable = false)
     private Product product;
+
+    // 롤백 식별용: 어떤 orders_item으로 생성된 재고인지 추적
+    @Column(name = "orders_item_idx")
+    private Long ordersItemIdx;
 }

@@ -20,6 +20,10 @@ public class OrdersItem {
     @Column(name = "count", nullable = false)
     private Integer count;
 
+    @Builder.Default
+    @Column(name = "processed", nullable = false)
+    private boolean processed = false;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "orders_idx", nullable = false)
     private Orders orders;

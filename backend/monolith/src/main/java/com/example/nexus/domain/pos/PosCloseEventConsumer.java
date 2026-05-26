@@ -40,7 +40,7 @@ public class PosCloseEventConsumer {
             }
         }
         
-        // 2. AI 자동 발주 수행
+        // AI 자동 발주 수행
         autoOrderService.generateAutoOrder(event.userIdx());
     }
 
@@ -57,11 +57,7 @@ public class PosCloseEventConsumer {
             detail.put("productIdx", productIdx);
             detail.put("required", amount);
             detail.put("availableTotal", availableTotal);
-            // 부족하더라도 일단 진행할지 에러를 던질지 결정. 기존 로직은 에러를 던졌음.
             log.warn("본사 재고 부족: productIdx={}, required={}, available={}", productIdx, amount, availableTotal);
-            // 에러를 던지면 Kafka 메시지 처리가 실패하고 무한 재시도될 수 있으므로, 가능한 만큼만 차감하고 넘길 수도 있음
-            // 여기서는 기존 로직대로 던지거나, 로그만 남김. 카프카 특성상 에러를 던지면 Dead Letter Queue 설정이 필요할 수 있음.
-            // 기존 PosService 코드는 throw new BaseException을 했음.
             throw new BaseException(BaseResponseStatus.STORE_INVENTORY_INSUFFICIENT, detail);
         }
         

@@ -1,4 +1,4 @@
-package com.example.nexus.event;
+package com.example.pos.event;
 
 import java.util.List;
 
@@ -6,7 +6,6 @@ public record MenuEvent(
         Long menuIdx,
         String menuName,
         Integer price,
-        Long menuCategoryIdx,
         String menuCategoryName,
         String imgPath,
         Boolean isDeleted,

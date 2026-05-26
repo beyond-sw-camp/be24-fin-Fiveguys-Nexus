@@ -35,21 +35,18 @@ dependencies {
     // --- env (신규 추가) ---
     implementation 'io.github.cdimascio:dotenv-java:3.0.0'
 
-    // --- Spring AI (OpenAI + MCP Client) ---
-    implementation platform('org.springframework.ai:spring-ai-bom:1.0.0-M6')
-    implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter'
-    implementation 'org.springframework.ai:spring-ai-mcp-client-spring-boot-starter'
-
-
-    // --- 테스트 관련 ---
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    // --- Kafka ---
+    implementation 'org.springframework.kafka:spring-kafka'
 
     // 유레카 클라이언트 라이브러리 (서비스들의 주소를 관리함)
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 
     // Gson 최신 버전 강제 주입!
     implementation 'com.google.code.gson:gson:2.11.0'
+
+    // --- 테스트 관련 ---
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 bootRun {

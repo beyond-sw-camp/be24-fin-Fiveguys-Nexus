@@ -233,7 +233,10 @@ public class StoreService {
             StoreEvent event = new StoreEvent(
                     saved.getIdx(),
                     saved.getStoreName(),
-                    saved.isDeleted()
+                    saved.isDeleted(),
+                    saved.getUser().getIdx(),
+                    saved.getAddress(),
+                    saved.getAddressDetail()
             );
 
             applicationEventPublisher.publishEvent(new StoreDomainEvent(event, KafkaTopics.STORE_CREATED));
@@ -340,7 +343,10 @@ public class StoreService {
             StoreEvent event = new StoreEvent(
                     store.getIdx(),
                     store.getStoreName(),
-                    store.isDeleted()
+                    store.isDeleted(),
+                    store.getUser().getIdx(),
+                    store.getAddress(),
+                    store.getAddressDetail()
             );
 
             applicationEventPublisher.publishEvent(new StoreDomainEvent(event, KafkaTopics.STORE_UPDATED));

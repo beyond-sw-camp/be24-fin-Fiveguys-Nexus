@@ -1,4 +1,4 @@
-package com.example.nexus.event;
+package com.example.pos.event;
 
 public final class KafkaTopics {
     public static final String POS_PAYMENT_CREATED = "pos.payment.created";

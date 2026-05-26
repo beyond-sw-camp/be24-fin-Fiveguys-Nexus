@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.domain.Persistable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,9 +16,8 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Menu {
+public class Menu implements Persistable<Long> {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "menu_idx")
     private Long idx;
 
@@ -37,18 +37,31 @@ public class Menu {
     @Builder.Default
     private List<MenuItem> menuItemList = new ArrayList<>();
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "menu_category_idx")
-    private MenuCategory menuCategory;
+    @Column(name = "menu_category_name",  nullable = false)
+    private String menuCategoryName;
 
-    public void update(String menuName, Integer price, String imgPath, MenuCategory category) {
+    public void update(String menuName, Integer price, String imgPath, String menuCategoryName, boolean isDeleted) {
         this.menuName = menuName;
         this.price = price;
         this.imgPath = imgPath;
-        this.menuCategory = category;
+        this.menuCategoryName = menuCategoryName;
+        this.isDeleted = isDeleted;
     }
 
-    public void deleteTrue() {
-        this.isDeleted = true;
+    @Transient
+    @Builder.Default
+    private boolean isNew = false;
+
+    @Override
+    public Long getId() {
+        return idx;
     }
+
+    @Override
+    public boolean isNew() {
+        return isNew;
+    }
+
+    @PostLoad @PrePersist
+    void markNotNew() { this.isNew = false; }
 }

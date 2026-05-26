@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import org.springframework.data.domain.Persistable;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -15,10 +17,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Store {
+public class Store implements Persistable<Long> {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "store_idx")
     private Long idx;
 
@@ -31,25 +32,23 @@ public class Store {
     @Column(name = "address_detail", nullable = false)
     private String addressDetail;
 
-    @Column(name = "file_path", nullable = false)
-    private String filePath;
-
-    @Column(nullable = false,  unique = true)
-    private String business;
-
-    @Column(nullable = false)
-    private String postcode;
-
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "closed_at")
-    private LocalDateTime closedAt;
-
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted = false;
 
     @Column(name = "user_idx", nullable = false)
     private Long userIdx;
 
+    @Transient
+    @Builder.Default
+    private boolean isNew = false;
+
+    @Override
+    public Long getId() {
+        return idx;
+    }
+
+    @Override
+    public boolean isNew() {
+        return isNew;
+    }
 }

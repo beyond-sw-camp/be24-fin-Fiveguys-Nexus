@@ -1,7 +1,10 @@
 package com.example.pos.config;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -31,6 +34,13 @@ public class SwaggerConfig {
                                 1. **결제 발생**: POS 결제 완료 시 Kafka `pos.payment.created` 토픽 발행 (통계 서버 연동)
                                 2. **마감 발생**: POS 마감 시 Kafka `pos.close.completed` 토픽 발행 (본사 서버 연동)
                                 3. **데이터 동기화(Consumer)**: 본사 서버의 원자재, 메뉴 변경 시 Kafka를 통해 POS DB 자동 동기화
-                                """));
+                                """))
+                .addSecurityItem(new SecurityRequirement().addList("X-User-Idx"))
+                .components(new Components()
+                        .addSecuritySchemes("X-User-Idx", new SecurityScheme()
+                                .name("X-User-Idx")
+                                .type(SecurityScheme.Type.APIKEY)
+                                .in(SecurityScheme.In.HEADER)
+                                .description("가맹점주 식별자(user_idx)를 입력하세요.")));
     }
 }

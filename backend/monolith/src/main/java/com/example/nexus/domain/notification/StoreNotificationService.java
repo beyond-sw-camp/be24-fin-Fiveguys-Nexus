@@ -31,7 +31,7 @@ public class StoreNotificationService {
      */
     public Slice<StoreNotificationDto.ListRes> getNotifications(AuthUserDetails authUserDetails, int page, int size) {
         Store store = storeRepository.findByUserIdx(authUserDetails.getIdx()).orElseThrow(
-                () -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+                () -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
         return storeNotificationRepository.findAllByStore_IdxOrderByCreatedAtDesc(store.getIdx(), PageRequest.of(page, size))
                 .map(StoreNotificationDto.ListRes::from);
     }
@@ -41,7 +41,7 @@ public class StoreNotificationService {
      */
     public Slice<StoreNotificationDto.ListRes> getNotificationsByReadStatus(AuthUserDetails authUserDetails, boolean isRead, int page, int size) {
         Store store = storeRepository.findByUserIdx(authUserDetails.getIdx()).orElseThrow(
-                () -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+                () -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
         return storeNotificationRepository.findAllByStore_IdxAndIsReadOrderByCreatedAtDesc(store.getIdx(), isRead, PageRequest.of(page, size))
                 .map(StoreNotificationDto.ListRes::from);
     }
@@ -51,7 +51,7 @@ public class StoreNotificationService {
      */
     public Slice<StoreNotificationDto.ListRes> getNotificationsByType(AuthUserDetails authUserDetails, NotificationType type, int page, int size) {
         Store store = storeRepository.findByUserIdx(authUserDetails.getIdx()).orElseThrow(
-                () -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+                () -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
         return storeNotificationRepository.findAllByStore_IdxAndTypeOrderByCreatedAtDesc(store.getIdx(), type, PageRequest.of(page, size))
                 .map(StoreNotificationDto.ListRes::from);
     }
@@ -61,7 +61,7 @@ public class StoreNotificationService {
      */
     public StoreNotificationDto.UnreadCountRes getUnreadCount(AuthUserDetails authUserDetails) {
         Store store = storeRepository.findByUserIdx(authUserDetails.getIdx()).orElseThrow(
-                () -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+                () -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
         long count = storeNotificationRepository.countByStore_IdxAndIsReadFalse(store.getIdx());
         return StoreNotificationDto.UnreadCountRes.builder().count(count).build();
     }
@@ -72,7 +72,7 @@ public class StoreNotificationService {
     @Transactional
     public void markAsRead(Long notificationIdx) {
         StoreNotification notification = storeNotificationRepository.findById(notificationIdx)
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_NOTIFICATION));
         notification.markAsRead();
     }
 
@@ -82,7 +82,7 @@ public class StoreNotificationService {
     @Transactional
     public void markAllAsRead(AuthUserDetails authUserDetails) {
         Store store = storeRepository.findByUserIdx(authUserDetails.getIdx()).orElseThrow(
-                () -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+                () -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
         storeNotificationRepository.markAllAsReadByStoreIdx(store.getIdx());
     }
 
@@ -91,7 +91,7 @@ public class StoreNotificationService {
      */
     public SseEmitter subscribe(AuthUserDetails authUserDetails) {
         Store store = storeRepository.findByUserIdx(authUserDetails.getIdx()).orElseThrow(
-                () -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+                () -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
         return storeSseEmitterService.subscribe(store.getIdx());
     }
 

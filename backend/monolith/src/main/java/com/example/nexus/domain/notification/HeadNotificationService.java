@@ -1,6 +1,8 @@
 package com.example.nexus.domain.notification;
 
 import com.example.nexus.common.enums.NotificationType;
+import com.example.nexus.common.exception.BaseException;
+import com.example.nexus.common.model.BaseResponseStatus;
 import com.example.nexus.domain.notification.model.HeadNotification;
 import com.example.nexus.domain.notification.model.HeadNotificationDto;
 import lombok.RequiredArgsConstructor;
@@ -57,7 +59,7 @@ public class HeadNotificationService {
     @Transactional
     public void markAsRead(Long notificationIdx) {
         HeadNotification notification = headNotificationRepository.findById(notificationIdx)
-                .orElseThrow(() -> new IllegalArgumentException("알림을 찾을 수 없습니다."));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_NOTIFICATION));
         notification.markAsRead();
     }
 

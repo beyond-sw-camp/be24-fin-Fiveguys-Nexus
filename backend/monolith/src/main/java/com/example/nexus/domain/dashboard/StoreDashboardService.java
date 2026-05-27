@@ -42,7 +42,7 @@ public class StoreDashboardService {
     public StoreDashboardDto.SalesKpiRes getSalesKpi(Long userIdx) {
         // 점주의 매장 조회
         Store store = storeRepository.findByUserIdx(userIdx)
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
 
         // 금일/전일 기간 설정
         LocalDate today = LocalDate.now();
@@ -73,7 +73,7 @@ public class StoreDashboardService {
     public StoreDashboardDto.PendingOrderKpiRes getPendingOrderKpi(Long userIdx) {
         // 점주의 매장 조회
         Store store = storeRepository.findByUserIdx(userIdx)
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
 
         // 승인 대기 상태의 자동 발주 건수 조회
         long pendingCount = ordersRepository.countByStore_IdxAndOrdersStatusAndOrdersType(
@@ -91,7 +91,7 @@ public class StoreDashboardService {
     public StoreDashboardDto.InventoryRiskKpiRes getInventoryRiskKpi(Long userIdx) {
         // 점주의 매장 조회
         Store store = storeRepository.findByUserIdx(userIdx)
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
 
         // 상태별 위험 재고 건수 조회
         long lowCount = storeInventoryRepository.countByStore_IdxAndStatus(store.getIdx(), InventoryStatus.LOW);
@@ -112,7 +112,7 @@ public class StoreDashboardService {
     public StoreDashboardDto.SettlementKpiRes getSettlementKpi(Long userIdx) {
         // 점주의 매장 조회
         Store store = storeRepository.findByUserIdx(userIdx)
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
 
         // 현재/직전 반월 구간 계산
         LocalDate today = LocalDate.now();
@@ -166,7 +166,7 @@ public class StoreDashboardService {
     public StoreDashboardDto.DailySalesChartRes getDailySalesChart(Long userIdx) {
         // 점주의 매장 조회
         Store store = storeRepository.findByUserIdx(userIdx)
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
 
         // 이번 주 일요일 ~ 토요일 구간 계산
         LocalDate today = LocalDate.now();
@@ -208,7 +208,7 @@ public class StoreDashboardService {
     public List<StoreDashboardDto.PendingOrderItem> getPendingOrderList(Long userIdx) {
         // 점주의 매장 조회
         Store store = storeRepository.findByUserIdx(userIdx)
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
 
         // WAITING + AUTO 발주서 목록 조회
         return ordersRepository
@@ -223,7 +223,7 @@ public class StoreDashboardService {
     public List<StoreDashboardDto.MyDeliveryItem> getMyDeliveryList(Long userIdx) {
         // 점주의 매장 조회
         Store store = storeRepository.findByUserIdx(userIdx)
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
 
         // 배송완료(DELIVERED) 제외한 배송 목록 조회
         return deliveryRepository
@@ -238,7 +238,7 @@ public class StoreDashboardService {
     public List<StoreDashboardDto.InventoryWarningItem> getInventoryWarningList(Long userIdx) {
         // 점주의 매장 조회
         Store store = storeRepository.findByUserIdx(userIdx)
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_DATA));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.STORE_NOT_FOUND));
 
         // LOW/CRITICAL 상태 재고 목록 조회 (CRITICAL 우선 정렬)
         return storeInventoryRepository

@@ -3,6 +3,9 @@ package com.example.nexus.domain.product;
 import com.example.nexus.common.model.BaseResponse;
 import com.example.nexus.domain.product.model.ProductDto;
 import com.example.nexus.domain.user.model.AuthUserDetails;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -16,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
+@Tag(name = "제품 관리", description = "원자재 제품 등록, 조회, 수정, 삭제 관리 API (본사 및 가맹점용)")
 @RequestMapping("/product")
 @RestController
 @RequiredArgsConstructor
@@ -23,6 +27,7 @@ public class ProductController {
     private final ProductService productService;
 
     // 신규 제품 등록
+    @Operation(summary = "신규 제품 등록", description = "새로운 원자재 제품을 등록합니다.")
     @PostMapping("/reg")
     public ResponseEntity<BaseResponse<ProductDto.RegRes>> addNewProduct(@Valid @RequestBody ProductDto.RegReq dto) {
         ProductDto.RegRes result = productService.addProduct(dto);
@@ -30,11 +35,12 @@ public class ProductController {
     }
 
     // 제품 목록으로 조회
+    @Operation(summary = "제품 목록 조회", description = "전체 제품 목록을 페이징하여 조회합니다. 카테고리 필터를 지원합니다.")
     @GetMapping("/list")
     public ResponseEntity<BaseResponse<ProductDto.ProductPageRes>> readProductList(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String categoryName) {
+            @Parameter(description = "페이지 번호", example = "0") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "페이지 크기", example = "10") @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "카테고리명 필터") @RequestParam(required = false) String categoryName) {
 
         Pageable pageable = PageRequest.of(page, size);
         ProductDto.ProductPageRes result = productService.findAllProduct(pageable, categoryName);
@@ -42,6 +48,7 @@ public class ProductController {
     }
 
     // 기존 제품 수정
+    @Operation(summary = "제품 정보 수정", description = "기존 제품의 정보를 수정합니다.")
     @PutMapping("/update")
     public ResponseEntity<BaseResponse<String>> updateProduct(@Valid @RequestBody ProductDto.RegReq dto) {
         boolean isModified = productService.updateProduct(dto.getIdx(), dto);
@@ -55,6 +62,7 @@ public class ProductController {
     }
 
     // 기존 제품 삭제
+    @Operation(summary = "제품 삭제", description = "기존 제품을 삭제(소프트 삭제) 처리합니다.")
     @DeleteMapping("/delete")
     public ResponseEntity<BaseResponse<String>> deleteProduct(@RequestBody ProductDto.RegReq dto) {
 
@@ -69,18 +77,20 @@ public class ProductController {
     }
 
     // 본사 제품 검색
+    @Operation(summary = "본사 제품 검색", description = "제품명으로 제품을 검색합니다.")
     @GetMapping("/search")
-    public ResponseEntity<BaseResponse<List<ProductDto.ListRes>>> searchProduct(@RequestParam String productName) {
+    public ResponseEntity<BaseResponse<List<ProductDto.ListRes>>> searchProduct(@Parameter(description = "제품명 검색어") @RequestParam String productName) {
         List<ProductDto.ListRes> result = productService.searchProduct(productName);
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 
     // 가맹점 별 제품 조회
+    @Operation(summary = "가맹점 제품 조회", description = "로그인한 가맹점주가 발주 가능한 제품 목록을 조회합니다.")
     @GetMapping("/store")
     public ResponseEntity<BaseResponse<Page<ProductDto.ListRes>>> getMyStoreProducts(
             @AuthenticationPrincipal AuthUserDetails authUserDetails,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @Parameter(description = "페이지 번호", example = "0") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "페이지 크기", example = "10") @RequestParam(defaultValue = "10") int size
     ) {
         if (authUserDetails == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
@@ -93,10 +103,11 @@ public class ProductController {
     }
 
     // 가맹점 별 제품 검색
+    @Operation(summary = "가맹점 제품 검색", description = "로그인한 가맹점주가 발주 가능한 제품을 검색합니다.")
     @GetMapping("/store/search")
     public ResponseEntity<BaseResponse<List<ProductDto.ListRes>>> searchInMyStore(
             @AuthenticationPrincipal AuthUserDetails authUserDetails,
-            @RequestParam String productName
+            @Parameter(description = "제품명 검색어") @RequestParam String productName
     ) {
         if (authUserDetails == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");

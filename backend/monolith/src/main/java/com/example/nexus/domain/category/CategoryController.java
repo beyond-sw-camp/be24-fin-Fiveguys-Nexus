@@ -2,14 +2,16 @@ package com.example.nexus.domain.category;
 
 import com.example.nexus.common.model.BaseResponse;
 import com.example.nexus.domain.category.model.CategoryDto;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.jsoup.Connection;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "카테고리 관리", description = "원자재 카테고리 등록, 조회, 삭제 관리 API")
 @RequestMapping("/category")
 @RequiredArgsConstructor
 @RestController
@@ -17,6 +19,7 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     // 카테고리 등록
+    @Operation(summary = "카테고리 등록", description = "새로운 원자재 카테고리를 등록합니다.")
     @PostMapping("/reg")
     public ResponseEntity<BaseResponse<CategoryDto.RegRes>> createCategory(@Valid @RequestBody CategoryDto.RegReq dto) {
         CategoryDto.RegRes result = categoryService.addCategory(dto);
@@ -24,6 +27,7 @@ public class CategoryController {
     }
 
     // 카테고리 목록 조회
+    @Operation(summary = "카테고리 목록 조회", description = "등록된 모든 카테고리 목록을 조회합니다.")
     @GetMapping("/list")
     public ResponseEntity readCategoryList() {
         List<CategoryDto.ListRes> dto = categoryService.findAllCategories();
@@ -31,6 +35,7 @@ public class CategoryController {
     }
 
     // 카테고리 소프트 삭제
+    @Operation(summary = "카테고리 삭제", description = "특정 카테고리를 소프트 삭제 처리합니다.")
     @DeleteMapping("/delete")
     public ResponseEntity<BaseResponse<String>> deleteCategory(@RequestBody CategoryDto.RegReq dto) {
         categoryService.deleteCategory(dto.getIdx());

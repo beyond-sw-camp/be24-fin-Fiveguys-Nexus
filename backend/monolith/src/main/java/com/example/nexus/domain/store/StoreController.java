@@ -69,7 +69,7 @@ public class StoreController {
     @GetMapping("/list")
     public ResponseEntity storeList(
             StoreDto.StoreSearchPagingReq searchReq,
-            @Parameter(description = "페이지 번호", example = "0") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "페이지 번호 (0부터 시작)", example = "0") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "페이지 크기", example = "10") @RequestParam(defaultValue = "10") int size
     ){
         StoreDto.StorePageRes result = storeService.storeList(searchReq, page,size);
@@ -87,7 +87,7 @@ public class StoreController {
     @Operation(summary = "월별 입점/폐점 추이 조회", description = "특정 연도의 월별 신규 입점 및 폐점 가맹점 추이 데이터를 조회합니다.")
     @GetMapping("/stats/monthly")
     public ResponseEntity<BaseResponse<StoreDto.MonthlyTrendRes>> monthlyTrend(
-            @Parameter(description = "조회 연도", example = "2026") @RequestParam(required = false) Integer year){
+            @Parameter(description = "조회할 연도 (예: 2024). 미입력시 올해 기준") @RequestParam(required = false) Integer year){
         StoreDto.MonthlyTrendRes result = storeService.getMonthlyTrend(year);
         return ResponseEntity.ok(BaseResponse.success(result));
     }
@@ -113,8 +113,8 @@ public class StoreController {
     @Operation(summary = "S3 업로드용 Pre-signed URL 생성", description = "가맹점 이미지 등을 S3에 직접 업로드하기 위한 Pre-signed URL을 생성합니다.")
     @GetMapping("/presignedUrl/{fileName}")
     public ResponseEntity presignedUrl(
-            @Parameter(description = "파일명") @PathVariable(name = "fileName") String fileName,
-            @Parameter(description = "파일 크기(Byte)") @RequestParam(name = "fileSize") long fileSize){
+            @Parameter(description = "업로드할 파일명 (확장자 포함)") @PathVariable(name = "fileName") String fileName,
+            @Parameter(description = "파일 크기 (Byte 단위)", example = "1024") @RequestParam(name = "fileSize") long fileSize){
         // 1. 서비스를 호출하여 URL과 고유 파일명을 받아옵니다.
         Map<String, String> result = storeService.getPresignedUrl(fileName, fileSize);
 
@@ -136,10 +136,10 @@ public class StoreController {
     @Operation(summary = "가맹점 매출 정산 조회", description = "로그인한 가맹점주가 특정 월의 매출 및 POS 정산 내역을 조회합니다.")
     @GetMapping("/income/settlement")
     public ResponseEntity<BaseResponse<StoreIncomeDto.TotalSettlementRes>> getSettlement(
-            @AuthenticationPrincipal AuthUserDetails userDetails,
-            @Parameter(description = "조회 연도", example = "2026") @RequestParam int year,
-            @Parameter(description = "조회 월", example = "4") @RequestParam int month,
-            @Parameter(description = "페이지 번호", example = "0") @RequestParam(defaultValue = "0") int page,
+            @Parameter(hidden = true) @AuthenticationPrincipal AuthUserDetails userDetails,
+            @Parameter(description = "조회할 연도", example = "2024") @RequestParam int year,
+            @Parameter(description = "조회할 월", example = "5") @RequestParam int month,
+            @Parameter(description = "페이지 번호 (0부터 시작)", example = "0") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "페이지 크기", example = "10") @RequestParam(defaultValue = "10") int size
     ) {
         if (userDetails == null) {

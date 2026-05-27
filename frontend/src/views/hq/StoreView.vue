@@ -190,7 +190,7 @@ const validateEmail = () => {
   }
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const isValid = emailPattern.test(form.ownerEmail);
-  
+
   if (!isValid) {
     emailError.value = '올바른 이메일 형식으로 작성해주세요.';
     // 사용자가 이해할 수 있도록 주석 추가: 이메일 형식이 틀렸을 때 하단 빨간 글씨와 함께 우측 상단 토스트 알림을 띄움
@@ -405,7 +405,7 @@ onMounted(() => {
     <!-- Header -->
     <div class="flex justify-between items-center">
       <div>
-        <h1 class="text-xl font-bold text-gray-900 tracking-tight">입점 가맹점 관리</h1>
+        <h1 class="text-xl font-bold text-gray-900 tracking-tight">가맹점 관리</h1>
       </div>
       <button @click="openModal(null)" class="bg-[#F37321] text-white px-4 py-2 text-sm font-semibold rounded-lg hover:bg-[#e0661d] transition-colors flex items-center gap-2 shadow-sm cursor-pointer">
         <Plus class="w-4 h-4" /> 신규 가맹점 등록
@@ -605,7 +605,7 @@ onMounted(() => {
         <form @submit.prevent="saveStore" class="p-8 space-y-5">
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">가맹점명</label>
-            <input v-model="form.storeName" required type="text" placeholder="예: 한우 오마카세"
+            <input v-model="form.storeName" required type="text" placeholder="예: 더벤티 서울점"
                    class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
           </div>
           <div class="grid gap-5" :class="editTarget ? 'grid-cols-2' : 'grid-cols-1'">

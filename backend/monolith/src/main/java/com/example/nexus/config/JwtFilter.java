@@ -33,32 +33,47 @@ public class JwtFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if (request.getCookies() != null) {
+        String rawToken = null;
+
+        // 1순위: Authorization: Bearer 헤더 (Swagger UI 테스트용)
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            rawToken = authHeader.substring(7);
+        }
+
+        // 2순위: CTOKEN 쿠키 (실제 프론트엔드)
+        if (rawToken == null && request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
                 if (cookie.getName().equals("CTOKEN")) {
-                    try {
-                        Long idx = JwtUtil.getUserIdx(cookie.getValue());
-                        String username = JwtUtil.getUsername(cookie.getValue());
-                        String role = JwtUtil.getRole(cookie.getValue());
-                        AuthUserDetails principal = AuthUserDetails.builder()
-                                .idx(idx)
-                                .username(username)
-                                .role(Role.valueOf(role))
-                                .build();
-
-                        Authentication authentication = new UsernamePasswordAuthenticationToken(
-                                principal,
-                                null,
-                                List.of(new SimpleGrantedAuthority(role))
-                        );
-                        SecurityContextHolder.getContext().setAuthentication(authentication);
-                    } catch (RuntimeException ignored) {
-                        // 만료/파싱 실패 등으로 토큰을 신뢰할 수 없는 경우,
-                        // 인증 컨텍스트를 건드리지 않고 요청을 그대로 진행한다.
-                    }
+                    rawToken = cookie.getValue();
+                    break;
                 }
             }
         }
+
+        if (rawToken != null) {
+            try {
+                Long idx = JwtUtil.getUserIdx(rawToken);
+                String username = JwtUtil.getUsername(rawToken);
+                String role = JwtUtil.getRole(rawToken);
+                AuthUserDetails principal = AuthUserDetails.builder()
+                        .idx(idx)
+                        .username(username)
+                        .role(Role.valueOf(role))
+                        .build();
+
+                Authentication authentication = new UsernamePasswordAuthenticationToken(
+                        principal,
+                        null,
+                        List.of(new SimpleGrantedAuthority(role))
+                );
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            } catch (RuntimeException ignored) {
+                // 만료/파싱 실패 등으로 토큰을 신뢰할 수 없는 경우,
+                // 인증 컨텍스트를 건드리지 않고 요청을 그대로 진행한다.
+            }
+        }
+
         filterChain.doFilter(request, response);
     }
 }

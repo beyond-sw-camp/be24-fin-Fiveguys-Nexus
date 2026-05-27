@@ -71,6 +71,15 @@ public enum BaseResponseStatus {
 
     // 4200번대 ~ 발주 관련
     ORDERS_APPROVE_INSUFFICIENT_STOCK(false, 4201, "본사 재고가 부족하여 발주를 승인할 수 없습니다."),
+    NOT_FOUND_ORDERS(false, 4202, "발주를 찾을 수 없습니다."),
+    NOT_FOUND_ORDERS_ITEM(false, 4203, "발주 항목을 찾을 수 없습니다."),
+    ORDERS_NOT_AUTHORIZED(false, 4204, "해당 발주에 대한 권한이 없습니다."),
+    ORDERS_INVALID_STATUS(false, 4205, "현재 발주 상태에서 처리할 수 없습니다."),
+    ORDERS_ITEMS_EMPTY(false, 4209, "발주 항목이 비어 있습니다."),
+    BATCH_SERVICE_UNAVAILABLE(false, 4210, "배치 서비스 호출에 실패했습니다."),
+
+    // 4300번대 ~ 알림 관련
+    NOT_FOUND_NOTIFICATION(false, 4301, "알림을 찾을 수 없습니다."),
 
     // 5000번대 실패
     FAIL(false, 5000, "요청 실패"),

@@ -6,6 +6,7 @@ import com.example.nexus.domain.notification.model.StoreNotificationDto;
 import com.example.nexus.domain.user.model.AuthUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Slice;
@@ -74,7 +75,14 @@ public class StoreNotificationController {
     )
     @PutMapping("/{notificationIdx}/read")
     public ResponseEntity<BaseResponse> markAsRead(
-            @Parameter(description = "읽음 처리할 알림 고유 ID") @PathVariable Long notificationIdx
+            @Parameter(
+                    description = "읽음 처리할 알림 고유 ID",
+                    examples = {
+                            @ExampleObject(name = "정상 (본인 매장 알림)", value = "1"),
+                            @ExampleObject(name = "NOT_FOUND_NOTIFICATION (없는 알림)", value = "99999")
+                    }
+            )
+            @PathVariable Long notificationIdx
     ) {
         storeNotificationService.markAsRead(notificationIdx);
         return ResponseEntity.ok(BaseResponse.success("success"));

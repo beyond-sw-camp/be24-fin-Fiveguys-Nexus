@@ -36,7 +36,7 @@ public class OrdersController {
     private final OrdersService orderService;
     private final RestTemplate restTemplate;
 
-    @Value("${batch.service.url:http://batch-service:8090}")
+    @Value("${batch.service.url:http://localhost:8090}")
     private String batchServiceUrl;
 
     /**

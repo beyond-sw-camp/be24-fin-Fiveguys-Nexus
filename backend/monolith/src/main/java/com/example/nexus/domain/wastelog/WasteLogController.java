@@ -3,6 +3,12 @@ package com.example.nexus.domain.wastelog;
 
 import com.example.nexus.domain.store.StoreService;
 import com.example.nexus.domain.store.model.StoreInventoryDto;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +25,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Tag(name = "폐기 로그", description = "가맹점 재고 폐기 등록 및 폐기 통계 조회.")
 @RequestMapping("/wastelog")
 @RestController
 @RequiredArgsConstructor
@@ -51,7 +58,28 @@ public class WasteLogController {
 
 
 
-    // [가맹점주] POS 재고 lot 기준 폐기
+    @Operation(
+            summary = "POS 재고 폐기 등록",
+            description = """
+                    가맹점주가 POS 재고 lot 단위로 폐기를 등록. 인증 필요 (401).
+
+                    요청 필드 (PosWasteReq):
+                    - posStoreInventoryIdx: 폐기할 POS 재고 lot ID (필수)
+                    - quantity: 폐기 수량 (1 이상, 필수)
+                    - wasteReason: 폐기 사유 (필수)
+
+                    응답: wasteLogIdx, 매장/제품 정보, 수량, 손실금액, 폐기일시, 사유
+                    """
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "폐기 등록 성공"),
+            @ApiResponse(responseCode = "401", description = "로그인이 필요합니다.",
+                    content = @Content(mediaType = "application/json", schema = @Schema(example = """
+                            {"success":false,"code":401,"message":"로그인이 필요합니다.","result":null}"""))),
+            @ApiResponse(responseCode = "400", description = "POS 재고 항목 없음 / 권한 없음 / 폐기 수량 초과",
+                    content = @Content(mediaType = "application/json", schema = @Schema(example = """
+                            {"success":false,"code":3301,"message":"POS 재고 항목을 찾을 수 없습니다.","result":null}"""))),
+    })
     @PostMapping("/waste/pos")
     public ResponseEntity<BaseResponse<WasteLogDto.WasteRes>> createWasteFromPos(@AuthenticationPrincipal AuthUserDetails userDetails, @RequestBody WasteLogDto.PosWasteReq req) {
         if (userDetails == null) {

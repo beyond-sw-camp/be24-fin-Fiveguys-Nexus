@@ -1,5 +1,6 @@
 package com.example.nexus.domain.wastelog.model;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -56,12 +57,15 @@ public class WasteLogDto {
     @AllArgsConstructor
     public static class PosWasteReq {
         @NotNull(message = "POS 재고 lot id는 필수입니다.")
+        @Schema(example = "1", description = "폐기할 POS 재고 lot ID")
         private Long posStoreInventoryIdx;
 
         @Min(value = 1, message = "폐기 수량은 1 이상이어야 합니다.")
+        @Schema(example = "3", description = "폐기 수량 (1 이상)")
         private Integer quantity;
 
         @NotBlank(message = "폐기 사유를 입력해주세요.")
+        @Schema(example = "유통기한 초과", description = "폐기 사유")
         private String wasteReason;
     }
 

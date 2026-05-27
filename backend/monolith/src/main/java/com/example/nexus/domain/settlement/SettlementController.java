@@ -24,8 +24,23 @@ import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.util.ArrayList;
+import java.util.List;
+
+@Tag(name = "정산 관리", description = "가맹점 미납 내역 조회 및 결제/검증 관리 API")
 @RequiredArgsConstructor
 @RestController
+@RequestMapping("/settlement")
 public class SettlementController {
 
     private final HeadIncomeService headIncomeService;
@@ -33,6 +48,7 @@ public class SettlementController {
     private final SettlementService settlementService;
     private final OrdersService ordersService;
 
+    @Operation(summary = "미납 내역 조회", description = "재시도(2차) 결제까지 최종 실패한 미납 내역 목록을 조회합니다.")
     @GetMapping("/unpaid/list")
     public ResponseEntity<List<SettlementDto.FinalRetryFailRes>> getUnpaidList(
             @AuthenticationPrincipal AuthUserDetails authUserDetails) {
@@ -46,19 +62,17 @@ public class SettlementController {
         return ResponseEntity.ok(finalFailures);
     }
 
-
+    @Operation(summary = "결제 요청", description = "미납된 정산 내역에 대해 결제를 요청합니다.")
     @PostMapping("/pay")
-    public ResponseEntity pay (@AuthenticationPrincipal AuthUserDetails authUserDetails, @RequestBody SettlementDto.PayReq reqDto) {
+    public ResponseEntity<List<HeadIncomeDto.FindHeadIncomeRes>> pay(
+            @AuthenticationPrincipal AuthUserDetails authUserDetails,
+            @RequestBody SettlementDto.PayReq reqDto) {
 
         // 로그인 한 사용자의 storeIdx 가져오기
         Long storeIdx = storeService.findStoreIdx(authUserDetails.getIdx());
 
         // verify 전 단계 완료
         Long settlementIdx = settlementService.pay(storeIdx, reqDto);
-        
-        
-        // settlementIdx = null 처리
-        
         
         List<HeadIncomeDto.FindHeadIncomeRes> headIncomeResList = new ArrayList<>();
 
@@ -77,21 +91,20 @@ public class SettlementController {
         return ResponseEntity.ok(headIncomeResList);
     }
 
+    @Operation(summary = "결제 검증", description = "포트원 등을 통한 결제 완료 후 서버 측에서 결제 정보의 유효성을 검증합니다.")
     @PostMapping("/verify")
-    public ResponseEntity verify (@AuthenticationPrincipal AuthUserDetails authUserDetails, @RequestBody SettlementDto.VerifyReq dto) {
+    public ResponseEntity<String> verify(
+            @AuthenticationPrincipal AuthUserDetails authUserDetails,
+            @RequestBody SettlementDto.VerifyReq dto) {
 
         LocalDateTime now = LocalDateTime.now();
         YearMonth currentYearMonth = YearMonth.from(now);
         YearMonth lastMonth = currentYearMonth.minusMonths(1);
         Long storeIdx = storeService.findStoreIdx(authUserDetails.getIdx());
-        // service 에서 현재 날짜와 로그인 한 사용자의 store_idx 로 찾아서 settlementIdx 를 return 하는 api 찾기
-        System.out.println(storeIdx);
+        
         Long settlementIdx = settlementService.findSettlementIdx(storeIdx, lastMonth);
 
-        System.out.println(dto.getPaymentId());
         settlementService.verify(authUserDetails, dto, settlementIdx);
         return ResponseEntity.ok("결제 성공");
     }
-
-
 }

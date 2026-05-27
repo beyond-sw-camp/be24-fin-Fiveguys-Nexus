@@ -5,6 +5,7 @@ import com.example.nexus.common.model.BaseResponse;
 import com.example.nexus.domain.notification.model.HeadNotificationDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Slice;
@@ -72,7 +73,14 @@ public class HeadNotificationController {
     )
     @PutMapping("/{notificationIdx}/read")
     public ResponseEntity<BaseResponse> markAsRead(
-            @Parameter(description = "알림 고유 ID") @PathVariable Long notificationIdx
+            @Parameter(
+                    description = "알림 고유 ID",
+                    examples = {
+                            @ExampleObject(name = "정상 (존재하는 알림)", value = "1"),
+                            @ExampleObject(name = "NOT_FOUND_NOTIFICATION (없는 알림)", value = "99999")
+                    }
+            )
+            @PathVariable Long notificationIdx
     ) {
         headNotificationService.markAsRead(notificationIdx);
         return ResponseEntity.ok(BaseResponse.success("success"));

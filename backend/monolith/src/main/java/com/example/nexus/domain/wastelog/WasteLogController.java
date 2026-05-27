@@ -25,19 +25,20 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+
 @Tag(name = "폐기 로그", description = "가맹점 재고 폐기 등록 및 폐기 통계 조회.")
+
 @RequestMapping("/wastelog")
 @RestController
 @RequiredArgsConstructor
 public class WasteLogController {
 
-
     private final StoreService storeService;
     private final WasteLogService wasteLogService;
 
-
+    @Operation(summary = "유통기한 경과 상품 폐기 등록", description = "모든 가맹점의 재고 중 유통기한이 지난 상품을 찾아 폐기 로그에 등록합니다.")
     @PostMapping("/over/due-date")
-    public ResponseEntity findOverDueDateProducts () {
+    public ResponseEntity<String> findOverDueDateProducts() {
 
         List<StoreInventoryDto.ListRes> listRes = storeService.findAllStoreInventory();
 
@@ -55,7 +56,6 @@ public class WasteLogController {
 
         return ResponseEntity.ok("성공");
     }
-
 
 
     @Operation(
@@ -80,8 +80,11 @@ public class WasteLogController {
                     content = @Content(mediaType = "application/json", schema = @Schema(example = """
                             {"success":false,"code":3301,"message":"POS 재고 항목을 찾을 수 없습니다.","result":null}"""))),
     })
+
     @PostMapping("/waste/pos")
-    public ResponseEntity<BaseResponse<WasteLogDto.WasteRes>> createWasteFromPos(@AuthenticationPrincipal AuthUserDetails userDetails, @RequestBody WasteLogDto.PosWasteReq req) {
+    public ResponseEntity<BaseResponse<WasteLogDto.WasteRes>> createWasteFromPos(
+            @AuthenticationPrincipal AuthUserDetails userDetails,
+            @RequestBody WasteLogDto.PosWasteReq req) {
         if (userDetails == null) {
             throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
         }
@@ -90,12 +93,10 @@ public class WasteLogController {
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 
-
-
+    @Operation(summary = "폐기 통계 비교", description = "폐기 내역에 대한 통계 및 분석 데이터를 조회합니다.")
     @GetMapping("/compare")
     public ResponseEntity<BaseResponse<WasteLogDto.StatsRes>> compareWasteLog() {
         WasteLogDto.StatsRes resDto = wasteLogService.getWasteStats();
         return ResponseEntity.ok(BaseResponse.success(resDto));
     }
-
 }

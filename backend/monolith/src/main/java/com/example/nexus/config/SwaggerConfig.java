@@ -1,5 +1,6 @@
 package com.example.nexus.config;
 
+
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
@@ -12,6 +13,7 @@ import org.springframework.context.annotation.Configuration;
 public class SwaggerConfig {
 
     @Bean
+
     public OpenAPI openAPI() {
         return new OpenAPI()
                 .info(new Info()
@@ -34,5 +36,6 @@ public class SwaggerConfig {
                                 .scheme("bearer")
                                 .bearerFormat("JWT")
                                 .description("로그인 후 발급된 CTOKEN 값을 입력하세요.")));
+
     }
 }

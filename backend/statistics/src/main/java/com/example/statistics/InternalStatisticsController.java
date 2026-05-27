@@ -4,6 +4,7 @@ import com.example.statistics.domain.daily.DailyDumpService;
 import com.example.statistics.domain.daily.dto.DumpResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -50,8 +51,13 @@ public class InternalStatisticsController {
     @PostMapping("/dailyDump")
     public ResponseEntity<DumpResult> manualDailyDump(
             @Parameter(
-                    description = "처리할 날짜 (yyyy-MM-dd 형식, 생략 시 어제). 예: 2026-05-25",
-                    example = "2026-05-25"
+                    description = "처리할 날짜 (yyyy-MM-dd 형식, 생략 시 어제)",
+                    examples = {
+                            @ExampleObject(name = "어제 (기본값)", value = "2026-05-26"),
+                            @ExampleObject(name = "30일 전 (catch-up)", value = "2026-04-27"),
+                            @ExampleObject(name = "오늘 (당일 - 보통 미사용)", value = "2026-05-27"),
+                            @ExampleObject(name = "미래 (데이터 없음)", value = "2099-01-01")
+                    }
             )
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date

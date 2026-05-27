@@ -3,6 +3,7 @@ package com.example.statistics;
 import com.example.statistics.common.model.BaseResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -52,7 +53,14 @@ public class LongTermStatisticsController {
     )
     @GetMapping("/monthly")
     public ResponseEntity<BaseResponse> getMonthly(
-            @Parameter(description = "조회할 연도 (예: 2026)", example = "2026")
+            @Parameter(
+                    description = "조회할 연도",
+                    examples = {
+                            @ExampleObject(name = "현재 연도", value = "2026"),
+                            @ExampleObject(name = "작년", value = "2025"),
+                            @ExampleObject(name = "데이터 없는 연도 (빈 결과)", value = "2099")
+                    }
+            )
             @RequestParam int year
     ) {
         return ResponseEntity.ok(BaseResponse.success(longTermStatisticsService.getMonthlySales(year)));
@@ -71,7 +79,14 @@ public class LongTermStatisticsController {
     )
     @GetMapping("/quarterly")
     public ResponseEntity<BaseResponse> getQuarterly(
-            @Parameter(description = "조회할 연도 (예: 2026)", example = "2026")
+            @Parameter(
+                    description = "조회할 연도",
+                    examples = {
+                            @ExampleObject(name = "현재 연도", value = "2026"),
+                            @ExampleObject(name = "작년", value = "2025"),
+                            @ExampleObject(name = "데이터 없는 연도 (빈 결과)", value = "2099")
+                    }
+            )
             @RequestParam int year
     ) {
         return ResponseEntity.ok(BaseResponse.success(longTermStatisticsService.getQuarterlySales(year)));
@@ -92,9 +107,23 @@ public class LongTermStatisticsController {
     )
     @GetMapping("/stores")
     public ResponseEntity<BaseResponse> getStores(
-            @Parameter(description = "조회할 연도 (예: 2026)", example = "2026")
+            @Parameter(
+                    description = "조회할 연도",
+                    examples = {
+                            @ExampleObject(name = "현재 연도", value = "2026"),
+                            @ExampleObject(name = "작년", value = "2025"),
+                            @ExampleObject(name = "데이터 없는 연도 (빈 결과)", value = "2099")
+                    }
+            )
             @RequestParam int year,
-            @Parameter(description = "조회할 월 (1~12, 선택). 없으면 연 단위 합계", example = "5")
+            @Parameter(
+                    description = "조회할 월 (1~12, 선택). 없으면 연 단위 합계",
+                    examples = {
+                            @ExampleObject(name = "5월", value = "5"),
+                            @ExampleObject(name = "12월 (연말)", value = "12"),
+                            @ExampleObject(name = "1월 (연초)", value = "1")
+                    }
+            )
             @RequestParam(required = false) Integer month
     ) {
         return ResponseEntity.ok(BaseResponse.success(
@@ -117,9 +146,23 @@ public class LongTermStatisticsController {
     )
     @GetMapping("/categories")
     public ResponseEntity<BaseResponse> getCategories(
-            @Parameter(description = "조회할 연도 (예: 2026)", example = "2026")
+            @Parameter(
+                    description = "조회할 연도",
+                    examples = {
+                            @ExampleObject(name = "현재 연도", value = "2026"),
+                            @ExampleObject(name = "작년", value = "2025"),
+                            @ExampleObject(name = "데이터 없는 연도 (빈 결과)", value = "2099")
+                    }
+            )
             @RequestParam int year,
-            @Parameter(description = "조회할 월 (1~12, 선택). 없으면 연 단위 합계", example = "5")
+            @Parameter(
+                    description = "조회할 월 (1~12, 선택). 없으면 연 단위 합계",
+                    examples = {
+                            @ExampleObject(name = "5월", value = "5"),
+                            @ExampleObject(name = "12월 (연말)", value = "12"),
+                            @ExampleObject(name = "1월 (연초)", value = "1")
+                    }
+            )
             @RequestParam(required = false) Integer month
     ) {
         return ResponseEntity.ok(BaseResponse.success(
@@ -142,9 +185,23 @@ public class LongTermStatisticsController {
     )
     @GetMapping("/menus")
     public ResponseEntity<BaseResponse> getMenus(
-            @Parameter(description = "조회할 연도 (예: 2026)", example = "2026")
+            @Parameter(
+                    description = "조회할 연도",
+                    examples = {
+                            @ExampleObject(name = "현재 연도", value = "2026"),
+                            @ExampleObject(name = "작년", value = "2025"),
+                            @ExampleObject(name = "데이터 없는 연도 (빈 결과)", value = "2099")
+                    }
+            )
             @RequestParam int year,
-            @Parameter(description = "조회할 월 (1~12, 선택). 없으면 연 단위 합계", example = "5")
+            @Parameter(
+                    description = "조회할 월 (1~12, 선택). 없으면 연 단위 합계",
+                    examples = {
+                            @ExampleObject(name = "5월", value = "5"),
+                            @ExampleObject(name = "12월 (연말)", value = "12"),
+                            @ExampleObject(name = "1월 (연초)", value = "1")
+                    }
+            )
             @RequestParam(required = false) Integer month
     ) {
         return ResponseEntity.ok(BaseResponse.success(

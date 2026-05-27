@@ -78,6 +78,9 @@ public enum BaseResponseStatus {
     ORDERS_ITEMS_EMPTY(false, 4209, "발주 항목이 비어 있습니다."),
     BATCH_SERVICE_UNAVAILABLE(false, 4210, "배치 서비스 호출에 실패했습니다."),
 
+    // 4300번대 ~ 알림 관련
+    NOT_FOUND_NOTIFICATION(false, 4301, "알림을 찾을 수 없습니다."),
+
     // 5000번대 실패
     FAIL(false, 5000, "요청 실패"),
     DATABASE_ERROR(false, 5001, "데이터베이스 연결 및 처리 오류");

@@ -52,7 +52,7 @@ public class PosController {
     })
     @GetMapping("/inventory/list")
     public ResponseEntity<BaseResponse<PageResponse<PosStoreInventoryDto.ListRes>>> list(
-            @RequestHeader("X-User-Idx") Long userIdx,
+            @Parameter(hidden = true) @RequestHeader("X-User-Idx") Long userIdx,
             @Parameter(description = "페이지 번호 (0부터 시작)", example = "0") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "페이지 크기", example = "10") @RequestParam(defaultValue = "10") int size) {
         if (userIdx == null) {
@@ -89,7 +89,7 @@ public class PosController {
     })
     @PatchMapping("/inventory/{posStoreInventoryIdx}")
     public ResponseEntity<BaseResponse<PosStoreInventoryDto.SyncCountRes>> changeInventoryCount(
-            @RequestHeader("X-User-Idx") Long userIdx,
+            @Parameter(hidden = true) @RequestHeader("X-User-Idx") Long userIdx,
             @Parameter(description = "수정할 POS 재고 lot ID", example = "1") @PathVariable Long posStoreInventoryIdx,
             @RequestBody PosStoreInventoryDto.CountReq req) {
         if (userIdx == null) {
@@ -131,7 +131,7 @@ public class PosController {
     })
     @PostMapping("/pay")
     public ResponseEntity<BaseResponse<PosPayDto.PayRes>> pay(
-            @RequestHeader("X-User-Idx") Long userIdx,
+            @Parameter(hidden = true) @RequestHeader("X-User-Idx") Long userIdx,
             @Valid @RequestBody PosPayDto.PayReq req) {
         if (userIdx == null) {
             throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
@@ -164,7 +164,7 @@ public class PosController {
     })
     @GetMapping("/pay/today")
     public ResponseEntity<BaseResponse<List<PosPayDto.TodayPayRes>>> todayPays(
-            @RequestHeader("X-User-Idx") Long userIdx) {
+            @Parameter(hidden = true) @RequestHeader("X-User-Idx") Long userIdx) {
         if (userIdx == null) {
             throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
         }
@@ -202,7 +202,7 @@ public class PosController {
     })
     @PostMapping("/close")
     public ResponseEntity<BaseResponse<PosCloseDto.CloseRes>> close(
-            @RequestHeader("X-User-Idx") Long userIdx) {
+            @Parameter(hidden = true) @RequestHeader("X-User-Idx") Long userIdx) {
         if (userIdx == null) {
             throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
         }

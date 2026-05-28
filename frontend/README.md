@@ -1,32 +1,73 @@
-# Nexus Frontend
+![header](https://capsule-render.vercel.app/api?type=Venom&color=4F46E5&height=300&section=header&text=Nexus%20Frontend&desc=Vue%203%20%2B%20Vite%20%EA%B8%B0%EB%B0%98%20%ED%86%B5%ED%95%A9%20%EC%9B%B9%20%ED%81%B4%EB%9D%BC%EC%9D%B4%EC%96%B8%ED%8A%B8&descSize=20&descAlign=50&descAlignY=70&fontSize=70&animation=fadeIn&fontColor=ffffff)
 
-> Vue 3 + Vite 기반 본사 운영 + 가맹점 POS 통합 웹 클라이언트
+### :sunny: **[플레이 데이터] 한화시스템 BEYOND SW캠프** :sunny:
 
----
+<br>
 
-## 기술 스택
+## 🤼‍♂️ 팀원 소개
+
+<br>
+
+| 👤 | 이름 | 담당 |
+|---|---|---|
+| 🐻 | [TBD](https://github.com/) | TBD |
+| 🦁 | [TBD](https://github.com/) | TBD |
+| 🐶 | [TBD](https://github.com/) | TBD |
+| 🐯 | [TBD](https://github.com/) | TBD |
+| 🐻‍❄️ | [정동현](https://github.com/) | 발주 / 알림 / 대시보드 / 통계 MSA / 인프라 일부 |
+
+<br>
+
+## 📌 기술 스택
+
+<div align="center">
+<img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white"/>
+<img src="https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white"/>
+<img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=JavaScript&logoColor=black"/>
+<img src="https://img.shields.io/badge/Vue.js-4FC08D?style=for-the-badge&logo=Vue.js&logoColor=white"/>
+<img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white"/>
+<img src="https://img.shields.io/badge/Vue_Router-4FC08D?style=for-the-badge&logo=Vue.js&logoColor=white"/>
+<img src="https://img.shields.io/badge/Pinia-FFD43B?style=for-the-badge&logo=Pinia&logoColor=black"/>
+<img src="https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=Axios&logoColor=white"/>
+<img src="https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white"/>
+<img src="https://img.shields.io/badge/Chart.js-FF6384?style=for-the-badge&logo=chartdotjs&logoColor=white"/>
+<img src="https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white"/>
+<img src="https://img.shields.io/badge/PortOne-3182F6?style=for-the-badge&logo=&logoColor=white"/>
+<img src="https://img.shields.io/badge/ESLint-4B32C3?style=for-the-badge&logo=eslint&logoColor=white"/>
+<img src="https://img.shields.io/badge/Nginx-009639?style=for-the-badge&logo=nginx&logoColor=white"/>
+</div>
+
+<br>
+
+<details>
+<summary><b>상세 기술 스택</b></summary>
 
 - Vue 3.5
 - Vite 8.0
-- Vue Router
-- Pinia 3 (상태 관리)
-- Axios 1.15 (HTTP, JWT interceptor)
+- Vue Router 4.x
+- Pinia 3.0
+- Axios 1.15 (JWT interceptor)
 - Tailwind CSS 4.2
-- Chart.js 4.5 (차트)
+- Chart.js 4.5
 - Lucide Vue Next (아이콘)
-- PortOne Browser SDK (결제)
+- PortOne Browser SDK 0.1 (결제 게이트)
 - ESLint + Oxlint
+- Nginx 1.25 (운영 배포)
+</details>
 
 ---
 
-## 디렉토리 구조
+## :one: &nbsp; 디렉토리 구조
+
+<details>
+<summary><b>전체 구조 보기</b></summary>
 
 ```
 frontend/
 ├── public/                       # 정적 파일
 ├── nginx/                        # 운영 배포용 nginx 설정
 ├── src/
-│   ├── api/                      # 도메인별 API 모듈 (axios)
+│   ├── api/                      # 도메인별 API 모듈 (axios) - 19개
 │   │   ├── category/  dashboard/  delivery/  headincome/
 │   │   ├── headinventory/  inventory/  menu/  news/
 │   │   ├── notification/  orders/  pos/  product/
@@ -56,12 +97,16 @@ frontend/
 ├── eslint.config.js
 └── package.json
 ```
+</details>
 
 ---
 
-## 페이지 (Views)
+## :two: &nbsp; 페이지
 
-### 본사 (`views/hq/`)
+### 👉 본사 (`views/hq/`)
+
+<details>
+<summary><b>본사 페이지 16개</b></summary>
 
 | 파일 | 페이지 |
 |---|---|
@@ -81,8 +126,12 @@ frontend/
 | EsgDashboardView | ESG 대시보드 |
 | HqNotificationView | 알림 |
 | AdminAccountCreateView | 본사 계정 생성 |
+</details>
 
-### 가맹점 (`views/store/`)
+### 👉 가맹점 (`views/store/`)
+
+<details>
+<summary><b>가맹점 페이지 11개</b></summary>
 
 | 파일 | 페이지 |
 |---|---|
@@ -97,37 +146,108 @@ frontend/
 | StoreSettlementView | 정산 내역 |
 | StoreNewsView | 소식 |
 | StoreNotificationView | 알림 |
+</details>
 
 ---
 
-## 실행
+## 기능 테스트 &nbsp; 
+상세 기능 (펼쳐서 확인해주세요)
 
-### 사전 요구사항
+<details>
+<summary><b>로그인 / 회원가입</b></summary>
+<br>
+<p align="center"><img width="80%" src="../docs/img/gif/login.gif"/></p>
+</details>
+
+<details>
+<summary><b>POS 결제</b></summary>
+<br>
+<p align="center"><img width="80%" src="../docs/img/gif/pos-payment.gif"/></p>
+</details>
+
+<details>
+<summary><b>영업 마감 → AI 자동 발주서 생성</b></summary>
+<br>
+<p align="center"><img width="80%" src="../docs/img/gif/pos-close.gif"/></p>
+</details>
+
+<details>
+<summary><b>본사 대시보드</b></summary>
+<br>
+<p align="center"><img width="80%" src="../docs/img/gif/hq-dashboard.gif"/></p>
+</details>
+
+<details>
+<summary><b>발주 관리 (본사 일괄 승인)</b></summary>
+<br>
+<p align="center"><img width="80%" src="../docs/img/gif/hq-order-approve.gif"/></p>
+</details>
+
+<details>
+<summary><b>가맹점 발주 (수동 + 제안 발주서 확정)</b></summary>
+<br>
+<p align="center"><img width="80%" src="../docs/img/gif/store-order.gif"/></p>
+</details>
+
+<details>
+<summary><b>실시간 알림 (SSE)</b></summary>
+<br>
+<p align="center"><img width="80%" src="../docs/img/gif/notification.gif"/></p>
+</details>
+
+<details>
+<summary><b>장기 통계 차트</b></summary>
+<br>
+<p align="center"><img width="80%" src="../docs/img/gif/long-term-statistics.gif"/></p>
+</details>
+
+> GIF 파일은 `docs/img/gif/` 에 추가하면 자동 표시.
+
+---
+
+## :three: &nbsp; 실행
+
+<details>
+<summary><b>1. 사전 요구사항</b></summary>
+
 - Node.js 20.19+ 또는 22.12+
 - 백엔드 (Gateway / 모놀리식 / POS MSA / 통계 MSA) 가 떠 있어야 정상 동작
+</details>
 
-### 설치 + 개발 서버
+<details>
+<summary><b>2. 설치 + 개발 서버</b></summary>
+
 ```bash
 npm install
 npm run dev
 ```
 - http://localhost:5173 접속
+</details>
 
-### 빌드
+<details>
+<summary><b>3. 빌드</b></summary>
+
 ```bash
 npm run build
 ```
 - 결과 디렉토리: `dist/`
+</details>
 
-### Lint
+<details>
+<summary><b>4. Lint</b></summary>
+
 ```bash
 npm run lint
 ```
 - oxlint + eslint 자동 fix
+</details>
 
 ---
 
-## API 라우팅 (Vite Proxy)
+## :four: &nbsp; API 라우팅 (Vite Proxy)
+
+<details>
+<summary><b>로컬 dev proxy 규칙</b></summary>
 
 `vite.config.js` 의 proxy 규칙 — 로컬 dev 환경에서 백엔드 호출 분기:
 
@@ -138,17 +258,23 @@ npm run lint
 | `/api/**` | `http://localhost:8080` | 모놀리식 |
 
 운영 환경에서는 nginx 가 라우팅 (아래 운영 배포 참조).
+</details>
 
 ---
 
-## API 호출 컨벤션
+## :five: &nbsp; API 호출 컨벤션
 
-### Axios Interceptor (`plugins/axiosinterceptor.js`)
+<details>
+<summary><b>Axios Interceptor (plugins/axiosinterceptor.js)</b></summary>
+
 - 모든 요청에 JWT 자동 첨부 (`Authorization: Bearer <token>`)
 - 401 응답 시 → 로그아웃 + 로그인 페이지 리다이렉트
 - BaseResponse 구조 (`{ success, code, message, result }`) 처리
+</details>
 
-### API 모듈 패턴 (`api/<domain>/index.js`)
+<details>
+<summary><b>API 모듈 패턴 (api/&lt;domain&gt;/index.js)</b></summary>
+
 ```javascript
 import api from '@/plugins/axiosinterceptor'
 
@@ -157,49 +283,70 @@ export const postXxx = (body) => api.post('/xxx', body)
 export const putXxx = (idx, body) => api.put(`/xxx/${idx}`, body)
 export const deleteXxx = (idx) => api.delete(`/xxx/${idx}`)
 ```
+</details>
 
 ---
 
-## 상태 관리 (Pinia)
+## :six: &nbsp; 상태 관리 (Pinia)
 
-### `stores/auth.js`
-- 로그인 사용자 정보 (idx, email, role: ADMIN / STORE)
+<details>
+<summary><b>stores/auth.js</b></summary>
+
+- 로그인 사용자 정보 (idx, email, role: `ADMIN` / `STORE`)
 - JWT 토큰 관리 (localStorage 영속)
 - 로그인 / 로그아웃 액션
+</details>
 
-### `stores/notification.js`
+<details>
+<summary><b>stores/notification.js</b></summary>
+
 - SSE 알림 구독 (본사 / 가맹점)
 - 미읽음 카운트
 - 알림 리스트
+</details>
 
 ---
 
-## Vue SFC 컨벤션
+## :seven: &nbsp; Vue SFC 컨벤션
+
 - 순서: `<script setup>` → `<template>` → `<style>`
 - 자세한 규칙: [.claude/frontend/VUE_STRUCTURE.md](../.claude/frontend/VUE_STRUCTURE.md)
 
 ---
 
-## 운영 배포
+## :eight: &nbsp; 운영 배포
 
-### nginx (TLS termination + reverse proxy)
+<details>
+<summary><b>Nginx (TLS termination + reverse proxy)</b></summary>
+
 - `nginx/default.conf` — HTTP → HTTPS redirect + API 분기
 - 분기 규칙:
   - `/api/auth` → monolith
   - `/api/(stat|pos)/**` → gateway
   - `/api/**` → monolith
 - SSE buffering off (실시간 알림용)
+</details>
 
-### Dockerfile
+<details>
+<summary><b>Dockerfile</b></summary>
+
 - `docker/frontend/Dockerfile`
 - Multi-stage build (Node 빌드 → Nginx 서빙)
+</details>
 
-### Kubernetes
+<details>
+<summary><b>Kubernetes</b></summary>
+
 - `k8s/frontend/` — Deployment (Blue/Green) + LoadBalancer Service + nexus-tls Secret
 - 443 포트 외부 노출 (HTTPS 진입점)
+</details>
 
 ---
 
-## 로그인 (dev seed)
+## 🔑 로그인 (dev seed)
 - 본사: `admin@theventi.co.kr` / `password123`
-- 가맹점: `store0001@theventi.co.kr` ~ `store0100@theventi.co.kr` / `password123`
+- 가맹점: `store0001@theventi.co.kr` / `password123`
+
+---
+
+![footer](https://capsule-render.vercel.app/api?type=Venom&color=4F46E5&height=120&section=footer&fontColor=ffffff)

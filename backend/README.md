@@ -401,10 +401,4 @@ REDIS_CLI="docker exec -i nexus-redis redis-cli" bash \
 
 ---
 
-## 🔧 트러블슈팅
-- `docs/troubleshooting/` 에 작업 이슈 기록
-- Kafka / Redis / MSA 관련은 반드시 문서화
-
----
-
 ![footer](https://capsule-render.vercel.app/api?type=Venom&color=4F46E5&height=120&section=footer&fontColor=ffffff)

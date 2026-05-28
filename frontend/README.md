@@ -231,14 +231,16 @@ https://github.com/user-attachments/assets/c5a66746-32fe-484a-ae21-120db58b01a2
 
 <details>
 <summary><b>🗃️ 본사 재고 현황</b></summary>
-<br>
-<p align="center"><img width="80%" src="../docs/img/gif/login.gif"/></p>
+
+https://github.com/user-attachments/assets/8c8a9b19-6347-4d05-ae1a-1afeb5d2c0c1
+
 </details>
 
 <details>
 <summary><b>🏬 가맹점 재고 현황</b></summary>
-<br>
-<p align="center"><img width="80%" src="../docs/img/gif/login.gif"/></p>
+
+https://github.com/user-attachments/assets/bec58d04-76aa-4e70-862c-6e74a5aa9a8c
+
 </details>
 
 <details>
@@ -289,8 +291,9 @@ https://github.com/user-attachments/assets/b912272a-0b39-486f-ae4c-18a2e6439208
 
 <details>
 <summary><b>📰 뉴스 요약</b></summary>
-<br>
-<p align="center"><img width="80%" src="../docs/img/gif/login.gif"/></p>
+
+https://github.com/user-attachments/assets/0829ed44-eeed-4f39-b582-e472355a8245
+
 </details>
 
 <details>
@@ -322,7 +325,7 @@ https://github.com/user-attachments/assets/028f019e-afa7-427e-b708-95559ce63cc0
 <details>
 <summary><b>💳 POS 결제</b></summary>
 
-<!-- TODO: GIF 또는 video 추가 -->
+https://github.com/user-attachments/assets/6ecf9980-f869-47ee-b30e-4c28ad5f6067
 
 </details>
 
@@ -330,6 +333,8 @@ https://github.com/user-attachments/assets/028f019e-afa7-427e-b708-95559ce63cc0
 <summary><b>🌙 영업 마감 → AI 자동 발주서 생성</b></summary>
 
 https://github.com/user-attachments/assets/b747bdc1-6a4d-4e43-8830-13b3ff00c922
+
+https://github.com/user-attachments/assets/d76a2f00-5ab2-492d-a853-18985f9b3cc8
 
 </details>
 
@@ -371,7 +376,7 @@ https://github.com/user-attachments/assets/a3ad0baf-38d7-4215-9e0f-9df17434c72f
 <details>
 <summary><b>🗃️ 매장 재고</b></summary>
 
-<!-- TODO: GIF 또는 video 추가 -->
+https://github.com/user-attachments/assets/04246473-3ae0-4d17-bab5-f78a71bc7bca
 
 </details>
 
@@ -395,13 +400,6 @@ https://github.com/user-attachments/assets/7bd34e8e-d20e-4822-921f-a219048feaa9
 <summary><b>🧪 결제 수단 관리</b></summary>
 
 https://github.com/user-attachments/assets/fdb33fd4-771c-4efd-8f09-eaa8ccaa5bee
-
-</details>
-
-<details>
-<summary><b>📰 지역 뉴스</b></summary>
-
-<!-- TODO: GIF 또는 video 추가 -->
 
 </details>
 

@@ -14,7 +14,7 @@
 | :---: | :---: | :---: | :---: | :---: |
 | <img src="https://github.com/RIMIN0650.png" width="96" alt="권민석"/> | <img src="https://github.com/seungchan-0629.png" width="96" alt="노승찬"/> | <img src="https://github.com/hijaehyuk.png" width="96" alt="이재혁"/> | <img src="https://github.com/dwg0245.png" width="96" alt="이지희"/> | <img src="https://github.com/DongHyunj.png" width="96" alt="정동현"/> |
 | [@RIMIN0650](https://github.com/RIMIN0650) | [@seungchan-0629](https://github.com/seungchan-0629) | [@hijaehyuk](https://github.com/hijaehyuk) | [@dwg0245](https://github.com/dwg0245) | [@DongHyunj](https://github.com/DongHyunj) |
-| 로그인 / 회원<br/>ESG 대시보드<br/>결제 BATCH | 제품 / 카테고리<br/>배송 / 정산<br/>결제수단 | 재고 / 입출고<br/>주문 / 마감<br/>뉴스 요약<br/>승인 처리 BATCH | 가맹점 / 메뉴<br/>AI 챗봇<br/>POS MSA | 발주 / 알림<br/>대시보드<br/>통계 MSA<br/>인프라 일부 |
+| 로그인 / 회원<br/>ESG 대시보드<br/>결제 BATCH | 제품 / 카테고리<br/>배송 / 정산<br/>결제수단관리 | 재고 / 입출고<br/>주문 / 마감<br/>뉴스 요약<br/>승인 처리 BATCH | 가맹점 / 메뉴<br/>AI 챗봇<br/>POS MSA | 발주 / 알림<br/>대시보드<br/>통계 MSA<br/>인프라 일부 |
 
 <br>
 
@@ -182,8 +182,9 @@ https://github.com/user-attachments/assets/de76e3eb-00f5-4306-baac-593f19009722
 
 <details>
 <summary><b>📦 제품 목록</b></summary>
-<br>
-<p align="center"><img width="80%" src="../docs/img/gif/login.gif"/></p>
+
+https://github.com/user-attachments/assets/9adfeb48-927b-4c9f-aa27-fe6c1184826e
+
 </details>
 
 <details>
@@ -241,14 +242,16 @@ https://github.com/user-attachments/assets/c5a66746-32fe-484a-ae21-120db58b01a2
 
 <details>
 <summary><b>🚚 배송 관리</b></summary>
-<br>
-<p align="center"><img width="80%" src="../docs/img/gif/login.gif"/></p>
+
+https://github.com/user-attachments/assets/30dadc00-3fa6-45fb-b5be-6eca07cb6acf
+
 </details>
 
 <details>
 <summary><b>💰 정산 관리</b></summary>
-<br>
-<p align="center"><img width="80%" src="../docs/img/gif/login.gif"/></p>
+
+https://github.com/user-attachments/assets/7e9e8758-f049-4e37-b911-79f5a322a291
+
 </details>
 
 <details>
@@ -346,7 +349,7 @@ https://github.com/user-attachments/assets/07948962-1833-4c13-b74c-8bf3a452f989
 <details>
 <summary><b>📦 제품 관리</b></summary>
 
-<!-- TODO: GIF 또는 video 추가 -->
+https://github.com/user-attachments/assets/a3ad0baf-38d7-4215-9e0f-9df17434c72f
 
 </details>
 
@@ -367,21 +370,21 @@ https://github.com/user-attachments/assets/07948962-1833-4c13-b74c-8bf3a452f989
 <details>
 <summary><b>🚚 배송 현황</b></summary>
 
-<!-- TODO: GIF 또는 video 추가 -->
+https://github.com/user-attachments/assets/7bd34e8e-d20e-4822-921f-a219048feaa9
 
 </details>
 
 <details>
 <summary><b>💰 정산 내역</b></summary>
 
-<!-- TODO: GIF 또는 video 추가 -->
+https://github.com/user-attachments/assets/81af6c01-6d89-4c7a-9630-608b21633ceb
 
 </details>
 
 <details>
-<summary><b>🧪 결제 테스트</b></summary>
+<summary><b>🧪 결제 수단 관리</b></summary>
 
-<!-- TODO: GIF 또는 video 추가 -->
+https://github.com/user-attachments/assets/fdb33fd4-771c-4efd-8f09-eaa8ccaa5bee
 
 </details>
 

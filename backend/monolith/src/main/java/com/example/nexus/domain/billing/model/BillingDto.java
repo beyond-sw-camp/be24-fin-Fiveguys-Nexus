@@ -1,5 +1,6 @@
 package com.example.nexus.domain.billing.model;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import java.util.List;
@@ -9,8 +10,12 @@ public class BillingDto {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
+    @Schema(description = "빌링키 발급 요청")
     public static class IssueBillingKeyRequestDto {
+        @Schema(description = "카드 인증 증명서")
         private String authKey;
+
+        @Schema(description = "각 가맹점 구분 키", example = "STORE_1")
         private String customerKey;
     }
 

@@ -1,6 +1,6 @@
 ![header](https://capsule-render.vercel.app/api?type=Venom&color=4F46E5&height=300&section=header&text=Nexus%20Frontend&desc=Vue%203%20%2B%20Vite%20%EA%B8%B0%EB%B0%98%20%ED%86%B5%ED%95%A9%20%EC%9B%B9%20%ED%81%B4%EB%9D%BC%EC%9D%B4%EC%96%B8%ED%8A%B8&descSize=20&descAlign=50&descAlignY=70&fontSize=70&animation=fadeIn&fontColor=ffffff)
 
-### :sunny: **[플레이 데이터] 한화시스템 BEYOND SW캠프** :sunny:
+### ☀️ **[플레이 데이터] 한화시스템 BEYOND SW캠프** ☀️
 
 <br>
 
@@ -8,13 +8,11 @@
 
 <br>
 
-| 👤 | 이름 | 담당 |
-|---|---|---|
-| 🐻 | [TBD](https://github.com/) | TBD |
-| 🦁 | [TBD](https://github.com/) | TBD |
-| 🐶 | [TBD](https://github.com/) | TBD |
-| 🐯 | [TBD](https://github.com/) | TBD |
-| 🐻‍❄️ | [정동현](https://github.com/) | 발주 / 알림 / 대시보드 / 통계 MSA / 인프라 일부 |
+| 권민석 | 노승찬 | 이재혁 | 이지희 | 정동현 |
+| :---: | :---: | :---: | :---: | :---: |
+| <img src="https://github.com/RIMIN0650.png" width="96" alt="권민석"/> | <img src="https://github.com/seungchan-0629.png" width="96" alt="노승찬"/> | <img src="https://github.com/hijaehyuk.png" width="96" alt="이재혁"/> | <img src="https://github.com/dwg0245.png" width="96" alt="이지희"/> | <img src="https://github.com/DongHyunj.png" width="96" alt="정동현"/> |
+| [@RIMIN0650](https://github.com/RIMIN0650) | [@seungchan-0629](https://github.com/seungchan-0629) | [@hijaehyuk](https://github.com/hijaehyuk) | [@dwg0245](https://github.com/dwg0245) | [@DongHyunj](https://github.com/DongHyunj) |
+| 로그인 / 회원<br/>ESG 대시보드<br/>결제 BATCH | 제품 / 카테고리<br/>배송 / 정산<br/>결제수단 | 재고 / 입출고<br/>주문 / 마감<br/>뉴스 요약<br/>승인 처리 BATCH | 가맹점 / 메뉴<br/>AI 챗봇<br/>POS MSA | 발주 / 알림<br/>대시보드<br/>통계 MSA<br/>인프라 일부 |
 
 <br>
 
@@ -57,7 +55,7 @@
 
 ---
 
-## :one: &nbsp; 디렉토리 구조
+## 📁 &nbsp; 디렉토리 구조
 
 <details>
 <summary><b>전체 구조 보기</b></summary>
@@ -101,7 +99,7 @@ frontend/
 
 ---
 
-## :two: &nbsp; 페이지
+## 🪟 &nbsp; 페이지
 
 ### 👉 본사 (`views/hq/`)
 
@@ -205,7 +203,7 @@ frontend/
 
 ---
 
-## :three: &nbsp; 실행
+## 🚀 &nbsp; 실행
 
 <details>
 <summary><b>1. 사전 요구사항</b></summary>
@@ -244,7 +242,7 @@ npm run lint
 
 ---
 
-## :four: &nbsp; API 라우팅 (Vite Proxy)
+## 🛣️ &nbsp; API 라우팅 (Vite Proxy)
 
 <details>
 <summary><b>로컬 dev proxy 규칙</b></summary>
@@ -262,7 +260,7 @@ npm run lint
 
 ---
 
-## :five: &nbsp; API 호출 컨벤션
+## 📡 &nbsp; API 호출 컨벤션
 
 <details>
 <summary><b>Axios Interceptor (plugins/axiosinterceptor.js)</b></summary>
@@ -287,7 +285,7 @@ export const deleteXxx = (idx) => api.delete(`/xxx/${idx}`)
 
 ---
 
-## :six: &nbsp; 상태 관리 (Pinia)
+## 💾 &nbsp; 상태 관리 (Pinia)
 
 <details>
 <summary><b>stores/auth.js</b></summary>
@@ -307,14 +305,14 @@ export const deleteXxx = (idx) => api.delete(`/xxx/${idx}`)
 
 ---
 
-## :seven: &nbsp; Vue SFC 컨벤션
+## 🎨 &nbsp; Vue SFC 컨벤션
 
 - 순서: `<script setup>` → `<template>` → `<style>`
 - 자세한 규칙: [.claude/frontend/VUE_STRUCTURE.md](../.claude/frontend/VUE_STRUCTURE.md)
 
 ---
 
-## :eight: &nbsp; 운영 배포
+## 🚢 &nbsp; 운영 배포
 
 <details>
 <summary><b>Nginx (TLS termination + reverse proxy)</b></summary>

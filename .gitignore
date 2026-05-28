@@ -12,7 +12,7 @@ k8s/db-statefulset.yaml
 k8s/db-service.yaml
 frontend/.env.development
 
-docs/
+docs/jdh
 
 # 배포
 personal/*
@@ -38,4 +38,4 @@ docker-compose.local.*.yml
 
 package.json
 package-lock.json
-.github
+.github/

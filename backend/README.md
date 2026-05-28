@@ -1,6 +1,6 @@
 ![header](https://capsule-render.vercel.app/api?type=Venom&color=4F46E5&height=300&section=header&text=Nexus%20Backend&desc=Spring%20Boot%203.4%20MSA%20%2B%20%EB%B0%B0%EC%B9%98%20%EA%B5%AC%EC%A1%B0&descSize=20&descAlign=50&descAlignY=70&fontSize=70&animation=fadeIn&fontColor=ffffff)
 
-### :sunny: **[플레이 데이터] 한화시스템 BEYOND SW캠프** :sunny:
+### ☀️ **[플레이 데이터] 한화시스템 BEYOND SW캠프** ☀️
 
 <br>
 
@@ -8,13 +8,11 @@
 
 <br>
 
-| 👤 | 이름 | 담당 |
-|---|---|---|
-| 🐻 | [TBD](https://github.com/) | TBD |
-| 🦁 | [TBD](https://github.com/) | TBD |
-| 🐶 | [TBD](https://github.com/) | TBD |
-| 🐯 | [TBD](https://github.com/) | TBD |
-| 🐻‍❄️ | [정동현](https://github.com/) | 발주 / 알림 / 대시보드 / 통계 MSA / 인프라 일부 |
+| 권민석 | 노승찬 | 이재혁 | 이지희 | 정동현 |
+| :---: | :---: | :---: | :---: | :---: |
+| <img src="https://github.com/RIMIN0650.png" width="96" alt="권민석"/> | <img src="https://github.com/seungchan-0629.png" width="96" alt="노승찬"/> | <img src="https://github.com/hijaehyuk.png" width="96" alt="이재혁"/> | <img src="https://github.com/dwg0245.png" width="96" alt="이지희"/> | <img src="https://github.com/DongHyunj.png" width="96" alt="정동현"/> |
+| [@RIMIN0650](https://github.com/RIMIN0650) | [@seungchan-0629](https://github.com/seungchan-0629) | [@hijaehyuk](https://github.com/hijaehyuk) | [@dwg0245](https://github.com/dwg0245) | [@DongHyunj](https://github.com/DongHyunj) |
+| 로그인 / 회원<br/>ESG 대시보드<br/>결제 BATCH | 제품 / 카테고리<br/>배송 / 정산<br/>결제수단 | 재고 / 입출고<br/>주문 / 마감<br/>뉴스 요약<br/>승인 처리 BATCH | 가맹점 / 메뉴<br/>AI 챗봇<br/>POS MSA | 발주 / 알림<br/>대시보드<br/>통계 MSA<br/>인프라 일부 |
 
 <br>
 
@@ -41,7 +39,7 @@
 
 ---
 
-## :one: &nbsp; 소프트웨어 아키텍처
+## 🏗️ &nbsp; 소프트웨어 아키텍처
 
 <details>
 <summary><b>MSA + 레이어드 아키텍처</b></summary>
@@ -81,7 +79,7 @@
 
 ---
 
-## :two: &nbsp; 모듈 구성
+## 🧩 &nbsp; 모듈 구성
 
 | 모듈 | 포트 | 책임 | DB | Kafka |
 |---|---|---|---|---|
@@ -97,7 +95,7 @@
 
 ---
 
-## :three: &nbsp; 모듈 상세
+## 📦 &nbsp; 모듈 상세
 
 <details>
 <summary><b>discovery (Eureka :8761)</b></summary>
@@ -174,7 +172,7 @@
 
 ---
 
-## :four: &nbsp; 주요 기능
+## ✨ &nbsp; 주요 기능
 
 ### ✅ 발주 (Orders)
 <details>
@@ -217,7 +215,7 @@
 
 ---
 
-## :five: &nbsp; 로컬 실행
+## 🚀 &nbsp; 로컬 실행
 
 <details>
 <summary><b>1. 인프라 컨테이너 (DB 3 + Redis + Kafka)</b></summary>
@@ -322,7 +320,7 @@ REDIS_CLI="docker exec -i nexus-redis redis-cli" bash \
 
 ---
 
-## :six: &nbsp; Kafka 토픽 매트릭스
+## 📡 &nbsp; Kafka 토픽 매트릭스
 
 | 토픽 | Producer | Consumer | 용도 |
 |---|---|---|---|
@@ -339,7 +337,7 @@ REDIS_CLI="docker exec -i nexus-redis redis-cli" bash \
 
 ---
 
-## :seven: &nbsp; Swagger UI
+## 📘 &nbsp; Swagger UI
 
 | 모듈 | URL |
 |---|---|
@@ -350,7 +348,7 @@ REDIS_CLI="docker exec -i nexus-redis redis-cli" bash \
 
 ---
 
-## :eight: &nbsp; 응답 / 에러 컨벤션
+## ⚠️ &nbsp; 응답 / 에러 컨벤션
 
 <details>
 <summary><b>BaseResponse 구조</b></summary>

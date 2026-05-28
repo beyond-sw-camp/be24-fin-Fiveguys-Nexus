@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import org.springdoc.core.annotations.ParameterObject;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -61,7 +62,7 @@ public class StoreController {
     @GetMapping("/search")
     public ResponseEntity<BaseResponse<List<StoreDto.StoreSearchRes>>> searchStore(
             @AuthenticationPrincipal UserDetails userDetails,
-            @Parameter(description = "검색 키워드") @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword) {
+            @Parameter(description = "검색할 가맹점 이름의 일부 또는 전체를 입력하세요. (예: 서울, 강남 등). 아무것도 입력하지 않으면 전체 가맹점이 조회될 수 있습니다.", example = "서울") @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword) {
         if (userDetails == null) {
             throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
         }
@@ -77,7 +78,7 @@ public class StoreController {
     @Operation(summary = "가맹점 목록 조회", description = "전체 가맹점 목록을 페이징하여 조회합니다. 상태 및 키워드 필터를 지원합니다.")
     @GetMapping("/list")
     public ResponseEntity<BaseResponse<StoreDto.StorePageRes>> storeList(
-            StoreDto.StoreSearchPagingReq searchReq,
+            @ParameterObject StoreDto.StoreSearchPagingReq searchReq,
             @Parameter(description = "페이지 번호 (0부터 시작)", example = "0") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "페이지 크기", example = "10") @RequestParam(defaultValue = "10") int size
     ){

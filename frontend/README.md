@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="../docs/Nexus_animation.gif" alt="Nexus — 더벤티 프랜차이즈 통합 관리 시스템" width="100%"/>
+  <img src="../docs/nexus%20%EB%8C%80%ED%91%9C%20%EC%9D%B4%EB%AF%B8%EC%A7%80.png" alt="Nexus — 더벤티 프랜차이즈 통합 관리 시스템" width="100%"/>
 </p>
 
 <h3 align="center">🎨 Frontend — Vue 3 + Vite 기반 통합 웹 클라이언트</h3>

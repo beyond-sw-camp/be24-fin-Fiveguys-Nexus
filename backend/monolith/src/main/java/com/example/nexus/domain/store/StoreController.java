@@ -8,6 +8,11 @@ import com.example.nexus.domain.store.model.StoreInventoryDto;
 import com.example.nexus.domain.user.model.AuthUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -152,6 +157,45 @@ public class StoreController {
 
     // 가맹점별 매출 정산 조회
     @Operation(summary = "가맹점 매출 정산 조회", description = "로그인한 가맹점주가 특정 월의 매출 및 POS 정산 내역을 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "가맹점 매출 정산 조회 성공",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = BaseResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                        {
+                                          "success": true,
+                                          "code": 1000,
+                                          "message": "요청에 성공하였습니다.",
+                                          "result": {
+                                            "monthlyTotalAmount": 8500000,
+                                            "payHistory": {
+                                              "content": [
+                                                {
+                                                  "posPayIdx": 1,
+                                                  "menuNames": "아메리카노 외 2건",
+                                                  "payCount": 3,
+                                                  "paidDate": "2026-05-20",
+                                                  "payAmount": 25000
+                                                }
+                                              ],
+                                              "page": {
+                                                "size": 10,
+                                                "number": 0,
+                                                "totalElements": 1,
+                                                "totalPages": 1
+                                              }
+                                            }
+                                          }
+                                        }
+                                        """
+                            )
+                    )
+            )
+    })
     @GetMapping("/income/settlement")
     public ResponseEntity<BaseResponse<StoreIncomeDto.TotalSettlementRes>> getSettlement(
             @Parameter(hidden = true) @AuthenticationPrincipal AuthUserDetails userDetails,

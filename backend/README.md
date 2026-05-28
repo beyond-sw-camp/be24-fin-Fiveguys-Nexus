@@ -1,4 +1,8 @@
-![header](https://capsule-render.vercel.app/api?type=Venom&color=4F46E5&height=300&section=header&text=Nexus%20Backend&desc=Spring%20Boot%203.4%20MSA%20%2B%20%EB%B0%B0%EC%B9%98%20%EA%B5%AC%EC%A1%B0&descSize=20&descAlign=50&descAlignY=70&fontSize=70&animation=fadeIn&fontColor=ffffff)
+<p align="center">
+  <img src="../docs/nexus%20%EB%8C%80%ED%91%9C%20%EC%9D%B4%EB%AF%B8%EC%A7%80.png" alt="Nexus — 더벤티 프랜차이즈 통합 관리 시스템" width="100%"/>
+</p>
+
+<h3 align="center">⚙️ Backend — Spring Boot 3.4 MSA + 배치 구조</h3>
 
 ### ☀️ **[플레이 데이터] 한화시스템 BEYOND SW캠프** ☀️
 

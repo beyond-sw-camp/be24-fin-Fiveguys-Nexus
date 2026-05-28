@@ -3,6 +3,7 @@ package com.example.nexus.domain.report.model;
 import com.example.nexus.domain.store.model.StoreDto;
 import com.example.nexus.domain.user.model.User;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
@@ -16,8 +17,10 @@ public class ReportDto {
 
     // 사용자 요청 DTO
     public record ChatRequest(
+            @Schema(description = "보고서 생성을 위한 AI 요청 메시지", example = "지난주 대비 이번주 매출 변화와 원자재 소모량에 대해 분석해줘")
             @NotBlank(message = "메시지는 비어있을 수 없습니다.")
             String message,
+            @Schema(description = "대화 세션 식별자 (선택값, 미입력시 사용자 기준 기본 세션 사용)", example = "session-123")
             String sessionId   // 대화 세션 식별자 (선택값, 없으면 서버에서 userIdx 기반 기본값 사용)
     ) {}
 

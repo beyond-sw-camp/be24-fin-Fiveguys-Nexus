@@ -4,11 +4,10 @@
 
 <h3 align="center">⚙️ Backend — Spring Boot 3.4 MSA + 배치 구조</h3>
 
-<br>
+---
 
 ## 🤼‍♂️ 팀원 소개
 
-<br>
 
 | 권민석 | 노승찬 | 이재혁 | 이지희 | 정동현 |
 | :---: | :---: | :---: | :---: | :---: |
@@ -16,7 +15,7 @@
 | [@RIMIN0650](https://github.com/RIMIN0650) | [@seungchan-0629](https://github.com/seungchan-0629) | [@hijaehyuk](https://github.com/hijaehyuk) | [@dwg0245](https://github.com/dwg0245) | [@DongHyunj](https://github.com/DongHyunj) |
 | 로그인 / 회원<br/>ESG 대시보드<br/>결제 BATCH | 제품 / 카테고리<br/>배송 / 정산<br/>결제수단 | 재고 / 입출고<br/>주문 / 마감<br/>뉴스 요약<br/>승인 처리 BATCH | 가맹점 / 메뉴<br/>AI 챗봇<br/>POS MSA | 발주 / 알림<br/>대시보드<br/>통계 MSA<br/>인프라 일부 |
 
-<br>
+---
 
 ## 📌 기술 스택
 
@@ -41,26 +40,24 @@
 
 ---
 
-## 🏗️ &nbsp; 소프트웨어 아키텍처
+## 🏗️ 소프트웨어 아키텍처
 
 <details>
 <summary><b>MSA + 레이어드 아키텍처</b></summary>
-<br>
-
 - **모놀리식 + 도메인 MSA**: 본사 운영 도메인은 monolith 에서 응집도 유지, 부하 분리가 필요한 영역 (POS 결제, 통계) 만 MSA 분리
 - **레이어드**: Controller → Service → Repository → Domain Model
 - **이벤트 기반 통신**: 모듈 간은 Kafka 이벤트로 느슨하게 결합 (store / menu / product / payment / close)
-- **Spring Batch + 파티션**: 발주 일괄 승인 시 product 별 파티션 병렬 처리로 대량 처리
+- **Spring Batch + 파티션 (발주 일괄 승인)**: 본사 확정 발주 일괄 승인 시 product 별 파티션 병렬 처리로 대량 재고 차감 / APPROVE 전환
+- **Billing Batch (결제 / 정산 배치)**: 반월 단위 자동 정산 + 매출 채권 결산을 Spring Batch + ShedLock 분산 락으로 멱등하게 처리
 
 > 채택 사유
 > 1. 응집도 / 결합도 trade-off — 모놀리식의 빠른 개발 + MSA 의 부하 분리
 > 2. Kafka 이벤트로 모듈 간 의존 최소화 → 독립 배포 / 장애 격리
-> 3. Spring Batch + ShedLock 분산 락으로 안전한 대량 처리
+> 3. Spring Batch + ShedLock 분산 락으로 안전한 대량 처리 (발주 일괄 승인 / 정산 결제 모두 동일 패턴)
 </details>
 
 <details>
 <summary><b>이벤트 흐름 (Kafka)</b></summary>
-<br>
 
 ```
 [Monolith Producer]                          [Consumer]
@@ -81,17 +78,17 @@
 
 ---
 
-## 🧩 &nbsp; 모듈 구성
+## 🧩 모듈 구성
 
-| 모듈 | 포트 | 책임 | DB | Kafka |
-|---|---|---|---|---|
-| **discovery** | 8761 | Eureka 서비스 디스커버리 | — | — |
-| **gateway** | 8088 | Spring Cloud Gateway (라우팅) | — | — |
-| **monolith** | 8080 | 본사 + 공통 도메인 (발주/알림/대시보드/정산/본사 재고) | MariaDB :3306 | Producer + Consumer |
-| **pos** | 8082 | POS 결제, 매장 재고, POS 메뉴 | MariaDB :3308 | Producer + Consumer |
-| **statistics** | 8081 | 실시간 / 장기 통계 | MariaDB :3307 + Redis :6379 | Consumer |
-| **batch** | 8090 | 발주 일괄 승인 (Spring Batch + REST 트리거) | 모놀리식 DB 공유 (`order_batch.orders_item_staging`) | — |
-| **billing-batch** | 8080* | 정산 자동 배치 (Spring Batch) | 모놀리식 DB 공유 | — |
+| 모듈 | 포트    | 책임 | DB | Kafka |
+|---|-------|---|---|---|
+| **discovery** | 8761  | Eureka 서비스 디스커버리 | — | — |
+| **gateway** | 8088  | Spring Cloud Gateway (라우팅) | — | — |
+| **monolith** | 8080  | 본사 + 공통 도메인 (발주/알림/대시보드/정산/본사 재고) | MariaDB :3306 | Producer + Consumer |
+| **pos** | 8082  | POS 결제, 매장 재고, POS 메뉴 | MariaDB :3308 | Producer + Consumer |
+| **statistics** | 8081  | 실시간 / 장기 통계 | MariaDB :3307 + Redis :6379 | Consumer |
+| **batch** | 8090  | 발주 일괄 승인 (Spring Batch) | 모놀리식 DB 공유 | — |
+| **billing-batch** | *8080 | 정산 자동 배치 (Spring Batch) | 모놀리식 DB 공유 | — |
 
 (*) billing-batch 는 K8s 환경에서 별도 컨테이너로 격리. 로컬 동시 실행 시 포트 충돌 주의.
 
@@ -418,41 +415,43 @@ sequenceDiagram
 - **SSE** — `text/event-stream` 으로 클라이언트 구독, Nginx buffering off 필수
 </details>
 
----
-
-## 🚀 &nbsp; 로컬 실행
-
+### ✅ 결제 배치 (Billing Batch)
 <details>
-<summary><b>1. 인프라 컨테이너 (DB 3 + Redis + Kafka)</b></summary>
+<summary><b>반월 단위 자동 정산 + 매출 채권 결산</b></summary>
 
-```bash
-# Monolith MariaDB (3306)
-docker run -d --name nexus-monolith-db -p 3306:3306 \
-  -e MARIADB_ROOT_PASSWORD=qwer1234 -e MARIADB_DATABASE=nexus \
-  -v nexus-monolith-db-data:/var/lib/mysql \
-  mariadb:11 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
-
-# Statistics MariaDB (3307)
-docker run -d --name nexus-stats-db -p 3307:3306 \
-  -e MARIADB_ROOT_PASSWORD=qwer1234 -e MARIADB_DATABASE=statistics \
-  -v nexus-stats-db-data:/var/lib/mysql \
-  mariadb:11 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
-
-# POS MariaDB (3308)
-docker run -d --name nexus-pos-db -p 3308:3306 \
-  -e MARIADB_ROOT_PASSWORD=qwer1234 -e MARIADB_DATABASE=pos \
-  -v nexus-pos-db-data:/var/lib/mysql \
-  mariadb:11 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
-
-# Redis (6379)
-docker run -d --name nexus-redis -p 6379:6379 \
-  -v nexus-redis-data:/data \
-  redis:7-alpine
-
-# Kafka (9092) + Kafka UI (8090)
-docker compose -f ../docker-compose.local.yml up -d
-```
+- **흐름**: Spring Scheduler 가 정해진 주기 (매월 15일 / 말일) 에 Job 트리거 → `HeadIncome` (매출 채권) 결산 → 정산 금액 산출 → 가맹점 / 본사 정산 내역 INSERT
+- **멱등성**: ShedLock 분산 락으로 여러 인스턴스 동시 실행 방지 → 같은 정산 구간 중복 처리 차단
+- **결제수단 관리**: 카드 / 계좌이체 / 자동이체 등 결제 수단별 정산 분리
+- **장애 복구**: 실패 시 Job 재시도 + 부분 성공 처리 (Spring Batch Skip / Retry)
+- **의존**: 모놀리식 DB 공유 (`head_income`, `settlement` 등)
 </details>
+
+### ✅ AI 챗봇 비서 (보고서 생성)
+<details>
+<summary><b>자연어 질의 → AI 가 운영 / 매출 / 재고 보고서 자동 생성</b></summary>
+
+- **목적**: 본사 관리자 / 가맹점주가 자연어로 질의 → AI 가 운영 데이터를 분석해 **보고서 형태로 응답**
+  - "이번 달 매출 추이 알려줘" → 일별 매출 추이 + 차트 + 요약 인사이트
+  - "지난 주 재고 위험 품목 정리해줘" → 위험 재고 목록 + 발주 추천
+  - "매장 정산 현황 요약" → 반월 정산 + 미정산 매출 채권 목록
+- **본사 챗봇**: 가맹점 / 발주 / 재고 / 매출 / 배송 / 정산 통합 질의 → 운영 보고서 응답
+- **가맹점 챗봇**: POS 매출 / 매장 재고 / 발주 진행 / 정산 내역 → 매장별 보고서 응답
+- **데이터 소스**: 모놀리식 (`orders` / `delivery` / `head_income` / `waste_log`) + 통계 MSA (`daily_*_sales`) 통합 조회
+- **AI 모델**: OpenAI API 연동 (Spring AI / RestTemplate)
+- **컨텍스트 구성**: 사용자 역할 (ADMIN / STORE) + 매장 정보 + 질의 기간 기반 프롬프트
+- **출력 형식**: 텍스트 요약 + 차트 데이터 (Chart.js 렌더링) + 인사이트 (이상치 / 추세 / 권장 액션)
+</details>
+
+### ✅ 뉴스 요약
+<details>
+<summary><b>AI 기반 외부 뉴스 자동 요약</b></summary>
+
+- **수집**: 외부 뉴스 API / 크롤링 → 프랜차이즈·F&B 산업 관련 뉴스 수집
+- **요약**: OpenAI 또는 자체 모델로 핵심 내용 추출 → `news_summary` 테이블 저장
+- **가맹점 노출**: 매장별 / 지역별 큐레이션 → 가맹점 대시보드 "지역 뉴스" 섹션
+</details>
+
+---
 
 <details>
 <summary><b>2. 환경변수</b></summary>
@@ -491,41 +490,9 @@ AWS_S3_BUCKET=...
 ```
 </details>
 
-<details>
-<summary><b>3. 실행 순서</b></summary>
-
-1. **discovery** (8761) — Eureka 서버 (다른 모듈이 등록되려면 먼저 떠야 함)
-2. **gateway** (8088)
-3. **monolith** (8080), **pos** (8082), **statistics** (8081) — 병렬 가능
-4. **batch** (8090)
-5. (선택) **billing-batch** — 포트 충돌 주의
-</details>
-
-<details>
-<summary><b>4. 시드 데이터 (dev)</b></summary>
-
-```bash
-# 모놀리식 (매장 100 + 결제 / 발주 / 알림 등)
-docker exec -i nexus-monolith-db mariadb -uroot -pqwer1234 nexus \
-  < monolith/src/main/resources/seed-dev.sql
-
-# 통계 MSA
-docker exec -i nexus-stats-db mariadb -uroot -pqwer1234 statistics \
-  < statistics/src/main/resources/seed-dev.sql
-
-# Redis 사전 집계
-REDIS_CLI="docker exec -i nexus-redis redis-cli" bash \
-  statistics/src/main/resources/seed-redis-dev.sh
-```
-
-**로그인 (dev seed):**
-- 본사: `admin@theventi.co.kr` / `password123`
-- 가맹점: `store0001@theventi.co.kr` ~ `store0100@theventi.co.kr` / `password123`
-</details>
-
 ---
 
-## 📡 &nbsp; Kafka 토픽 매트릭스
+## 📡 Kafka 토픽 매트릭스
 
 | 토픽 | Producer | Consumer | 용도 |
 |---|---|---|---|
@@ -542,18 +509,7 @@ REDIS_CLI="docker exec -i nexus-redis redis-cli" bash \
 
 ---
 
-## 📘 &nbsp; Swagger UI
-
-| 모듈 | URL |
-|---|---|
-| monolith | http://localhost:8080/swagger-ui/index.html |
-| pos | http://localhost:8082/swagger-ui/index.html |
-| statistics | http://localhost:8081/swagger-ui/index.html |
-| batch | http://localhost:8090/swagger-ui/index.html |
-
----
-
-## ⚠️ &nbsp; 응답 / 에러 컨벤션
+## ⚠️ 응답 / 에러 컨벤션
 
 <details>
 <summary><b>BaseResponse 구조</b></summary>
@@ -599,8 +555,21 @@ REDIS_CLI="docker exec -i nexus-redis redis-cli" bash \
 
 ## 📜 컨벤션
 
-- **Javadoc:** [.claude/convention/JAVADOC_CONVENTION.md](../.claude/convention/JAVADOC_CONVENTION.md)
-- **커밋 / PR / 이슈:** 루트 [README.md](../README.md) 의 컨벤션 섹션 참조
+> 프로젝트 컨벤션 (커밋 / 이슈 / PR / 워크플로우 / Backend Javadoc) 은 **GitHub Wiki** 에서 관리합니다.
+
+<p>
+  <a href="https://github.com/beyond-sw-camp/<repo>/wiki">
+    <img src="https://img.shields.io/badge/📖_Wiki_바로가기-181717?style=for-the-badge&logo=github&logoColor=white" height="40"/>
+  </a>
+</p>
+
+| 종류 | Wiki 페이지 |
+|---|---|
+| 📝 커밋 | [Commit Convention](https://github.com/beyond-sw-camp/<repo>/wiki/Commit-Convention) |
+| 🐛 이슈 | [Issue Convention](https://github.com/beyond-sw-camp/<repo>/wiki/Issue-Convention) |
+| 🔀 Pull Request | [Pull Request Convention](https://github.com/beyond-sw-camp/<repo>/wiki/Pull-Request-Convention) |
+| 🔄 작업 흐름 | [Workflow Convention](https://github.com/beyond-sw-camp/<repo>/wiki/Workflow-Convention) |
+| 📘 Backend Javadoc | [Javadoc Convention](https://github.com/beyond-sw-camp/<repo>/wiki/Javadoc-Convention) |
 
 ---
 

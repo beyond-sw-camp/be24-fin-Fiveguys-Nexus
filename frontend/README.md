@@ -51,7 +51,7 @@
 | 🎨 **Styling** | Tailwind CSS | 4.2 | 유틸리티 CSS |
 | 📊 **Chart** | Chart.js | 4.5 | 차트 / 시각화 |
 | 🎯 **Icon** | Lucide Vue Next | - | 아이콘 컴포넌트 |
-| 💳 **Payment** | PortOne Browser SDK | 0.1 | 결제 게이트 연동 |
+| 💳 **Payment** | PortOne Browser SDK, tosspayment | 0.1.6 | 결제 게이트 연동 |
 | 🔍 **Lint** | ESLint + Oxlint | - | 코드 품질 / 스타일 검사 |
 | 🌐 **Deploy** | Nginx | 1.25 | 운영 배포 (TLS + Reverse Proxy) |
 

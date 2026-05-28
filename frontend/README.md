@@ -376,8 +376,10 @@ https://github.com/user-attachments/assets/7bd34e8e-d20e-4822-921f-a219048feaa9
 
 <details>
 <summary><b>💰 정산 내역</b></summary>
+<br>
 
-https://github.com/user-attachments/assets/81af6c01-6d89-4c7a-9630-608b21633ceb
+<video src="https://github.com/user-attachments/assets/81af6c01-6d89-4c7a-9630-608b21633ceb" controls width="100%"></video>
+<video src="https://github.com/user-attachments/assets/c0a4eab0-abd9-4455-9d76-c120cad1c976" controls width="100%"></video>
 
 </details>
 
@@ -385,7 +387,6 @@ https://github.com/user-attachments/assets/81af6c01-6d89-4c7a-9630-608b21633ceb
 <summary><b>🧪 결제 수단 관리</b></summary>
 
 https://github.com/user-attachments/assets/fdb33fd4-771c-4efd-8f09-eaa8ccaa5bee
-https://github.com/user-attachments/assets/c0a4eab0-abd9-4455-9d76-c120cad1c976
 
 </details>
 

@@ -12,7 +12,7 @@ k8s/db-statefulset.yaml
 k8s/db-service.yaml
 frontend/.env.development
 
-docs/
+docs/jdh
 
 # 배포
 personal/*
@@ -31,3 +31,11 @@ k8s/load-test/seed-data.sql
 k8s/load-test/README.md
 k8s/load-test/test-statistics-secret.yaml
 k8s/load-test/test-backend-secret.yaml
+
+# 로컬 dev 환경 (Kafka, 기타 보조 docker compose)
+docker-compose.local.yml
+docker-compose.local.*.yml
+
+package.json
+package-lock.json
+.github/

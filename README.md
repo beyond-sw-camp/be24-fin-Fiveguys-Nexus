@@ -1,4 +1,6 @@
-![header](https://capsule-render.vercel.app/api?type=Venom&color=4F46E5&height=300&section=header&text=Nexus&desc=%EB%8D%94%EB%B2%A4%ED%8B%B0%20%ED%94%84%EB%9E%9C%EC%B0%A8%EC%9D%B4%EC%A6%88%20%ED%86%B5%ED%95%A9%20%EA%B4%80%EB%A6%AC%20%EC%8B%9C%EC%8A%A4%ED%85%9C&descSize=20&descAlign=50&descAlignY=70&fontSize=100&animation=fadeIn&fontColor=ffffff)
+<p align="center">
+  <img src="docs/nexus%20%EB%8C%80%ED%91%9C%20%EC%9D%B4%EB%AF%B8%EC%A7%80.png" alt="Nexus — 더벤티 프랜차이즈 통합 관리 시스템" width="100%"/>
+</p>
 
 ---
 

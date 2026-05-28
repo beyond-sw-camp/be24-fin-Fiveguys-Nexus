@@ -1,4 +1,8 @@
-![header](https://capsule-render.vercel.app/api?type=Venom&color=4F46E5&height=300&section=header&text=Nexus%20Frontend&desc=Vue%203%20%2B%20Vite%20%EA%B8%B0%EB%B0%98%20%ED%86%B5%ED%95%A9%20%EC%9B%B9%20%ED%81%B4%EB%9D%BC%EC%9D%B4%EC%96%B8%ED%8A%B8&descSize=20&descAlign=50&descAlignY=70&fontSize=70&animation=fadeIn&fontColor=ffffff)
+<p align="center">
+  <img src="../docs/nexus%20%EB%8C%80%ED%91%9C%20%EC%9D%B4%EB%AF%B8%EC%A7%80.png" alt="Nexus — 더벤티 프랜차이즈 통합 관리 시스템" width="100%"/>
+</p>
+
+<h3 align="center">🎨 Frontend — Vue 3 + Vite 기반 통합 웹 클라이언트</h3>
 
 ### ☀️ **[플레이 데이터] 한화시스템 BEYOND SW캠프** ☀️
 

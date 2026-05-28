@@ -9,6 +9,10 @@ import com.example.nexus.domain.user.model.AuthUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -50,7 +54,7 @@ public class StoreController {
     // [본사] keyword로 가맹점 검색
     @Operation(summary = "가맹점 이름 검색", description = "가맹점 명칭(키워드)으로 가맹점을 검색합니다.")
     @GetMapping("/search")
-    public ResponseEntity searchStore(
+    public ResponseEntity<BaseResponse<List<StoreDto.StoreSearchRes>>> searchStore(
             @AuthenticationPrincipal UserDetails userDetails,
             @Parameter(description = "검색 키워드") @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword) {
         if (userDetails == null) {
@@ -67,7 +71,7 @@ public class StoreController {
     // 가맹점 목록 조회 및 검색 조건
     @Operation(summary = "가맹점 목록 조회", description = "전체 가맹점 목록을 페이징하여 조회합니다. 상태 및 키워드 필터를 지원합니다.")
     @GetMapping("/list")
-    public ResponseEntity storeList(
+    public ResponseEntity<BaseResponse<StoreDto.StorePageRes>> storeList(
             StoreDto.StoreSearchPagingReq searchReq,
             @Parameter(description = "페이지 번호 (0부터 시작)", example = "0") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "페이지 크기", example = "10") @RequestParam(defaultValue = "10") int size
@@ -78,7 +82,7 @@ public class StoreController {
 
     @Operation(summary = "가맹점 전체 상태 집계", description = "현재 운영 중이거나 폐점된 가맹점의 전체 숫자를 집계하여 조회합니다.")
     @GetMapping("/totalCount/list")
-    public ResponseEntity storeTotalList(){
+    public ResponseEntity<BaseResponse<StoreDto.StoreTotalRes>> storeTotalList(){
         StoreDto.StoreTotalRes result = storeService.storeTotalList();
         return ResponseEntity.ok(BaseResponse.success(result));
     }
@@ -96,24 +100,33 @@ public class StoreController {
     // 가맹점 목록 상세 조회
     @Operation(summary = "가맹점 상세 정보 조회", description = "특정 가맹점의 상세 정보(점주 명, 연락처, 주소 등)를 조회합니다.")
     @GetMapping("/detail/list/{storeIdx}")
-    public ResponseEntity storeDetailList(@Parameter(description = "가맹점 번호") @PathVariable Long storeIdx){
+    public ResponseEntity<BaseResponse<StoreDto.StoreDetailListRes>> storeDetailList(@Parameter(description = "가맹점 번호") @PathVariable Long storeIdx){
         StoreDto.StoreDetailListRes result = storeService.storeDetailList(storeIdx);
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 
     // 신규 가맹점 등록
     @Operation(summary = "신규 가맹점 등록", description = "새로운 가맹점 정보를 등록합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "성공"),
+            @ApiResponse(responseCode = "404", description = "점주를 찾을 수 없음", content = @Content(schema = @Schema(example = "{\"success\":false, \"code\":404, \"message\":\"존재하지 않는 유저입니다.\"}"))),
+            @ApiResponse(responseCode = "409", description = "중복 데이터 발생 (가맹점 보유, 가맹점명 중복, 사업자번호 중복)", content = @Content(schema = @Schema(example = "{\"success\":false, \"code\":409, \"message\":\"이미 가맹점을 보유한 점주입니다.\"}")))
+    })
     @PostMapping("/new/register")
-    public ResponseEntity storeReg(@RequestBody StoreDto.StoreRegReq dto ){
+    public ResponseEntity<BaseResponse<String>> storeReg(@RequestBody StoreDto.StoreRegReq dto ){
         storeService.storeReg(dto);
         return ResponseEntity.ok(BaseResponse.success("성공"));
     }
 
     // S3 Pre-signed URL 요청
     @Operation(summary = "S3 업로드용 Pre-signed URL 생성", description = "가맹점 이미지 등을 S3에 직접 업로드하기 위한 Pre-signed URL을 생성합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "성공"),
+            @ApiResponse(responseCode = "400", description = "파일 용량 초과", content = @Content(schema = @Schema(example = "{\"success\":false, \"code\":400, \"message\":\"PDF 파일 용량을 초과했습니다.\"}")))
+    })
     @GetMapping("/presignedUrl/{fileName}")
-    public ResponseEntity presignedUrl(
-            @Parameter(description = "업로드할 파일명 (확장자 포함)") @PathVariable(name = "fileName") String fileName,
+    public ResponseEntity<BaseResponse<Map<String, String>>> presignedUrl(
+            @Parameter(description = "업로드할 파일명 (확장자 포함)", example = "business_license.pdf") @PathVariable(name = "fileName") String fileName,
             @Parameter(description = "파일 크기 (Byte 단위)", example = "1024") @RequestParam(name = "fileSize") long fileSize){
         // 1. 서비스를 호출하여 URL과 고유 파일명을 받아옵니다.
         Map<String, String> result = storeService.getPresignedUrl(fileName, fileSize);
@@ -124,8 +137,13 @@ public class StoreController {
 
     // 가맹점 수정
     @Operation(summary = "가맹점 정보 수정", description = "기존 가맹점의 정보를 수정합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "성공"),
+            @ApiResponse(responseCode = "400", description = "이미 폐점 처리된 가맹점", content = @Content(schema = @Schema(example = "{\"success\":false, \"code\":400, \"message\":\"이미 폐점 처리된 가맹점입니다.\"}"))),
+            @ApiResponse(responseCode = "409", description = "가맹점명 중복", content = @Content(schema = @Schema(example = "{\"success\":false, \"code\":409, \"message\":\"이미 존재하는 가맹점명입니다.\"}")))
+    })
     @PutMapping("/update/{storeIdx}")
-    public ResponseEntity storeUpdate(
+    public ResponseEntity<BaseResponse<String>> storeUpdate(
             @Parameter(description = "가맹점 번호") @PathVariable(name = "storeIdx") Long storeIdx,
             @RequestBody StoreDto.StoreUpdateReq dto){
         storeService.storeUpdate(storeIdx, dto);

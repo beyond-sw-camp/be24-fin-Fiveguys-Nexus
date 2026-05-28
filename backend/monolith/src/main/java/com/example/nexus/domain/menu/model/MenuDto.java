@@ -4,6 +4,7 @@ import com.example.nexus.common.exception.BaseException;
 import com.example.nexus.domain.product.model.Product;
 import jakarta.persistence.*;
 import lombok.*;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.data.domain.Page;
 import java.util.List;
 import java.util.Map;
@@ -104,8 +105,11 @@ public class MenuDto {
 
     @Getter
     public static class MenuItemReq{
+        @Schema(description = "소모량", example = "1")
         private Integer quantity;
+        @Schema(description = "단위", example = "개")
         private String menuUnit;
+        @Schema(description = "원자재 식별자(ID)", example = "105")
         private Long productIdx;
 
         public MenuItem toEntity(Menu menu, Product product) {
@@ -124,10 +128,15 @@ public class MenuDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class MenuRegReq{
+        @Schema(description = "메뉴 이름", example = "아이스 아메리카노")
         private String menuName;
+        @Schema(description = "가격", example = "4500")
         private Integer price;
+        @Schema(description = "메뉴 이미지 S3 URL", example = "https://s3.amazonaws.com/venti/ice_americano.jpg")
         private String imgPath;
+        @Schema(description = "카테고리 식별자(ID)", example = "1")
         private Long menuCategoryIdx;
+        @Schema(description = "레시피 (원자재 구성)")
         private List<MenuItemReq> menuItemList;
 
         public Menu toEntity(MenuCategory category, List<Product> products) {
@@ -187,6 +196,7 @@ public class MenuDto {
     // 카테고리 등록 Req
     @Getter
     public static class MenuCategoryRegReq{
+        @Schema(description = "신규 카테고리 이름", example = "프라페")
         private String menuCategoryName;
     }
 

@@ -15,7 +15,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-@Tag(name = "AI 보고서 (Report)", description = "AI 챗봇(클로드) 기반 데이터 분석 및 보고서 자동 생성/조회 API")
+@Tag(name = "AI 보고서", description = "AI 챗봇(클로드) 기반 데이터 분석 및 보고서 자동 생성/조회 API")
 @RequestMapping("/report")
 @RestController
 @RequiredArgsConstructor
@@ -25,7 +25,7 @@ public class ReportController {
     // 사용자 메세지 통신
     @Operation(summary = "AI 챗봇 대화 및 보고서 생성", description = "AI 챗봇에게 데이터 분석 및 요약을 요청하고, 그 결과로 생성된 보고서를 저장합니다.")
     @PostMapping("/generate")
-    public ResponseEntity<BaseResponse> requestReport(
+    public ResponseEntity<BaseResponse<String>> requestReport(
             @Parameter(hidden = true) @AuthenticationPrincipal AuthUserDetails userDetails,
             @Valid @RequestBody ReportDto.ChatRequest request) {
         if (userDetails == null) {

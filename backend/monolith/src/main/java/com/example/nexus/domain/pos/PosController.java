@@ -9,6 +9,7 @@ import com.example.nexus.domain.user.model.AuthUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -114,27 +115,111 @@ public class PosController {
             description = """
                     POS에서 결제를 저장. 결제 금액은 메뉴 단가 기준으로 서버에서 계산.
 
-                    요청 필드 (PayReq):
-                    - method: 결제 수단 (PosPayMethod — CARD / CASH 등)
-                    - items: 주문 항목 목록
+                    **요청 필드 (PayReq)**
+                    - method: 결제 수단 — `CARD` 또는 `CASH` (필수)
+                    - items: 주문 항목 목록 (1개 이상 필수)
                       - menuIdx: 메뉴 ID (필수)
                       - quantity: 수량 (1 이상, 필수)
 
-                    응답 필드 (PayRes):
+                    **응답 필드 (PayRes)**
                     - posPayIdx: 결제 ID
-                    - payAmount: 총 결제 금액 (서버 계산)
+                    - storeIdx: 매장 ID
+                    - method: 사용한 결제 수단
+                    - payAmount: 총 결제 금액 (서버에서 메뉴 단가 기준으로 계산)
                     - paidAt: 결제 일시
-                    - items: 항목별 단가·금액 포함
+                    - items: 항목별 menuIdx·menuName·quantity·unitPrice·lineAmount 포함
                     """
     )
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            required = true,
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = PosPayDto.PayReq.class),
+                    examples = {
+                            @ExampleObject(
+                                    name = "카드 결제",
+                                    summary = "카드로 메뉴 2종 주문",
+                                    value = """
+                                            {
+                                              "method": "CARD",
+                                              "items": [
+                                                {"menuIdx": 10, "quantity": 2},
+                                                {"menuIdx": 11, "quantity": 1}
+                                              ]
+                                            }"""
+                            ),
+                            @ExampleObject(
+                                    name = "현금 결제",
+                                    summary = "현금으로 메뉴 1종 주문",
+                                    value = """
+                                            {
+                                              "method": "CASH",
+                                              "items": [
+                                                {"menuIdx": 10, "quantity": 3}
+                                              ]
+                                            }"""
+                            )
+                    }
+            )
+    )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "결제 처리 성공"),
-            @ApiResponse(responseCode = "401", description = "로그인이 필요합니다.",
-                    content = @Content(mediaType = "application/json", schema = @Schema(example = """
-                            {"success":false,"code":401,"message":"로그인이 필요합니다.","result":null}"""))),
-            @ApiResponse(responseCode = "400", description = "요청값 검증 실패 (@Valid) / 메뉴 없음 / POS 재고 부족",
-                    content = @Content(mediaType = "application/json", schema = @Schema(example = """
-                            {"success":false,"code":4001,"message":"입력값이 잘못되었습니다.","result":{"quantity":"1 이상이어야 합니다"}}""")))
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "결제 처리 성공",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = BaseResponse.class),
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "success": true,
+                                      "code": 1000,
+                                      "message": "요청에 성공하였습니다.",
+                                      "result": {
+                                        "posPayIdx": 42,
+                                        "storeIdx": 3,
+                                        "method": "CARD",
+                                        "payAmount": 15000,
+                                        "paidAt": "2026-05-28T14:30:00",
+                                        "items": [
+                                          {"menuIdx": 10, "menuName": "아메리카노", "quantity": 2, "unitPrice": 4500, "lineAmount": 9000},
+                                          {"menuIdx": 11, "menuName": "카페라떼", "quantity": 1, "unitPrice": 6000, "lineAmount": 6000}
+                                        ]
+                                      }
+                                    }""")
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "요청값 검증 실패 / 메뉴 없음 / POS 재고 부족",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = BaseResponse.class),
+                            examples = {
+                                    @ExampleObject(
+                                            name = "검증 실패",
+                                            summary = "method 또는 items 누락",
+                                            value = """
+                                                    {"success":false,"code":4001,"message":"입력값이 잘못되었습니다.","result":{"method":"널이어서는 안됩니다","items":"비어 있으면 안 됩니다"}}"""
+                                    ),
+                                    @ExampleObject(
+                                            name = "재고 부족",
+                                            summary = "POS 재고가 주문 수량보다 적은 경우",
+                                            value = """
+                                                    {"success":false,"code":3302,"message":"POS 재고가 부족합니다.","result":{"productIdx":5,"required":10,"availableTotal":3}}"""
+                                    )
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "로그인이 필요합니다.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = BaseResponse.class),
+                            examples = @ExampleObject(value = """
+                                    {"success":false,"code":401,"message":"로그인이 필요합니다.","result":null}""")
+                    )
+            )
     })
     @PostMapping("/pay")
     public ResponseEntity<BaseResponse<PosPayDto.PayRes>> pay(@AuthenticationPrincipal AuthUserDetails userDetails, @Valid @RequestBody PosPayDto.PayReq req) {

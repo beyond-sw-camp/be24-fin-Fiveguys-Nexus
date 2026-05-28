@@ -1,6 +1,7 @@
 package com.example.nexus.domain.product.model;
 
 import com.example.nexus.domain.category.model.Category;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,14 +13,30 @@ import java.util.List;
 
 public class ProductDto {
     @Getter
+    @Schema(name = "ProductRegReq", description = "제품 등록 및 수정 요청")
     public static class RegReq {
+        @Schema(description = "제품 번호 (수정 시 필수)", example = "1")
         private Long idx;
+
+        @Schema(description = "제품명", example = "우유")
         private String productName;
+
+        @Schema(description = "카테고리 번호", example = "2")
         private Long categoryIdx;
+
+        @Schema(description = "제품 단위", example = "L")
         private String productUnit;
+
+        @Schema(description = "최대 재고량", example = "100")
         private Integer maxStock;
+
+        @Schema(description = "최소 재고량", example = "20")
         private Integer minStock;
+
+        @Schema(description = "단가", example = "10000")
         private Integer unitPrice;
+
+        @Schema(description = "위험 재고 판단 기준 일수", example = "3")
         private String dangerDays;
 
         public Product toEntity(Category category) {
@@ -41,8 +58,12 @@ public class ProductDto {
 
     @Getter
     @Builder
+    @Schema(name = "ProductRegRes", description = "제품 등록 결과")
     public static class RegRes {
+        @Schema(description = "생성된 제품 번호", example = "10")
         private Long idx;
+
+        @Schema(description = "등록된 제품명", example = "감자 10kg")
         private String productName;
 
         public static RegRes from(Product entity) {
@@ -55,14 +76,30 @@ public class ProductDto {
 
     @Getter
     @Builder
+    @Schema(description = "제품 상세 정보")
     public static class ListRes {
+        @Schema(description = "제품 번호", example = "1")
         private Long idx;
+
+        @Schema(description = "제품명", example = "감자 10kg")
         private String productName;
+
+        @Schema(description = "카테고리명", example = "채소류")
         private String categoryName;
+
+        @Schema(description = "단위", example = "박스")
         private String productUnit;
+
+        @Schema(description = "최대 재고량", example = "100")
         private Integer maxStock;
+
+        @Schema(description = "최소 재고량", example = "20")
         private Integer minStock;
+
+        @Schema(description = "단가", example = "25000")
         private Integer unitPrice;
+
+        @Schema(description = "위험 재고 판단 기준 일수", example = "3")
         private String dangerDays;
 
 

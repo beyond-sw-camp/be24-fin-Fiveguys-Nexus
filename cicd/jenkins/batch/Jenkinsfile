@@ -67,7 +67,7 @@ spec:
                             # 빌드번호 태그 + latest 태그로 Push
                             /kaniko/executor \\
                                 --context=\$WORKSPACE \\
-                                --dockerfile=\$WORKSPACE/docker/batch/Dockerfile \\
+                                --dockerfile=\$WORKSPACE/cicd/docker/batch/Dockerfile \\
                                 --destination=${IMAGE_REPO}:${BUILD_NUMBER} \\
                                 --destination=${IMAGE_REPO}:latest
                         """

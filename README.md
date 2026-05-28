@@ -121,36 +121,7 @@
 | 🔶 요구사항 정의서 | [<img src="https://img.shields.io/badge/Google_Sheets-34A853?style=for-the-badge&logo=googlesheets&logoColor=white"/>](https://docs.google.com/spreadsheets/d/1Bxc2MNPWQzHHAP5Aa_0OKPYWM9hLNG4egndek0bf_ZE/edit?usp=sharing) |
 | 🔶 WBS      | [<img src="https://img.shields.io/badge/Google_Sheets-34A853?style=for-the-badge&logo=googlesheets&logoColor=white"/>](https://docs.google.com/spreadsheets/d/1v3hQE4EiuSdz8o5kB0BRFktiQvOigztILSRQ2ttobhw/edit?usp=sharing) |
 | 🔶 Swagger  | [<img src="https://img.shields.io/badge/Swagger_%3A8080-85EA2D?style=for-the-badge&logo=swagger&logoColor=black"/>](https://docs.google.com/spreadsheets/d/1v3hQE4EiuSdz8o5kB0BRFktiQvOigztILSRQ2ttobhw/edit?usp=sharing) |
-
-<br>
-
----
-
-## 🗂️ ERD
-
-<details>
-<summary><b>모놀리식 MariaDB ERD</b></summary>
-<br>
-<img src="docs/%EB%AA%A8%EB%86%80%EB%A6%AC%EC%8B%9D%20Mariadb%20ERD.png"/>
-</details>
-
-<details>
-<summary><b>POS MSA MariaDB ERD</b></summary>
-<br>
-<img src="docs/POS%20MSA%20MariaDB%20ERD.png"/>
-</details>
-
-<details>
-<summary><b>통계 MSA MariaDB ERD</b></summary>
-<br>
-<img src="docs/%ED%86%B5%EA%B3%84%20MSA%20MariaDB%20ERD.png"/>
-</details>
-
-<details>
-<summary><b>Billing Batch MariaDB ERD</b></summary>
-<br>
-<img src="docs/billing_batch%20MariaDB%20ERD.png"/>
-</details>
+| 🔶 API 명세서 | [<img src="https://img.shields.io/badge/API_명세서-85EA2D?style=for-the-badge&logo=swagger&logoColor=black"/>](https://hijaehyuk.github.io/swagger/) |
 
 <br>
 

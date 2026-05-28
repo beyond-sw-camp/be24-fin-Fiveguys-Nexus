@@ -114,7 +114,7 @@ services:
     image: ${DISCOVERY_IMAGE:-deatytim/nexusdiscovery:latest}
     container_name: nexus-discovery
     ports:
-      - "${DISCOVERY_PORT}:8761"
+      - "${DISCOVERY_PORT}:9090"
     restart: unless-stopped
     networks: [nexus]
 
@@ -127,6 +127,7 @@ services:
     container_name: nexus-gateway
     environment:
       EUREKA_SERVICE_URL: ${EUREKA_SERVICE_URL}
+      JWT_SECRET: ${JWT_SECRET}
     ports:
       - "${GATEWAY_PORT}:8088"
     depends_on: [discovery]
@@ -202,7 +203,7 @@ services:
       DB_PASS: ${MONOLITH_DB_PASS}
       DB_DRIVER: org.mariadb.jdbc.Driver
     ports:
-      - "${BATCH_PORT}:8090"
+      - "${BATCH_PORT}:8083"
     depends_on: [monolith-db]
     restart: unless-stopped
     networks: [nexus]
@@ -235,9 +236,16 @@ services:
     image: ${BILLING_BATCH_IMAGE:-deatytim/nexusbilling:latest}
     container_name: nexus-billing-batch
     environment:
-      DB_URL: jdbc:mariadb://${MONOLITH_DB_HOST}:3306/${MONOLITH_DB_NAME}
-      DB_USER: ${MONOLITH_DB_USER}
-      DB_PASS: ${MONOLITH_DB_PASS}
+      # billing-batch 는 dual datasource (META=Spring Batch 메타테이블 / DATA=비즈니스 데이터)
+      # 모두 모놀리식 DB 와 동일한 인스턴스를 사용
+      DB_URL_META: jdbc:mariadb://${MONOLITH_DB_HOST}:3306/${MONOLITH_DB_NAME}
+      DB_USER_META: ${MONOLITH_DB_USER}
+      DB_PASS_META: ${MONOLITH_DB_PASS}
+      DB_DRIVER_META: org.mariadb.jdbc.Driver
+      DB_URL_DATA: jdbc:mariadb://${MONOLITH_DB_HOST}:3306/${MONOLITH_DB_NAME}
+      DB_USER_DATA: ${MONOLITH_DB_USER}
+      DB_PASS_DATA: ${MONOLITH_DB_PASS}
+      DB_DRIVER_DATA: org.mariadb.jdbc.Driver
       SECRET_KEY: ${PORTONE_SECRET_KEY}
     depends_on: [monolith-db]
     restart: unless-stopped

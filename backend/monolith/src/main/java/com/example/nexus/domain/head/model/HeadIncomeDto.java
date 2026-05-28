@@ -23,11 +23,21 @@ public class HeadIncomeDto {
 
     @Getter
     @Builder
+    @io.swagger.v3.oas.annotations.media.Schema(description = "본사 수입 내역 조회 응답 데이터")
     public static class FindHeadIncomeRes {
+        @io.swagger.v3.oas.annotations.media.Schema(description = "수입 내역 ID", example = "101")
         private Long idx;
+        
+        @io.swagger.v3.oas.annotations.media.Schema(description = "금액", example = "500000")
         private Long price;
+        
+        @io.swagger.v3.oas.annotations.media.Schema(description = "납부 여부", example = "false")
         private boolean paid;
+        
+        @io.swagger.v3.oas.annotations.media.Schema(description = "가맹점 ID", example = "5")
         private Long storeIdx;
+        
+        @io.swagger.v3.oas.annotations.media.Schema(description = "연관 주문 ID", example = "20240528001")
         private Long ordersIdx;
     }
 

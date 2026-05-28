@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/nexus%20%EB%8C%80%ED%91%9C%20%EC%9D%B4%EB%AF%B8%EC%A7%80.png" alt="Nexus — 더벤티 프랜차이즈 통합 관리 시스템" width="100%"/>
+  <img src="docs/Nexus_animation.gif" alt="Nexus — 더벤티 프랜차이즈 통합 관리 시스템" width="100%"/>
 </p>
 
 ---
@@ -89,6 +89,7 @@
 <img src="https://img.shields.io/badge/MariaDB-003545?style=for-the-badge&logo=mariadb&logoColor=white"/>
 <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white"/>
 <img src="https://img.shields.io/badge/Apache_Kafka-231F20?style=for-the-badge&logo=apachekafka&logoColor=white"/>
+<img src="https://img.shields.io/badge/Amazon_S3-569A31?style=for-the-badge&logo=amazons3&logoColor=white"/>
 </div>
 
 ### DevOps / Infra
@@ -114,24 +115,16 @@
 
 ## 📋 프로젝트 자료
 
-| 자료 | 링크 |
-|---|---|
-| 🔶 화면 설계 | [<img src="https://img.shields.io/badge/Figma-F24E1E?style=for-the-badge&logo=figma&logoColor=white"/>](https://www.figma.com/design/TcBBP86iuyJzGHxAsnc02O/NEXUS_%ED%99%94%EB%A9%B4-%EC%84%A4%EA%B3%84%EC%84%9C?node-id=0-1&t=VxcAFb2JxYOcoaNQ-1) |
+| 자료          | 링크 |
+|-------------|---|
+| 🔶 화면 설계    | [<img src="https://img.shields.io/badge/Figma-F24E1E?style=for-the-badge&logo=figma&logoColor=white"/>](https://www.figma.com/design/TcBBP86iuyJzGHxAsnc02O/NEXUS_%ED%99%94%EB%A9%B4-%EC%84%A4%EA%B3%84%EC%84%9C?node-id=0-1&t=VxcAFb2JxYOcoaNQ-1) |
 | 🔶 요구사항 정의서 | [<img src="https://img.shields.io/badge/Google_Sheets-34A853?style=for-the-badge&logo=googlesheets&logoColor=white"/>](https://docs.google.com/spreadsheets/d/1Bxc2MNPWQzHHAP5Aa_0OKPYWM9hLNG4egndek0bf_ZE/edit?usp=sharing) |
-| 🔶 WBS | [<img src="https://img.shields.io/badge/Google_Sheets-34A853?style=for-the-badge&logo=googlesheets&logoColor=white"/>](https://docs.google.com/spreadsheets/d/1v3hQE4EiuSdz8o5kB0BRFktiQvOigztILSRQ2ttobhw/edit?usp=sharing) |
+| 🔶 WBS      | [<img src="https://img.shields.io/badge/Google_Sheets-34A853?style=for-the-badge&logo=googlesheets&logoColor=white"/>](https://docs.google.com/spreadsheets/d/1v3hQE4EiuSdz8o5kB0BRFktiQvOigztILSRQ2ttobhw/edit?usp=sharing) |
+| 🔶 Swagger  | [<img src="https://img.shields.io/badge/Swagger_%3A8080-85EA2D?style=for-the-badge&logo=swagger&logoColor=black"/>](https://docs.google.com/spreadsheets/d/1v3hQE4EiuSdz8o5kB0BRFktiQvOigztILSRQ2ttobhw/edit?usp=sharing) |
 
 <br>
 
-### 📘 Swagger UI (모듈별 API 명세서)
-
-| 모듈 | 바로가기 |
-|:---:|:---:|
-| **Monolith** | [<img src="https://img.shields.io/badge/Swagger_%3A8080-85EA2D?style=for-the-badge&logo=swagger&logoColor=black"/>](http://localhost:8080/swagger-ui/index.html) |
-| **POS MSA** | [<img src="https://img.shields.io/badge/Swagger_%3A8082-85EA2D?style=for-the-badge&logo=swagger&logoColor=black"/>](http://localhost:8082/swagger-ui/index.html) |
-| **Statistics MSA** | [<img src="https://img.shields.io/badge/Swagger_%3A8081-85EA2D?style=for-the-badge&logo=swagger&logoColor=black"/>](http://localhost:8081/swagger-ui/index.html) |
-| **Batch** | [<img src="https://img.shields.io/badge/Swagger_%3A8090-85EA2D?style=for-the-badge&logo=swagger&logoColor=black"/>](http://localhost:8090/swagger-ui/index.html) |
-
-<br>
+---
 
 ## 🗂️ ERD
 
@@ -165,186 +158,106 @@
 
 ## ✨ 주요 기능
 
-### 👉 본사 (Head)
-<details>
-<summary><b>인증 / 가맹점 / 메뉴·상품 / 재고 / 발주 / 배송 / 정산 / 대시보드 / 통계 / ESG / 알림 / 뉴스 / AI / 배치</b></summary>
+### 🏢 본사 (Head)
 
-- **🔐 인증 / 회원** — 로그인 / 회원가입 / 본사 계정 생성 / JWT 인증
-- **🏪 가맹점 관리** — 100여 매장 등록 / 정보 수정 / 검색
-- **☕ 메뉴 관리** — 메뉴 CRUD + 메뉴 카테고리 + 레시피 (menu_item)
-- **📦 상품 / 카테고리** — 원자재 상품 CRUD + 카테고리 관리
-- **🗃️ 본사 재고 / 입출고** — `head_inventory` 출고 / 입고 / 위험도 (NORMAL / LOW / CRITICAL) + 이력
-- **📋 발주 관리** — 자동 / 확정 / 이력 / 이상 발주 (수량 평균 대비 ratio)
-- **⚙️ 발주 일괄 승인 (Spring Batch)** — product 별 파티션 병렬 처리 → APPROVE 전환 + 재고 차감 + 배송 생성
-- **🚚 배송 관리** — READY / START / DELIVERYING / DELIVERED / DELAY 상태 추적
-- **💰 정산** — 반월 단위 정산 + Billing Batch 자동 처리 + 결제수단 관리
-- **📊 본사 대시보드** — 가맹점 / 발주 / 재고 / 배송 KPI + 주간 발주 통계 + 위험 재고 목록 + 이상 발주 통계 + 지연 배송 목록 + 배송 비율
-- **📈 장기 통계** — 연도 / 분기 / 월별 매출 + 매장 / 카테고리 / 메뉴 랭킹
-- **🌱 ESG 대시보드** — 폐기물 로그 등 ESG 지표
-- **🔔 알림 (SSE)** — 본사 실시간 푸시 (재고 부족 / 유통기한 임박 / 이상 발주 / 배송 지연)
-- **📰 뉴스 요약** — AI 기반 외부 뉴스 자동 요약
-- **🤖 AI 챗봇** — 본사 운영 지원
-- **🏦 결제 배치 (Billing Batch)** — 정기 결제 자동 처리
-</details>
+| 아이콘 | 기능 | 설명 |
+|:---:|---|---|
+| 🏪 | **가맹점 / 기준정보 관리** | 매장 / 메뉴 / 상품 / 카테고리 / 레시피 통합 관리 |
+| 📋 | **발주 관리** | 자동 / 확정 / 이상 발주 + **Spring Batch 일괄 승인** |
+| 🗃️ | **본사 재고** | 출고 / 입고 / 위험도 (NORMAL / LOW / CRITICAL) |
+| 🚚 | **배송 관리** | READY → DELIVERYING → DELIVERED 상태 추적 |
+| 📊 | **대시보드 + 장기 통계** | 본사 KPI + 연 / 분기 / 월별 매출 + 매장·메뉴 랭킹 |
+| 💰 | **정산** | 반월 단위 자동 정산 (Billing Batch) |
 
-### 👉 가맹점 (Store)
-<details>
-<summary><b>인증 / POS / 매장 재고 / 발주 / 배송 / 정산 / 대시보드 / 알림 / 뉴스 / AI</b></summary>
+### 🏪 가맹점 (Store)
 
-- **🔐 인증 / 회원** — 로그인 / 가맹점 정보 수정
-- **💳 POS 결제** — 메뉴 결제 (현금 / 카드, PortOne 연동) + 결제 내역
-- **🌙 영업 마감** — 일일 마감 → AI 자동 발주서 생성 (Kafka 이벤트로 본사 통보)
-- **🗃️ 매장 재고** — `pos_store_inventory` FIFO 차감 + 입출고 이력 + 위험도
-- **📋 발주** — 수동 발주 + AI 추천 자동 발주서 확정 / 항목 수정 / 거절
-- **🚚 배송 현황** — 본사 → 매장 배송 진행 상황 추적
-- **💰 정산 내역** — 반월 단위 정산 + 매출 채권
-- **📊 가맹점 대시보드** — 매출 KPI + 제안 발주서 + 재고 위험 + 정산 + 일별 매출 추이 + 배송 현황
-- **🔔 알림 (SSE)** — 가맹점 실시간 푸시 (배송 / 발주 / 재고)
-- **📰 뉴스 / 소식** — 본사 공지 + 뉴스 피드
-- **🤖 AI 챗봇** — 가맹점 운영 지원
-</details>
+| 아이콘 | 기능 | 설명 |
+|:---:|---|---|
+| 💳 | **POS 결제** | 현금 / 카드 결제 (PortOne 연동) + 결제 내역 |
+| 🌙 | **영업 마감 + AI 자동 발주** | 일일 마감 → 매장 재고 + 평균 소비량 기반 발주서 자동 생성 |
+| 🗃️ | **매장 재고** | `pos_store_inventory` FIFO 차감 + 위험도 |
+| 📋 | **발주** | 수동 발주 + AI 제안 발주서 확정 / 수정 / 거절 |
+| 📊 | **가맹점 대시보드** | 매출 / 재고 / 정산 / 배송 KPI + 일별 매출 추이 |
+
+### 🌐 공통
+
+| 아이콘 | 기능 | 설명 |
+|:---:|---|---|
+| 🔐 | **인증 / RBAC** | JWT 인증 + 역할 기반 접근 제어 (ADMIN / STORE) |
+| 🔔 | **실시간 알림** | SSE 푸시 (재고 부족 / 이상 발주 / 배송 지연) |
+| 🤖 | **AI 챗봇** | 본사 / 가맹점 운영 지원
 
 ---
 
-## 🔄 Service Flow
+## 🧭 전체 Workflow
 
-> 핵심 시나리오를 **Mermaid 다이어그램**으로 시각화 (GitHub native 렌더링)
-
-### 🛒 시나리오 1 — POS 결제 → 실시간 통계 사전 집계
+> 사용자 → Frontend → Gateway → MSA → Kafka / DB / Redis 의 모듈 간 흐름
 
 ```mermaid
-sequenceDiagram
-    autonumber
-    actor Customer as 👥 고객
-    participant Owner as 🏪 점주
-    participant POS as 💳 POS MSA
-    participant Kafka as 📡 Kafka
-    participant Stats as 📊 Statistics MSA
-    participant Redis as 💾 Redis
+flowchart TB
+    User([👤 사용자])
 
-    Customer->>Owner: 메뉴 주문
-    Owner->>POS: 결제 (현금 / 카드)
-    POS->>POS: pos_pay 저장 + 매장 재고 FIFO 차감
-    POS->>Kafka: pos.payment.created
-    Kafka->>Stats: 이벤트 전달
-    Stats->>Redis: INCRBY sales:today<br/>ZINCRBY sales:store:ranking<br/>HINCRBY sales:hourly
-    Note over Redis: O(1) 실시간 조회 가능
-```
+    subgraph FrontLayer [" 🎨 Frontend "]
+        direction LR
+        Nginx[🌐 Nginx<br/>TLS + Reverse Proxy]
+        Vue[⚡ Vue 3 + Vite]
+    end
 
-### 🌙 시나리오 2 — 영업 마감 → AI 자동 발주서 생성
+    subgraph GatewayLayer [" 🚪 Spring Cloud "]
+        direction LR
+        Eureka[Eureka<br/>Discovery]
+        Gateway[Spring Cloud Gateway]
+    end
 
-```mermaid
-sequenceDiagram
-    autonumber
-    participant Owner as 🏪 점주
-    participant POS as 💳 POS MSA
-    participant Kafka as 📡 Kafka
-    participant Mono as 🖥️ Monolith
-    participant SSE as 🔔 SSE
+    subgraph BackendLayer [" ⚙️ Backend MSA "]
+        direction LR
+        Mono[🖥️ Monolith<br/>:8080]
+        POS[💳 POS MSA<br/>:8082]
+        Stats[📊 Statistics MSA<br/>:8081]
+        Batch[⚙️ Batch<br/>:8090]
+    end
 
-    Owner->>POS: 영업 마감 요청
-    POS->>POS: 매장 재고 + 평균 소비량 분석
-    POS->>POS: 🤖 AI 자동 발주서 생성
-    POS->>Kafka: pos.close.completed
-    Kafka->>Mono: 이벤트 수신
-    Mono->>Mono: WAITING 상태 발주 저장
-    Mono->>SSE: 점주에게 푸시
-    SSE-->>Owner: 제안 발주서 알림
-    Owner->>Mono: 항목 수정 / 확정 (CONFIRMED)
-```
+    subgraph DataLayer [" 💾 Data Layer "]
+        direction LR
+        DB[(MariaDB ×3)]
+        Redis[(Redis)]
+        S3[(Amazon S3)]
+        Kafka{{📡 Kafka KRaft}}
+    end
 
-### ⚙️ 시나리오 3 — 발주 일괄 승인 (Spring Batch)
+    User ==>|HTTPS| Nginx
+    Nginx --> Vue
+    Vue ==>|REST / SSE| Gateway
+    Gateway -.->|service lookup| Eureka
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Admin as 🏢 본사
-    participant Mono as 🖥️ Monolith
-    participant Batch as ⚙️ Spring Batch
-    participant DB as 💾 MariaDB
+    Gateway --> Mono
+    Gateway --> POS
+    Gateway --> Stats
 
-    Admin->>Mono: 일괄 승인 트리거<br/>(PUT /confirmed/approve)
-    Mono->>Batch: POST /batch/jobs/approve
-    Batch->>DB: Step0 - CONFIRMED 스냅샷 → staging
-    Batch->>DB: Step1 - product 별 파티션 병렬 차감 (5 threads)
-    Batch->>DB: Step1.5 - 부족 발주 REJECT
-    Batch->>DB: Step2 - APPROVE 전환 + 배송 생성 + HeadIncome 적재
-    Batch-->>Mono: 200 OK
-    Mono-->>Admin: 결과 응답
-```
-
-### 🧭 전체 모듈 흐름도
-
-```mermaid
-flowchart LR
-    Vue[🎨 Frontend<br/>Vue 3 + Vite] --> GWN[🚪 Spring Cloud<br/>Gateway]
-    GWN --> Mono[🖥️ Monolith]
-    GWN --> POS[💳 POS MSA]
-    GWN --> Stats[📊 Statistics MSA]
-
-    Mono <-->|store/menu/product| Kafka{{📡 Kafka}}
-    POS <-->|payment/close| Kafka
+    Mono <-->|store / menu / product| Kafka
+    POS <-->|payment / close| Kafka
     Kafka --> Stats
 
-    Mono --> DB[(💾 MariaDB ×3)]
+    Mono --> DB
     POS --> DB
     Stats --> DB
-    Stats --> Redis[(💾 Redis)]
-    Mono -.->|REST 트리거| Batch[⚙️ Batch]
+    Stats --> Redis
+    Mono --> S3
+    Mono -.->|REST 트리거| Batch
     Batch --> DB
+
+    classDef front fill:#dbeafe,stroke:#3b82f6,stroke-width:2px,color:#1e3a8a
+    classDef gateway fill:#fef3c7,stroke:#f59e0b,stroke-width:2px,color:#78350f
+    classDef backend fill:#ede9fe,stroke:#8b5cf6,stroke-width:2px,color:#4c1d95
+    classDef data fill:#dcfce7,stroke:#22c55e,stroke-width:2px,color:#14532d
+
+    class Nginx,Vue front
+    class Eureka,Gateway gateway
+    class Mono,POS,Stats,Batch backend
+    class DB,Redis,S3,Kafka data
 ```
 
-<br>
-
-<details>
-<summary><b>📋 전체 흐름 — 텍스트 상세 (24개 항목 펼쳐 보기)</b></summary>
-
-#### 👤 사용자 및 권한 (Authentication & RBAC)
-1. **회원가입 및 로그인** — 본사 관리자는 본사 계정 생성 후 사용. 가맹점주는 신규 가입 후 본사 승인 절차를 거쳐 매장 계정 사용.
-2. **JWT 인증** — 로그인 성공 시 Access Token 발급, axios interceptor 가 모든 API 요청에 자동 첨부.
-3. **역할 기반 접근 제어 (RBAC)** — `ADMIN` (본사), `STORE` (가맹점) 권한에 따라 API endpoint 접근 범위를 Spring Security 로 분리.
-
-#### 🏪 가맹점주 (Store)
-4. **POS 결제** — 메뉴 선택 → 현금 / 카드 결제 (PortOne 연동) → `pos_pay` 저장 + Kafka `pos.payment.created` 발행 (통계 MSA 실시간 집계).
-5. **영업 마감** — 일일 영업 종료 → 매장 재고 + 평균 소비량 기반 **AI 자동 발주서 생성** → Kafka `pos.close.completed` → 본사 통보.
-6. **매장 재고 관리** — `pos_store_inventory` FIFO 차감 + 입출고 이력 + 위험도 (NORMAL / LOW / CRITICAL) 알림.
-7. **자동 발주 제안 확인** — 본사가 제안한 AI 발주서 확인 → 항목 수정 / 확정 (CONFIRMED) / 거절.
-8. **수동 발주** — 점주 직접 작성 → 본사 승인 대기열로 진입.
-9. **가맹점 대시보드** — 매출 / 재고 위험 / 제안 발주서 / 정산 / 배송 현황 KPI + 일별 매출 추이.
-
-#### 🏢 본사 관리자 (HQ / ADMIN)
-10. **기준정보 관리** — 가맹점 / 메뉴 / 메뉴 카테고리 / 상품 / 상품 카테고리 / 레시피 CRUD → Kafka 이벤트로 POS MSA 자동 동기화.
-11. **발주 관리** — 자동 / 확정 / 이력 / 이상 발주 조회. 이상 발주는 매장 평균 발주 수량 대비 ratio 초과 시 자동 판정 (`is_danger=true`).
-12. **발주 일괄 승인 (Spring Batch)** — 확정 발주 일괄 승인 트리거 → 4 Step (스테이징 → product 별 파티션 병렬 차감 → 부족 reject → APPROVE 전환) → 배송 생성 + 매출 채권 적재.
-13. **본사 재고 / 입출고** — `head_inventory` 출고 / 입고 / 위험도 + 이력 추적.
-14. **배송 관리** — READY / START / DELIVERYING / DELIVERED / DELAY 상태 전이.
-15. **정산 / 결제수단** — 반월 단위 정산 + Billing Batch 자동 처리 + 결제수단 관리.
-16. **본사 대시보드** — 가맹점 / 발주 / 재고 위험 / 배송 KPI + 주간 발주 통계 + 이상 발주 / 지연 배송 목록.
-
-#### 📊 통계 MSA (Real-time & Long-term)
-17. **실시간 통계 (Redis 사전 집계)** — POS 결제 Kafka 수신 → Redis 키 누적 (`INCRBY` / `HINCRBY` / `ZINCRBY`) → 오늘 매출 / TOP 5 / 시간대별 / 카테고리별 / 결제수단별 **O(1) 조회**.
-18. **장기 통계 dump (ShedLock)** — 매일 새벽 5시 분산 락으로 Redis → `daily_*_sales` 테이블 dump → 연 / 분기 / 월 / 매장 / 카테고리 / 메뉴 랭킹 조회.
-
-#### 🤖 자동화 · AI · 알림 (Automation & Intelligence)
-19. **AI 자동 발주서 생성** — 매장 영업 마감 후 매장 재고 + 평균 소비량 분석 → 발주 항목 / 수량 자동 추천.
-20. **AI 챗봇** — 본사 / 가맹점 운영 지원 (질의응답).
-21. **SSE 실시간 알림** — 재고 부족 / 유통기한 임박 / 이상 발주 / 배송 지연 → 본사 / 가맹점에 실시간 푸시.
-22. **뉴스 요약** — AI 기반 외부 뉴스 자동 요약.
-23. **결제 배치 (Billing Batch)** — 반월 단위 정기 결제 자동 처리.
-24. **ESG 데이터 관리** — 폐기물 로그 등 ESG 지표 수집 / 시각화.
-</details>
-
----
-
-## 🚀 빠른 시작
-
-> 사전 요구사항: **JDK 17 / Node.js 20+ / Docker Desktop**
-
-| 항목 | 명령 / 안내 |
-|---|---|
-| 🐳 인프라 (Kafka + Kafka UI) | `docker compose -f docker-compose.local.yml up -d` |
-| 🖥️ Backend 실행 | [backend/README.md](backend/README.md) — 모듈 7개 실행 순서 / DB 컨테이너 / 환경변수 |
-| 🎨 Frontend 실행 | [frontend/README.md](frontend/README.md) — `npm install && npm run dev` → http://localhost:5173 |
+> 💡 도메인별 상세 시나리오 (POS 결제 / 영업 마감 / 발주 일괄 승인 / SSE 알림 / 이상 발주 판정 / 장기 통계 dump / 이벤트 동기화 / JWT 인증 등 **8가지 Mermaid 시나리오**) 는 [backend/README.md](backend/README.md) 의 **Service Flow** 섹션 참조
 
 ---
 
@@ -369,7 +282,7 @@ flowchart LR
 ### 📚 더 자세히 보기 (Wiki)
 > CI / CD 의 상세 설계 / 빌드·배포 시나리오 / 무중단 배포 결과 화면은 Wiki 에 정리되어 있습니다.
 
-* 🏗️ [**시스템 아키텍처 & 빌드 / 배포 계획**](https://github.com/beyond-sw-camp/<repo>/wiki/CICD-Architecture) — Ingress / Nginx 리버스 프록시 / Blue·Green 등 의사결정 배경
+* 🏗️ [**시스템 아키텍처 & 빌드 / 배포 계획**](https://github.com/beyond-sw-camp/<repo>/wiki/CICD-Architecture) — Nginx 리버스 프록시 / Blue·Green 등 의사결정 배경
 * 📸 [**무중단 배포 결과 화면**](https://github.com/beyond-sw-camp/<repo>/wiki/Zero-Downtime-Deploy) — Blue / Green 전환 시연 캡처
 
 ---
@@ -379,7 +292,7 @@ flowchart LR
 > **프로젝트의 상세한 내용은 아래 문서에서 확인하실 수 있습니다.**
 
 ### 🔧 모듈별 상세 README
-* 🖥️ [**Backend 자세히 보기**](backend/README.md) — 7개 모듈 (monolith / pos / statistics / batch / billing-batch / gateway / discovery) + 로컬 실행 + Kafka 토픽 매트릭스 + 에러 코드
+* 🖥️ [**Backend 자세히 보기**](backend/README.md) — 5개 도메인 모듈 (monolith / pos / statistics / batch / billing-batch) + Spring Cloud (Gateway / Eureka) + 로컬 실행 + Kafka 토픽 + 에러 코드 + **Service Flow 8개 시나리오**
 * 🎨 [**Frontend 자세히 보기**](frontend/README.md) — Vue 3 + Vite 구조 + 페이지 매트릭스 + API 라우팅 + 운영 배포
 
 ### 📜 컨벤션 (Wiki)
@@ -390,5 +303,3 @@ flowchart LR
 * 📘 [**Backend Javadoc Convention**](https://github.com/beyond-sw-camp/<repo>/wiki/Javadoc-Convention) — Controller 주석 규칙
 
 ---
-
-![footer](https://capsule-render.vercel.app/api?type=Venom&color=4F46E5&height=120&section=footer&fontColor=ffffff)

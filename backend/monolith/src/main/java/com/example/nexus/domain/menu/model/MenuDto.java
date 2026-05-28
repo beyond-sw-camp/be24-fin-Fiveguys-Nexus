@@ -109,7 +109,7 @@ public class MenuDto {
         private Integer quantity;
         @Schema(description = "단위", example = "개")
         private String menuUnit;
-        @Schema(description = "원자재 식별자(ID)", example = "105")
+        @Schema(description = "원자재 식별자(ID)", example = "1")
         private Long productIdx;
 
         public MenuItem toEntity(Menu menu, Product product) {
@@ -174,7 +174,9 @@ public class MenuDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class MenuSearchPagingReq {
+        @Schema(description = "메뉴 이름 검색 키워드입니다. 아무것도 적지 않거나 비워둘 경우, 키워드 필터링 없이 전체 메뉴를 조회합니다.", example = "")
         private String keyword;
+        @Schema(description = "조회할 카테고리의 고유 식별자(ID)입니다. 전체 카테고리를 대상으로 검색하려면 이 값을 지우고 비워주세요.", example = "1")
         private Long categoryIdx;
     }
 

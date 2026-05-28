@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import org.springdoc.core.annotations.ParameterObject;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +29,7 @@ public class MenuController {
     @Operation(summary = "메뉴 목록 전체 조회 및 검색", description = "본사 메뉴 관리 페이지에서 메뉴 목록을 페이징하여 조회합니다.")
     @GetMapping("/list")
     public ResponseEntity<BaseResponse<MenuDto.MenuPageRes>> list(
-            MenuDto.MenuSearchPagingReq searchReq,
+            @ParameterObject MenuDto.MenuSearchPagingReq searchReq,
             @Parameter(description = "페이지 번호 (0부터 시작)", example = "0") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "페이지 크기", example = "10") @RequestParam(defaultValue = "10") int size)
     {
@@ -80,6 +81,7 @@ public class MenuController {
     @Operation(summary = "메뉴 정보 수정", description = "기존 메뉴의 정보(이름, 가격, 카테고리, 이미지 등) 및 레시피 구성을 수정합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "성공"),
+            @ApiResponse(responseCode = "400", description = "존재하지 않는 메뉴", content = @Content(schema = @Schema(example = "{\"success\":false, \"code\":3204, \"message\":\"존재하지 않는 메뉴입니다.\"}"))),
             @ApiResponse(responseCode = "404", description = "원자재를 찾을 수 없음", content = @Content(schema = @Schema(example = "{\"success\":false, \"code\":404, \"message\":\"원자재를 찾을 수 없습니다.\"}"))),
             @ApiResponse(responseCode = "409", description = "중복되거나 삭제된 메뉴명", content = @Content(schema = @Schema(example = "{\"success\":false, \"code\":409, \"message\":\"이미 존재하는 메뉴명입니다.\"}")))
     })
@@ -91,6 +93,10 @@ public class MenuController {
 
     // 메뉴 삭제
     @Operation(summary = "메뉴 삭제 (논리 삭제)", description = "특정 메뉴를 비활성화(삭제 처리) 상태로 변경합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "성공"),
+            @ApiResponse(responseCode = "400", description = "존재하지 않는 메뉴", content = @Content(schema = @Schema(example = "{\"success\":false, \"code\":3204, \"message\":\"존재하지 않는 메뉴입니다.\"}")))
+    })
     @PutMapping("/delete/{menuIdx}")
     public ResponseEntity<BaseResponse<String>> menuDelete(@Parameter(description = "메뉴 식별자(ID)") @PathVariable(name = "menuIdx") Long menuIdx){
         menuService.menuDelete(menuIdx);

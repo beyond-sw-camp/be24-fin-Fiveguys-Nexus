@@ -138,7 +138,9 @@ public class StoreDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class StoreSearchPagingReq {
+        @Schema(description = "가맹점 이름 검색 키워드입니다. 아무것도 적지 않거나 비워둘 경우, 키워드 필터링 없이 전체 가맹점을 조회합니다.", example = "")
         private String keyword;
+        @Schema(description = "가맹점 운영 상태 필터입니다 (예: 영업중, 폐업 등). 특정 상태만 조회하고 싶지 않다면 이 칸을 비워주세요 (기본 전체 조회).", example = "")
         private String status;
     }
 

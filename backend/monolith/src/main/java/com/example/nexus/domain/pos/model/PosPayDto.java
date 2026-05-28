@@ -26,6 +26,7 @@ public class PosPayDto {
 
         @NotEmpty
         @Valid
+        @Schema(description = "주문 항목 목록 (1개 이상 필수)")
         private List<PayLineReq> items;
     }
 

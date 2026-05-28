@@ -1,10 +1,8 @@
 <p align="center">
-  <img src="../docs/nexus%20%EB%8C%80%ED%91%9C%20%EC%9D%B4%EB%AF%B8%EC%A7%80.png" alt="Nexus — 더벤티 프랜차이즈 통합 관리 시스템" width="100%"/>
+  <img src="../docs/Nexus_animation.gif" alt="Nexus — 더벤티 프랜차이즈 통합 관리 시스템" width="100%"/>
 </p>
 
 <h3 align="center">⚙️ Backend — Spring Boot 3.4 MSA + 배치 구조</h3>
-
-### ☀️ **[플레이 데이터] 한화시스템 BEYOND SW캠프** ☀️
 
 <br>
 
@@ -172,6 +170,209 @@
 
 - **책임:** 정산 자동 배치 (반월 단위 정산 / 매출 채권 결산)
 - **의존:** 모놀리식 DB 공유
+</details>
+
+---
+
+## 🔄 &nbsp; Service Flow
+
+> 핵심 시나리오를 **Mermaid 다이어그램**으로 시각화 (GitHub native 렌더링). 각 시나리오 토글로 펼쳐 보세요.
+
+<details>
+<summary><b>🛒 시나리오 1 — POS 결제 → 실시간 통계 사전 집계</b></summary>
+<br>
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Customer as 👥 고객
+    participant Owner as 🏪 점주
+    participant POS as 💳 POS MSA
+    participant Kafka as 📡 Kafka
+    participant Stats as 📊 Statistics MSA
+    participant Redis as 💾 Redis
+
+    Customer->>Owner: 메뉴 주문
+    Owner->>POS: 결제 (현금 / 카드)
+    POS->>POS: pos_pay 저장 + 매장 재고 FIFO 차감
+    POS->>Kafka: pos.payment.created
+    Kafka->>Stats: 이벤트 전달
+    Stats->>Redis: INCRBY sales:today<br/>ZINCRBY sales:store:ranking<br/>HINCRBY sales:hourly
+    Note over Redis: O(1) 실시간 조회 가능
+```
+</details>
+
+<details>
+<summary><b>🌙 시나리오 2 — 영업 마감 → AI 자동 발주서 생성</b></summary>
+<br>
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Owner as 🏪 점주
+    participant POS as 💳 POS MSA
+    participant Kafka as 📡 Kafka
+    participant Mono as 🖥️ Monolith
+    participant SSE as 🔔 SSE
+
+    Owner->>POS: 영업 마감 요청
+    POS->>POS: 매장 재고 + 평균 소비량 분석
+    POS->>POS: 🤖 AI 자동 발주서 생성
+    POS->>Kafka: pos.close.completed
+    Kafka->>Mono: 이벤트 수신
+    Mono->>Mono: WAITING 상태 발주 저장
+    Mono->>SSE: 점주에게 푸시
+    SSE-->>Owner: 제안 발주서 알림
+    Owner->>Mono: 항목 수정 / 확정 (CONFIRMED)
+```
+</details>
+
+<details>
+<summary><b>⚙️ 시나리오 3 — 발주 일괄 승인 (Spring Batch)</b></summary>
+<br>
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Admin as 🏢 본사
+    participant Mono as 🖥️ Monolith
+    participant Batch as ⚙️ Spring Batch
+    participant DB as 💾 MariaDB
+
+    Admin->>Mono: 일괄 승인 트리거<br/>(PUT /confirmed/approve)
+    Mono->>Batch: POST /batch/jobs/approve
+    Batch->>DB: Step0 - CONFIRMED 스냅샷 → staging
+    Batch->>DB: Step1 - product 별 파티션 병렬 차감 (5 threads)
+    Batch->>DB: Step1.5 - 부족 발주 REJECT
+    Batch->>DB: Step2 - APPROVE 전환 + 배송 생성 + HeadIncome 적재
+    Batch-->>Mono: 200 OK
+    Mono-->>Admin: 결과 응답
+```
+</details>
+
+<details>
+<summary><b>🔔 시나리오 4 — SSE 실시간 알림</b></summary>
+<br>
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Trigger as ⚠️ 이벤트 트리거<br/>(재고 부족 / 이상 발주 / 배송 지연)
+    participant Mono as 🖥️ Monolith
+    participant DB as 💾 MariaDB
+    participant SSE as 🔔 SseEmitter
+    participant Client as 🌐 Frontend
+
+    Trigger->>Mono: 알림 발생 (도메인 서비스)
+    Mono->>DB: head_notification / store_notification INSERT
+    Mono->>SSE: emit(NotificationDto)
+    SSE-->>Client: text/event-stream
+    Client->>Client: Pinia store 갱신 + 헤더 뱃지
+    Note over Client: HTTP/1.1 keep-alive,<br/>Nginx proxy_buffering off
+```
+</details>
+
+<details>
+<summary><b>⚠️ 시나리오 5 — 이상 발주 자동 판정 (수량 평균 대비 ratio)</b></summary>
+<br>
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Owner as 🏪 점주
+    participant Mono as 🖥️ Monolith
+    participant DB as 💾 MariaDB
+    participant Notify as 🔔 알림
+
+    Owner->>Mono: 수동 발주 등록 (POST /store/reg/manual)
+    Mono->>DB: 매장 최근 N개월 평균 발주 수량 조회
+    Mono->>Mono: (총수량 - 평균) × 100 / 평균 >= ratio ?
+    alt 임계 초과
+        Mono->>DB: orders.is_danger = true 저장
+        Mono->>Notify: 본사 SSE 푸시 (이상 발주 감지)
+        Notify-->>Owner: 가맹점 SSE 푸시 (수량 재확인 요청)
+    else 정상 범위
+        Mono->>DB: orders 정상 저장
+    end
+```
+</details>
+
+<details>
+<summary><b>🗄️ 시나리오 6 — 장기 통계 dump (Redis → MariaDB, ShedLock)</b></summary>
+<br>
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Scheduler as ⏰ Spring Scheduler<br/>(매일 05:00)
+    participant Stats as 📊 Statistics MSA
+    participant Lock as 🔒 ShedLock
+    participant Redis as 💾 Redis
+    participant DB as 💾 MariaDB
+
+    Scheduler->>Stats: dailyDump() 실행
+    Stats->>Lock: 분산 락 획득 시도 (5분 TTL)
+    alt 락 획득 성공
+        Stats->>Redis: HGETALL sales:* (전일 데이터)
+        Stats->>DB: daily_total_sales / daily_store_sales / daily_menu_sales 등 INSERT
+        Stats->>Redis: 전일 키 DEL (정리)
+        Stats->>Lock: 락 해제
+    else 다른 인스턴스 처리 중
+        Stats->>Stats: skip
+    end
+    Note over DB: 영구 보존 → 장기 통계 조회 가능
+```
+</details>
+
+<details>
+<summary><b>🔄 시나리오 7 — 모듈 간 이벤트 동기화 (Kafka)</b></summary>
+<br>
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Admin as 🏢 본사
+    participant Mono as 🖥️ Monolith
+    participant Kafka as 📡 Kafka
+    participant POS as 💳 POS MSA
+    participant POSDB as 💾 POS DB
+
+    Admin->>Mono: 신규 메뉴 등록 (POST /menu)
+    Mono->>Mono: menu INSERT + menu_item (레시피) INSERT
+    Mono->>Kafka: menu.created (event)
+    Kafka->>POS: Consumer 수신
+    POS->>POSDB: POS 메뉴 read-model 갱신
+    Note over POS: 동일 패턴 — store / product 도<br/>created / updated / deleted 이벤트 동기화
+```
+</details>
+
+<details>
+<summary><b>🔐 시나리오 8 — JWT 인증 + 자동 토큰 첨부 (axios interceptor)</b></summary>
+<br>
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant User as 👤 사용자
+    participant Vue as 🎨 Frontend
+    participant Mono as 🖥️ Monolith
+    participant Pinia as 💾 Pinia store
+
+    User->>Vue: 로그인 요청 (email / password)
+    Vue->>Mono: POST /auth/login
+    Mono->>Mono: BCrypt 검증 + JWT 발급
+    Mono-->>Vue: { accessToken, role }
+    Vue->>Pinia: auth store 저장 (localStorage)
+    Note over Pinia: axios interceptor 등록
+
+    User->>Vue: 보호 API 호출
+    Vue->>Vue: interceptor → Authorization: Bearer {token}
+    Vue->>Mono: GET /orders/...
+    alt 401 응답
+        Vue->>Pinia: 토큰 폐기 + 로그아웃
+        Vue->>User: 로그인 페이지 리다이렉트
+    end
+```
 </details>
 
 ---

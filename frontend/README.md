@@ -1,10 +1,8 @@
 <p align="center">
-  <img src="../docs/nexus%20%EB%8C%80%ED%91%9C%20%EC%9D%B4%EB%AF%B8%EC%A7%80.png" alt="Nexus — 더벤티 프랜차이즈 통합 관리 시스템" width="100%"/>
+  <img src="../docs/Nexus_animation.gif" alt="Nexus — 더벤티 프랜차이즈 통합 관리 시스템" width="100%"/>
 </p>
 
 <h3 align="center">🎨 Frontend — Vue 3 + Vite 기반 통합 웹 클라이언트</h3>
-
-### ☀️ **[플레이 데이터] 한화시스템 BEYOND SW캠프** ☀️
 
 <br>
 
@@ -41,25 +39,25 @@
 
 <br>
 
-<details>
-<summary><b>상세 기술 스택</b></summary>
+### 📋 상세 기술 스택
 
-- Vue 3.5
-- Vite 8.0
-- Vue Router 4.x
-- Pinia 3.0
-- Axios 1.15 (JWT interceptor)
-- Tailwind CSS 4.2
-- Chart.js 4.5
-- Lucide Vue Next (아이콘)
-- PortOne Browser SDK 0.1 (결제 게이트)
-- ESLint + Oxlint
-- Nginx 1.25 (운영 배포)
-</details>
+| 카테고리 | 라이브러리 | 버전 | 용도 |
+|---|---|:---:|---|
+| 🎨 **Core** | Vue.js | 3.5 | 프레임워크 |
+| ⚡ **Build** | Vite | 8.0 | 개발 서버 / 빌드 도구 |
+| 🛣️ **Routing** | Vue Router | 4.x | SPA 라우팅 |
+| 💾 **State** | Pinia | 3.0 | 상태 관리 |
+| 📡 **HTTP** | Axios | 1.15 | REST API 호출 (쿠키 기반 인증) |
+| 🎨 **Styling** | Tailwind CSS | 4.2 | 유틸리티 CSS |
+| 📊 **Chart** | Chart.js | 4.5 | 차트 / 시각화 |
+| 🎯 **Icon** | Lucide Vue Next | - | 아이콘 컴포넌트 |
+| 💳 **Payment** | PortOne Browser SDK | 0.1 | 결제 게이트 연동 |
+| 🔍 **Lint** | ESLint + Oxlint | - | 코드 품질 / 스타일 검사 |
+| 🌐 **Deploy** | Nginx | 1.25 | 운영 배포 (TLS + Reverse Proxy) |
 
 ---
 
-## 📁 &nbsp; 디렉토리 구조
+## 📁 디렉토리 구조
 
 <details>
 <summary><b>전체 구조 보기</b></summary>
@@ -103,12 +101,10 @@ frontend/
 
 ---
 
-## 🪟 &nbsp; 페이지
-
-### 👉 본사 (`views/hq/`)
+## 🪟 페이지
 
 <details>
-<summary><b>본사 페이지 16개</b></summary>
+<summary><span style="font-size:1.2em;font-weight:bold;">👉 본사 ( <code>views/hq/</code> ) — 16개 페이지</span></summary>
 
 | 파일 | 페이지 |
 |---|---|
@@ -128,12 +124,11 @@ frontend/
 | EsgDashboardView | ESG 대시보드 |
 | HqNotificationView | 알림 |
 | AdminAccountCreateView | 본사 계정 생성 |
+
 </details>
 
-### 👉 가맹점 (`views/store/`)
-
 <details>
-<summary><b>가맹점 페이지 11개</b></summary>
+<summary><span style="font-size:1.2em;font-weight:bold;">👉 가맹점 ( <code>views/store/</code> ) — 11개 페이지</span></summary>
 
 | 파일 | 페이지 |
 |---|---|
@@ -148,105 +143,267 @@ frontend/
 | StoreSettlementView | 정산 내역 |
 | StoreNewsView | 소식 |
 | StoreNotificationView | 알림 |
+
 </details>
 
 ---
 
-## 기능 테스트 &nbsp; 
-상세 기능 (펼쳐서 확인해주세요)
+## 🎬 기능 테스트
+
+> 본사 / 가맹점 영역을 펼친 뒤, 각 기능을 다시 펼쳐서 시연 영상을 확인하실 수 있습니다.
 
 <details>
-<summary><b>로그인 / 회원가입</b></summary>
+<summary><span style="font-size:1.3em;font-weight:bold;">🏢 본사 (Head)</span></summary>
+
+<details>
+<summary><b>🔐 로그인 / 회원가입</b></summary>
 <br>
 <p align="center"><img width="80%" src="../docs/img/gif/login.gif"/></p>
 </details>
 
 <details>
-<summary><b>POS 결제</b></summary>
+<summary><b>👤 마이페이지</b></summary>
 <br>
-<p align="center"><img width="80%" src="../docs/img/gif/pos-payment.gif"/></p>
+<p align="center"><img width="80%" src="../docs/img/gif/login.gif"/></p>
 </details>
 
 <details>
-<summary><b>영업 마감 → AI 자동 발주서 생성</b></summary>
-<br>
-<p align="center"><img width="80%" src="../docs/img/gif/pos-close.gif"/></p>
+<summary><b>📊 본사 대시보드</b></summary>
+
+https://github.com/user-attachments/assets/de76e3eb-00f5-4306-baac-593f19009722
+
 </details>
 
 <details>
-<summary><b>본사 대시보드</b></summary>
+<summary><b>🏪 가맹점 관리</b></summary>
 <br>
-<p align="center"><img width="80%" src="../docs/img/gif/hq-dashboard.gif"/></p>
+<p align="center"><img width="80%" src="../docs/img/gif/login.gif"/></p>
 </details>
 
 <details>
-<summary><b>발주 관리 (본사 일괄 승인)</b></summary>
+<summary><b>📦 제품 목록</b></summary>
 <br>
-<p align="center"><img width="80%" src="../docs/img/gif/hq-order-approve.gif"/></p>
+<p align="center"><img width="80%" src="../docs/img/gif/login.gif"/></p>
 </details>
 
 <details>
-<summary><b>가맹점 발주 (수동 + 제안 발주서 확정)</b></summary>
+<summary><b>☕ 메뉴 관리</b></summary>
 <br>
-<p align="center"><img width="80%" src="../docs/img/gif/store-order.gif"/></p>
+<p align="center"><img width="80%" src="../docs/img/gif/login.gif"/></p>
 </details>
 
 <details>
-<summary><b>실시간 알림 (SSE)</b></summary>
-<br>
-<p align="center"><img width="80%" src="../docs/img/gif/notification.gif"/></p>
+<summary><b>📋 자동 발주 제안</b></summary>
+
+https://github.com/user-attachments/assets/f0487da3-5c45-42a0-83ad-f83c715aefa1
+
 </details>
 
 <details>
-<summary><b>장기 통계 차트</b></summary>
-<br>
-<p align="center"><img width="80%" src="../docs/img/gif/long-term-statistics.gif"/></p>
+<summary><b>✅ 확정 발주</b></summary>
+
+https://github.com/user-attachments/assets/9a168091-d858-470d-8881-95ec7b5c6ab0
+
 </details>
 
-> GIF 파일은 `docs/img/gif/` 에 추가하면 자동 표시.
+<details>
+<summary><b>📜 발주 이력</b></summary>
+
+https://github.com/user-attachments/assets/04ca4200-108b-4e2c-a2d5-07ed424f6eb6
+
+</details>
+
+<details>
+<summary><b>⚠️ 이상 발주</b></summary>
+
+https://github.com/user-attachments/assets/8c6b98e6-ce02-4e22-8183-3c155f87e64a
+
+</details>
+
+<details>
+<summary><b>⚙️ 이상 발주 기준 설정</b></summary>
+
+https://github.com/user-attachments/assets/c5a66746-32fe-484a-ae21-120db58b01a2
+
+</details>
+
+<details>
+<summary><b>🗃️ 본사 재고 현황</b></summary>
+<br>
+<p align="center"><img width="80%" src="../docs/img/gif/login.gif"/></p>
+</details>
+
+<details>
+<summary><b>🏬 가맹점 재고 현황</b></summary>
+<br>
+<p align="center"><img width="80%" src="../docs/img/gif/login.gif"/></p>
+</details>
+
+<details>
+<summary><b>🚚 배송 관리</b></summary>
+<br>
+<p align="center"><img width="80%" src="../docs/img/gif/login.gif"/></p>
+</details>
+
+<details>
+<summary><b>💰 정산 관리</b></summary>
+<br>
+<p align="center"><img width="80%" src="../docs/img/gif/login.gif"/></p>
+</details>
+
+<details>
+<summary><b>👥 계정 관리</b></summary>
+<br>
+<p align="center"><img width="80%" src="../docs/img/gif/login.gif"/></p>
+</details>
+
+<details>
+<summary><b>📈 실시간 통계</b></summary>
+
+https://github.com/user-attachments/assets/e92f1926-9ced-44df-b42b-95fc02755d57
+
+</details>
+
+<details>
+<summary><b>📉 장기 통계</b></summary>
+
+https://github.com/user-attachments/assets/b912272a-0b39-486f-ae4c-18a2e6439208
+
+</details>
+
+<details>
+<summary><b>🌱 ESG 대시보드</b></summary>
+<br>
+<p align="center"><img width="80%" src="../docs/img/gif/login.gif"/></p>
+</details>
+
+<details>
+<summary><b>📄 보고서</b></summary>
+<br>
+<p align="center"><img width="80%" src="../docs/img/gif/login.gif"/></p>
+</details>
+
+<details>
+<summary><b>📰 뉴스 요약</b></summary>
+<br>
+<p align="center"><img width="80%" src="../docs/img/gif/login.gif"/></p>
+</details>
+
+<details>
+<summary><b>🔔 실시간 알림 (SSE)</b></summary>
+
+https://github.com/user-attachments/assets/c1ce6550-4707-416d-9f41-82759ead7e31
+
+</details>
+
+</details>
+
+<details>
+<summary><span style="font-size:1.3em;font-weight:bold;">🏪 가맹점 (Store)</span></summary>
+
+<details>
+<summary><b>📊 가맹점 대시보드</b></summary>
+
+https://github.com/user-attachments/assets/028f019e-afa7-427e-b708-95559ce63cc0
+
+</details>
+
+<details>
+<summary><b>💳 POS 결제</b></summary>
+
+<!-- TODO: GIF 또는 video 추가 -->
+
+</details>
+
+<details>
+<summary><b>🌙 영업 마감 → AI 자동 발주서 생성</b></summary>
+
+https://github.com/user-attachments/assets/b747bdc1-6a4d-4e43-8830-13b3ff00c922
+
+</details>
+
+<details>
+<summary><b>📋 제안 발주서</b></summary>
+
+https://github.com/user-attachments/assets/f78e7130-eba9-49a8-ae31-f750c03c2a98
+
+</details>
+
+<details>
+<summary><b>📜 발주 이력</b></summary>
+
+https://github.com/user-attachments/assets/2e9a2c2f-c477-4d43-adad-170e4a7d284f
+
+</details>
+
+<details>
+<summary><b>✏️ 수동 발주 생성</b></summary>
+
+https://github.com/user-attachments/assets/07948962-1833-4c13-b74c-8bf3a452f989
+
+</details>
+
+<details>
+<summary><b>📦 제품 관리</b></summary>
+
+<!-- TODO: GIF 또는 video 추가 -->
+
+</details>
+
+<details>
+<summary><b>☕ 메뉴 관리</b></summary>
+
+<!-- TODO: GIF 또는 video 추가 -->
+
+</details>
+
+<details>
+<summary><b>🗃️ 매장 재고</b></summary>
+
+<!-- TODO: GIF 또는 video 추가 -->
+
+</details>
+
+<details>
+<summary><b>🚚 배송 현황</b></summary>
+
+<!-- TODO: GIF 또는 video 추가 -->
+
+</details>
+
+<details>
+<summary><b>💰 정산 내역</b></summary>
+
+<!-- TODO: GIF 또는 video 추가 -->
+
+</details>
+
+<details>
+<summary><b>🧪 결제 테스트</b></summary>
+
+<!-- TODO: GIF 또는 video 추가 -->
+
+</details>
+
+<details>
+<summary><b>📰 지역 뉴스</b></summary>
+
+<!-- TODO: GIF 또는 video 추가 -->
+
+</details>
+
+<details>
+<summary><b>🔔 알림</b></summary>
+
+https://github.com/user-attachments/assets/4bc63c4c-f273-4f93-8fcc-a2dc1e65a004
+
+</details>
+
+</details>
 
 ---
 
-## 🚀 &nbsp; 실행
-
-<details>
-<summary><b>1. 사전 요구사항</b></summary>
-
-- Node.js 20.19+ 또는 22.12+
-- 백엔드 (Gateway / 모놀리식 / POS MSA / 통계 MSA) 가 떠 있어야 정상 동작
-</details>
-
-<details>
-<summary><b>2. 설치 + 개발 서버</b></summary>
-
-```bash
-npm install
-npm run dev
-```
-- http://localhost:5173 접속
-</details>
-
-<details>
-<summary><b>3. 빌드</b></summary>
-
-```bash
-npm run build
-```
-- 결과 디렉토리: `dist/`
-</details>
-
-<details>
-<summary><b>4. Lint</b></summary>
-
-```bash
-npm run lint
-```
-- oxlint + eslint 자동 fix
-</details>
-
----
-
-## 🛣️ &nbsp; API 라우팅 (Vite Proxy)
+## 🛣️ API 라우팅 (Vite Proxy)
 
 <details>
 <summary><b>로컬 dev proxy 규칙</b></summary>
@@ -264,91 +421,109 @@ npm run lint
 
 ---
 
-## 📡 &nbsp; API 호출 컨벤션
+## 📡 API 호출 컨벤션
 
 <details>
-<summary><b>Axios Interceptor (plugins/axiosinterceptor.js)</b></summary>
+<summary><b>Axios 인스턴스 (plugins/axiosinterceptor.js)</b></summary>
+<br>
 
-- 모든 요청에 JWT 자동 첨부 (`Authorization: Bearer <token>`)
-- 401 응답 시 → 로그아웃 + 로그인 페이지 리다이렉트
-- BaseResponse 구조 (`{ success, code, message, result }`) 처리
+```javascript
+import axios from 'axios'
+
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || '/api',
+  withCredentials: true,   // 🍪 쿠키 자동 전송 (JWT HttpOnly 쿠키 인증)
+})
+
+export default api
+```
+
+- **baseURL** — 환경변수 `VITE_API_URL` 또는 기본 `/api` (Vite proxy 가 `/api/*` 를 백엔드로 분기)
+- **withCredentials: true** — 🍪 **쿠키 기반 JWT 인증** (HttpOnly 쿠키 자동 전송, Bearer 헤더 X)
+- 인증 / 401 처리는 Vue Router 가드 + 백엔드 Spring Security 가 담당
+
+> 💡 파일명에 `interceptor` 가 들어가지만 현재 별도 axios interceptor (request / response) 는 없음. 향후 BaseResponse 자동 핸들링이나 401 리다이렉트가 필요하면 이 파일에 추가.
 </details>
 
 <details>
 <summary><b>API 모듈 패턴 (api/&lt;domain&gt;/index.js)</b></summary>
+<br>
 
+도메인별로 두 가지 패턴이 혼재합니다 (점진적으로 통일 예정).
+
+**패턴 1 : Named export (`api/store/`, `api/menu/` 등 다수)**
 ```javascript
 import api from '@/plugins/axiosinterceptor'
 
-export const getXxxList = (params) => api.get('/xxx/list', { params })
-export const postXxx = (body) => api.post('/xxx', body)
-export const putXxx = (idx, body) => api.put(`/xxx/${idx}`, body)
-export const deleteXxx = (idx) => api.delete(`/xxx/${idx}`)
+export const getStoreList = (searchReq, page, size) =>
+  api.get('/store/list', { params: { ...searchReq, page, size } })
+
+export const getStoreDetailList = (storeIdx) =>
+  api.get(`/store/detail/list/${storeIdx}`)
+
+export const searchStoreList = (keyword = '') =>
+  api.get('/store/search', { params: { keyword } })
+```
+
+**패턴 2 : Default export 모음 (`api/orders/`)**
+```javascript
+import api from '@/plugins/axiosinterceptor'
+
+const getAutoOrders = (params = {}) =>
+  api.get('/orders/list/auto', { params })
+
+const cancelOrder = (ordersIdx) =>
+  api.put(`/orders/store/${ordersIdx}/cancel`)
+
+const deleteStoreItem = (ordersItemIdx) =>
+  api.delete(`/orders/store/${ordersItemIdx}/items`)
+
+export default {
+  getAutoOrders,
+  cancelOrder,
+  deleteStoreItem,
+  // ... 함수들 모음
+}
+```
+
+**사용처에서 import**
+```javascript
+// named export 패턴
+import { getStoreList } from '@/api/store'
+
+// default export 모음 패턴
+import ordersApi from '@/api/orders'
+ordersApi.getAutoOrders()
 ```
 </details>
 
 ---
 
-## 💾 &nbsp; 상태 관리 (Pinia)
+## 💾 상태 관리 (Pinia)
 
 <details>
 <summary><b>stores/auth.js</b></summary>
 
-- 로그인 사용자 정보 (idx, email, role: `ADMIN` / `STORE`)
-- JWT 토큰 관리 (localStorage 영속)
+- **사용자 정보** — `localStorage('nexus_user')` 영속 (id, email, role, name, avatar 등)
+- **🍪 쿠키 기반 JWT 인증** — `CTOKEN` 쿠키에서 JWT payload 추출 → user 객체 빌드
+- **role 매핑** — 백엔드 `STORE` → 프론트 `STORE_OWNER`
+- **computed**: `isLoggedIn` / `isAdmin` / `isStoreOwner`
+- **액션**: `login(email, password)` / `logout()` / `fetchUserInfo()` (`/user/mypage`)
 - 로그인 / 로그아웃 액션
 </details>
 
 <details>
 <summary><b>stores/notification.js</b></summary>
 
-- SSE 알림 구독 (본사 / 가맹점)
-- 미읽음 카운트
-- 알림 리스트
+- **알림 리스트** — Slice 페이징 (`notifications`, `hasNext`, `currentPage`)
+- **필터 상태** — `currentType` (NotificationType) / `currentIsRead` (true/false/undefined)
+- **미읽음 카운트** — `unreadCount` (헤더 뱃지)
+- **SSE 구독** — `EventSource` 로 본사 (`HeadNotificationApi`) / 가맹점 (`StoreNotificationApi`) 알림 채널 구독
+- **액션**: `fetchNotifications(type, size, isRead)` / `loadMore(size)` / `fetchUnreadCount()` / `markRead(idx)` / `markAllAsRead()` / `connectSse()` / `disconnectSse()`
 </details>
 
 ---
 
-## 🎨 &nbsp; Vue SFC 컨벤션
 
-- 순서: `<script setup>` → `<template>` → `<style>`
-- 자세한 규칙: [.claude/frontend/VUE_STRUCTURE.md](../.claude/frontend/VUE_STRUCTURE.md)
-
----
-
-## 🚢 &nbsp; 운영 배포
-
-<details>
-<summary><b>Nginx (TLS termination + reverse proxy)</b></summary>
-
-- `nginx/default.conf` — HTTP → HTTPS redirect + API 분기
-- 분기 규칙:
-  - `/api/auth` → monolith
-  - `/api/(stat|pos)/**` → gateway
-  - `/api/**` → monolith
-- SSE buffering off (실시간 알림용)
-</details>
-
-<details>
-<summary><b>Dockerfile</b></summary>
-
-- `docker/frontend/Dockerfile`
-- Multi-stage build (Node 빌드 → Nginx 서빙)
-</details>
-
-<details>
-<summary><b>Kubernetes</b></summary>
-
-- `k8s/frontend/` — Deployment (Blue/Green) + LoadBalancer Service + nexus-tls Secret
-- 443 포트 외부 노출 (HTTPS 진입점)
-</details>
-
----
-
-## 🔑 로그인 (dev seed)
-- 본사: `admin@theventi.co.kr` / `password123`
-- 가맹점: `store0001@theventi.co.kr` / `password123`
-
----
 
 ![footer](https://capsule-render.vercel.app/api?type=Venom&color=4F46E5&height=120&section=footer&fontColor=ffffff)

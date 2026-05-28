@@ -157,8 +157,9 @@ frontend/
 
 <details>
 <summary><b>🔐 로그인 / 회원가입</b></summary>
-<br>
-<p align="center"><img width="80%" src="../docs/img/gif/login.gif"/></p>
+  
+https://github.com/user-attachments/assets/c109b564-af28-4343-af63-e4312a4c4173
+
 </details>
 
 <details>
@@ -303,6 +304,13 @@ https://github.com/user-attachments/assets/c1ce6550-4707-416d-9f41-82759ead7e31
 
 <details>
 <summary><span style="font-size:1.3em;font-weight:bold;">🏪 가맹점 (Store)</span></summary>
+
+<details>
+<summary><b>🔐 로그인 / 회원가입</b></summary>
+  
+https://github.com/user-attachments/assets/0efb363e-1df6-4d1a-bd36-6d13dc854981
+
+</details>
 
 <details>
 <summary><b>📊 가맹점 대시보드</b></summary>

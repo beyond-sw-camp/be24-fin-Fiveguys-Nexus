@@ -177,8 +177,9 @@ https://github.com/user-attachments/assets/de76e3eb-00f5-4306-baac-593f19009722
 
 <details>
 <summary><b>🏪 가맹점 관리</b></summary>
-<br>
-<p align="center"><img width="80%" src="../docs/img/gif/login.gif"/></p>
+
+https://github.com/user-attachments/assets/6ccd5fca-eb97-4f8e-b77d-919d90f725a3
+
 </details>
 
 <details>

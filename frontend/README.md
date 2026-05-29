@@ -372,7 +372,7 @@ https://github.com/user-attachments/assets/a3ad0baf-38d7-4215-9e0f-9df17434c72f
 <details>
 <summary><b>☕ 메뉴 관리</b></summary>
 
-<!-- TODO: GIF 또는 video 추가 -->
+https://github.com/user-attachments/assets/e803736f-dedf-49c4-b704-1501d2fa988b
 
 </details>
 

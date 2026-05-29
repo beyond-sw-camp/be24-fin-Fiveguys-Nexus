@@ -42,17 +42,15 @@
 
 ## 🧩 모듈 구성
 
-| 모듈 | 포트 | 상세 내용 |
-|---|---|---|
+| 모듈 | 포트   | 상세 내용 |
+|---|------|---|
 | **discovery** | 8761 | **Eureka 서비스 디스커버리** — 모든 백엔드 모듈의 서비스 인스턴스 등록 / 헬스 체크. 다른 모듈은 `eureka.client.service-url.defaultZone` 환경변수로 등록 |
 | **gateway** | 8088 | **Spring Cloud Gateway** — 외부 / 프론트엔드의 REST 진입점. CORS / 경로 기반 라우팅<br/>• `/api/pos/**` → POS MSA<br/>• `/api/statistics/**` → Statistics MSA<br/>• `/api/**` → Monolith |
 | **monolith** | 8080 | **본사 + 공통 도메인**<br/>• 도메인: 가맹점 (store) / 발주 (orders, 자동·확정·이력·이상) / 배송 (delivery) / 본사 재고 (head_inventory) / 알림 (SSE) / 대시보드 / 정산 (head_income, billing) / 통계 (잔존) / 인증 (JWT)<br/>• 의존: MariaDB :3306, Kafka (Producer + Consumer) |
 | **pos** | 8082 | **POS MSA** — 가맹점 결제 + 매장 운영<br/>• 도메인: 결제 (pos_pay) / 매장 재고 (pos_store_inventory) / POS 메뉴 (모놀리식 menu read-model) / 영업 마감 → AI 자동 발주서 생성 (Kafka 이벤트 발행)<br/>• 의존: MariaDB :3308 (별도), Kafka (Producer + Consumer) |
 | **statistics** | 8081 | **통계 MSA** — 실시간 + 장기 통계<br/>• 실시간: Redis 사전 집계 (`sales:today` / `sales:store:ranking` / `sales:menu:ranking` 등) O(1) 조회<br/>• 장기: `daily_*_sales` 테이블 (연 / 분기 / 월 + 매장·카테고리·메뉴 랭킹)<br/>• 일별 dump: Redis → MariaDB (매일 새벽, ShedLock 분산 락)<br/>• 의존: MariaDB :3307 (별도) + Redis Cluster, Kafka Consumer |
-| **batch** | 8090 | **발주 일괄 승인 (Spring Batch)** — `POST /batch/jobs/approve` → JobLauncher → 4 Step<br/>① `prepareOrdersStagingStep` — CONFIRMED 발주 스냅샷을 staging<br/>② `productProcessPartitionStep` — product 별 파티션 병렬 재고 차감<br/>③ `rejectInsufficientOrdersStep` — 재고 부족 발주 REJECT<br/>④ `orderApproveStep` — 최종 APPROVE 전환<br/>• 의존: 모놀리식 DB 공유 (`order_batch` 별도 스키마) |
-| **billing-batch** | 8080* | **정산 자동 배치 (Spring Batch)** — 반월 단위 자동 정산 + 매출 채권 결산. ShedLock 분산 락으로 멱등 처리<br/>• 의존: 모놀리식 DB 공유 |
-
-(*) billing-batch 는 K8s 환경에서 별도 컨테이너로 격리. 로컬 동시 실행 시 포트 충돌 주의.
+| **batch** | 8083 | **발주 일괄 승인 (Spring Batch)** — `POST /batch/jobs/approve` → JobLauncher → 4 Step<br/>① `prepareOrdersStagingStep` — CONFIRMED 발주 스냅샷을 staging<br/>② `productProcessPartitionStep` — product 별 파티션 병렬 재고 차감<br/>③ `rejectInsufficientOrdersStep` — 재고 부족 발주 REJECT<br/>④ `orderApproveStep` — 최종 APPROVE 전환<br/>• 의존: 모놀리식 DB 공유 (`order_batch` 별도 스키마) |
+| **billing-batch** | 8084 | **정산 자동 배치 (Spring Batch)** — 반월 단위 자동 정산 + 매출 채권 결산. ShedLock 분산 락으로 멱등 처리<br/>• 의존: 모놀리식 DB 공유 |
 
 ---
 
@@ -95,8 +93,6 @@
 ---
 
 ## 🗂️ ERD
-
-> 모듈별 MariaDB ERD 4종. 각 항목 토글로 펼쳐 보세요.
 
 <details>
 <summary><b>모놀리식 MariaDB ERD</b></summary>

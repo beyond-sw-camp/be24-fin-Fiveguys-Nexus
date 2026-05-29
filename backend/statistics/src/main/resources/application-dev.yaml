@@ -42,7 +42,21 @@ spring:
         spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
         spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
         spring.json.trusted.packages: "*"
-        spring.json.type.mapping: paymentEvent:com.example.statistics.event.PaymentEvent
+        # POS / monolith 가 보내는 __TypeId__ 헤더를 statistics 의 동등 클래스로 매핑
+        # (서로 다른 MSA 라 패키지명이 다름 — POS 헤더의 클래스명을 그대로 신뢰하면 ClassNotFound)
+        spring.json.type.mapping: >
+          paymentEvent:com.example.statistics.event.PaymentEvent,
+          com.example.pos.event.PaymentEvent:com.example.statistics.event.PaymentEvent
+        # 또는 헤더 무시하고 default 타입 강제 (위 매핑이 안 잡힐 때 fallback)
+        spring.json.value.default.type: com.example.statistics.event.PaymentEvent
+        spring.json.use.type.headers: false
+    # 통계 MSA 는 outbound produce 가 없고 DLT publishing 만 사용.
+    # 역직렬화 실패 시 DefaultErrorHandler 가 원본 record value (byte[]) 를 그대로
+    # <topic>.DLT 로 전달하므로 ByteArraySerializer 로 직렬화 (StringSerializer 사용 시
+    # ClassCastException: [B → String 발생).
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.ByteArraySerializer
 
   data:
     redis:

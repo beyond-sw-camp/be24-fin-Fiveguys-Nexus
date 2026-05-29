@@ -4,6 +4,7 @@ import {Plus, Search, FileText, ChevronRight, ChevronLeft, RefreshCw} from 'luci
 import { getStoreList , getStoreDetailList, getPresignedUrl, postNewRegister, putStoreUpdate, getStoreTotal} from '@/api/store/index.js'
 import axios from 'axios'
 import Toast from '@/components/common/Toast.vue'
+import StoreTrendChart from '@/components/store/StoreTrendChart.vue'
 import { useToast } from '@/composables/useToast'
 
 const { toast, showToast } = useToast()
@@ -23,6 +24,8 @@ const showDetailModal = ref(false)
 const editTarget = ref(null)
 const detailTarget = ref(null)
 const selectedFile = ref(null);
+// 입점/폐점 추이 차트 컴포넌트 참조 (저장 후 차트 갱신용)
+const trendChart = ref(null)
 // 초기화 하는 함수
 const getInitialForm = () => ({
   storeName: '',
@@ -52,6 +55,7 @@ const storeListRes = async (page = 0)=>{
   const totalRes = await getStoreTotal()
   storeTotalCount.value = totalRes.data.result
   // 가맹점 리스트 조회
+
   const res = await getStoreList(searchReq, page, pagination.currentSize)
   storesList.value.splice(0, storesList.value.length, ...res.data.result.storeList)
 
@@ -121,6 +125,8 @@ async function openDetail(idx) {
 
 // 수정 등록 팝업 창 열기
 async function openModal(idx =! null) {
+  emailError.value = '';
+  businessError.value = '';
   if (idx) {
     // [수정 모드]
     const res = await getStoreDetailList(idx);
@@ -175,8 +181,45 @@ async function uploadFileToS3() {
   }
 }
 
+// 이메일 유효성 검사
+const emailError = ref('');
+const validateEmail = () => {
+  if (!form.ownerEmail) {
+    emailError.value = '';
+    return true;
+  }
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const isValid = emailPattern.test(form.ownerEmail);
+
+  if (!isValid) {
+    emailError.value = '올바른 이메일 형식으로 작성해주세요.';
+    // 사용자가 이해할 수 있도록 주석 추가: 이메일 형식이 틀렸을 때 하단 빨간 글씨와 함께 우측 상단 토스트 알림을 띄움
+    showToast('올바른 이메일 형식으로 작성해주세요.', 'error');
+  } else {
+    emailError.value = '';
+  }
+  return isValid;
+};
+
+// 사업자 등록번호 유효성 검사 (숫자 10자리)
+const businessError = ref('');
+const validateBusiness = () => {
+  if (!form.business) { businessError.value = ''; return true; }   // 빈 값은 isFormValid가 처리
+  const digits = String(form.business).replace(/\D/g, '');         // 하이픈 제거 후 순수 숫자만 카운트
+  const isValid = digits.length === 10;
+  businessError.value = isValid ? '' : '사업자 등록번호를 다시 확인해주세요.';
+  if (!isValid) showToast('사업자 등록번호를 다시 확인해주세요.', 'error');
+  return isValid;
+};
+
 // 등록 및 저장
 async function saveStore() {
+  if (!validateEmail()) {
+    showToast('올바른 이메일 형식으로 작성해주세요.', 'error');
+    return;
+  }
+  if (!validateBusiness()) return;   // 사업자번호 미달 시 중단 (validateBusiness가 토스트 표시)
+
   try {
     let finalFilePath = form.filePath;
     if (selectedFile.value) {
@@ -203,6 +246,7 @@ async function saveStore() {
       if (res.data.code === 2000) {
         showToast('가맹점 정보가 수정되었습니다.');
         await storeListRes(pagination.currentPage);
+        trendChart.value?.reload();   // 수정 후 월별 입점/폐점 그래프도 갱신
         showModal.value = false;
       }
     }
@@ -223,6 +267,7 @@ async function saveStore() {
         showToast('가맹점이 등록되었습니다.');
         storesList.value.length = 0;
         await storeListRes();
+        trendChart.value?.reload();   // 등록 후 월별 입점/폐점 그래프도 갱신
       }
     }
 
@@ -346,6 +391,7 @@ const resetFilters = () => {
   searchQuery.value = ''
   filterStatus.value = '전체'
   storeListRes(0)
+  trendChart.value?.reload()
 }
 
 onMounted(() => {
@@ -359,7 +405,7 @@ onMounted(() => {
     <!-- Header -->
     <div class="flex justify-between items-center">
       <div>
-        <h1 class="text-xl font-bold text-gray-900 tracking-tight">입점 가맹점 관리</h1>
+        <h1 class="text-xl font-bold text-gray-900 tracking-tight">가맹점 관리</h1>
       </div>
       <button @click="openModal(null)" class="bg-[#F37321] text-white px-4 py-2 text-sm font-semibold rounded-lg hover:bg-[#e0661d] transition-colors flex items-center gap-2 shadow-sm cursor-pointer">
         <Plus class="w-4 h-4" /> 신규 가맹점 등록
@@ -380,6 +426,8 @@ onMounted(() => {
         <p class="text-3xl font-black text-red-500 mt-2">{{ storeTotalCount?.closedCount }}<span class="text-sm font-normal text-gray-400 ml-1">개</span></p>
       </div>
     </div>
+    <!-- 월별 입점/폐점 추이 그래프 -->
+    <StoreTrendChart ref="trendChart" />
     <div class="flex items-center justify-between gap-4">
       <div class="flex items-center gap-2 flex-1 max-w-md">
         <div class="relative">
@@ -557,7 +605,7 @@ onMounted(() => {
         <form @submit.prevent="saveStore" class="p-8 space-y-5">
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">가맹점명</label>
-            <input v-model="form.storeName" required type="text" placeholder="예: 한우 오마카세"
+            <input v-model="form.storeName" required type="text" placeholder="예: 더벤티 서울점"
                    class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
           </div>
           <div class="grid gap-5" :class="editTarget ? 'grid-cols-2' : 'grid-cols-1'">
@@ -568,8 +616,10 @@ onMounted(() => {
             </div>
             <div class="space-y-1.5">
               <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">이메일</label>
-              <input v-model="form.ownerEmail" type="email" placeholder="example@email.com"
-                     class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all" />
+              <input v-model="form.ownerEmail" @blur="validateEmail" type="email" placeholder="example@email.com"
+                     class="w-full px-4 py-2 rounded-lg border text-sm outline-none transition-all"
+                     :class="emailError ? 'border-red-500 focus:ring-4 focus:ring-red-500/20' : 'border-gray-200 focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5'" />
+              <p v-if="emailError" class="text-xs text-red-500 mt-1">{{ emailError }}</p>
             </div>
           </div>
           <div class="space-y-3">
@@ -598,7 +648,10 @@ onMounted(() => {
           </div>
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">사업자번호</label>
-            <input :value="form.business" @input="formatBusinessNumber" inputmode="numeric" type="text" placeholder="숫자만 입력하세요" maxlength="12" class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5 outline-none transition-all"/>
+            <input :value="form.business" @input="formatBusinessNumber" @blur="validateBusiness" inputmode="numeric" type="text" placeholder="숫자만 입력하세요" maxlength="12"
+                   class="w-full px-4 py-2 rounded-lg border text-sm outline-none transition-all"
+                   :class="businessError ? 'border-red-500 focus:ring-4 focus:ring-red-500/20' : 'border-gray-200 focus:border-[#F37321] focus:ring-4 focus:ring-[#F37321]/5'"/>
+            <p v-if="businessError" class="text-xs text-red-500 mt-1">{{ businessError }}</p>
           </div>
           <div class="space-y-1.5">
             <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">사업자 PDF</label>

@@ -43,9 +43,7 @@
       <div class="bg-white border border-gray-200 rounded-lg p-8">
         <div class="mb-6">
           <h2 class="text-lg font-bold text-gray-900">로그인</h2>
-          <p class="page-spec-hint mt-2">
-            <code>USER_003 · USER_008</code>아이디·비밀번호 인증. 로그아웃은 헤더 메뉴에서 처리합니다.
-          </p>
+          
         </div>
 
         <form @submit.prevent="handleLogin" class="space-y-4">
@@ -102,7 +100,7 @@ const demoAccounts = [
     badgeClass: 'bg-orange-50 text-orange-600 border border-orange-200',
   },
   {
-    email: 'store01@theventi.co.kr', name: '김동현', avatar: 'KD', roleLabel: '점주 (가맹점)',
+    email: 'store0001@theventi.co.kr', name: '김동현', avatar: 'KD', roleLabel: '점주 (가맹점)',
     colorClass: 'bg-blue-500',
     badgeClass: 'bg-blue-50 text-blue-600 border border-blue-200',
   },

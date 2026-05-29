@@ -35,6 +35,12 @@ const router = createRouter({
       meta: { role: 'ADMIN' },
     },
     {
+      path: '/statistics/long-term',
+      name: 'statisticsLongTerm',
+      component: () => import('@/views/hq/LongTermStatisticsView.vue'),
+      meta: { role: 'ADMIN' },
+    },
+    {
       path: '/store',
       name: 'store',
       component: () => import('@/views/hq/StoreView.vue'),
@@ -148,7 +154,7 @@ const router = createRouter({
     {
       path: '/store-payment-test',
       name: 'storePaymentTest',
-      component: () => import('@/views/store/PaymentTestView.vue'),
+      component: () => import('@/views/store/PaymentView.vue'),
       meta: { role: 'STORE_OWNER' },
     },
 

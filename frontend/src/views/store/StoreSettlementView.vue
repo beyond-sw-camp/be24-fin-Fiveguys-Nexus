@@ -20,6 +20,16 @@
       >
         발주 정산 내역
       </button>
+
+      <button
+        @click="activeTab = 'unpaid'"
+        class="cursor-pointer transition-colors"
+        :class="activeTab === 'unpaid'
+          ? 'text-red-600 font-bold border-b-2 border-red-600 pb-2'
+          : 'text-gray-400 hover:text-gray-600'"
+      >
+        미결제 정산 건
+      </button>
     </div>
 
     <div v-if="activeTab === 'sales'" class="space-y-6">
@@ -181,12 +191,54 @@
         </div>
       </div>
     </div>
+
+    <div v-if="activeTab === 'unpaid'" class="space-y-6">
+      <div>
+        <h1 class="text-xl font-bold text-gray-900 tracking-tight">최종 미결제 내역</h1>
+        <p class="text-sm text-gray-500 mt-1">자동 결제가 최종 실패하여 수동 결제가 필요한 내역입니다.</p>
+      </div>
+
+      <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+        <table class="w-full text-sm text-left">
+          <thead class="bg-gray-50 border-b border-gray-200 text-gray-500 font-bold">
+          <tr>
+            <th class="px-6 py-4">정산 월</th>
+            <th class="px-6 py-4">미결제 금액</th>
+            <th class="px-6 py-4">실패 사유</th>
+            <th class="px-6 py-4">동작</th>
+          </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+          <tr v-for="item in unpaidList" :key="item.idx" class="hover:bg-gray-50/50 transition-colors">
+            <td class="px-6 py-4 text-gray-600">{{ item.payedMonth }}</td>
+            <td class="px-6 py-4 font-bold text-gray-900">₩ {{ item.amount?.toLocaleString() }}</td>
+            <td class="px-6 py-4 text-red-500 text-xs">{{ item.failReason }}</td>
+            <td class="px-6 py-4">
+              <button
+                @click="onManualPayment(item)"
+                :disabled="isPaymentProcessing"
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
+              >
+                {{ isPaymentProcessing ? '처리 중...' : '수동 결제' }}
+              </button>
+            </td>
+          </tr>
+          <tr v-if="unpaidList.length === 0">
+            <td colspan="4" class="px-6 py-10 text-center text-gray-400">최종 미결제 내역이 없습니다.</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { getSettlement, getOrderSettlement } from '@/api/store'
+import settlementApi from '@/api/settlement'
+import PortOne from "@portone/browser-sdk/v2"
+import api from '@/plugins/axiosinterceptor'
 
 const activeTab = ref('sales')
 
@@ -263,6 +315,74 @@ watch([orderYear, orderMonth], () => {
   fetchOrderData()
 })
 
+// --- 미결제 상태 관리 ---
+const unpaidList = ref([])
+const isPaymentProcessing = ref(false)
+
+const fetchUnpaidList = async () => {
+  try {
+    const response = await settlementApi.getUnpaidList()
+    unpaidList.value = response.data || []
+  } catch (error) {
+    console.error('미결제 내역을 불러오는데 실패했습니다:', error)
+  }
+}
+
+const onManualPayment = async (item) => {
+  if (isPaymentProcessing.value) return
+  
+  if (!confirm(`${item.payedMonth}분 정산 금액 ${item.amount.toLocaleString()}원을 수동 결제하시겠습니까?`)) {
+    return
+  }
+
+  isPaymentProcessing.value = true
+
+  try {
+    // 1. 서버에 결제 준비 요청 (Settlement 생성)
+    const createPay = await api.post('/pay', {
+      paymentPrice: item.amount,
+      headIncomeidxList: item.headIncomeIdxList
+    })
+
+    const settlementIdx = createPay.data.settlementIdx
+    const orderName = `${item.payedMonth}분 정산 수동 결제`
+
+    // 2. 포트원 결제 요청
+    const paymentId = `manual-${new Date().getTime()}-${Math.floor(Math.random() * 1000)}`
+    const payment = await PortOne.requestPayment({
+      storeId: "store-e41df7ff-0ba8-4ccc-b19f-7655c291bbcb",
+      channelKey: "channel-key-40356538-ccfe-4420-a5a9-d9190bde73cf",
+      paymentId: paymentId,
+      orderName: orderName,
+      totalAmount: item.amount,
+      currency: 'KRW',
+      payMethod: "CARD",
+    })
+
+    if (payment.code != null) {
+      // 결제 실패/취소
+      alert('결제가 중단되었습니다: ' + (payment.message || '알 수 없는 오류'))
+      isPaymentProcessing.value = false
+      return
+    }
+
+    // 3. 서버 검증 요청
+    await settlementApi.verifySettlement({
+      paymentId: payment.paymentId,
+      settlementIdx: settlementIdx
+    })
+
+    alert('결제가 성공적으로 완료되었습니다.')
+    await fetchUnpaidList() // 목록 갱신
+
+  } catch (error) {
+    console.error('결제 과정 중 오류 발생:', error)
+    alert('결제 처리 중 오류가 발생했습니다.')
+  } finally {
+    isPaymentProcessing.value = false
+  }
+}
+
 // --- 탭 전환 시 조회 ---
 watch(activeTab, (newTab) => {
   if (newTab === 'sales' && salesData.value.length === 0) {
@@ -270,6 +390,9 @@ watch(activeTab, (newTab) => {
   }
   if (newTab === 'order' && orderData.value.length === 0) {
     fetchOrderData()
+  }
+  if (newTab === 'unpaid') {
+    fetchUnpaidList()
   }
 })
 

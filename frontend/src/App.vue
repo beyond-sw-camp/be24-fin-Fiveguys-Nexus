@@ -1,4 +1,5 @@
 <script setup>
+import { onMounted } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import SideBar from '@/components/common/SideBar.vue'
@@ -6,7 +7,13 @@ import NavBar from '@/components/common/NavBar.vue'
 import AiChatbot from '@/components/AiChatbot.vue'
 
 const route = useRoute()
-const auth  = useAuthStore()
+const auth = useAuthStore()
+
+onMounted(async () => {
+  if (auth.isLoggedIn) {
+    await auth.fetchUserInfo()
+  }
+})
 </script>
 
 <template>

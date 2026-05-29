@@ -37,3 +37,7 @@ export const getSettlement = (year, month, page = 0, size = 10) =>
 
 export const getOrderSettlement = (year, month, page = 0, size = 10) =>
   api.get('/store/order/settlement', { params: { year, month, page, size }})
+
+// 월별 입점/폐점 추이 (연도 선택)
+export const getStoreMonthlyTrend = (year) =>
+  api.get('/store/stats/monthly', { params: { year } })

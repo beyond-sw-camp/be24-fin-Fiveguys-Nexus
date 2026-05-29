@@ -4,21 +4,6 @@
 
 ---
 
-<br>
-
-## 🤼‍♂️ 팀원 소개
-
-<br>
-
-| 권민석 | 노승찬 | 이재혁 | 이지희 | 정동현 |
-| :---: | :---: | :---: | :---: | :---: |
-| <img src="https://github.com/RIMIN0650.png" width="96" alt="권민석"/> | <img src="https://github.com/seungchan-0629.png" width="96" alt="노승찬"/> | <img src="https://github.com/hijaehyuk.png" width="96" alt="이재혁"/> | <img src="https://github.com/dwg0245.png" width="96" alt="이지희"/> | <img src="https://github.com/DongHyunj.png" width="96" alt="정동현"/> |
-| [@RIMIN0650](https://github.com/RIMIN0650) | [@seungchan-0629](https://github.com/seungchan-0629) | [@hijaehyuk](https://github.com/hijaehyuk) | [@dwg0245](https://github.com/dwg0245) | [@DongHyunj](https://github.com/DongHyunj) |
-
-<br>
-
----
-
 ## ✨ 프로젝트 기본 소개
 
 #### 프로젝트 배경
@@ -44,8 +29,6 @@
   <img src="https://img.shields.io/badge/🚀_Live_Demo_바로가기-4F46E5?style=for-the-badge&logoColor=white" height="50"/>
 </a>
 
-<br><br>
-
 **🔐 테스트 계정 (dev seed)**
 
 | 본사 (ADMIN) |                가맹점 (STORE)                 |
@@ -53,6 +36,21 @@
 | `admin@theventi.co.kr` / `password123` | `store0001@theventi.co.kr` / `password123` |
 
 </div>
+
+---
+
+<br>
+
+## 🤼‍♂️ 팀원 소개
+
+<br>
+
+| 권민석 | 노승찬 | 이재혁 | 이지희 | 정동현 |
+| :---: | :---: | :---: | :---: | :---: |
+| <img src="https://github.com/RIMIN0650.png" width="96" alt="권민석"/> | <img src="https://github.com/seungchan-0629.png" width="96" alt="노승찬"/> | <img src="https://github.com/hijaehyuk.png" width="96" alt="이재혁"/> | <img src="https://github.com/dwg0245.png" width="96" alt="이지희"/> | <img src="https://github.com/DongHyunj.png" width="96" alt="정동현"/> |
+| [@RIMIN0650](https://github.com/RIMIN0650) | [@seungchan-0629](https://github.com/seungchan-0629) | [@hijaehyuk](https://github.com/hijaehyuk) | [@dwg0245](https://github.com/dwg0245) | [@DongHyunj](https://github.com/DongHyunj) |
+
+<br>
 
 ---
 
@@ -107,9 +105,8 @@
 ---
 
 ## 🏗️ 시스템 아키텍처
-<img src="docs/nexus%20시스템%20아키텍처.png"/>
 
-<br>
+<img src="docs/nexus%20시스템%20아키텍처.png"/>
 
 ---
 
@@ -122,8 +119,6 @@
 | 🔶 WBS      | [<img src="https://img.shields.io/badge/Google_Sheets-34A853?style=for-the-badge&logo=googlesheets&logoColor=white"/>](https://docs.google.com/spreadsheets/d/1v3hQE4EiuSdz8o5kB0BRFktiQvOigztILSRQ2ttobhw/edit?usp=sharing) |
 | 🔶 Swagger  | [<img src="https://img.shields.io/badge/Swagger_%3A8080-85EA2D?style=for-the-badge&logo=swagger&logoColor=black"/>](https://docs.google.com/spreadsheets/d/1v3hQE4EiuSdz8o5kB0BRFktiQvOigztILSRQ2ttobhw/edit?usp=sharing) |
 | 🔶 API 명세서 | [<img src="https://img.shields.io/badge/API_명세서-85EA2D?style=for-the-badge&logo=swagger&logoColor=black"/>](https://hijaehyuk.github.io/swagger/) |
-
-<br>
 
 ---
 
@@ -241,7 +236,7 @@ flowchart TB
 - **Deploy** : K8s manifest 갱신 → kubectl rollout → **Blue / Green** 전환
 - **Monitor** : 배포 후 헬스 체크 + 모니터링
 
-### 🧩 핵심 의사결정 (왜 이 구조를?)
+### 🧩 핵심 의사결정
 | 항목 | 채택 사유                                                                                                                                                   |
 |---|---------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 🌐 **Nginx Reverse Proxy + TLS** | 단일 진입점에서 HTTPS 종료 + API 경로별 분기 (`/api/pos` → POS MSA, `/api/statistics` → 통계 MSA, `/api/*` → 모놀리식). <br> SSE 알림 위해 HTTP/1.1 유지 + `proxy_buffering off`. |
@@ -263,14 +258,10 @@ flowchart TB
 > **프로젝트의 상세한 내용은 아래 문서에서 확인하실 수 있습니다.**
 
 ### 🔧 모듈별 상세 README
-* 🖥️ [**Backend 자세히 보기**](backend/README.md) — 5개 도메인 모듈 (monolith / pos / statistics / batch / billing-batch) + Spring Cloud (Gateway / Eureka) + 로컬 실행 + Kafka 토픽 + 에러 코드 + **Service Flow 8개 시나리오**
-* 🎨 [**Frontend 자세히 보기**](frontend/README.md) — Vue 3 + Vite 구조 + 페이지 매트릭스 + API 라우팅 + 운영 배포
+* 🖥️ [**Backend 자세히 보기**](backend/README.md) — 5개 도메인 모듈 (monolith / pos / statistics / batch / billing-batch) + Spring Cloud (Gateway / Eureka) + 로컬 실행 + Kafka 토픽 + 에러 코드
+* 🎨 [**Frontend 자세히 보기**](frontend/README.md) — Vue 3 + Vite 구조 + 페이지 매트릭스 + API 라우팅
 
-### 📜 컨벤션 (Wiki)
-* 📝 [**Commit Convention**](https://github.com/beyond-sw-camp/<repo>/wiki/Commit-Convention) — 커밋 메시지 규칙
-* 🐛 [**Issue Convention**](https://github.com/beyond-sw-camp/<repo>/wiki/Issue-Convention) — 이슈 작성 템플릿
-* 🔀 [**Pull Request Convention**](https://github.com/beyond-sw-camp/<repo>/wiki/Pull-Request-Convention) — PR 작성 규칙
-* 🔄 [**Workflow Convention**](https://github.com/beyond-sw-camp/<repo>/wiki/Workflow-Convention) — 단계별 작업 흐름
-* 📘 [**Backend Javadoc Convention**](https://github.com/beyond-sw-camp/<repo>/wiki/Javadoc-Convention) — Controller 주석 규칙
+### 📜 코딩 컨벤션
+* 📝 [**Coding Convention**](https://github.com/beyond-sw-camp/be24-fin-Fiveguys-Nexus/wiki/4.-%EC%BD%94%EB%94%A9-%EC%BB%A8%EB%B2%A4%EC%85%98) — Frontend / Backend 컨벤션
 
 ---

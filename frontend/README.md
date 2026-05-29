@@ -190,8 +190,9 @@ https://github.com/user-attachments/assets/9adfeb48-927b-4c9f-aa27-fe6c1184826e
 
 <details>
 <summary><b>☕ 메뉴 관리</b></summary>
-<br>
-<p align="center"><img width="80%" src="../docs/img/gif/login.gif"/></p>
+
+https://github.com/user-attachments/assets/b5fba72a-f75d-4343-aa39-b61caab16009
+
 </details>
 
 <details>
@@ -285,8 +286,9 @@ https://github.com/user-attachments/assets/b912272a-0b39-486f-ae4c-18a2e6439208
 
 <details>
 <summary><b>📄 보고서</b></summary>
-<br>
-<p align="center"><img width="80%" src="../docs/img/gif/login.gif"/></p>
+
+https://github.com/user-attachments/assets/7c044219-2131-4404-8fc8-6714cfb3517b
+
 </details>
 
 <details>

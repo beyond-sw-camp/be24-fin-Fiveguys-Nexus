@@ -1,6 +1,7 @@
 package com.example.nexus.domain.delivery.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import org.springframework.data.domain.Page;
 
@@ -90,9 +91,13 @@ public class DeliveryDto {
     // 배송 지연 사유 요청 DTO
     @Getter
     @NoArgsConstructor
+    @Schema(description = "배송 지연 사유 등록 요청")
     public static class DelayReasonRequest {
 
+        @Schema(description = "배송 번호(IDX)", example = "1")
         private Long deliveryIdx;
+
+        @Schema(description = "지연 사유", example = "기상 악화로 인한 배송 지연")
         private String delayReason;
     }
 }

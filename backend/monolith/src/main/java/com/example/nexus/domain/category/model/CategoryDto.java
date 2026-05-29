@@ -1,5 +1,6 @@
 package com.example.nexus.domain.category.model;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -9,8 +10,11 @@ public class CategoryDto {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
+    @Schema(name = "CategoryRegReq", description = "카테고리 등록/수정 요청")
     public static class RegReq {
+        @Schema(description = "카테고리 번호", example = "1")
         private Long idx;
+        @Schema(description = "카테고리 이름", example = "원두/커피")
         private String categoryName;
 
         public Category toEntity() {
@@ -22,6 +26,7 @@ public class CategoryDto {
 
     @Builder
     @Getter
+    @Schema(name = "CategoryRegRes", description = "카테고리 등록 결과")
     public static class RegRes {
         private Long idx;
         private String categoryName;

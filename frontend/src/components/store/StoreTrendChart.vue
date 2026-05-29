@@ -47,14 +47,14 @@ async function loadAndRender() {
         {
           label: '입점',
           data: openedCounts,
-          backgroundColor: '#F37321',
+          backgroundColor: '#22c55e', // Green
           borderRadius: 4,
           maxBarThickness: 18,
         },
         {
           label: '폐점',
           data: closedCounts,
-          backgroundColor: '#ef4444',
+          backgroundColor: '#ef4444', // Red
           borderRadius: 4,
           maxBarThickness: 18,
         },
@@ -120,7 +120,7 @@ onUnmounted(() => {
           <option v-for="y in yearOptions" :key="y" :value="y">{{ y }}년</option>
         </select>
         <div class="flex items-center gap-4 text-xs text-gray-500">
-          <span class="flex items-center gap-1.5"><span class="w-3 h-3 bg-[#F37321] inline-block rounded"></span>입점</span>
+          <span class="flex items-center gap-1.5"><span class="w-3 h-3 bg-[#22c55e] inline-block rounded"></span>입점</span>
           <span class="flex items-center gap-1.5"><span class="w-3 h-3 bg-[#ef4444] inline-block rounded"></span>폐점</span>
         </div>
       </div>

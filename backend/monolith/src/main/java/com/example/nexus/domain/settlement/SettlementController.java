@@ -48,7 +48,13 @@ public class SettlementController {
     private final SettlementService settlementService;
     private final OrdersService ordersService;
 
-    @Operation(summary = "미납 내역 조회", description = "재시도(2차) 결제까지 최종 실패한 미납 내역 목록을 조회합니다.")
+    @Operation(
+            summary = "미납 내역 조회",
+            description = "배치 처리 후 재시도(2차) 결제까지 최종 실패한 가맹점의 미납 내역 목록을 조회합니다.",
+            parameters = {
+                    @Parameter(name = "authUserDetails", hidden = true)
+            }
+    )
     @GetMapping("/unpaid/list")
     public ResponseEntity<List<SettlementDto.FinalRetryFailRes>> getUnpaidList(
             @AuthenticationPrincipal AuthUserDetails authUserDetails) {
@@ -62,7 +68,20 @@ public class SettlementController {
         return ResponseEntity.ok(finalFailures);
     }
 
-    @Operation(summary = "결제 요청", description = "미납된 정산 내역에 대해 결제를 요청합니다.")
+    @Operation(
+            summary = "결제 요청",
+            description = "미납된 정산 내역에 대해 결제를 시작하기 위한 초기 데이터를 생성합니다.",
+            parameters = {
+                    @Parameter(name = "authUserDetails", hidden = true)
+            },
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "결제할 총 금액과 대상 수입 내역 ID 목록",
+                    required = true,
+                    content = @io.swagger.v3.oas.annotations.media.Content(
+                            schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = SettlementDto.PayReq.class)
+                    )
+            )
+    )
     @PostMapping("/pay")
     public ResponseEntity<List<HeadIncomeDto.FindHeadIncomeRes>> pay(
             @AuthenticationPrincipal AuthUserDetails authUserDetails,
@@ -91,7 +110,53 @@ public class SettlementController {
         return ResponseEntity.ok(headIncomeResList);
     }
 
-    @Operation(summary = "결제 검증", description = "포트원 등을 통한 결제 완료 후 서버 측에서 결제 정보의 유효성을 검증합니다.")
+    @Operation(
+            summary = "결제 검증",
+            description = """
+                    포트원(Portone) 결제 완료 후 서버 측에서 결제 정보의 유효성을 검증합니다.
+                    
+                    **검증 절차:**
+                    1. 클라이언트가 전달한 `paymentId`를 통해 포트원 서버에 결제 상세 정보 조회
+                    2. 서버에 기록된 정산 예정 금액과 실제 결제 금액 비교
+                    3. 검증 성공 시 정산 상태 및 관련 수입 내역(HeadIncome) 상태를 '결제 완료'로 업데이트
+                    """,
+            parameters = {
+                    @Parameter(name = "authUserDetails", hidden = true)
+            },
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "포트원에서 발급받은 결제 ID",
+                    required = true,
+                    content = @io.swagger.v3.oas.annotations.media.Content(
+                            schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = SettlementDto.VerifyReq.class)
+                    )
+            ),
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "200",
+                            description = "결제 검증 성공",
+                            content = @io.swagger.v3.oas.annotations.media.Content(
+                                    mediaType = "text/plain",
+                                    examples = @io.swagger.v3.oas.annotations.media.ExampleObject(value = "결제 성공")
+                            )
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "400",
+                            description = "결제 금액 불일치 또는 잘못된 요청",
+                            content = @io.swagger.v3.oas.annotations.media.Content(
+                                    mediaType = "text/plain",
+                                    examples = @io.swagger.v3.oas.annotations.media.ExampleObject(value = "결제 금액이 일치하지 않습니다.")
+                            )
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "404",
+                            description = "정산 내역을 찾을 수 없음",
+                            content = @io.swagger.v3.oas.annotations.media.Content(
+                                    mediaType = "text/plain",
+                                    examples = @io.swagger.v3.oas.annotations.media.ExampleObject(value = "정산 정보를 찾을 수 없습니다.")
+                            )
+                    )
+            }
+    )
     @PostMapping("/verify")
     public ResponseEntity<String> verify(
             @AuthenticationPrincipal AuthUserDetails authUserDetails,

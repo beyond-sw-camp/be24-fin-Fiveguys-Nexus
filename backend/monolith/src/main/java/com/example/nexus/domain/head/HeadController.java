@@ -131,13 +131,14 @@ public class HeadController {
     @GetMapping("/settlement/summary")
     public ResponseEntity<BaseResponse<HeadIncomeDto.HeadSettlementSummaryRes>> getSettlementSummary(
             @AuthenticationPrincipal AuthUserDetails userDetails,
+            @Parameter(description = "가맹점명 검색어") @RequestParam(required = false) String storeName,
             @Parameter(description = "조회 연도", example = "2026") @RequestParam int year,
             @Parameter(description = "조회 월", example = "4") @RequestParam int month) {
         if (userDetails == null) {
             throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다.");
         }
 
-        HeadIncomeDto.HeadSettlementSummaryRes result = headIncomeService.getSettlementSummary(year, month);
+        HeadIncomeDto.HeadSettlementSummaryRes result = headIncomeService.getSettlementSummary(storeName, year, month);
 
         return ResponseEntity.ok(BaseResponse.success(result));
     }

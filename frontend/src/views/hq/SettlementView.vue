@@ -167,7 +167,7 @@ const parsedDate = () => {
 const fetchSummary = async () => {
   try {
     const { year, month } = parsedDate()
-    const res = await getHeadSettlementSummary(year, month)
+    const res = await getHeadSettlementSummary(year, month, settlementSearch.value)
     totalBillingAmount.value = res.data.result?.totalBillingAmount ?? 0
   } catch (error) {
     console.error('청구 합계 조회 실패:', error)
@@ -196,12 +196,13 @@ const onMonthChange = () => {
   fetchList(0)
 }
 
-// 검색어 입력 시 0페이지부터 다시 조회
+// 검색어 입력 시 0페이지부터 다시 조회 및 요약 데이터 갱신
 let searchTimer = null
 const onSearchInput = () => {
   clearTimeout(searchTimer)
   searchTimer = setTimeout(() => {
     currentPage.value = 0
+    fetchSummary()
     fetchList(0)
   }, 300) // 타이핑 멈추고 300ms 후 조회 (debounce)
 }

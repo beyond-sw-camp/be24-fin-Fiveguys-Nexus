@@ -28,7 +28,7 @@ public class AiFinanceTools {
             @ToolParam(description = "월 1~12") int month) {
         LocalDateTime start = LocalDate.of(year, month, 1).atStartOfDay();
         LocalDateTime end = start.plusMonths(1); // 쿼리가 반개방(< end)이라 다음 달 1일 0시
-        Long sum = headIncomeRepository.sumTotalBillingByMonth(start, end);
+        Long sum = headIncomeRepository.sumTotalBillingByMonth(null, start, end);
         return sum != null ? sum : 0L;
     }
 

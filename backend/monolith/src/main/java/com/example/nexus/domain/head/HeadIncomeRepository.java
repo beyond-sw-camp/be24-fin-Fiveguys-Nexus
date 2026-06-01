@@ -52,10 +52,12 @@ public interface HeadIncomeRepository extends JpaRepository<HeadIncome, Long> {
             SELECT COALESCE(SUM(hi.price), 0)
             FROM HeadIncome hi
             JOIN hi.orders o
-            WHERE o.createdAt >= :start
+            WHERE (:storeName IS NULL OR :storeName = '' OR hi.store.storeName LIKE %:storeName%)
+              AND o.createdAt >= :start
               AND o.createdAt < :end
             """)
     Long sumTotalBillingByMonth(
+            @Param("storeName") String storeName,
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end
     );

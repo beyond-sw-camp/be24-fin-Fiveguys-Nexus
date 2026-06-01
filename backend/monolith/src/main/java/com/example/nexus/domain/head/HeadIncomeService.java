@@ -132,11 +132,11 @@ public class HeadIncomeService {
 
     // 본사 정산 관리 - 상단 카드 요약 조회
     @Transactional(readOnly = true)
-    public HeadIncomeDto.HeadSettlementSummaryRes getSettlementSummary(int year, int month) {
+    public HeadIncomeDto.HeadSettlementSummaryRes getSettlementSummary(String storeName, int year, int month) {
         LocalDateTime start = LocalDateTime.of(LocalDate.of(year, month, 1), LocalTime.MIN);
         LocalDateTime end = start.plusMonths(1);
 
-        Long totalBillingAmount = headIncomeRepository.sumTotalBillingByMonth(start, end);
+        Long totalBillingAmount = headIncomeRepository.sumTotalBillingByMonth(storeName, start, end);
 
         return HeadIncomeDto.HeadSettlementSummaryRes.builder()
                 .totalBillingAmount(totalBillingAmount != null ? totalBillingAmount : 0L)

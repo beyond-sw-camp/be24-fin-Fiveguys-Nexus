@@ -278,8 +278,8 @@ flowchart TB
 ### 📚 더 자세히 보기 (Wiki)
 > CI / CD 의 상세 설계 / 빌드·배포 시나리오 / 무중단 배포 결과 화면은 Wiki 에 정리되어 있습니다.
 
-* 🏗️ [**시스템 아키텍처 & 빌드 / 배포 계획**]([https://github.com/beyond-sw-camp/<repo>/wiki/CICD-Architecture](https://github.com/beyond-sw-camp/be24-fin-Fiveguys-Nexus/wiki/02.-%EC%8B%9C%EC%8A%A4%ED%85%9C-%EC%95%84%ED%82%A4%ED%85%8D%EC%B2%98)) — Nginx 리버스 프록시 / Blue·Green 등 의사결정 배경
-* 📸 [**무중단 배포 결과 화면**]([https://github.com/beyond-sw-camp/<repo>/wiki/Zero-Downtime-Deploy](https://github.com/beyond-sw-camp/be24-fin-Fiveguys-Nexus/wiki/01.-Blue-Green-%EB%AC%B4%EC%A4%91%EB%8B%A8-%EB%B0%B0%ED%8F%AC-%EC%A0%84%EB%9E%B5-%EB%B0%8F-%EA%B2%80%EC%A6%9D)) — Blue / Green 전환 시연 캡처
+* 🏗️ [**시스템 아키텍처 & 빌드 / 배포 계획**](https://github.com/beyond-sw-camp/be24-fin-Fiveguys-Nexus/wiki/02.-%EC%8B%9C%EC%8A%A4%ED%85%9C-%EC%95%84%ED%82%A4%ED%85%8D%EC%B2%98) — Nginx 리버스 프록시 / Blue·Green 등 의사결정 배경
+* 📸 [**무중단 배포 결과 화면**](https://github.com/beyond-sw-camp/be24-fin-Fiveguys-Nexus/wiki/01.-Blue-Green-%EB%AC%B4%EC%A4%91%EB%8B%A8-%EB%B0%B0%ED%8F%AC-%EC%A0%84%EB%9E%B5-%EB%B0%8F-%EA%B2%80%EC%A6%9D) — Blue / Green 전환 시연 캡처
 
 ---
 
